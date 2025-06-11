@@ -29,6 +29,10 @@ export default function ComparisonTable({ category, filters }: ComparisonTablePr
     }],
   });
 
+  console.log('ComparisonTable - Category:', category);
+  console.log('ComparisonTable - Materials count:', materials.length);
+  console.log('ComparisonTable - Materials:', materials.map(m => ({ name: m.name, category: m.category })));
+
   const sortedMaterials = [...materials].sort((a, b) => {
     switch (sortBy) {
       case "price-low":

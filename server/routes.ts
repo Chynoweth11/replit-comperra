@@ -15,12 +15,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         search: req.query.search as string,
       };
 
-      // Remove undefined values
+      console.log('Raw filters:', filters);
+
+      // Remove undefined and empty string values, but keep category if it exists
       const cleanFilters = Object.fromEntries(
-        Object.entries(filters).filter(([_, value]) => value !== undefined)
+        Object.entries(filters).filter(([key, value]) => {
+          if (key === 'category') {
+            return value !== undefined && value !== '';
+          }
+          return value !== undefined && value !== '';
+        })
       );
 
+      console.log('Clean filters:', cleanFilters);
+
       const materials = await storage.getMaterials(cleanFilters);
+      console.log(`Found ${materials.length} materials for category: ${cleanFilters.category || 'all'}`);
       res.json(materials);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch materials" });
