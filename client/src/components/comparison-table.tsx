@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,6 +19,7 @@ interface ComparisonTableProps {
 export default function ComparisonTable({ category, filters }: ComparisonTableProps) {
   const [sortBy, setSortBy] = useState("price-low");
   const [selectedMaterials, setSelectedMaterials] = useState<number[]>([]);
+  const [, navigate] = useLocation();
 
   const { data: materials = [], isLoading } = useQuery<Material[]>({
     queryKey: ["/api/materials", { 
@@ -305,7 +307,12 @@ export default function ComparisonTable({ category, filters }: ComparisonTablePr
                   
                   <td className="px-4 py-4 text-sm text-gray-900">{material.dimensions}</td>
                   <td className="px-4 py-4">
-                    <Button variant="ghost" size="sm" className="text-royal hover:text-royal-dark">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-royal hover:text-royal-dark"
+                      onClick={() => navigate(`/product/${material.id}`)}
+                    >
                       View Details
                     </Button>
                   </td>
@@ -322,7 +329,16 @@ export default function ComparisonTable({ category, filters }: ComparisonTablePr
           Showing {sortedMaterials.length} products
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" className="border-royal text-royal hover:bg-royal hover:text-white">
+          <Button 
+            variant="outline" 
+            className="border-royal text-royal hover:bg-royal hover:text-white"
+            disabled={selectedMaterials.length < 2}
+            onClick={() => {
+              if (selectedMaterials.length >= 2) {
+                navigate(`/compare?ids=${selectedMaterials.join(',')}`);
+              }
+            }}
+          >
             Compare Selected ({selectedMaterials.length})
           </Button>
           <Button className="bg-royal text-white hover:bg-royal-dark">

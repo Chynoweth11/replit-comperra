@@ -8,12 +8,16 @@ import Home from "@/pages/home";
 import Comparison from "@/pages/comparison";
 import ProductDetail from "@/pages/product-detail";
 import ProductCompare from "@/pages/product-compare";
+import DataImport from "@/pages/data-import";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/comparison/:category?" component={Comparison} />
+      <Route path="/product/:id" component={ProductDetail} />
+      <Route path="/compare" component={ProductCompare} />
+      <Route path="/admin/import" component={DataImport} />
       <Route component={NotFound} />
     </Switch>
   );
