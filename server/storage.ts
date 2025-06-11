@@ -206,6 +206,182 @@ export class MemStorage implements IStorage {
         dimensions: "12' Width",
         inStock: true,
       },
+      // Additional Tiles
+      {
+        name: "Travertine Natural",
+        category: "tiles",
+        brand: "Marazzi",
+        price: "8.99",
+        imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
+        description: "Natural Stone Floor Tile",
+        specifications: {
+          peiRating: 3,
+          slipRating: "COF 0.48",
+          waterAbsorption: "2-6%",
+          finish: "Honed",
+          materialType: "Natural Stone"
+        },
+        dimensions: "18\"x18\"",
+        inStock: true,
+      },
+      {
+        name: "Metro White Subway",
+        category: "tiles",
+        brand: "Daltile",
+        price: "1.89",
+        imageUrl: "https://images.unsplash.com/photo-1556912173-46c336c7fd55?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
+        description: "Classic Ceramic Wall Tile",
+        specifications: {
+          peiRating: 1,
+          slipRating: "COF 0.35",
+          waterAbsorption: "7-10%",
+          finish: "Glossy",
+          materialType: "Ceramic"
+        },
+        dimensions: "3\"x6\"",
+        inStock: true,
+      },
+      // Additional Slabs
+      {
+        name: "Calacatta Gold",
+        category: "slabs",
+        brand: "Cambria",
+        price: "95.99",
+        imageUrl: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
+        description: "Premium Quartz Countertop",
+        specifications: {
+          thickness: "3cm",
+          warranty: "Lifetime",
+          edgeOptions: ["Straight", "Beveled", "Bullnose", "Ogee"],
+          slabSize: "126\"x63\"",
+          material: "Quartz"
+        },
+        dimensions: "126\"x63\"",
+        inStock: true,
+      },
+      {
+        name: "Carrara Marble",
+        category: "slabs",
+        brand: "MSI",
+        price: "65.99",
+        imageUrl: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
+        description: "Natural Marble Slab",
+        specifications: {
+          thickness: "2cm",
+          warranty: "10 Years",
+          edgeOptions: ["Straight", "Beveled", "Bullnose"],
+          slabSize: "118\"x55\"",
+          material: "Marble"
+        },
+        dimensions: "118\"x55\"",
+        inStock: true,
+      },
+      // Additional LVT
+      {
+        name: "Heritage Oak",
+        category: "lvt",
+        brand: "Mohawk",
+        price: "4.49",
+        imageUrl: "https://images.unsplash.com/photo-1586105251261-72a756497a11?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
+        description: "Luxury Vinyl Plank",
+        specifications: {
+          wearLayer: "22 mil",
+          coreType: "WPC Core",
+          waterproof: true,
+          installMethod: "Floating",
+          texture: "Wood Grain"
+        },
+        dimensions: "7\"x48\"",
+        inStock: true,
+      },
+      {
+        name: "Stone Creek Slate",
+        category: "lvt",
+        brand: "Shaw",
+        price: "3.29",
+        imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
+        description: "Stone Look LVT",
+        specifications: {
+          wearLayer: "18 mil",
+          coreType: "SPC Core",
+          waterproof: true,
+          installMethod: "Glue Down",
+          texture: "Stone Texture"
+        },
+        dimensions: "12\"x24\"",
+        inStock: true,
+      },
+      // Additional Hardwood
+      {
+        name: "Maple Select",
+        category: "hardwood",
+        brand: "Bruce",
+        price: "8.99",
+        imageUrl: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
+        description: "3/4\" Solid Maple",
+        specifications: {
+          species: "Hard Maple",
+          finishType: "Pre-Finished",
+          plankWidth: "2.25\"",
+          thickness: "3/4\"",
+          construction: "Solid"
+        },
+        dimensions: "3/4\"x2.25\"",
+        inStock: true,
+      },
+      {
+        name: "Hickory Engineered",
+        category: "hardwood",
+        brand: "Shaw",
+        price: "7.49",
+        imageUrl: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
+        description: "5\" Engineered Hickory",
+        specifications: {
+          species: "Hickory",
+          finishType: "Pre-Finished",
+          plankWidth: "5\"",
+          thickness: "1/2\"",
+          construction: "Engineered"
+        },
+        dimensions: "1/2\"x5\"",
+        inStock: true,
+      },
+      // Additional Heating
+      {
+        name: "SunTouch Floor Warming",
+        category: "heat",
+        brand: "Warmly Yours",
+        price: "12.99",
+        imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
+        description: "240V Electric Radiant Mat",
+        specifications: {
+          voltage: "240V",
+          coverage: "50 SF",
+          features: ["WiFi Ready", "Programmable", "GFCI Protected"],
+          power: "500W",
+          compatibility: ["Tile", "Stone", "Engineered Wood"]
+        },
+        dimensions: "500W",
+        inStock: true,
+      },
+      // Additional Carpet
+      {
+        name: "Berber Twist",
+        category: "carpet",
+        brand: "Shaw",
+        price: "3.89",
+        imageUrl: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
+        description: "Loop Pile Carpet",
+        specifications: {
+          fiberType: "Polyester",
+          stainResistance: "Good",
+          pileHeight: "0.25\"",
+          width: "12' Width",
+          trafficRating: "Medium Traffic"
+        },
+        dimensions: "12' Width",
+        inStock: true,
+      },
     ];
 
     materialsData.forEach(material => {

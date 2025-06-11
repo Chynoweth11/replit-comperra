@@ -54,9 +54,15 @@ export default function Comparison() {
           {/* Section Header */}
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Material Comparison Tool</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-600 max-w-2xl mx-auto mb-4">
               Select a category to view detailed specifications and compare materials side-by-side
             </p>
+            <div className="inline-flex items-center px-4 py-2 bg-royal-light border border-royal rounded-lg">
+              <i className="fas fa-filter text-royal mr-2"></i>
+              <span className="text-sm font-medium text-royal">
+                Showing only {categories.find(cat => cat.id === selectedCategory)?.name} materials
+              </span>
+            </div>
           </div>
 
           {/* Filter and Comparison Content */}
