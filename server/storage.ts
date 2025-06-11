@@ -64,7 +64,13 @@ export class MemStorage implements IStorage {
     ];
 
     brandsData.forEach(brand => {
-      const newBrand: Brand = { ...brand, id: this.currentBrandId++ };
+      const newBrand: Brand = { 
+        id: this.currentBrandId++,
+        name: brand.name,
+        description: brand.description || null,
+        website: brand.website || null,
+        logoUrl: null
+      };
       this.brands.set(newBrand.id, newBrand);
     });
 
@@ -385,7 +391,14 @@ export class MemStorage implements IStorage {
     ];
 
     materialsData.forEach(material => {
-      const newMaterial: Material = { ...material, id: this.currentMaterialId++ };
+      const newMaterial: Material = { 
+        ...material, 
+        id: this.currentMaterialId++,
+        imageUrl: material.imageUrl || null,
+        description: material.description || null,
+        dimensions: material.dimensions || null,
+        inStock: material.inStock || null
+      };
       this.materials.set(newMaterial.id, newMaterial);
     });
 
@@ -421,7 +434,11 @@ export class MemStorage implements IStorage {
     ];
 
     articlesData.forEach(article => {
-      const newArticle: Article = { ...article, id: this.currentArticleId++ };
+      const newArticle: Article = { 
+        ...article, 
+        id: this.currentArticleId++,
+        imageUrl: article.imageUrl || null
+      };
       this.articles.set(newArticle.id, newArticle);
     });
   }
@@ -467,7 +484,14 @@ export class MemStorage implements IStorage {
 
   async createMaterial(material: InsertMaterial): Promise<Material> {
     const id = this.currentMaterialId++;
-    const newMaterial: Material = { ...material, id };
+    const newMaterial: Material = { 
+      ...material, 
+      id,
+      imageUrl: material.imageUrl || null,
+      description: material.description || null,
+      dimensions: material.dimensions || null,
+      inStock: material.inStock || null
+    };
     this.materials.set(id, newMaterial);
     return newMaterial;
   }
@@ -482,7 +506,11 @@ export class MemStorage implements IStorage {
 
   async createArticle(article: InsertArticle): Promise<Article> {
     const id = this.currentArticleId++;
-    const newArticle: Article = { ...article, id };
+    const newArticle: Article = { 
+      ...article, 
+      id,
+      imageUrl: article.imageUrl || null
+    };
     this.articles.set(id, newArticle);
     return newArticle;
   }
@@ -497,7 +525,13 @@ export class MemStorage implements IStorage {
 
   async createBrand(brand: InsertBrand): Promise<Brand> {
     const id = this.currentBrandId++;
-    const newBrand: Brand = { ...brand, id };
+    const newBrand: Brand = { 
+      ...brand, 
+      id,
+      description: brand.description || null,
+      website: brand.website || null,
+      logoUrl: brand.logoUrl || null
+    };
     this.brands.set(id, newBrand);
     return newBrand;
   }

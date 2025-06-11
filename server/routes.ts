@@ -6,6 +6,9 @@ import { z } from "zod";
 import multer from "multer";
 import csvParser from "csv-parser";
 
+// Configure multer for file uploads
+const upload = multer({ dest: '/tmp/uploads/' });
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Materials routes
   app.get("/api/materials", async (req, res) => {
@@ -184,6 +187,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Single scraping error:", error);
       res.status(500).json({ message: "Failed to scrape product" });
+    }
+  });
+
+  // Scraping routes
+  app.post("/api/scrape/single", async (req, res) => {
+    try {
+      const { url } = req.body;
+      if (!url) {
+        return res.status(400).json({ error: "URL is required" });
+      }
+
+      const scrapedProduct = await productScraper.scrapeProduct(url);
+      if (!scrapedProduct) {
+        return res.status(400).json({ error: "Failed to scrape product from URL" });
+      }
+
+      const material = productScraper.convertToMaterial(scrapedProduct);
+      const savedMaterial = await storage.createMaterial(material);
+
+      res.json({ 
+        message: "Product scraped and saved successfully",
+        material: savedMaterial 
+      });
+    } catch (error) {
+      console.error("Single scraping error:", error);
+      res.status(500).json({ error: "Failed to scrape product" });
+    }
+  });
+
+  app.post("/api/scrape/bulk", upload.single('urlFile'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const urls: string[] = [];
+      const fs = await import('fs');
+      
+      // Read the uploaded file and extract URLs
+      const fileContent = fs.readFileSync(req.file.path, 'utf-8');
+      const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+      
+      for (const line of lines) {
+        if (line.startsWith('http')) {
+          urls.push(line);
+        }
+      }
+
+      if (urls.length === 0) {
+        return res.status(400).json({ error: "No valid URLs found in file" });
+      }
+
+      // Scrape products from URLs
+      const scrapedProducts = await productScraper.scrapeProductList(urls);
+      
+      // Save scraped products to storage
+      let savedCount = 0;
+      for (const scrapedProduct of scrapedProducts) {
+        try {
+          const material = productScraper.convertToMaterial(scrapedProduct);
+          await storage.createMaterial(material);
+          savedCount++;
+        } catch (error) {
+          console.error("Error saving material:", error);
+        }
+      }
+
+      // Clean up uploaded file
+      fs.unlinkSync(req.file.path);
+
+      res.json({
+        message: `Bulk scraping completed`,
+        scraped: scrapedProducts.length,
+        saved: savedCount,
+        totalUrls: urls.length
+      });
+    } catch (error) {
+      console.error("Bulk scraping error:", error);
+      res.status(500).json({ error: "Failed to process bulk scraping" });
     }
   });
 
