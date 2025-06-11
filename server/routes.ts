@@ -1,7 +1,10 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { productScraper } from "./scraper";
 import { z } from "zod";
+import multer from "multer";
+import csvParser from "csv-parser";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Materials routes
@@ -106,6 +109,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(suggestions);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch search suggestions" });
+    }
+  });
+
+  // Setup multer for file uploads
+  const upload = multer({ storage: multer.memoryStorage() });
+
+  // Bulk scraping endpoint
+  app.post("/api/scrape/bulk", upload.single('urlFile'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const urls: string[] = [];
+      const csvData = req.file.buffer.toString('utf-8');
+      const rows = csvData.split('\n');
+      
+      for (const row of rows) {
+        const url = row.trim();
+        if (url && url.startsWith('http')) {
+          urls.push(url);
+        }
+      }
+
+      console.log(`Starting bulk scrape of ${urls.length} URLs`);
+      
+      const scrapedProducts = await productScraper.scrapeProductList(urls);
+      
+      // Convert and save to storage
+      let savedCount = 0;
+      for (const product of scrapedProducts) {
+        try {
+          const material = productScraper.convertToMaterial(product);
+          await storage.createMaterial(material);
+          savedCount++;
+        } catch (error) {
+          console.error(`Failed to save product ${product.name}:`, error);
+        }
+      }
+
+      res.json({
+        message: `Successfully scraped and saved ${savedCount} products`,
+        scraped: scrapedProducts.length,
+        saved: savedCount,
+        totalUrls: urls.length
+      });
+    } catch (error) {
+      console.error("Bulk scraping error:", error);
+      res.status(500).json({ message: "Failed to process bulk scraping" });
+    }
+  });
+
+  // Single URL scraping endpoint
+  app.post("/api/scrape/single", async (req, res) => {
+    try {
+      const { url } = req.body;
+      if (!url) {
+        return res.status(400).json({ message: "URL is required" });
+      }
+
+      const scrapedProduct = await productScraper.scrapeProduct(url);
+      if (!scrapedProduct) {
+        return res.status(404).json({ message: "Failed to scrape product data" });
+      }
+
+      const material = productScraper.convertToMaterial(scrapedProduct);
+      const savedMaterial = await storage.createMaterial(material);
+
+      res.json({
+        message: "Product scraped and saved successfully",
+        material: savedMaterial
+      });
+    } catch (error) {
+      console.error("Single scraping error:", error);
+      res.status(500).json({ message: "Failed to scrape product" });
     }
   });
 

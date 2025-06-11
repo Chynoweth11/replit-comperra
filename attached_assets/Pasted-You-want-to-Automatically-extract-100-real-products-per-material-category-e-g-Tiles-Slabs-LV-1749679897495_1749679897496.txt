@@ -1,0 +1,105 @@
+You want to:
+
+Automatically extract 100+ real products per material category (e.g., Tiles, Slabs, LVT, Hardwood, Heating, Carpet)
+
+Pull product specs, sizes, finishes, colors, PEI/DCOF ratings, and images
+
+Get this data directly from manufacturer websites like:
+
+Daltile
+
+MSI
+
+Arizona Tile
+
+Florida Tile
+
+AKDO
+
+Load all that into your system (e.g., Airtable or JSON files in Replit) to display and compare by category
+
+✅ All of this without APIs, login tokens, or paid services.
+
+⚙️ How It’s Going to Be Done (Step-by-Step)
+1. Use Your Existing Comperra Scraper
+Your backend already uses:
+
+js
+Copy
+Edit
+const axios = require('axios');
+const cheerio = require('cheerio');
+This lets you fetch and parse any public product page, just like a browser would.
+
+2. Find Product Listing Pages
+For each brand, you:
+
+Go to their product category pages manually (e.g., Daltile’s Tile section)
+
+Copy/paste all the product URLs into a CSV or text list
+
+Example:
+
+arduino
+Copy
+Edit
+https://www.daltile.com/products/terrazzo-look/outlander/sterling
+https://www.msisurfaces.com/porcelain/brickstone-red/
+...
+✅ You do not need an API — these pages are public.
+
+3. Bulk Scrape All URLs
+Use your existing /api/scrape/bulk endpoint to:
+
+Upload a .csv of product URLs
+
+Automatically scrape and store the results (name, size, finish, image, etc.)
+
+js
+Copy
+Edit
+POST /api/scrape/bulk
+Body: CSV file with 100+ URLs
+Your scraper will loop through each and extract structured fields like:
+
+Name
+
+Size
+
+Finish
+
+Thickness
+
+DCOF / PEI
+
+Image URL
+
+Category
+
+4. Auto-Assign Category Based on URL
+You already have this logic:
+
+js
+Copy
+Edit
+function assignCategoryFromURL(url) {
+  if (url.includes('tile')) return 'Tile';
+  if (url.includes('slab')) return 'Slab';
+  if (url.includes('lvt') || url.includes('vinyl')) return 'LVT';
+  ...
+}
+This means as you scrape, the system auto-tags each product with its correct material category.
+
+5. Save & Import to Airtable
+Once scraped:
+
+Store each product as a JSON file in /tile-data
+
+Optionally, send them to Airtable via /api/import/airtable
+
+6. Display by Category
+On the frontend, when users click a tab like "Tile", your table will:
+
+Show only products with category === "Tile"
+
+No mixing of hardwood or slab

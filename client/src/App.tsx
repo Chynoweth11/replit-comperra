@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Comparison from "@/pages/comparison";
+import ProductDetail from "@/pages/product-detail";
+import ProductCompare from "@/pages/product-compare";
 
 function Router() {
   return (
