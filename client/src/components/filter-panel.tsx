@@ -24,7 +24,7 @@ export default function FilterPanel({ filters, onFiltersChange }: FilterPanelPro
   const handleFilterChange = (key: string, value: string) => {
     onFiltersChange({
       ...filters,
-      [key]: value,
+      [key]: value === "all" ? "" : value,
     });
   };
 
@@ -78,12 +78,12 @@ export default function FilterPanel({ filters, onFiltersChange }: FilterPanelPro
         {/* Brand Filter */}
         <div className="mb-6">
           <Label className="block text-sm font-medium mb-2">Brand</Label>
-          <Select value={filters.brand} onValueChange={(value) => handleFilterChange("brand", value)}>
+          <Select value={filters.brand || "all"} onValueChange={(value) => handleFilterChange("brand", value)}>
             <SelectTrigger>
               <SelectValue placeholder="All Brands" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Brands</SelectItem>
+              <SelectItem value="all">All Brands</SelectItem>
               {brands.map((brand) => (
                 <SelectItem key={brand.id} value={brand.name}>
                   {brand.name}
