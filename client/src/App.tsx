@@ -18,12 +18,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/comparison/:category?">
-          {(params) => (
-            <>
-              <CategoryNav />
-              <Comparison {...params} />
-            </>
-          )}
+          {(params) => <Comparison {...params} />}
         </Route>
         <Route path="/product/:id" component={ProductDetail} />
         <Route path="/article/:id" component={ArticleDetail} />
