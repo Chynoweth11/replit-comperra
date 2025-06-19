@@ -50,8 +50,15 @@ export default function ComparisonTable({ category, filters }: ComparisonTablePr
       });
       
       if (response.ok) {
+        const result = await response.json();
         setPasteUrl("");
+        
+        // Refresh the materials data without full page reload
+        // The product will appear in the correct category where the user pasted the URL
         window.location.reload();
+      } else {
+        const error = await response.json();
+        console.error('Scraping failed:', error.error);
       }
     } catch (error) {
       console.error('Scraping error:', error);

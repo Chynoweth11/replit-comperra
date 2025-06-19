@@ -483,6 +483,30 @@ export class MemStorage implements IStorage {
   }
 
   async createMaterial(material: InsertMaterial): Promise<Material> {
+    // Check for duplicates based on sourceUrl if it exists
+    const materialWithUrl = material as InsertMaterial & { sourceUrl?: string };
+    if (materialWithUrl.sourceUrl) {
+      const existingMaterial = Array.from(this.materials.values()).find(m => 
+        (m as any).sourceUrl === materialWithUrl.sourceUrl
+      );
+      if (existingMaterial) {
+        console.log(`Duplicate URL detected: ${materialWithUrl.sourceUrl}. Returning existing material.`);
+        return existingMaterial;
+      }
+    }
+
+    // Check for duplicates based on name + brand + category
+    const existingByNameBrand = Array.from(this.materials.values()).find(m => 
+      m.name.toLowerCase() === material.name.toLowerCase() &&
+      m.brand.toLowerCase() === material.brand.toLowerCase() &&
+      m.category === material.category
+    );
+    
+    if (existingByNameBrand) {
+      console.log(`Duplicate product detected: ${material.name} by ${material.brand}. Returning existing material.`);
+      return existingByNameBrand;
+    }
+
     const id = this.currentMaterialId++;
     const newMaterial: Material = { 
       ...material, 

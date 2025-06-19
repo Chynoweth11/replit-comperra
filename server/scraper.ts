@@ -56,26 +56,91 @@ export class ProductScraper {
 
       const $ = cheerio.load(response.data);
       
-      const name = $('h1').first().text().trim() || $('.product-title').text().trim();
-      const description = $('.product-description').text().trim() || $('.description').text().trim();
-      const imageUrl = $('img.product-image').attr('src') || $('.hero-image img').attr('src') || '';
+      // Enhanced name extraction
+      let name = $('h1.product-title, h1.pdp-product-name, .product-name h1, h1').first().text().trim() ||
+                $('.product-title, .pdp-title').text().trim() ||
+                $('title').text().split('|')[0].trim() ||
+                'Product Name Not Found';
       
-      // Extract specifications
+      // Clean up the name
+      name = name.replace(/\s+/g, ' ').trim();
+      
+      // Enhanced description extraction
+      const description = $('.product-description, .description, .product-overview, .pdp-description')
+        .first().text().trim().substring(0, 500) || '';
+      
+      // Enhanced image extraction
+      let imageUrl = $('img.product-image, .product-photo img, .hero-image img, .pdp-image img, img[alt*="product"]')
+        .first().attr('src') || $('img').first().attr('src') || '';
+      
+      if (imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
+      
+      // Enhanced specifications extraction
       const specs: any = {};
-      $('.specification-item, .spec-row').each((_, elem) => {
-        const key = $(elem).find('.spec-label, .label').text().trim();
-        const value = $(elem).find('.spec-value, .value').text().trim();
-        if (key && value) {
-          specs[key.toLowerCase().replace(/\s+/g, '_')] = value;
+      
+      // Try multiple specification selectors
+      $('.specification-item, .spec-row, .product-specs tr, .specs-table tr, .technical-specs tr').each((_, elem) => {
+        const key = $(elem).find('.spec-label, .label, td:first-child, th').text().trim();
+        const value = $(elem).find('.spec-value, .value, td:last-child').text().trim();
+        if (key && value && key !== value) {
+          specs[key.toLowerCase().replace(/[\s-]+/g, '_')] = value;
         }
       });
 
-      // Extract dimensions
-      const dimensions = $('.size').text().trim() || specs.size || specs.dimensions || '';
+      // Extract tile-specific specifications
+      if (this.assignCategoryFromURL(url) === 'tiles') {
+        // PEI Rating
+        if (!specs.pei_rating) {
+          const peiText = $('*:contains("PEI")').text();
+          const peiMatch = peiText.match(/PEI[\s:]?(\d+)/i);
+          if (peiMatch) specs.pei_rating = peiMatch[1];
+        }
+        
+        // DCOF/Slip Rating
+        if (!specs.slip_rating && !specs.dcof) {
+          const dcofText = $('*:contains("DCOF"), *:contains("slip")').text();
+          const dcofMatch = dcofText.match(/DCOF[\s:]?([\d.]+)/i) || dcofText.match(/([\d.]+)/);
+          if (dcofMatch) specs.slip_rating = dcofMatch[1];
+        }
+        
+        // Water Absorption
+        if (!specs.water_absorption) {
+          const waterText = $('*:contains("absorption"), *:contains("water")').text();
+          const waterMatch = waterText.match(/([\d.]+%?)/);
+          if (waterMatch) specs.water_absorption = waterMatch[1];
+        }
+      }
+
+      // Enhanced dimensions extraction
+      let dimensions = $('.size, .dimensions, .product-size, .tile-size').text().trim() ||
+                      specs.size || specs.dimensions || specs.nominal_size || '';
       
-      // Extract price (if available)
-      const priceText = $('.price, .cost').text().trim();
-      const price = priceText.match(/[\d.]+/)?.[0] || '0.00';
+      // Try to find dimensions in text content
+      if (!dimensions) {
+        const dimText = $('body').text();
+        const dimMatch = dimText.match(/(\d+["']?\s*[xX×]\s*\d+["']?)/);
+        if (dimMatch) dimensions = dimMatch[1];
+      }
+      
+      // Enhanced price extraction
+      let price = '0.00';
+      const priceSelectors = [
+        '.price-current, .price .amount, .product-price .price',
+        '[data-price], .price-value, .cost, .retail-price',
+        '.price-per-sqft, .price-display, .pdp-price'
+      ];
+      
+      for (const selector of priceSelectors) {
+        const priceElement = $(selector);
+        if (priceElement.length) {
+          const priceText = priceElement.text().trim();
+          const priceMatch = priceText.match(/\$?([\d,]+\.?\d*)/);
+          if (priceMatch) {
+            price = priceMatch[1].replace(',', '');
+            break;
+          }
+        }
+      }
 
       return {
         name,
@@ -83,7 +148,7 @@ export class ProductScraper {
         price,
         category: this.assignCategoryFromURL(url),
         description,
-        imageUrl: imageUrl.startsWith('//') ? 'https:' + imageUrl : imageUrl,
+        imageUrl,
         dimensions,
         specifications: specs,
         sourceUrl: url
@@ -237,7 +302,7 @@ export class ProductScraper {
     return results;
   }
 
-  convertToMaterial(scrapedProduct: ScrapedProduct): InsertMaterial {
+  convertToMaterial(scrapedProduct: ScrapedProduct): InsertMaterial & { sourceUrl: string } {
     return {
       name: scrapedProduct.name,
       category: scrapedProduct.category,
@@ -247,7 +312,8 @@ export class ProductScraper {
       description: scrapedProduct.description || null,
       specifications: scrapedProduct.specifications,
       dimensions: scrapedProduct.dimensions || null,
-      inStock: true
+      inStock: true,
+      sourceUrl: scrapedProduct.sourceUrl
     };
   }
 }
