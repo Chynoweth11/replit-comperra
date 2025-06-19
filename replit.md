@@ -22,6 +22,10 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ✅ **June 19, 2025**: Fixed heating system dimensions to show coverage in square feet instead of watts
+- ✅ **June 19, 2025**: Added top category navigation bar for easy material type switching
+- ✅ **June 19, 2025**: Rebuilt product comparison page with localStorage integration and side-by-side tables
+- ✅ **June 19, 2025**: Fixed article navigation - "Read Full Guide" buttons now work properly
 - ✅ **June 19, 2025**: Added 6 comprehensive expert buying guides with detailed content
 - ✅ **June 19, 2025**: Enhanced article schema to support full-length guide content
 - ✅ **June 19, 2025**: Fixed critical XSS vulnerability in comparison table innerHTML usage

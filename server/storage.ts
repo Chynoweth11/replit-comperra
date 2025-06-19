@@ -187,12 +187,12 @@ export class MemStorage implements IStorage {
         description: "Electric Radiant Mat",
         specifications: {
           voltage: "120V",
-          coverage: "30 SF",
+          coverageArea: "30 sq ft",
           features: ["WiFi Ready", "Programmable", "Energy Efficient"],
           power: "240W",
           compatibility: ["Tile", "Stone", "Laminate"]
         },
-        dimensions: "240W",
+        dimensions: "30 sq ft",
         inStock: true,
       },
       {
