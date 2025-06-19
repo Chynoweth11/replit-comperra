@@ -106,13 +106,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     const tiles = Array.from(compareState);
     const specs = ['price', 'pei', 'dcof', 'water_absorption', 'size', 'material', 'brand'];
 
-    let table = `<table class="min-w-full text-sm"><thead><tr><th class="p-2">Spec</th>${tiles.map(t => `<th class="p-2">${t.id}</th>`).join('')}</tr></thead><tbody>`;
+    let table = `<table class="min-w-full text-sm"><thead><tr><th class="p-2">Spec</th>${tiles.map(t => {
+      const escapedId = String(t.id).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      return `<th class="p-2">${escapedId}</th>`;
+    }).join('')}</tr></thead><tbody>`;
 
     specs.forEach(spec => {
       table += `<tr><td class="font-medium p-2 capitalize">${spec.replace('_', ' ')}</td>`;
       tiles.forEach(t => {
         const val = t[spec] ?? '-';
-        table += `<td class="p-2">${val}</td>`;
+        // Escape HTML to prevent XSS
+        const escapedVal = String(val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        table += `<td class="p-2">${escapedVal}</td>`;
       });
       table += `</tr>`;
     });
@@ -122,7 +127,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       table += `<tr><td class="font-semibold p-2">${field.replace('_', ' ').toUpperCase()}</td>`;
       tiles.forEach(t => {
         const val = t[field] ?? '—';
-        table += `<td class="p-2 italic text-gray-600">${val}</td>`;
+        // Escape HTML to prevent XSS
+        const escapedVal = String(val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        table += `<td class="p-2 italic text-gray-600">${escapedVal}</td>`;
       });
       table += '</tr>';
     });
