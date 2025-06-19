@@ -34,6 +34,55 @@ export default function ComparisonTable({ category, filters }: ComparisonTablePr
   });
   const [, navigate] = useLocation();
 
+  const handleGetPricing = (productName: string) => {
+    setSelectedProduct(productName);
+    setLeadModalOpen(true);
+  };
+
+  const handleScrapeUrl = async () => {
+    if (!pasteUrl.trim()) return;
+    
+    try {
+      const response = await fetch('/api/scrape/single', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: pasteUrl })
+      });
+      
+      if (response.ok) {
+        setPasteUrl("");
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Scraping error:', error);
+    }
+  };
+
+  const handleCsvUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('urlFile', file);
+
+    try {
+      const response = await fetch('/api/scrape/bulk', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('CSV upload error:', error);
+    }
+  };
+
+  const toggleSpec = (spec: keyof typeof visibleSpecs) => {
+    setVisibleSpecs(prev => ({ ...prev, [spec]: !prev[spec] }));
+  };
+
   const { data: materials = [], isLoading } = useQuery<Material[]>({
     queryKey: ["/api/materials", { 
       category,
@@ -195,6 +244,60 @@ export default function ComparisonTable({ category, filters }: ComparisonTablePr
 
   return (
     <div className="lg:w-3/4">
+      {/* URL Scraping and CSV Upload Bar */}
+      <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex gap-2 items-center flex-1 min-w-64">
+            <Input
+              placeholder="Paste product URL to scrape..."
+              value={pasteUrl}
+              onChange={(e) => setPasteUrl(e.target.value)}
+              className="flex-1"
+            />
+            <Button 
+              onClick={handleScrapeUrl}
+              disabled={!pasteUrl.trim()}
+              className="bg-blue-600 text-white hover:bg-blue-700"
+            >
+              Scrape
+            </Button>
+          </div>
+          <div className="flex gap-2 items-center">
+            <input
+              type="file"
+              id="csv-upload"
+              accept=".csv,.txt"
+              onChange={handleCsvUpload}
+              className="hidden"
+            />
+            <Label 
+              htmlFor="csv-upload" 
+              className="cursor-pointer bg-gray-200 px-3 py-2 rounded border hover:bg-gray-300"
+            >
+              Upload CSV
+            </Label>
+          </div>
+        </div>
+      </div>
+
+      {/* Spec Toggle Controls */}
+      <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+        <div className="flex flex-wrap gap-4 items-center">
+          <span className="text-sm font-medium">Show/Hide Columns:</span>
+          {(Object.keys(visibleSpecs) as Array<keyof typeof visibleSpecs>).map((spec) => (
+            <label key={spec} className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={visibleSpecs[spec]}
+                onChange={() => toggleSpec(spec)}
+                className="rounded"
+              />
+              <span className="capitalize">{spec}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
       {/* Sort and View Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div className="flex items-center gap-4">
@@ -320,14 +423,23 @@ export default function ComparisonTable({ category, filters }: ComparisonTablePr
                   
                   <td className="px-4 py-4 text-sm text-gray-900">{material.dimensions}</td>
                   <td className="px-4 py-4">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="text-royal hover:text-royal-dark"
-                      onClick={() => navigate(`/product/${material.id}`)}
-                    >
-                      View Details
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-royal hover:text-royal-dark"
+                        onClick={() => navigate(`/product/${material.id}`)}
+                      >
+                        View Details
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        className="bg-green-600 text-white hover:bg-green-700"
+                        onClick={() => handleGetPricing(material.name)}
+                      >
+                        Get Pricing
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
