@@ -1,0 +1,74 @@
+sing a single-page layout with Tailwind or similar) for:
+
+bash
+Copy
+Edit
+/categories.html
+/brands.html
+/specs.html
+/price.html
+/guides.html
+/install.html
+/faq.html
+/about.html
+/contact.html
+/press.html
+/privacy.html
+/terms.html
+/data.html
+/cookies.html
+✅ 2. Update Navigation (example snippet)
+In your index.html, update your nav links like this:
+
+html
+Copy
+Edit
+<nav class="flex space-x-4">
+  <a href="/categories.html" class="hover:underline">All Categories</a>
+  <a href="/brands.html" class="hover:underline">Brand Directory</a>
+  <a href="/specs.html" class="hover:underline">Specification Search</a>
+  <a href="/price.html" class="hover:underline">Price Comparison</a>
+  <a href="/guides.html" class="hover:underline">Buying Guides</a>
+  <a href="/install.html" class="hover:underline">Installation Tips</a>
+  <a href="/faq.html" class="hover:underline">FAQ</a>
+  <a href="/about.html" class="hover:underline">About Comperra</a>
+  <a href="/contact.html" class="hover:underline">Contact Us</a>
+  <a href="/press.html" class="hover:underline">Press</a>
+  <a href="/privacy.html" class="hover:underline">Privacy Policy</a>
+  <a href="/terms.html" class="hover:underline">Terms of Service</a>
+  <a href="/data.html" class="hover:underline">Data Usage</a>
+  <a href="/cookies.html" class="hover:underline">Cookies</a>
+</nav>
+✅ 3. Boilerplate for Each Page
+Here’s a reusable template to paste into each page (about.html, faq.html, etc.):
+
+html
+Copy
+Edit
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Comperra</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+  <header class="bg-white shadow p-4">
+    <div class="max-w-6xl mx-auto">
+      <h1 class="text-2xl font-bold text-royal">Comperra</h1>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto py-10 px-6">
+    <h2 class="text-xl font-semibold mb-4">About Comperra</h2>
+    <p class="text-gray-700 leading-relaxed">
+      Comperra is a platform built for homeowners, designers, and contractors to compare materials like tile, stone, LVT, and hardwood from trusted brands. We help you find specs, pricing, installation info, and alternatives all in one place—powered by verified data and user-friendly tools.
+    </p>
+  </main>
+
+  <footer class="bg-gray-200 text-center text-sm p-4 mt-12">
+    &copy; 2025 Comperra. All rights reserved.
+  </footer>
+</body>
+</html>

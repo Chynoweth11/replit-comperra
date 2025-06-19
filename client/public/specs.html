@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Specification Search - Comperra</title>
+  <meta name="description" content="Search building materials by specific technical specifications including PEI ratings, water absorption, dimensions, and performance criteria.">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+  <header class="bg-white shadow p-4">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-blue-600">Comperra</h1>
+      <nav class="hidden md:flex space-x-4 text-sm">
+        <a href="/" class="hover:underline">Home</a>
+        <a href="/categories.html" class="hover:underline">Categories</a>
+        <a href="/brands.html" class="hover:underline">Brands</a>
+        <a href="/specs.html" class="hover:underline font-semibold">Specifications</a>
+        <a href="/contact.html" class="hover:underline">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto py-10 px-6">
+    <h2 class="text-3xl font-semibold mb-8">Specification Search</h2>
+    
+    <div class="bg-white rounded-lg shadow p-6 mb-8">
+      <h3 class="text-xl font-semibold mb-4">Find Materials by Technical Specifications</h3>
+      <p class="text-gray-600 mb-6">Search our database using specific technical criteria to find materials that meet your project requirements.</p>
+      
+      <div class="grid md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Material Category</label>
+          <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">All Categories</option>
+            <option value="tiles">Tiles</option>
+            <option value="slabs">Stone & Slabs</option>
+            <option value="lvt">Vinyl & LVT</option>
+            <option value="hardwood">Hardwood</option>
+            <option value="heating">Heating</option>
+            <option value="carpet">Carpet</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">PEI Rating (Tiles)</label>
+          <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Any PEI Rating</option>
+            <option value="1">PEI 1 - Wall Use Only</option>
+            <option value="2">PEI 2 - Light Traffic</option>
+            <option value="3">PEI 3 - Moderate Traffic</option>
+            <option value="4">PEI 4 - Heavy Traffic</option>
+            <option value="5">PEI 5 - Commercial</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Water Absorption</label>
+          <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Any Absorption Rate</option>
+            <option value="0-0.5">0-0.5% (Vitreous)</option>
+            <option value="0.5-3">0.5-3% (Semi-vitreous)</option>
+            <option value="3-7">3-7% (Semi-non-vitreous)</option>
+            <option value="7+">7%+ (Non-vitreous)</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="mt-4 grid md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Minimum Size</label>
+          <input type="text" placeholder="e.g., 12x12" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">DCOF Rating</label>
+          <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Any DCOF</option>
+            <option value="0.42+">0.42+ (ADA Compliant)</option>
+            <option value="0.60+">0.60+ (High Slip Resistance)</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Application</label>
+          <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Any Application</option>
+            <option value="residential">Residential</option>
+            <option value="commercial">Commercial</option>
+            <option value="outdoor">Outdoor Use</option>
+            <option value="wet-areas">Wet Areas</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="mt-6">
+        <button class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors">Search Specifications</button>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8">
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-xl font-semibold mb-4">Common Tile Specifications</h3>
+        <ul class="space-y-2 text-sm">
+          <li><strong>PEI Rating:</strong> Durability classification (1-5)</li>
+          <li><strong>Water Absorption:</strong> Porosity measurement</li>
+          <li><strong>DCOF:</strong> Dynamic Coefficient of Friction</li>
+          <li><strong>Frost Resistance:</strong> Freeze-thaw performance</li>
+          <li><strong>Thermal Shock:</strong> Temperature change resistance</li>
+          <li><strong>Chemical Resistance:</strong> Stain and chemical durability</li>
+        </ul>
+      </div>
+      
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-xl font-semibold mb-4">Stone & Slab Specifications</h3>
+        <ul class="space-y-2 text-sm">
+          <li><strong>Compressive Strength:</strong> Load-bearing capacity</li>
+          <li><strong>Flexural Strength:</strong> Bending resistance</li>
+          <li><strong>Absorption Rate:</strong> Porosity and sealing needs</li>
+          <li><strong>Hardness:</strong> Mohs scale rating</li>
+          <li><strong>Thermal Conductivity:</strong> Heat transfer properties</li>
+          <li><strong>Edge Profiles:</strong> Finishing options available</li>
+        </ul>
+      </div>
+      
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-xl font-semibold mb-4">LVT Performance Criteria</h3>
+        <ul class="space-y-2 text-sm">
+          <li><strong>Wear Layer:</strong> Thickness in mils (6-40 mil)</li>
+          <li><strong>Overall Thickness:</strong> Total product thickness</li>
+          <li><strong>Indentation Resistance:</strong> Furniture load capacity</li>
+          <li><strong>Dimensional Stability:</strong> Temperature expansion</li>
+          <li><strong>Sound Rating:</strong> Impact and acoustic performance</li>
+          <li><strong>Installation Method:</strong> Click, glue, or loose lay</li>
+        </ul>
+      </div>
+      
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-xl font-semibold mb-4">Hardwood Classifications</h3>
+        <ul class="space-y-2 text-sm">
+          <li><strong>Janka Hardness:</strong> Dent resistance rating</li>
+          <li><strong>Grade:</strong> Select, #1 Common, #2 Common</li>
+          <li><strong>Moisture Content:</strong> Stability measurement</li>
+          <li><strong>Plank Width:</strong> Narrow, wide, or mixed widths</li>
+          <li><strong>Finish Type:</strong> Pre-finished or site-finished</li>
+          <li><strong>Installation Grade:</strong> Above, on, or below grade</li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-gray-200 text-center text-sm p-4 mt-12">
+    <div class="max-w-6xl mx-auto flex justify-center space-x-4">
+      <a href="/privacy.html" class="hover:underline">Privacy Policy</a>
+      <a href="/terms.html" class="hover:underline">Terms of Service</a>
+      <a href="/contact.html" class="hover:underline">Contact</a>
+    </div>
+    <p class="mt-2">&copy; 2025 Comperra. All rights reserved.</p>
+  </footer>
+</body>
+</html>
