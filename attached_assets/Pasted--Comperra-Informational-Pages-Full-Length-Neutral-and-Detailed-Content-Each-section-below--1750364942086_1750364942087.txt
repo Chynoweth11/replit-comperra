@@ -1,0 +1,93 @@
+**Comperra Informational Pages – Full-Length, Neutral, and Detailed Content**
+
+Each section below has been crafted to reflect Comperra's professional tone and functionality, without promoting any brand or making guarantees. This ensures transparency, neutrality, and user trust across the platform.
+
+---
+
+**All Categories**
+
+The All Categories section of Comperra is your entry point to exploring the wide spectrum of surface materials used in modern construction, renovation, and design. Our goal is to give users a complete overview of what materials are available, how they are typically used, and what attributes differentiate one product type from another.
+
+The category layout is structured to align with common industry standards and homeowner needs. It includes but is not limited to:
+
+* **Tiles**: Often used for floors, walls, and backsplashes. Subtypes include porcelain, ceramic, mosaic, and glass tiles.
+* **Stone & Slabs**: Natural and engineered surfaces typically used for countertops, wall cladding, and flooring. May include granite, marble, travertine, and quartz-based products.
+* **Vinyl & LVT**: Engineered resilient flooring made for durability and water resistance. Available in multiple construction types like SPC (stone polymer core) and WPC (wood polymer core).
+* **Hardwood Flooring**: Ranges from solid to engineered boards. Known for its aesthetic warmth and long-term maintenance considerations.
+* **Carpet**: Textured textile flooring, available in broadloom and modular tile forms. Differentiated by fiber type, pile height, and usage suitability.
+* **Heating Systems**: Underlayment heating systems, such as electric heat mats and programmable thermostats, often used in tile-based installations for added comfort.
+
+Each category offers filterable specs, comparison capabilities, and educational content to help users evaluate products based on technical fit, aesthetic preference, and functional use-case—without bias or endorsement. Our team continually refines each category to keep pace with material innovation and evolving construction trends.
+
+---
+
+**Brand Directory**
+
+While Comperra does not promote or guarantee any brand or vendor, we provide factual, structured summaries of suppliers, manufacturers, and product origin sources that appear in our comparison system. The Brand Directory is designed to help users understand where products come from, what kinds of materials are typically offered by a given source, and whether any specific compliance or sustainability data is available.
+
+The directory may include:
+
+* Company type (manufacturer, distributor, fabricator, importer)
+* Geographic coverage (regional, national, global)
+* Product categories carried
+* Documented certifications (e.g., sustainability, safety, slip resistance)
+* Availability of technical resources (warranties, installation manuals, cut sheets)
+
+This section is presented to inform—not to rank, rate, or endorse. All content is sourced from publicly available information, and we do not guarantee accuracy beyond what is disclosed in official documentation. Users are encouraged to verify specifics with the manufacturer or distributor directly when making final selections.
+
+---
+
+**Specification Search**
+
+One of the most technically useful tools on Comperra, the Specification Search feature allows users to filter and narrow down material selections using specific quantitative and qualitative product attributes. This functionality is especially helpful for users managing large-scale renovation or construction projects, where material compatibility and compliance are essential.
+
+Specs available for filtering include:
+
+* Material size (length, width, thickness)
+* Surface finish (matte, polished, textured, honed, etc.)
+* Edge type (rectified, beveled, eased)
+* Abrasion resistance ratings (such as PEI levels for tile)
+* Slip resistance (often listed as DCOF or SCOF values)
+* Water absorption percentages
+* Acoustic ratings and underlayment thickness (for resilient flooring)
+* Core construction type (especially relevant to vinyl and LVT products)
+* Installation type (click-lock, glue-down, nail-down, floating)
+
+Comperra’s specification filters are built for performance-based exploration and are not influenced by branding or marketing terms. All results are intended to give users a starting point for further product research, rather than definitive selection guidance. We strongly recommend consulting product documentation and installation guides before making a purchase or beginning an install.
+
+---
+
+**Price Comparison**
+
+Pricing is one of the most variable aspects of the building materials industry. Comperra provides a price comparison tool designed to show a general range of costs associated with similar materials, based on information that is either submitted by users, scraped from public listings, or provided directly by vendors.
+
+The price comparison view typically includes:
+
+* Base price per square foot (as listed or submitted)
+* Material specifications relevant to pricing (e.g., thickness, format, finish)
+* Suggested use-case alignment (residential, commercial, indoor, outdoor)
+* Visual or dimensional similarities to alternate options
+
+It is important to understand that prices shown are not fixed quotes. They reflect general estimates and are not inclusive of taxes, shipping, install costs, or region-specific markups. Comperra does not sell products, and we do not guarantee that listed prices will be honored by any vendor. Instead, this tool should be used to develop awareness of market ranges and material tiers.
+
+If a material shows a lower cost alternative, it is not a recommendation—it is an informational match based on shared attributes. All purchase decisions should be validated with the original seller, distributor, or installer.
+
+---
+
+**Buying Guides**
+
+Comperra’s Buying Guides are intended to provide educational insight into the selection, specification, and usage of common surface materials. Each guide is researched and written to help users better understand:
+
+* How materials differ by composition, appearance, and performance
+* What specs or ratings actually mean in practical terms
+* Which conditions might affect installation success
+* How to balance aesthetics with function and longevity
+* What maintenance practices are typically associated with each material type
+
+These guides are not promotional or sales-driven. They are developed using a blend of independent material testing results, contractor interviews, installer feedback, and product documentation. We avoid generalizations and do not make guarantees regarding lifespan, performance, or compatibility, as these factors are heavily dependent on environmental conditions, usage habits, and install quality.
+
+Comperra’s goal is to make technical information more readable, practical, and user-focused—so that whether you’re installing luxury vinyl in a vacation rental or choosing stone slabs for a commercial counter, you feel confident about your options and understand the trade-offs.
+
+---
+
+The remaining pages—**Installation Tips**, **Video Reviews**, **FAQ**, **About**, **Contact**, **Press**, and all **Legal pages**—will be fully expanded next.
