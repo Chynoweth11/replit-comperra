@@ -362,12 +362,12 @@ export class MemStorage implements IStorage {
         description: "240V Electric Radiant Mat",
         specifications: {
           voltage: "240V",
-          coverage: "50 SF",
+          coverageArea: "50 sq ft",
           features: ["WiFi Ready", "Programmable", "GFCI Protected"],
           power: "500W",
           compatibility: ["Tile", "Stone", "Engineered Wood"]
         },
-        dimensions: "500W",
+        dimensions: "50 sq ft",
         inStock: true,
       },
       // Additional Carpet

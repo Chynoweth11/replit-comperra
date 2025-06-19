@@ -1,0 +1,103 @@
+ 1. Fix Heating Tab: Show Coverage in Square Feet, Not Watts
+Update your heating systems table component or product schema to show Coverage Area (sq ft) instead of electrical wattage.
+
+Before (wrong):
+
+json
+Copy
+Edit
+"Coverage": "240 Watts"
+After (correct):
+
+json
+Copy
+Edit
+"Coverage": "30 sq ft"
+In your frontend table or display, update the header label:
+
+tsx
+Copy
+Edit
+<th>Coverage Area (sq ft)</th>
+And when displaying values:
+
+tsx
+Copy
+Edit
+<td>{product.coverageArea} sq ft</td>
+If you’re pulling from a scraper or form, make sure it saves the square footage rather than watts.
+
+✅ 2. Add a Top Navigation Tab for All Material Types
+Add this nav bar to the top of all relevant pages (e.g., App.tsx, Layout.tsx, or directly in Header.tsx):
+
+tsx
+Copy
+Edit
+<nav className="bg-white shadow sticky top-0 z-50">
+  <div className="max-w-7xl mx-auto px-4 py-3 flex justify-center space-x-6 text-sm font-semibold text-gray-700">
+    <a href="/category/tiles" className="hover:text-blue-600">Tiles</a>
+    <a href="/category/stone" className="hover:text-blue-600">Stone & Slabs</a>
+    <a href="/category/vinyl" className="hover:text-blue-600">Vinyl & LVT</a>
+    <a href="/category/hardwood" className="hover:text-blue-600">Hardwood</a>
+    <a href="/category/heating" className="hover:text-blue-600">Heating</a>
+    <a href="/category/carpet" className="hover:text-blue-600">Carpet</a>
+  </div>
+</nav>
+Ensure each /category/* route is configured to show the correct product listings or guides.
+
+✅ 3. Fix the Compare Button
+Problem: Selecting products and clicking "Compare" takes you elsewhere and doesn’t display comparisons.
+
+Solution:
+
+Ensure you’re saving selected items in global state (like useState, Redux, or localStorage).
+
+When clicking compare, route to a dedicated /compare page.
+
+On that page, read the selected products and generate a side-by-side comparison.
+
+In the Product Card Component:
+tsx
+Copy
+Edit
+<button onClick={() => addToCompare(product)} className="text-blue-600 font-bold">
+  Compare
+</button>
+Compare Page (/compare.tsx):
+tsx
+Copy
+Edit
+import { useEffect, useState } from 'react';
+
+export default function Compare() {
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    const selected = JSON.parse(localStorage.getItem('compareItems') || '[]');
+    setProducts(selected);
+  }, []);
+
+  if (products.length < 2) {
+    return <div className="p-8 text-gray-700">Please select at least two products to compare.</div>;
+  }
+
+  return (
+    <div className="p-8">
+      <h2 className="text-xl font-bold mb-4">Product Comparison</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {products.map((product, idx) => (
+          <div key={idx} className="border p-4 rounded-lg bg-white shadow">
+            <h3 className="text-lg font-semibold">{product.name}</h3>
+            <p>Type: {product.type}</p>
+            <p>Size: {product.size}</p>
+            <p>Finish: {product.finish}</p>
+            <p>Coverage: {product.coverageArea} sq ft</p>
+            <p>PEI: {product.pei}</p>
+            <p>Price: ${product.price}/sq ft</p>
+            {/* Add more spec rows as needed */}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
