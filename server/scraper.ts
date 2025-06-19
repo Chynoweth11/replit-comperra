@@ -213,49 +213,109 @@ export class ProductScraper {
 
       const $ = cheerio.load(response.data);
       
-      // Generic selectors that work across most sites
-      const name = $('h1').first().text().trim() || 
-                   $('.product-title, .product-name').first().text().trim() ||
-                   $('title').text().split('|')[0].trim();
+      // Enhanced generic selectors for better data extraction
+      let name = $('h1.product-title, h1.product-name, .product-title h1, h1').first().text().trim() ||
+                $('.product-title, .product-name, .pdp-title, .item-title').text().trim() ||
+                $('title').text().split('|')[0].split('-')[0].trim() ||
+                'Product Name Not Found';
       
-      const description = $('.product-description, .description, .overview').first().text().trim();
+      name = name.replace(/\s+/g, ' ').trim();
       
-      const imageUrl = $('.product-image img, .hero-image img, .gallery img').first().attr('src') || 
-                       $('img[alt*="product"], img[alt*="Product"]').first().attr('src') || '';
+      const description = $('.product-description, .description, .overview, .product-details, .about-product')
+        .first().text().trim().substring(0, 500) || '';
       
-      // Extract specifications
+      let imageUrl = $('.product-image img, .hero-image img, .gallery img, .main-image img, img[alt*="product"]')
+        .first().attr('src') || $('img').first().attr('src') || '';
+      
+      if (imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
+      if (imageUrl.startsWith('/') && !imageUrl.startsWith('//')) {
+        const baseUrl = new URL(url).origin;
+        imageUrl = baseUrl + imageUrl;
+      }
+      
+      // Enhanced specifications extraction
       const specs: any = {};
-      $('.specs tr, .specifications tr, .product-details tr').each((_, elem) => {
+      
+      // Try multiple specification table formats
+      $('.specs tr, .specifications tr, .product-details tr, .tech-specs tr, .spec-table tr').each((_, elem) => {
         const cells = $(elem).find('td');
         if (cells.length >= 2) {
           const key = $(cells[0]).text().trim();
           const value = $(cells[1]).text().trim();
-          if (key && value) {
-            specs[key.toLowerCase().replace(/\s+/g, '_')] = value;
+          if (key && value && key !== value) {
+            specs[key.toLowerCase().replace(/[\s-]+/g, '_')] = value;
           }
         }
       });
 
-      // Look for common specification patterns
-      $('.spec-item, .detail-item').each((_, elem) => {
-        const label = $(elem).find('.label, .name, .key').text().trim();
-        const value = $(elem).find('.value, .spec-value').text().trim();
-        if (label && value) {
-          specs[label.toLowerCase().replace(/\s+/g, '_')] = value;
+      // Alternative specification patterns
+      $('.spec-item, .detail-item, .specification-row').each((_, elem) => {
+        const label = $(elem).find('.label, .name, .key, .spec-name').text().trim();
+        const value = $(elem).find('.value, .spec-value, .detail-value').text().trim();
+        if (label && value && label !== value) {
+          specs[label.toLowerCase().replace(/[\s-]+/g, '_')] = value;
         }
       });
 
-      const dimensions = specs.size || specs.dimensions || $('.size, .dimension').text().trim() || '';
-      const priceText = $('.price, .cost, .msrp').text().trim();
-      const price = priceText.match(/[\d.]+/)?.[0] || '0.00';
+      // Category-specific enhancements
+      const category = this.assignCategoryFromURL(url);
+      if (category === 'tiles') {
+        // Extract tile-specific specs from page content
+        const pageText = $('body').text();
+        
+        if (!specs.pei_rating) {
+          const peiMatch = pageText.match(/PEI[\s:]?(\d+)/i);
+          if (peiMatch) specs.pei_rating = peiMatch[1];
+        }
+        
+        if (!specs.slip_rating && !specs.dcof) {
+          const dcofMatch = pageText.match(/DCOF[\s:]?([\d.]+)/i);
+          if (dcofMatch) specs.slip_rating = dcofMatch[1];
+        }
+        
+        if (!specs.water_absorption) {
+          const waterMatch = pageText.match(/water\s+absorption[\s:]*([\d.]+%?)/i);
+          if (waterMatch) specs.water_absorption = waterMatch[1];
+        }
+      }
+
+      // Enhanced dimensions extraction
+      let dimensions = $('.size, .dimensions, .product-size, .tile-size').text().trim() ||
+                      specs.size || specs.dimensions || specs.nominal_size || '';
+      
+      if (!dimensions) {
+        const pageText = $('body').text();
+        const dimMatch = pageText.match(/(\d+["']?\s*[xX×]\s*\d+["']?(?:\s*[xX×]\s*\d+["']?)?)/);
+        if (dimMatch) dimensions = dimMatch[1];
+      }
+
+      // Enhanced price extraction
+      let price = '0.00';
+      const priceSelectors = [
+        '.price, .cost, .msrp, .product-price',
+        '.price-current, .price-value, .amount',
+        '[data-price], .price-display, .retail-price'
+      ];
+      
+      for (const selector of priceSelectors) {
+        const priceElement = $(selector);
+        if (priceElement.length) {
+          const priceText = priceElement.text().trim();
+          const priceMatch = priceText.match(/\$?([\d,]+\.?\d*)/);
+          if (priceMatch) {
+            price = priceMatch[1].replace(',', '');
+            break;
+          }
+        }
+      }
 
       return {
         name,
         brand: this.extractBrandFromURL(url),
         price,
-        category: this.assignCategoryFromURL(url),
+        category,
         description,
-        imageUrl: imageUrl.startsWith('//') ? 'https:' + imageUrl : imageUrl,
+        imageUrl,
         dimensions,
         specifications: specs,
         sourceUrl: url
