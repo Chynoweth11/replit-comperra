@@ -18,13 +18,25 @@ export default function ProductCompare() {
   });
 
   useEffect(() => {
-    const stored = localStorage.getItem('compareItems');
+    const stored = localStorage.getItem('comparisonIds');
     if (stored) {
       const storedIds = JSON.parse(stored);
       const materials = allMaterials.filter(m => storedIds.includes(m.id));
       setSelectedMaterials(materials);
     }
   }, [allMaterials]);
+
+  const clearComparison = () => {
+    localStorage.removeItem('comparisonIds');
+    setSelectedMaterials([]);
+  };
+
+  const removeProduct = (id: number) => {
+    const currentIds = JSON.parse(localStorage.getItem('comparisonIds') || '[]');
+    const updatedIds = currentIds.filter((compId: number) => compId !== id);
+    localStorage.setItem('comparisonIds', JSON.stringify(updatedIds));
+    setSelectedMaterials(prev => prev.filter(product => product.id !== id));
+  };
 
   const getSpecValue = (material: Material, key: string): string => {
     const specs = material.specifications as Record<string, any>;
@@ -66,12 +78,11 @@ export default function ProductCompare() {
           <Card className="p-8 text-center">
             <h1 className="text-2xl font-bold mb-4">No Products Selected</h1>
             <p className="text-gray-600 mb-6">Please select materials to compare from the comparison table.</p>
-            <Button 
-              onClick={() => window.history.back()}
-              className="bg-royal text-white hover:bg-royal-dark"
-            >
-              Back to Comparison
-            </Button>
+            <Link href="/categories">
+              <Button className="bg-blue-600 text-white hover:bg-blue-700">
+                Browse Categories
+              </Button>
+            </Link>
           </Card>
         </div>
         <Footer />
@@ -87,9 +98,22 @@ export default function ProductCompare() {
       
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Product Comparison</h1>
-          <p className="text-gray-600">Comparing {selectedMaterials.length} products side by side</p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Product Comparison</h1>
+            <p className="text-gray-600">Comparing {selectedMaterials.length} products side by side</p>
+          </div>
+          <div className="space-x-2">
+            <Link href="/categories">
+              <Button variant="outline">Add More Products</Button>
+            </Link>
+            <Button 
+              variant="outline"
+              onClick={clearComparison}
+            >
+              Clear All
+            </Button>
+          </div>
         </div>
 
         {/* Comparison Cards */}
@@ -124,14 +148,25 @@ export default function ProductCompare() {
                   <p className="text-sm text-gray-600 mb-3">Size: {material.dimensions}</p>
                 )}
 
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full"
-                  onClick={() => window.open(`/product/${material.id}`, '_blank')}
-                >
-                  View Details
-                </Button>
+                <div className="flex gap-2">
+                  <Link href={`/product/${material.id}`}>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                    >
+                      View Details
+                    </Button>
+                  </Link>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => removeProduct(material.id)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    Remove
+                  </Button>
+                </div>
               </div>
             </Card>
           ))}

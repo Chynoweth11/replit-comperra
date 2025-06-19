@@ -81,12 +81,13 @@ export default function Comparison() {
             </div>
           </div>
 
-          {/* Filter and Comparison Content */}
-          <div className="flex flex-col lg:flex-row gap-6">
-            <FilterPanel 
-              filters={filters}
-              onFiltersChange={setFilters}
+          <div className="space-y-6">
+            <CategoryFilterPanel 
+              category={selectedCategory}
+              filters={filters} 
+              onFiltersChange={setFilters} 
             />
+            
             <ComparisonTable 
               category={selectedCategory}
               filters={filters}
