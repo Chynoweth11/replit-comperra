@@ -367,7 +367,7 @@ export default function ComparisonTable({ category, filters }: ComparisonTablePr
                   <td className="sticky-column px-6 py-4 border-r">
                     <div className="flex items-center">
                       <Checkbox
-                        checked={selectedMaterials.includes(material.id)}
+                        checked={comparisonStore.hasSelected(material.id)}
                         onCheckedChange={(checked) => {
                           console.log(`Material ${material.id} (${material.name}) ${checked ? 'selected' : 'deselected'}`);
                           toggleMaterialSelection(material.id);
