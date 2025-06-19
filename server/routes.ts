@@ -18,9 +18,10 @@ if (!airtableApiKey) {
   console.log('AIRTABLE_API_KEY configured successfully');
 }
 
+// Try different base ID formats - the user mentioned "Comperra-good"
 const base = airtableApiKey ? new Airtable({
   apiKey: airtableApiKey
-}).base('appComperra') : undefined;
+}).base('Comperra-good') : undefined;
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Materials routes
@@ -298,6 +299,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      console.log('Attempting to create lead in Airtable...');
       await base('Leads').create([
         {
           fields: {
