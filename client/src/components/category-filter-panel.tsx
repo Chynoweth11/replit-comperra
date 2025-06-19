@@ -85,7 +85,7 @@ export default function CategoryFilterPanel({ category, filters, onFiltersChange
       "Traffic Rating": ["Light", "Moderate", "Heavy", "Commercial"],
       "Carpet Style": ["Cut Pile", "Loop Pile", "Cut & Loop", "Berber"],
       "Backing": ["Action Bac", "Soft Bac", "Attached Pad", "Modular"],
-      "Install Method": ["Stretch-in", "Glue-down", "Double Stick", "Modular"],
+      "Carpet Install Method": ["Stretch-in", "Glue-down", "Double Stick", "Modular"],
       "IAQ Certification": ["Green Label Plus", "CRI Certified", "Standard"]
     };
 

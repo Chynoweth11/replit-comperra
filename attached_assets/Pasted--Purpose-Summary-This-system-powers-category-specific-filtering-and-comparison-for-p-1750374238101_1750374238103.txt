@@ -1,0 +1,105 @@
+// === Purpose Summary ===
+// This system powers category-specific filtering and comparison
+// for products like Tile, Stone, LVT, Hardwood, Carpet, and Heating.
+// It enables dynamic filters to show based on product type,
+// and allows users to compare detailed specs side-by-side.
+
+// === schema-loader.ts ===
+export const filterSchema = {
+  Tile: [
+    "Size", "Finish", "PEI Rating", "DCOF / Slip Resistance",
+    "Water Absorption", "Edge Type", "Installation Method",
+    "Surface Texture", "Color", "Country of Origin",
+    "Material Type", "Suitable Applications"
+  ],
+  Hardwood: [
+    "Wood Species", "Solid/Engineered", "Finish Type", "Texture",
+    "Plank Size", "Thickness", "Install Method", "Color/Stain",
+    "Country of Origin"
+  ],
+  Stone: [
+    "Material Type", "Slab Size", "Thickness", "Finish",
+    "Edge Options", "Surface Treatment", "Color/Pattern",
+    "Application", "Price per Sq. Ft"
+  ],
+  Carpet: [
+    "Fiber Type", "Pile Height", "Stain Resistance",
+    "Traffic Rating", "Carpet Style", "Backing", "Color",
+    "Width", "Install Method", "IAQ Certification"
+  ],
+  Heating: [
+    "Type", "Voltage", "Coverage Area (sq ft)",
+    "Programmable Features", "Sensor Type", "Max Temperature",
+    "Thermostat Included?", "Install Location"
+  ],
+  Vinyl: [
+    "Size", "Wear Layer", "Core Type", "Waterproof?",
+    "Install Type", "Texture", "Finish Type", "Material Composition",
+    "Commercial Grade?", "Country of Origin"
+  ]
+};
+
+// === FilterPanel.tsx ===
+import React from "react";
+
+interface FilterPanelProps {
+  filters: string[];
+  onFiltersChange: (filters: Record<string, string>) => void;
+}
+
+const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFiltersChange }) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
+    onFiltersChange({ [name]: e.target.value });
+  };
+
+  return (
+    <div className="bg-white rounded-md shadow p-4 w-full lg:w-1/3">
+      <h2 className="text-lg font-semibold mb-4">Filter By</h2>
+      {filters.map((filter) => (
+        <div key={filter} className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">{filter}</label>
+          <input
+            type="text"
+            className="mt-1 block w-full border border-gray-300 rounded px-3 py-2"
+            placeholder={`Enter ${filter}`}
+            onChange={(e) => handleChange(e, filter)}
+          />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default FilterPanel;
+
+// === comparison.tsx (Usage Snippet) ===
+import React from 'react';
+import { filterSchema } from '../utils/schema-loader';
+import FilterPanel from '../components/FilterPanel';
+
+const ComparisonPage = () => {
+  const [category, setCategory] = React.useState("Tile");
+  const [filters, setFilters] = React.useState<Record<string, string>>({});
+
+  const isLoading = false; // Avoid runtime error if using this conditionally
+
+  if (isLoading) {
+    return <div className="p-10">Loading comparison...</div>;
+  }
+
+  return (
+    <div className="flex flex-col lg:flex-row gap-6">
+      <FilterPanel
+        filters={filterSchema[category] || []}
+        onFiltersChange={(newFilter) => setFilters({ ...filters, ...newFilter })}
+      />
+
+      <div className="flex-grow">
+        {/* Render your comparison table here based on selected products */}
+        <div className="p-4">Product comparison table will appear here.</div>
+      </div>
+    </div>
+  );
+};
+
+export default ComparisonPage;
