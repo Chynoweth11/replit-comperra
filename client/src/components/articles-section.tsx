@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ export default function ArticlesSection() {
     queryKey: ["/api/articles"],
   });
   
-  const [, setLocation] = useLocation();
+  const [, navigate] = useLocation();
 
   const getCategoryColor = (category: string) => {
     switch (category.toLowerCase()) {
@@ -82,7 +82,7 @@ export default function ArticlesSection() {
                     onClick={() => {
                       console.log('Article clicked:', article.id);
                       console.log('Navigating to:', `/article/${article.id}`);
-                      setLocation(`/article/${article.id}`);
+                      navigate(`/article/${article.id}`);
                     }}
                   >
                     Read Full Guide →
