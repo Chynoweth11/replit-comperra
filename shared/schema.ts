@@ -19,6 +19,7 @@ export const articles = pgTable("articles", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description").notNull(),
+  content: text("content"), // Full article content
   imageUrl: text("image_url"),
   category: text("category").notNull(),
   readTime: integer("read_time").notNull(), // in minutes
