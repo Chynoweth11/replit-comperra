@@ -344,16 +344,16 @@ export default function ComparisonTable({ category, filters }: ComparisonTablePr
       </div>
 
       {/* Comparison Table */}
-      <div className="bg-white border rounded-lg overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full comparison-table">
+      <div className="bg-white border rounded-lg shadow-sm">
+        <div className="w-full">
+          <table className="w-full comparison-table min-w-full">
             <thead className="bg-gray-50">
               <tr>
                 {headers.map((header, index) => (
                   <th
                     key={header}
                     className={`px-4 py-4 text-left text-sm font-semibold text-gray-900 ${
-                      index === 0 ? "sticky-column border-r min-w-64" : "min-w-24"
+                      index === 0 ? "border-r min-w-64" : "min-w-32"
                     }`}
                   >
                     {header}
@@ -364,7 +364,7 @@ export default function ComparisonTable({ category, filters }: ComparisonTablePr
             <tbody className="bg-white divide-y divide-gray-200">
               {sortedMaterials.map((material) => (
                 <tr key={material.id} className="hover:bg-gray-50">
-                  <td className="sticky-column px-6 py-4 border-r">
+                  <td className="px-6 py-4 border-r">
                     <div className="flex items-center">
                       <Checkbox
                         checked={comparisonStore.hasSelected(material.id)}

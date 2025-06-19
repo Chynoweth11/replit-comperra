@@ -176,14 +176,14 @@ export default function CategoryFilterPanel({ category, filters, onFiltersChange
                     <label className="block text-sm font-medium mb-1">{filterName}</label>
                     {options.length > 0 ? (
                       <Select
-                        value={filters[filterKey] || ""}
-                        onValueChange={(value) => updateFilter(filterKey, value)}
+                        value={filters[filterKey] || "all"}
+                        onValueChange={(value) => updateFilter(filterKey, value === "all" ? "" : value)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder={`Any ${filterName.toLowerCase()}`} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any {filterName.toLowerCase()}</SelectItem>
+                          <SelectItem value="all">Any {filterName.toLowerCase()}</SelectItem>
                           {options.map((option) => (
                             <SelectItem key={option} value={option}>
                               {option}
