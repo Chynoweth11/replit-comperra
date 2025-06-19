@@ -1,0 +1,131 @@
+Privacy Policy
+
+Comperra is committed to protecting the privacy and data integrity of its users. This Privacy Policy outlines the types of information we collect, how it is used, the legal basis for processing, and the rights and controls available to our users. Our policy is structured to meet and exceed compliance with applicable data protection regulations, including the General Data Protection Regulation (GDPR), California Consumer Privacy Act (CCPA), and other international privacy laws where applicable.
+
+1. Information We Collect
+
+Personal Information: Name, email address, and contact details provided through forms or account sign-up.
+
+Technical Data: IP address, browser type, operating system, device identifiers.
+
+Usage Data: Pages visited, time spent on site, click patterns, and interactions with comparison tools.
+
+Cookies and Tracking Technologies: As described in our Cookies Policy.
+
+2. How We Use Information
+
+To operate and improve our platform
+
+To analyze usage trends and improve user experience
+
+To respond to user requests or inquiries
+
+To provide relevant content and recommendations
+
+To ensure platform integrity and security
+
+3. Data Sharing
+We do not sell personal data. We may share limited anonymized or aggregated data with service providers strictly for operational needs such as analytics, hosting, and performance monitoring.
+
+4. User Rights
+Users may request access, correction, deletion, or export of their personal data. Requests can be submitted via our contact page. Where required by law, we honor opt-out requests from data collection.
+
+5. Data Security
+Comperra uses secure servers, encrypted connections, and access controls to safeguard user data.
+
+6. Data Retention
+Personal data is retained only as long as necessary to fulfill the purpose it was collected for. Anonymized data may be retained for analytics.
+
+7. Contact For questions related to this policy, email support@comperra.com
+
+Terms of Service
+
+These Terms of Service (“Terms”) govern your access to and use of the Comperra platform and associated services. By accessing or using the site, you agree to be bound by these Terms. If you do not agree, you should not use Comperra.
+
+1. Acceptable Use
+You agree not to:
+
+Scrape, replicate, or redistribute data for commercial purposes
+
+Introduce malicious software or attempt unauthorized access
+
+Use Comperra to mislead, impersonate, or harass others
+
+2. Intellectual Property
+All content, comparison tools, and software provided through Comperra are the property of Comperra or its licensors and are protected by copyright, trademark, and other applicable laws. You may not reuse or modify platform components without written permission.
+
+3. User Content
+Users who submit product data, reviews, or other content grant Comperra a non-exclusive, royalty-free license to use, display, and distribute the content within the platform for informational purposes.
+
+4. Disclaimers
+
+The platform is provided “as is” without warranties of any kind
+
+Comperra does not guarantee the accuracy of third-party data
+
+Any reliance on material information is at the user’s discretion
+
+5. Limitation of Liability
+Comperra shall not be liable for indirect, incidental, or consequential damages resulting from use of the site, including reliance on published product data.
+
+6. Governing Law
+These Terms are governed by and construed in accordance with the laws of the State of Arizona, United States.
+
+Data Usage
+
+Comperra is committed to transparency regarding how product and performance data is collected, verified, and used. Our Data Usage Policy outlines where our data comes from, how we process it, and what responsibilities we maintain as a platform that organizes product information.
+
+1. Data Sources
+
+Manufacturer technical sheets and catalogs
+
+Publicly available product listings
+
+Direct vendor submissions
+
+User-generated or uploaded specifications
+
+AI-assisted scraping of material data
+
+2. Data Structure and Use
+All data is standardized to allow fair comparisons. Our system parses product data fields such as dimensions, slip resistance, PEI rating, finish type, water absorption, install method, price per square foot, and more.
+
+3. Updates and Corrections
+We actively monitor and revise product listings when corrections are submitted or discrepancies are found. Products marked “Verified” have been manually reviewed for formatting and completeness.
+
+4. Responsibility and Limitations
+While we strive to provide accurate data, materials may vary by batch, location, or distribution channel. Final spec verification is the responsibility of the purchaser or installer. Comperra does not assume liability for product misrepresentation by third parties.
+
+Cookies
+
+Comperra uses cookies and similar tracking technologies to ensure our platform functions effectively and to enhance user experience. Our cookie policy is compliant with global data protection regulations and offers users control over their preferences.
+
+1. What Are Cookies?
+Cookies are small text files placed on your device that allow us to remember user behavior, preferences, and login sessions. We use both session-based and persistent cookies.
+
+2. Why We Use Cookies
+
+To remember user settings and filter preferences
+
+To measure usage patterns for site improvements
+
+To track performance of comparison features and tools
+
+To facilitate login sessions if accounts are in use
+
+3. Types of Cookies Used
+
+Essential Cookies: Required for site functionality
+
+Analytics Cookies: Help track usage trends (e.g., Google Analytics)
+
+Preference Cookies: Store region, language, and view settings
+
+4. Cookie Controls
+You can manage or block cookies using browser settings. Additionally, Comperra allows users to accept or decline cookies through a visible banner on first visit.
+
+5. Third-Party Services
+Some cookies originate from third-party platforms embedded on Comperra (e.g., YouTube, analytics). We do not control their scope but do provide disclosure.
+
+Full cookie controls and categories can be reviewed and managed from the Cookies Settings page on the site.
+

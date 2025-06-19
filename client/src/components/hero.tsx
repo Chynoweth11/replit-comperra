@@ -2,9 +2,10 @@ import { Button } from "@/components/ui/button";
 
 interface HeroProps {
   onBrowseClick: () => void;
+  onStartComparing: () => void;
 }
 
-export default function Hero({ onBrowseClick }: HeroProps) {
+export default function Hero({ onBrowseClick, onStartComparing }: HeroProps) {
   const scrollToComparison = () => {
     const comparisonSection = document.getElementById("comparison-section");
     if (comparisonSection) {

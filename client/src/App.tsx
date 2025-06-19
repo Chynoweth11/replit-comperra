@@ -21,6 +21,10 @@ import FAQ from "@/pages/faq";
 import About from "@/pages/about";
 import Contact from "@/pages/contact";
 import Press from "@/pages/press";
+import Privacy from "@/pages/privacy";
+import Terms from "@/pages/terms";
+import DataUsage from "@/pages/data-usage";
+import Cookies from "@/pages/cookies";
 
 function Router() {
   return (
@@ -42,6 +46,10 @@ function Router() {
         <Route path="/about" component={About} />
         <Route path="/contact" component={Contact} />
         <Route path="/press" component={Press} />
+        <Route path="/privacy" component={Privacy} />
+        <Route path="/terms" component={Terms} />
+        <Route path="/data-usage" component={DataUsage} />
+        <Route path="/cookies" component={Cookies} />
         <Route component={NotFound} />
       </Switch>
     </>
