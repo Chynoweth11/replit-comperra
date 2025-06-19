@@ -27,6 +27,10 @@ export default function ProductCompare() {
   });
 
   const selectedMaterials = materials.filter(m => materialIds.includes(m.id));
+  
+  console.log('ProductCompare - materialIds:', materialIds);
+  console.log('ProductCompare - all materials:', materials.length);
+  console.log('ProductCompare - selectedMaterials:', selectedMaterials.length);
 
   const getSpecValue = (material: Material, key: string): string => {
     const specs = material.specifications as Record<string, any>;

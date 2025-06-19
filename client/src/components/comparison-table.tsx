@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import LeadCaptureModal from "./lead-capture-modal";
+import { comparisonStore } from "@/lib/comparison-store";
 import type { Material } from "@shared/schema";
 
 interface ComparisonTableProps {
@@ -33,6 +34,18 @@ export default function ComparisonTable({ category, filters }: ComparisonTablePr
     specifications: true
   });
   const [, navigate] = useLocation();
+
+  // Subscribe to comparison store
+  useEffect(() => {
+    const unsubscribe = comparisonStore.subscribe((ids) => {
+      setSelectedMaterials(ids);
+    });
+    
+    // Initialize with current state
+    setSelectedMaterials(comparisonStore.getSelected());
+    
+    return unsubscribe;
+  }, []);
 
   const handleGetPricing = (productName: string) => {
     setSelectedProduct(productName);
@@ -229,11 +242,8 @@ export default function ComparisonTable({ category, filters }: ComparisonTablePr
   };
 
   const toggleMaterialSelection = (materialId: number) => {
-    setSelectedMaterials(prev => 
-      prev.includes(materialId) 
-        ? prev.filter(id => id !== materialId)
-        : [...prev, materialId]
-    );
+    console.log('Toggling material selection:', materialId);
+    comparisonStore.toggle(materialId);
   };
 
   const headers = getHeaders(category);
@@ -358,7 +368,10 @@ export default function ComparisonTable({ category, filters }: ComparisonTablePr
                     <div className="flex items-center">
                       <Checkbox
                         checked={selectedMaterials.includes(material.id)}
-                        onCheckedChange={() => toggleMaterialSelection(material.id)}
+                        onCheckedChange={(checked) => {
+                          console.log(`Material ${material.id} (${material.name}) ${checked ? 'selected' : 'deselected'}`);
+                          toggleMaterialSelection(material.id);
+                        }}
                         className="mr-3"
                       />
                       {material.imageUrl && (
@@ -464,9 +477,10 @@ export default function ComparisonTable({ category, filters }: ComparisonTablePr
           <Button 
             variant="outline" 
             className="border-royal text-royal hover:bg-royal hover:text-white"
-            disabled={selectedMaterials.length < 2}
+            disabled={selectedMaterials.length < 1}
             onClick={() => {
-              if (selectedMaterials.length >= 2) {
+              console.log('Compare button clicked with selections:', selectedMaterials);
+              if (selectedMaterials.length >= 1) {
                 navigate(`/compare?ids=${selectedMaterials.join(',')}`);
               }
             }}
@@ -510,7 +524,7 @@ export default function ComparisonTable({ category, filters }: ComparisonTablePr
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setSelectedMaterials([])}
+              onClick={() => comparisonStore.clear()}
               className="text-gray-500 hover:text-gray-700"
             >
               Clear All
