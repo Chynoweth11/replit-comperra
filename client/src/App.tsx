@@ -25,6 +25,7 @@ import Privacy from "@/pages/privacy";
 import Terms from "@/pages/terms";
 import DataUsage from "@/pages/data-usage";
 import Cookies from "@/pages/cookies";
+import Vendors from "@/pages/vendors";
 
 function Router() {
   return (
@@ -38,6 +39,7 @@ function Router() {
         <Route path="/admin/import" component={DataImport} />
         <Route path="/categories" component={Categories} />
         <Route path="/brands" component={Brands} />
+        <Route path="/vendors" component={Vendors} />
         <Route path="/specs" component={Specs} />
         <Route path="/pricing" component={Pricing} />
         <Route path="/buying-guides" component={BuyingGuides} />

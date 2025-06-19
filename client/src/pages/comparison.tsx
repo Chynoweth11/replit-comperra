@@ -2,8 +2,10 @@ import { useParams } from "wouter";
 import { useState, useEffect } from "react";
 import Header from "@/components/header";
 import ComparisonTable from "@/components/comparison-table";
-import FilterPanel from "@/components/filter-panel";
+import CategoryFilterPanel from "@/components/category-filter-panel";
 import Footer from "@/components/footer";
+import SEOHead from "@/components/seo-head";
+import { getCategoryDisplayName } from "@/lib/category-schemas";
 
 export default function Comparison() {
   const { category } = useParams<{ category?: string }>();

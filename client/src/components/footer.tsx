@@ -26,6 +26,7 @@ export default function Footer() {
               <li><button onClick={() => navigate("/compare")} className="text-gray-300 hover:text-white text-left">Compare Materials</button></li>
               <li><button onClick={() => navigate("/categories")} className="text-gray-300 hover:text-white text-left">All Categories</button></li>
               <li><button onClick={() => navigate("/brands")} className="text-gray-300 hover:text-white text-left">Brand Directory</button></li>
+              <li><button onClick={() => navigate("/vendors")} className="text-gray-300 hover:text-white text-left">Vendor Directory</button></li>
               <li><button onClick={() => navigate("/specs")} className="text-gray-300 hover:text-white text-left">Specification Search</button></li>
               <li><button onClick={() => navigate("/pricing")} className="text-gray-300 hover:text-white text-left">Price Comparison</button></li>
             </ul>
