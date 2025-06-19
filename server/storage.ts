@@ -556,7 +556,8 @@ Top Picks:
       const newArticle: Article = { 
         ...article, 
         id: this.currentArticleId++,
-        imageUrl: article.imageUrl || null
+        imageUrl: article.imageUrl || null,
+        content: article.content ?? null
       };
       this.articles.set(newArticle.id, newArticle);
     });

@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,9 +74,11 @@ export default function ArticlesSection() {
                 <p className="text-gray-600 mb-4 leading-relaxed">{article.description}</p>
                 
                 <div className="flex items-center justify-between">
-                  <Button variant="ghost" className="text-royal font-semibold hover:text-royal-dark p-0">
-                    Read Full Guide →
-                  </Button>
+                  <Link href={`/article/${article.id}`}>
+                    <Button variant="ghost" className="text-royal font-semibold hover:text-royal-dark p-0">
+                      Read Full Guide →
+                    </Button>
+                  </Link>
                   <div className="flex items-center text-sm text-gray-500">
                     <i className="fas fa-clock mr-1"></i>
                     {article.readTime} min read
