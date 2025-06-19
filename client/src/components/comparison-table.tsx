@@ -4,6 +4,10 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import LeadCaptureModal from "./lead-capture-modal";
 import type { Material } from "@shared/schema";
 
 interface ComparisonTableProps {
@@ -19,6 +23,15 @@ interface ComparisonTableProps {
 export default function ComparisonTable({ category, filters }: ComparisonTableProps) {
   const [sortBy, setSortBy] = useState("price-low");
   const [selectedMaterials, setSelectedMaterials] = useState<number[]>([]);
+  const [leadModalOpen, setLeadModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<string>("");
+  const [pasteUrl, setPasteUrl] = useState("");
+  const [visibleSpecs, setVisibleSpecs] = useState({
+    price: true,
+    brand: true,
+    dimensions: true,
+    specifications: true
+  });
   const [, navigate] = useLocation();
 
   const { data: materials = [], isLoading } = useQuery<Material[]>({

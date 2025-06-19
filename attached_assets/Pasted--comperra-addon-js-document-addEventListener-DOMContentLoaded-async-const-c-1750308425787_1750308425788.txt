@@ -1,0 +1,114 @@
+// === comperra-addon.js ===
+document.addEventListener("DOMContentLoaded", async () => {
+  const compareState = new Set();
+
+  // Load existing tile product specs from local JSON
+  const tileData = await fetch('/tile-products.json').then(res => res.json());
+
+  // 1. Add "+ Compare" Checkboxes
+  document.querySelectorAll("tr").forEach((row) => {
+    const nameCell = row.querySelector("td");
+    if (nameCell && !row.classList.contains("header")) {
+      const productName = nameCell.textContent.trim();
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "compare-checkbox mx-2";
+
+      checkbox.addEventListener("change", (e) => {
+        if (e.target.checked && tileData[productName]) {
+          compareState.add({ id: productName, ...tileData[productName] });
+        } else {
+          [...compareState].forEach(item => {
+            if (item.id === productName) compareState.delete(item);
+          });
+        }
+        updateCompareCount();
+      });
+      nameCell.prepend(checkbox);
+    }
+  });
+
+  function updateCompareCount() {
+    const btn = document.getElementById("compare-counter");
+    if (btn) btn.innerText = `Compare Selected (${compareState.size})`;
+  }
+
+  // 2. Floating Comparison Bar
+  const compareBar = document.createElement("div");
+  compareBar.className = "fixed bottom-0 w-full bg-white shadow p-4 flex justify-between items-center z-50 border-t";
+  compareBar.innerHTML = `
+    <div class="flex gap-4 items-center">
+      <button id="compare-counter" class="text-blue-600 font-semibold">Compare Selected (0)</button>
+      <button id="show-compare" class="bg-blue-600 text-white px-4 py-2 rounded">Compare Now</button>
+    </div>
+    <div class="flex gap-4 items-center">
+      <input id="paste-url" placeholder="Paste product URL..." class="border px-3 py-1 rounded w-72" />
+      <button id="scrape-url" class="bg-gray-200 px-3 py-1 rounded">Scrape</button>
+      <input type="file" id="upload-csv" accept=".csv" class="hidden" />
+      <label for="upload-csv" class="cursor-pointer bg-gray-200 px-3 py-1 rounded">Upload CSV</label>
+    </div>
+  `;
+  document.body.appendChild(compareBar);
+
+  // 3. Comparison Modal
+  const modal = document.createElement("div");
+  modal.id = "comparison-modal";
+  modal.className = "fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden";
+  modal.innerHTML = `
+    <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 max-w-4xl">
+      <h2 class="text-xl font-bold mb-4">Comparison Table</h2>
+      <div id="comparison-content" class="overflow-x-auto"></div>
+      <div class="mt-4 text-right">
+        <button class="bg-gray-300 px-3 py-1 rounded mr-2" onclick="document.getElementById('comparison-modal').classList.add('hidden')">Close</button>
+        <button class="bg-green-500 text-white px-3 py-1 rounded">Save as PDF</button>
+        <button class="bg-blue-500 text-white px-3 py-1 rounded">Share Link</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  // 4. Show Modal with Comparison Table
+  document.getElementById("show-compare").addEventListener("click", () => {
+    const rows = Array.from(compareState).map(tile => `
+      <tr>
+        <td class="border px-4 py-2">${tile.id}</td>
+        <td class="border px-4 py-2">
+          Brand: ${tile.brand}<br>
+          Price: ${tile.price}<br>
+          Material: ${tile.material}<br>
+          PEI: ${tile.pei}<br>
+          DCOF: ${tile.dcof}<br>
+          Application: ${tile.application}
+        </td>
+      </tr>
+    `).join("");
+
+    document.getElementById("comparison-content").innerHTML = `
+      <table class="table-auto border-collapse w-full">
+        <thead><tr><th class="border px-4 py-2">Product</th><th class="border px-4 py-2">Specs</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+    modal.classList.remove("hidden");
+  });
+
+  // 5. Breadcrumbs
+  const path = window.location.pathname.split("/").filter(p => p);
+  if (path.length > 0) {
+    const crumbs = document.createElement("div");
+    crumbs.className = "text-sm text-gray-600 px-4 py-2";
+    crumbs.innerHTML = `<span>Home</span> / ${path.map(p => `<span class="capitalize">${p}</span>`).join(" / ")}`;
+    document.body.insertBefore(crumbs, document.body.firstChild);
+  }
+
+  // 6. Spec Toggle Controls
+  const specToggle = document.createElement("div");
+  specToggle.className = "text-sm p-2 mt-2 flex gap-4";
+  specToggle.innerHTML = `
+    <label><input type="checkbox" checked /> PEI</label>
+    <label><input type="checkbox" checked /> DCOF</label>
+    <label><input type="checkbox" checked /> Price</label>
+  `;
+  const filterArea = document.querySelector(".filters");
+  if (filterArea) filterArea.appendChild(specToggle);
+});

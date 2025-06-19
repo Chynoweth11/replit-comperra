@@ -5,9 +5,15 @@ import { productScraper } from "./scraper";
 import { z } from "zod";
 import multer from "multer";
 import csvParser from "csv-parser";
+import Airtable from "airtable";
 
 // Configure multer for file uploads
 const upload = multer({ dest: '/tmp/uploads/' });
+
+// Configure Airtable
+const base = new Airtable({
+  apiKey: 'patllYoX1mQREZCNE.1a1eec0b0a0de4e4cf92f66079dfbc7a53ea74b4fdd366f1b24d1604026c17e2'
+}).base('Comperra-good');
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Materials routes
@@ -266,6 +272,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Bulk scraping error:", error);
       res.status(500).json({ error: "Failed to process bulk scraping" });
+    }
+  });
+
+  // Lead capture endpoint
+  app.post("/api/save-lead", async (req, res) => {
+    try {
+      const { name, email, zip, product } = req.body;
+      
+      if (!name || !email) {
+        return res.status(400).json({ success: false, error: "Name and email are required" });
+      }
+
+      await base('Leads').create([
+        {
+          fields: {
+            Name: name,
+            Email: email,
+            Zip: zip || '',
+            Product: product || '',
+            Status: 'New',
+            Timestamp: new Date().toISOString(),
+          },
+        },
+      ]);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Airtable Error:', error);
+      res.status(500).json({ success: false, error: 'Failed to save lead' });
     }
   });
 
