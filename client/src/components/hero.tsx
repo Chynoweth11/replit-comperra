@@ -6,17 +6,9 @@ interface HeroProps {
 }
 
 export default function Hero({ onBrowseClick, onStartComparing }: HeroProps) {
-  const scrollToComparison = () => {
-    const comparisonSection = document.getElementById("comparison-section");
-    if (comparisonSection) {
-      comparisonSection.scrollIntoView({ behavior: "smooth" });
-    } else {
-      onBrowseClick();
-    }
-  };
 
   return (
-    <section className="bg-gradient-to-br from-royal-light to-white py-16 text-center">
+    <section className="bg-gradient-to-br from-blue-50 to-white py-16 text-center">
       <div className="max-w-4xl mx-auto px-4">
         <h2 className="text-5xl font-bold text-gray-900 mb-4">
           Smart Material Comparisons Start Here
@@ -28,8 +20,8 @@ export default function Hero({ onBrowseClick, onStartComparing }: HeroProps) {
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Button 
-            onClick={scrollToComparison}
-            className="bg-royal text-white hover:bg-royal-dark px-8 py-4 text-lg font-semibold shadow-lg"
+            onClick={onStartComparing}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg font-semibold shadow-lg"
             size="lg"
           >
             Start Comparing
@@ -37,7 +29,7 @@ export default function Hero({ onBrowseClick, onStartComparing }: HeroProps) {
           <Button 
             variant="outline"
             onClick={onBrowseClick}
-            className="border-2 border-royal text-royal hover:bg-royal hover:text-white px-8 py-4 text-lg font-semibold"
+            className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-8 py-4 text-lg font-semibold"
             size="lg"
           >
             Browse Categories
@@ -47,16 +39,16 @@ export default function Hero({ onBrowseClick, onStartComparing }: HeroProps) {
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-8 mt-12 max-w-2xl mx-auto">
           <div className="text-center">
-            <div className="text-3xl font-bold text-royal">25,000+</div>
+            <div className="text-3xl font-bold text-blue-600">1,000+</div>
             <div className="text-sm text-gray-600">Products</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-royal">500+</div>
+            <div className="text-3xl font-bold text-blue-600">50+</div>
             <div className="text-sm text-gray-600">Brands</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-royal">50+</div>
-            <div className="text-sm text-gray-600">Specifications</div>
+            <div className="text-3xl font-bold text-blue-600">6</div>
+            <div className="text-sm text-gray-600">Categories</div>
           </div>
         </div>
       </div>

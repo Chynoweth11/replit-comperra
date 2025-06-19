@@ -12,10 +12,18 @@ export default function Home() {
     navigate(`/comparison/${category}`);
   };
 
+  const handleStartComparing = () => {
+    navigate("/comparison/tiles");
+  };
+
+  const handleBrowseCategories = () => {
+    navigate("/categories");
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <Hero onBrowseClick={() => navigate("/comparison")} />
+      <Hero onBrowseClick={handleBrowseCategories} onStartComparing={handleStartComparing} />
       <CategoryGrid onCategorySelect={handleCategorySelect} />
       <ArticlesSection />
       <Footer />
