@@ -50,7 +50,7 @@ function Router() {
         <Route path="/terms" component={Terms} />
         <Route path="/data-usage" component={DataUsage} />
         <Route path="/cookies" component={Cookies} />
-        <Route component={NotFound} />
+        <Route path="*" component={NotFound} />
       </Switch>
     </>
   );

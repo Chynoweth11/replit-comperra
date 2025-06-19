@@ -1,9 +1,15 @@
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import SEOHead from "@/components/seo-head";
 
 export default function Categories() {
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOHead 
+        title="Building Material Categories - Comperra"
+        description="Explore all building material categories including tiles, stone slabs, LVT, hardwood, heating systems, and carpet with detailed specifications and comparisons."
+        keywords="material categories, tiles, stone slabs, LVT, hardwood flooring, radiant heating, carpet, building materials"
+      />
       <Header />
       <main className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">All Categories</h1>
