@@ -75,7 +75,14 @@ export default function ArticlesSection() {
                 
                 <div className="flex items-center justify-between">
                   <Link href={`/article/${article.id}`}>
-                    <Button variant="ghost" className="text-royal font-semibold hover:text-royal-dark p-0">
+                    <Button 
+                      variant="ghost" 
+                      className="text-royal font-semibold hover:text-royal-dark p-0"
+                      onClick={(e) => {
+                        console.log('Article clicked:', article.id);
+                        console.log('Navigating to:', `/article/${article.id}`);
+                      }}
+                    >
                       Read Full Guide →
                     </Button>
                   </Link>
