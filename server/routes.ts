@@ -18,10 +18,14 @@ if (!airtableApiKey) {
   console.log('AIRTABLE_API_KEY configured successfully');
 }
 
-// Try different base ID formats - the user mentioned "Comperra-good"
+// The user mentioned "Comperra-good" - let's try common Airtable base ID formats
+// Base IDs usually start with "app" followed by alphanumeric characters
+const baseId = 'appComperragood'; // Try without hyphens first
 const base = airtableApiKey ? new Airtable({
   apiKey: airtableApiKey
-}).base('Comperra-good') : undefined;
+}).base(baseId) : undefined;
+
+console.log('Using Airtable base ID:', baseId);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Materials routes
