@@ -471,6 +471,46 @@ export default function ComparisonTable({ category, filters }: ComparisonTablePr
           </Button>
         </div>
       </div>
+
+      {/* Lead Capture Modal */}
+      <LeadCaptureModal 
+        isOpen={leadModalOpen}
+        onClose={() => setLeadModalOpen(false)}
+        productName={selectedProduct}
+      />
+
+      {/* Floating Comparison Bar */}
+      {selectedMaterials.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t p-4 z-50">
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
+            <div className="flex gap-4 items-center">
+              <span className="text-gray-600">
+                {selectedMaterials.length} products selected
+              </span>
+              <Button 
+                variant="outline" 
+                className="border-royal text-royal hover:bg-royal hover:text-white"
+                disabled={selectedMaterials.length < 2}
+                onClick={() => {
+                  if (selectedMaterials.length >= 2) {
+                    navigate(`/compare?ids=${selectedMaterials.join(',')}`);
+                  }
+                }}
+              >
+                Compare Selected ({selectedMaterials.length})
+              </Button>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedMaterials([])}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              Clear All
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
