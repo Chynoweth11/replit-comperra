@@ -42,21 +42,51 @@ export default function CategoryFilterPanel({ category, filters, onFiltersChange
   };
 
   const getFilterOptions = (filterName: string): string[] => {
-    // Return predefined options based on filter type
+    // Return predefined options based on filter type from schema
     const filterOptionsMap: Record<string, string[]> = {
-      "Size": ["3x6", "4x8", "6x24", "12x12", "12x24", "18x18", "24x24"],
-      "Finish Type": ["Matte", "Glossy", "Polished", "Honed", "Textured"],
+      // Tiles
+      "Size": ["3x6", "4x8", "6x24", "12x12", "12x24", "18x18", "24x24", "36x36"],
+      "Finish": ["Matte", "Glossy", "Polished", "Honed", "Textured", "Lappato"],
       "PEI Rating": ["1", "2", "3", "4", "5"],
+      "DCOF / Slip Resistance": ["0.42+", "0.50+", "0.60+"],
+      "Water Absorption": ["<0.5%", "0.5-3%", "3-7%", "7-20%"],
       "Edge Type": ["Rectified", "Pressed", "Beveled", "Tumbled"],
-      "Material Type": ["Natural Stone", "Engineered Quartz", "Natural Marble", "Granite"],
+      "Installation Method": ["Thinset", "Large Format", "Epoxy", "Outdoor"],
+      "Material Type": ["Ceramic", "Porcelain", "Natural Stone", "Glass"],
+      
+      // Stone & Slabs
+      "Slab Size": ["126x63", "118x55", "120x60", "144x84"],
       "Thickness": ["2cm", "3cm", "1.2cm", "2.5cm"],
-      "Core Type": ["SPC", "WPC", "Rigid Core"],
-      "Install Method": ["Click-lock", "Glue-down", "Nail-down", "Float"],
-      "Wood Species": ["Oak", "Maple", "Cherry", "Walnut", "Pine", "Hickory"],
-      "System Type": ["Electric Mat", "Loose Cable", "In-slab Cable"],
+      "Edge Options": ["Straight", "Beveled", "Bullnose", "Ogee", "Waterfall"],
+      "Surface Treatment": ["Polished", "Honed", "Leathered", "Brushed"],
+      
+      // Vinyl & LVT
+      "Wear Layer": ["6 mil", "8 mil", "12 mil", "20 mil", "22 mil"],
+      "Core Type": ["SPC", "WPC", "Rigid Core", "Flexible Core"],
+      "Waterproof?": ["Yes", "No", "Water Resistant"],
+      "Install Type": ["Click-lock", "Glue-down", "Loose Lay"],
+      "Commercial Grade?": ["Yes", "No", "Light Commercial"],
+      
+      // Hardwood
+      "Wood Species": ["Oak", "Maple", "Cherry", "Walnut", "Pine", "Hickory", "Bamboo"],
+      "Solid/Engineered": ["Solid", "Engineered", "Hybrid"],
+      "Finish Type": ["Pre-finished", "Unfinished", "Hand-scraped", "Wire-brushed"],
+      "Install Method": ["Nail-down", "Glue-down", "Float", "Staple"],
+      
+      // Heating
+      "Type": ["Electric Mat", "Loose Cable", "In-slab Cable", "Hydronic"],
       "Voltage": ["120V", "240V", "208V"],
-      "Fiber Type": ["Nylon", "Polyester", "Wool", "Solution-dyed Nylon"],
-      "Construction Method": ["Loop Pile", "Cut Pile", "Cut & Loop", "Textured Loop"]
+      "Programmable Features": ["Basic", "WiFi", "Smart Home", "App Control"],
+      "Sensor Type": ["Floor", "Air", "Dual"],
+      "Thermostat Included?": ["Yes", "No", "Optional"],
+      
+      // Carpet
+      "Fiber Type": ["Nylon", "Polyester", "Wool", "Solution-dyed Nylon", "Triexta"],
+      "Traffic Rating": ["Light", "Moderate", "Heavy", "Commercial"],
+      "Carpet Style": ["Cut Pile", "Loop Pile", "Cut & Loop", "Berber"],
+      "Backing": ["Action Bac", "Soft Bac", "Attached Pad", "Modular"],
+      "Install Method": ["Stretch-in", "Glue-down", "Double Stick", "Modular"],
+      "IAQ Certification": ["Green Label Plus", "CRI Certified", "Standard"]
     };
 
     return filterOptionsMap[filterName] || [];

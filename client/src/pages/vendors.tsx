@@ -35,22 +35,23 @@ export default function Vendors() {
     return matchesSearch && matchesType;
   });
 
-  const getVendorType = (description: string = ""): string => {
-    const desc = description.toLowerCase();
+  const getVendorType = (description: string | null = ""): string => {
+    const desc = (description || "").toLowerCase();
     if (desc.includes("manufactur")) return "Manufacturer";
     if (desc.includes("distribut")) return "Distributor"; 
     if (desc.includes("supplier")) return "Supplier";
     return "Vendor";
   };
 
-  const getVendorCategories = (description: string = ""): string[] => {
+  const getVendorCategories = (description: string | null = ""): string[] => {
+    const desc = description || "";
     const categories = [];
-    if (description.includes("tile") || description.includes("ceramic") || description.includes("porcelain")) categories.push("Tiles");
-    if (description.includes("stone") || description.includes("granite") || description.includes("marble") || description.includes("quartz")) categories.push("Stone & Slabs");
-    if (description.includes("vinyl") || description.includes("LVT") || description.includes("luxury vinyl")) categories.push("Vinyl & LVT");
-    if (description.includes("hardwood") || description.includes("wood") || description.includes("flooring")) categories.push("Hardwood");
-    if (description.includes("heating") || description.includes("radiant") || description.includes("floor warming")) categories.push("Heating");
-    if (description.includes("carpet") || description.includes("rug")) categories.push("Carpet");
+    if (desc.includes("tile") || desc.includes("ceramic") || desc.includes("porcelain")) categories.push("Tiles");
+    if (desc.includes("stone") || desc.includes("granite") || desc.includes("marble") || desc.includes("quartz")) categories.push("Stone & Slabs");
+    if (desc.includes("vinyl") || desc.includes("LVT") || desc.includes("luxury vinyl")) categories.push("Vinyl & LVT");
+    if (desc.includes("hardwood") || desc.includes("wood") || desc.includes("flooring")) categories.push("Hardwood");
+    if (desc.includes("heating") || desc.includes("radiant") || desc.includes("floor warming")) categories.push("Heating");
+    if (desc.includes("carpet") || desc.includes("rug")) categories.push("Carpet");
     return categories.length > 0 ? categories : ["General"];
   };
 

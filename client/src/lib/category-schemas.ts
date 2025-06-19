@@ -11,15 +11,17 @@ export const CATEGORY_SCHEMAS: Record<string, CategorySchema> = {
     description: "Ceramic, porcelain, and natural stone tiles for floors and walls",
     filters: [
       "Size",
-      "Finish Type", 
+      "Finish", 
       "PEI Rating",
-      "Slip Resistance (DCOF)",
+      "DCOF / Slip Resistance",
       "Water Absorption",
       "Edge Type",
-      "Thickness",
-      "Application",
-      "Color Variation",
-      "Frost Resistance"
+      "Installation Method",
+      "Surface Texture",
+      "Color",
+      "Country of Origin",
+      "Material Type",
+      "Suitable Applications"
     ],
     specs: [
       "peiRating",
@@ -27,11 +29,12 @@ export const CATEGORY_SCHEMAS: Record<string, CategorySchema> = {
       "waterAbsorption",
       "finishType",
       "edgeType",
-      "thickness",
-      "frostResistant",
-      "colorVariation",
-      "breakingStrength",
-      "thermalShock"
+      "installationMethod",
+      "surfaceTexture",
+      "color",
+      "countryOfOrigin",
+      "materialType",
+      "suitableApplications"
     ]
   },
   slabs: {
@@ -39,55 +42,53 @@ export const CATEGORY_SCHEMAS: Record<string, CategorySchema> = {
     description: "Natural and engineered stone slabs for countertops and surfaces",
     filters: [
       "Material Type",
-      "Thickness", 
-      "Edge Options",
+      "Slab Size", 
+      "Thickness",
       "Finish",
-      "Color Pattern",
-      "Slab Size",
-      "Hardness Rating",
-      "Absorption Rate",
-      "Heat Resistance",
-      "Stain Resistance"
+      "Edge Options",
+      "Surface Treatment",
+      "Color/Pattern",
+      "Application",
+      "Price per Sq. Ft"
     ],
     specs: [
       "materialType",
-      "thickness",
-      "edgeOptions", 
-      "finishType",
-      "colorPattern",
       "slabSize",
-      "hardnessRating",
-      "absorptionRate",
-      "heatResistance",
-      "stainResistance"
+      "thickness", 
+      "finish",
+      "edgeOptions",
+      "surfaceTreatment",
+      "colorPattern",
+      "application",
+      "pricePerSqFt"
     ]
   },
   lvt: {
     displayName: "Vinyl & LVT",
     description: "Luxury vinyl tile and plank flooring with advanced core construction",
     filters: [
-      "Plank/Tile Size",
-      "Wear Layer Thickness",
+      "Size",
+      "Wear Layer",
       "Core Type",
-      "Waterproof Rating",
-      "Install Method",
+      "Waterproof?",
+      "Install Type",
       "Texture",
-      "Acoustic Rating",
-      "Total Thickness",
-      "Warranty Period",
-      "Commercial Rating"
+      "Finish Type",
+      "Material Composition",
+      "Commercial Grade?",
+      "Country of Origin"
     ],
     specs: [
+      "size",
       "wearLayer",
       "coreType",
       "waterproof",
-      "installMethod",
+      "installType",
       "texture",
-      "acousticRating", 
-      "totalThickness",
-      "warranty",
-      "commercialRating",
-      "indentationResistance"
+      "finishType", 
+      "materialComposition",
+      "commercialGrade",
+      "countryOfOrigin"
     ]
   },
   hardwood: {
@@ -95,55 +96,49 @@ export const CATEGORY_SCHEMAS: Record<string, CategorySchema> = {
     description: "Solid and engineered hardwood flooring in various species and finishes",
     filters: [
       "Wood Species",
-      "Board Width",
-      "Board Length", 
-      "Finish Type",
-      "Janka Hardness",
-      "Grade",
-      "Installation Type",
+      "Solid/Engineered",
+      "Finish Type", 
+      "Texture",
+      "Plank Size",
       "Thickness",
-      "Construction",
-      "Moisture Content"
+      "Install Method",
+      "Color/Stain",
+      "Country of Origin"
     ],
     specs: [
-      "species",
-      "boardWidth",
-      "boardLength",
+      "woodSpecies",
+      "solidEngineered",
       "finishType", 
-      "jankaHardness",
-      "grade",
-      "installationType",
+      "texture",
+      "plankSize",
       "thickness",
-      "construction",
-      "moistureContent"
+      "installMethod",
+      "colorStain",
+      "countryOfOrigin"
     ]
   },
   heat: {
     displayName: "Heating Systems",
     description: "Electric radiant floor heating mats and cable systems",
     filters: [
-      "System Type",
+      "Type",
       "Voltage",
       "Coverage Area (sq ft)",
-      "Power Output (W/sq ft)",
+      "Programmable Features",
       "Sensor Type",
       "Max Temperature",
-      "Cable Spacing", 
-      "Installation Depth",
-      "Warranty Period",
-      "Smart Controls"
+      "Thermostat Included?",
+      "Install Location"
     ],
     specs: [
-      "systemType",
+      "type",
       "voltage",
       "coverageArea",
-      "powerOutput",
+      "programmableFeatures",
       "sensorType",
       "maxTemperature",
-      "cableSpacing",
-      "installationDepth", 
-      "warranty",
-      "smartControls"
+      "thermostatIncluded",
+      "installLocation"
     ]
   },
   carpet: {
@@ -152,26 +147,26 @@ export const CATEGORY_SCHEMAS: Record<string, CategorySchema> = {
     filters: [
       "Fiber Type",
       "Pile Height",
-      "Pile Density",
-      "Construction Method",
-      "Backing Type",
       "Stain Resistance",
-      "Fade Resistance",
-      "Width Options",
       "Traffic Rating",
-      "Antistatic Treatment"
+      "Carpet Style",
+      "Backing",
+      "Color",
+      "Width",
+      "Install Method",
+      "IAQ Certification"
     ],
     specs: [
       "fiberType", 
       "pileHeight",
-      "pileDensity",
-      "constructionMethod",
-      "backingType",
       "stainResistance",
-      "fadeResistance",
-      "widthOptions",
       "trafficRating",
-      "antistaticTreatment"
+      "carpetStyle",
+      "backing",
+      "color",
+      "width",
+      "installMethod",
+      "iaqCertification"
     ]
   }
 };
