@@ -54,38 +54,79 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
   return (
     <section id="categories" className="max-w-7xl mx-auto px-4 py-16">
       <h2 className="text-3xl font-bold text-center mb-12">Compare by Category</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {categories.map((category) => (
-          <Card 
+          <div
             key={category.id}
-            className="bg-white shadow-lg rounded-xl p-8 hover:shadow-xl transition-shadow duration-300 border border-gray-100"
+            onClick={() => onCategorySelect(category.id)}
+            className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow group h-full flex flex-col"
           >
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-royal-light rounded-lg flex items-center justify-center mr-4">
-                <i className={`${category.icon} text-royal text-xl`}></i>
+            <div className="h-40 bg-gray-100 relative overflow-hidden">
+              <img 
+                src={`https://images.unsplash.com/photo-${category.id === 'tiles' ? '1556912173-46c336c7fd55' : 
+                     category.id === 'slabs' ? '1556909114-f6e7ad7d3136' : 
+                     category.id === 'lvt' ? '1586105251261-72a756497a11' : 
+                     category.id === 'hardwood' ? '1586023492125-27b2c045efd7' : 
+                     category.id === 'heat' ? '1558618666-fcd25c85cd64' : 
+                     '1584464491033-06628f3a6b7b'}?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300`} 
+                alt={category.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
+              />
+              <div className={`w-full h-full ${category.id === 'tiles' ? 'bg-blue-500' : 
+                               category.id === 'slabs' ? 'bg-gray-500' : 
+                               category.id === 'lvt' ? 'bg-green-500' : 
+                               category.id === 'hardwood' ? 'bg-amber-600' : 
+                               category.id === 'heat' ? 'bg-red-500' : 'bg-purple-500'} items-center justify-center text-white text-6xl hidden absolute top-0 left-0`}>
+                {category.id === 'tiles' ? '🏛️' : 
+                 category.id === 'slabs' ? '🗿' : 
+                 category.id === 'lvt' ? '📱' : 
+                 category.id === 'hardwood' ? '🌲' : 
+                 category.id === 'heat' ? '🔥' : '🧶'}
               </div>
-              <h3 className="text-2xl font-semibold">{category.name}</h3>
+              <div className="absolute top-3 right-3">
+                <div className={`w-10 h-10 ${category.id === 'tiles' ? 'bg-blue-500' : 
+                               category.id === 'slabs' ? 'bg-gray-500' : 
+                               category.id === 'lvt' ? 'bg-green-500' : 
+                               category.id === 'hardwood' ? 'bg-amber-600' : 
+                               category.id === 'heat' ? 'bg-red-500' : 'bg-purple-500'} rounded-full flex items-center justify-center text-white text-lg shadow-lg`}>
+                  {category.id === 'tiles' ? '🏛️' : 
+                   category.id === 'slabs' ? '🗿' : 
+                   category.id === 'lvt' ? '📱' : 
+                   category.id === 'hardwood' ? '🌲' : 
+                   category.id === 'heat' ? '🔥' : '🧶'}
+                </div>
+              </div>
             </div>
             
-            <p className="text-gray-600 mb-6 leading-relaxed">
-              {category.description}
-            </p>
-            
-            <div className="flex flex-wrap gap-2 mb-6">
-              {category.specs.map((spec) => (
-                <span key={spec} className="spec-badge bg-gray-100 text-gray-800">
-                  {spec}
-                </span>
-              ))}
+            <div className="p-6 flex flex-col flex-grow">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                  {category.name}
+                </h3>
+                <div className="text-gray-400 group-hover:text-gray-600 transition-colors">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+              <p className="text-gray-600 text-sm leading-relaxed mb-4 flex-grow">
+                {category.description}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {category.specs.map((spec) => (
+                  <span key={spec} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    {spec}
+                  </span>
+                ))}
+              </div>
             </div>
-            
-            <Button
-              onClick={() => onCategorySelect(category.id)}
-              className="w-full bg-royal text-white hover:bg-royal-dark font-semibold"
-            >
-              Compare {category.name}
-            </Button>
-          </Card>
+          </div>
         ))}
       </div>
     </section>
