@@ -1,36 +1,30 @@
-import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowLeft } from "lucide-react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import type { Material } from "@shared/schema";
 
 export default function ProductCompare() {
-  const [location] = useLocation();
-  const [materialIds, setMaterialIds] = useState<number[]>([]);
+  const [selectedMaterials, setSelectedMaterials] = useState<Material[]>([]);
 
-  useEffect(() => {
-    const params = new URLSearchParams(location.split('?')[1] || '');
-    const ids = params.get('ids');
-    if (ids) {
-      setMaterialIds(ids.split(',').map(id => parseInt(id)));
-    }
-  }, [location]);
-
-  const { data: materials = [], isLoading } = useQuery<Material[]>({
-    queryKey: ["/api/materials", {}],
-    enabled: materialIds.length > 0,
+  const { data: allMaterials = [] } = useQuery<Material[]>({
+    queryKey: ["/api/materials"],
   });
 
-  const selectedMaterials = materials.filter(m => materialIds.includes(m.id));
-  
-  console.log('ProductCompare - materialIds:', materialIds);
-  console.log('ProductCompare - all materials:', materials.length);
-  console.log('ProductCompare - selectedMaterials:', selectedMaterials.length);
+  useEffect(() => {
+    const stored = localStorage.getItem('compareItems');
+    if (stored) {
+      const storedIds = JSON.parse(stored);
+      const materials = allMaterials.filter(m => storedIds.includes(m.id));
+      setSelectedMaterials(materials);
+    }
+  }, [allMaterials]);
 
   const getSpecValue = (material: Material, key: string): string => {
     const specs = material.specifications as Record<string, any>;

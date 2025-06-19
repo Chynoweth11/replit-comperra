@@ -17,13 +17,13 @@ export default function CategoryNav() {
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-center space-x-6 text-sm font-semibold text-gray-700">
         {categories.map((category) => (
           <Link key={category.id} href={category.path}>
-            <a 
-              className={`hover:text-blue-600 transition-colors px-3 py-1 rounded ${
+            <span 
+              className={`hover:text-blue-600 transition-colors px-3 py-1 rounded cursor-pointer ${
                 location.includes(category.id) ? 'text-blue-600 bg-blue-50' : ''
               }`}
             >
               {category.name}
-            </a>
+            </span>
           </Link>
         ))}
       </div>

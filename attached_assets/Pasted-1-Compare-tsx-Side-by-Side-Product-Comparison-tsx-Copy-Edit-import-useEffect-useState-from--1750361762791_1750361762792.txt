@@ -1,0 +1,94 @@
+1. Compare.tsx – Side-by-Side Product Comparison
+tsx
+Copy
+Edit
+import { useEffect, useState } from 'react';
+
+export default function Compare() {
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('compareItems');
+    if (stored) {
+      setProducts(JSON.parse(stored));
+    }
+  }, []);
+
+  if (products.length < 2) {
+    return <div className="p-8">Select at least two products to compare.</div>;
+  }
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4">Product Comparison</h2>
+      <div className="overflow-x-auto">
+        <table className="min-w-full border text-sm text-left text-gray-700 bg-white shadow-md rounded-xl overflow-hidden">
+          <thead className="bg-gray-100 text-xs uppercase text-gray-600">
+            <tr>
+              <th className="p-4">Feature</th>
+              {products.map((product, i) => (
+                <th key={i} className="p-4">{product.name}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td className="p-4 font-medium">Type</td>{products.map((p, i) => <td key={i} className="p-4">{p.type}</td>)}</tr>
+            <tr><td className="p-4 font-medium">Size</td>{products.map((p, i) => <td key={i} className="p-4">{p.size}</td>)}</tr>
+            <tr><td className="p-4 font-medium">Finish</td>{products.map((p, i) => <td key={i} className="p-4">{p.finish}</td>)}</tr>
+            <tr><td className="p-4 font-medium">PEI Rating</td>{products.map((p, i) => <td key={i} className="p-4">{p.pei}</td>)}</tr>
+            <tr><td className="p-4 font-medium">Coverage</td>{products.map((p, i) => <td key={i} className="p-4">{p.coverageArea} sq ft</td>)}</tr>
+            <tr><td className="p-4 font-medium">Price</td>{products.map((p, i) => <td key={i} className="p-4">${p.price}/sq ft</td>)}</tr>
+            <tr><td className="p-4 font-medium">Pros</td>{products.map((p, i) => <td key={i} className="p-4">{p.pros?.join(", ")}</td>)}</tr>
+            <tr><td className="p-4 font-medium">Cons</td>{products.map((p, i) => <td key={i} className="p-4">{p.cons?.join(", ")}</td>)}</tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+✅ 2. Add Items to Compare (in Product Card)
+tsx
+Copy
+Edit
+function addToCompare(product) {
+  const current = JSON.parse(localStorage.getItem('compareItems') || '[]');
+  const updated = [...current.filter(p => p.id !== product.id), product];
+  localStorage.setItem('compareItems', JSON.stringify(updated));
+}
+✅ 3. Add a Map of Showroom or Vendor Locations
+In Map.tsx, you can use Leaflet or embed Google Maps:
+
+tsx
+Copy
+Edit
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+
+export default function StoreMap({ stores }) {
+  return (
+    <div className="h-[400px] w-full">
+      <MapContainer center={[34.0489, -111.0937]} zoom={6} className="h-full w-full">
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        {stores.map((store, idx) => (
+          <Marker key={idx} position={[store.lat, store.lng]}>
+            <Popup>{store.name}<br />{store.address}</Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+    </div>
+  );
+}
+Example stores:
+
+ts
+Copy
+Edit
+const stores = [
+  { name: 'Arizona Tile – Scottsdale', lat: 33.4942, lng: -111.9261, address: '14700 N Hayden Rd' },
+  { name: 'Daltile – Phoenix', lat: 33.4484, lng: -112.074, address: '2323 W. Sherman St.' },
+];
+✅ Optional Enhancements
+Add category filters on the compare page (product.category)
+
+Include images or brand logos in the comparison
