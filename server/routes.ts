@@ -18,9 +18,8 @@ if (!airtableApiKey) {
   console.log('AIRTABLE_API_KEY configured successfully');
 }
 
-// The user mentioned "Comperra-good" - let's try common Airtable base ID formats
-// Base IDs usually start with "app" followed by alphanumeric characters
-const baseId = 'appComperragood'; // Try without hyphens first
+// Use the correct Airtable base ID provided by user
+const baseId = 'appQJoO5GkIxDMiHS';
 const base = airtableApiKey ? new Airtable({
   apiKey: airtableApiKey
 }).base(baseId) : undefined;
@@ -304,18 +303,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log('Attempting to create lead in Airtable...');
-      await base('Leads').create([
-        {
-          fields: {
-            Name: name,
-            Email: email,
-            Zip: zip || '',
-            Product: product || '',
-            Status: 'New',
-            Timestamp: new Date().toISOString(),
-          },
-        },
-      ]);
+      console.log('Lead data:', { name, email, zip, product });
+      
+      // Try different table names in case 'Leads' is not correct
+      const tableNames = ['Leads', 'leads', 'Lead', 'Table 1', 'tblLeads'];
+      let success = false;
+      let lastError = null;
+      
+      for (const tableName of tableNames) {
+        try {
+          console.log(`Trying table name: ${tableName}`);
+          await base(tableName).create([
+            {
+              fields: {
+                Name: name,
+                Email: email,
+                Zip: zip || '',
+                Product: product || '',
+                Status: 'New',
+                Timestamp: new Date().toISOString(),
+              },
+            },
+          ]);
+          console.log(`Successfully created lead in table: ${tableName}`);
+          success = true;
+          break;
+        } catch (error: any) {
+          console.log(`Failed with table ${tableName}:`, error.message);
+          lastError = error;
+        }
+      }
+      
+      if (!success) {
+        throw lastError;
+      }
 
       res.json({ success: true });
     } catch (error) {
