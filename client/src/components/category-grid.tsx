@@ -61,14 +61,30 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
             onClick={() => onCategorySelect(category.id)}
             className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow group h-full flex flex-col"
           >
-            <div className="h-40 bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
+            <div className="h-40 bg-gray-100 relative overflow-hidden">
+              <img 
+                src={`https://images.pexels.com/photos/${category.id === 'tiles' ? '6585764/pexels-photo-6585764.jpeg' : 
+                     category.id === 'slabs' ? '6969831/pexels-photo-6969831.jpeg' : 
+                     category.id === 'lvt' ? '6408348/pexels-photo-6408348.jpeg' : 
+                     category.id === 'hardwood' ? '6585665/pexels-photo-6585665.jpeg' : 
+                     category.id === 'heat' ? '8031929/pexels-photo-8031929.jpeg' : 
+                     '6585656/pexels-photo-6585656.jpeg'}?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop`} 
+                alt={category.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
+              />
               <div className={`w-full h-full bg-gradient-to-br ${category.id === 'tiles' ? 'from-blue-400 to-blue-600' : 
                                category.id === 'slabs' ? 'from-gray-400 to-gray-600' : 
                                category.id === 'lvt' ? 'from-green-400 to-green-600' : 
                                category.id === 'hardwood' ? 'from-amber-500 to-amber-700' : 
                                category.id === 'heat' ? 'from-red-400 to-red-600' : 'from-purple-400 to-purple-600'} 
-                               flex items-center justify-center text-white text-7xl group-hover:scale-110 transition-transform duration-500 ease-out`}>
-                <div className="animate-pulse">
+                               hidden items-center justify-center text-white text-7xl absolute top-0 left-0`}>
+                <div>
                   {category.id === 'tiles' ? '🏛️' : 
                    category.id === 'slabs' ? '🗿' : 
                    category.id === 'lvt' ? '📱' : 
