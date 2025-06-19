@@ -1,5 +1,5 @@
 import { useParams } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/header";
 import ComparisonTable from "@/components/comparison-table";
 import FilterPanel from "@/components/filter-panel";
@@ -23,6 +23,20 @@ export default function Comparison() {
     { id: "heat", name: "Heating", icon: "fas fa-thermometer-half" },
     { id: "carpet", name: "Carpet", icon: "fas fa-grip-lines" },
   ];
+
+  // Load the comparison enhancement script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = '/comperra-addon.js';
+    script.async = true;
+    document.head.appendChild(script);
+
+    return () => {
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">

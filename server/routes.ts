@@ -210,6 +210,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API endpoint for the comparison enhancement script
+  app.post("/api/scrape", async (req, res) => {
+    try {
+      const { url } = req.body;
+      if (!url) {
+        return res.status(400).json({ success: false, error: "URL is required" });
+      }
+
+      const scrapedProduct = await productScraper.scrapeProduct(url);
+      if (!scrapedProduct) {
+        return res.status(404).json({ success: false, error: "Failed to scrape product data" });
+      }
+
+      const material = productScraper.convertToMaterial(scrapedProduct);
+      const savedMaterial = await storage.createMaterial(material);
+
+      const specs = savedMaterial.specifications as any || {};
+      res.json({
+        success: true,
+        product: {
+          name: savedMaterial.name,
+          brand: savedMaterial.brand,
+          price: savedMaterial.price,
+          material_type: savedMaterial.category,
+          pei: specs.pei || '-',
+          dcof: specs.dcof || '-',
+          water_absorption: specs.waterAbsorption || '-',
+          size: specs.size || savedMaterial.dimensions,
+          material: specs.material || '-'
+        }
+      });
+    } catch (error) {
+      console.error("Scraping error:", error);
+      res.status(500).json({ success: false, error: "Failed to scrape product" });
+    }
+  });
+
   // Scraping routes
   app.post("/api/scrape/single", async (req, res) => {
     try {
@@ -331,6 +368,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Lead capture error:', error);
       res.status(500).json({ success: false, error: 'Failed to save lead' });
+    }
+  });
+
+  // Serve tile products data for comparison enhancement
+  app.get("/tile-products.json", async (req, res) => {
+    try {
+      const materials = await storage.getMaterials();
+      const tileProducts = {};
+      
+      materials.forEach(material => {
+        const specs = material.specifications as any || {};
+        tileProducts[material.name] = {
+          id: material.id,
+          name: material.name,
+          brand: material.brand,
+          price: material.price,
+          category: material.category,
+          material_type: material.category,
+          pei: specs.pei || '-',
+          dcof: specs.dcof || '-',
+          water_absorption: specs.waterAbsorption || '-',
+          size: specs.size || material.dimensions,
+          material: specs.material || '-',
+          pros: specs.pros || 'High-quality construction',
+          cons: specs.cons || 'Professional installation recommended',
+          summary: material.description || 'Premium building material',
+          recommended_usage: specs.usage || 'Residential and commercial applications'
+        };
+      });
+
+      res.json(tileProducts);
+    } catch (error) {
+      console.error('Failed to generate tile products data:', error);
+      res.status(500).json({});
     }
   });
 
