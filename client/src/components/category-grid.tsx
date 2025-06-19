@@ -61,40 +61,14 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
             onClick={() => onCategorySelect(category.id)}
             className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow group h-full flex flex-col"
           >
-            <div className="h-40 bg-gray-100 relative overflow-hidden">
-              <img 
-                src={`https://images.unsplash.com/photo-${category.id === 'tiles' ? '1556912173-46c336c7fd55' : 
-                     category.id === 'slabs' ? '1556909114-f6e7ad7d3136' : 
-                     category.id === 'lvt' ? '1586105251261-72a756497a11' : 
-                     category.id === 'hardwood' ? '1586023492125-27b2c045efd7' : 
-                     category.id === 'heat' ? '1558618666-fcd25c85cd64' : 
-                     '1584464491033-06628f3a6b7b'}?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300`} 
-                alt={category.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const fallback = target.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'flex';
-                }}
-              />
-              <div className={`w-full h-full ${category.id === 'tiles' ? 'bg-blue-500' : 
-                               category.id === 'slabs' ? 'bg-gray-500' : 
-                               category.id === 'lvt' ? 'bg-green-500' : 
-                               category.id === 'hardwood' ? 'bg-amber-600' : 
-                               category.id === 'heat' ? 'bg-red-500' : 'bg-purple-500'} items-center justify-center text-white text-6xl hidden absolute top-0 left-0`}>
-                {category.id === 'tiles' ? '🏛️' : 
-                 category.id === 'slabs' ? '🗿' : 
-                 category.id === 'lvt' ? '📱' : 
-                 category.id === 'hardwood' ? '🌲' : 
-                 category.id === 'heat' ? '🔥' : '🧶'}
-              </div>
-              <div className="absolute top-3 right-3">
-                <div className={`w-10 h-10 ${category.id === 'tiles' ? 'bg-blue-500' : 
-                               category.id === 'slabs' ? 'bg-gray-500' : 
-                               category.id === 'lvt' ? 'bg-green-500' : 
-                               category.id === 'hardwood' ? 'bg-amber-600' : 
-                               category.id === 'heat' ? 'bg-red-500' : 'bg-purple-500'} rounded-full flex items-center justify-center text-white text-lg shadow-lg`}>
+            <div className="h-40 bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
+              <div className={`w-full h-full bg-gradient-to-br ${category.id === 'tiles' ? 'from-blue-400 to-blue-600' : 
+                               category.id === 'slabs' ? 'from-gray-400 to-gray-600' : 
+                               category.id === 'lvt' ? 'from-green-400 to-green-600' : 
+                               category.id === 'hardwood' ? 'from-amber-500 to-amber-700' : 
+                               category.id === 'heat' ? 'from-red-400 to-red-600' : 'from-purple-400 to-purple-600'} 
+                               flex items-center justify-center text-white text-7xl group-hover:scale-110 transition-transform duration-500 ease-out`}>
+                <div className="animate-pulse">
                   {category.id === 'tiles' ? '🏛️' : 
                    category.id === 'slabs' ? '🗿' : 
                    category.id === 'lvt' ? '📱' : 
