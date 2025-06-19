@@ -1,0 +1,88 @@
+Use useNavigate() Instead of <a> Tags
+Replace all non-functional <a> elements with buttons that trigger programmatic navigation using wouter:
+
+Example: Fixing Footer or Sidebar Links
+tsx
+Copy
+Edit
+import { useNavigate } from 'wouter';
+
+export default function FooterLinks() {
+  const navigate = useNavigate();
+
+  const links = [
+    { label: 'Compare Materials', path: '/compare' },
+    { label: 'All Categories', path: '/categories' },
+    { label: 'Brand Directory', path: '/brands' },
+    { label: 'Specification Search', path: '/specs' },
+    { label: 'Price Comparison', path: '/pricing' },
+    { label: 'Buying Guides', path: '/buying-guides' },
+    { label: 'Installation Tips', path: '/installation' },
+    { label: 'Video Reviews', path: '/videos' },
+    { label: 'FAQ', path: '/faq' },
+    { label: 'About Comperra', path: '/about' },
+    { label: 'Contact Us', path: '/contact' },
+    { label: 'Careers', path: '/careers' },
+    { label: 'Press', path: '/press' },
+    { label: 'Privacy Policy', path: '/privacy' },
+    { label: 'Terms of Service', path: '/terms' },
+    { label: 'Data Usage', path: '/data-usage' },
+    { label: 'Cookies', path: '/cookies' },
+  ];
+
+  return (
+    <div className="grid gap-2 text-sm text-gray-600">
+      {links.map((link, i) => (
+        <button
+          key={i}
+          onClick={() => navigate(link.path)}
+          className="text-left hover:text-blue-600"
+        >
+          {link.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+✅ 2. Define Routes in App.tsx (or wherever your routes live)
+tsx
+Copy
+Edit
+import { Route } from 'wouter';
+import ComparePage from './pages/ComparePage';
+import CategoriesPage from './pages/CategoriesPage';
+import BrandsPage from './pages/BrandsPage';
+// ... and so on for each
+
+function App() {
+  return (
+    <>
+      <Route path="/compare" component={ComparePage} />
+      <Route path="/categories" component={CategoriesPage} />
+      <Route path="/brands" component={BrandsPage} />
+      <Route path="/specs" component={SpecSearchPage} />
+      <Route path="/pricing" component={PricingPage} />
+      <Route path="/buying-guides" component={BuyingGuidesPage} />
+      <Route path="/installation" component={InstallationTipsPage} />
+      <Route path="/videos" component={VideoReviewsPage} />
+      <Route path="/faq" component={FAQPage} />
+      <Route path="/about" component={AboutPage} />
+      <Route path="/contact" component={ContactPage} />
+      <Route path="/careers" component={CareersPage} />
+      <Route path="/press" component={PressPage} />
+      <Route path="/privacy" component={PrivacyPage} />
+      <Route path="/terms" component={TermsPage} />
+      <Route path="/data-usage" component={DataUsagePage} />
+      <Route path="/cookies" component={CookiesPage} />
+    </>
+  );
+}
+✅ 3. Optional: If You Want to Keep <a href> (with <Link>)
+Make sure you’re using wouter's <Link> component instead of raw <a>:
+
+tsx
+Copy
+Edit
+import { Link } from 'wouter';
+
+<Link href="/compare">Compare Materials</Link>
