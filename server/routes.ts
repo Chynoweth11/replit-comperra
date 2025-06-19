@@ -11,9 +11,16 @@ import Airtable from "airtable";
 const upload = multer({ dest: '/tmp/uploads/' });
 
 // Configure Airtable
-const base = new Airtable({
-  apiKey: 'patllYoX1mQREZCNE.1a1eec0b0a0de4e4cf92f66079dfbc7a53ea74b4fdd366f1b24d1604026c17e2'
-}).base('Comperra-good');
+const airtableApiKey = process.env.AIRTABLE_API_KEY;
+if (!airtableApiKey) {
+  console.warn('AIRTABLE_API_KEY environment variable not set. Lead capture will be disabled.');
+} else {
+  console.log('AIRTABLE_API_KEY configured successfully');
+}
+
+const base = airtableApiKey ? new Airtable({
+  apiKey: airtableApiKey
+}).base('appComperra') : undefined;
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Materials routes
@@ -282,6 +289,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!name || !email) {
         return res.status(400).json({ success: false, error: "Name and email are required" });
+      }
+
+      if (!base) {
+        return res.status(503).json({ 
+          success: false, 
+          error: 'Lead capture service is not configured. Please contact support.' 
+        });
       }
 
       await base('Leads').create([
