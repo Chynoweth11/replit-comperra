@@ -74,21 +74,9 @@ export default function ProductCompare() {
     if (typeof value === "boolean") {
       return value ? "Yes" : "No";
     }
-    if (value === null || value === undefined || value === "") {
+    if (value === null || value === undefined) {
       return "—";
     }
-    
-    // Handle specific formatting for certain fields
-    if (key === 'slipRating' && value) {
-      return value;
-    }
-    if (key === 'peiRating' && value) {
-      return String(value);
-    }
-    if (key === 'waterAbsorption' && value) {
-      return value;
-    }
-    
     return String(value);
   };
 
@@ -99,13 +87,14 @@ export default function ProductCompare() {
     // Always include base fields first
     const baseFields = [
       { key: 'brand', label: 'Brand' },
-      { key: 'price', label: 'Price/SF' },
-      { key: 'dimensions', label: 'Size' }
+      { key: 'price', label: 'Price per SF' },
+      { key: 'dimensions', label: 'Dimensions' },
+      { key: 'category', label: 'Category' }
     ];
 
-    // Add category-specific fields from centralized config, filtering out empty ones
+    // Add category-specific fields from centralized config
     const categoryFields = specs
-      .filter(spec => !['name', 'brand', 'price', 'dimensions', 'category'].includes(spec.key))
+      .filter(spec => !['name', 'brand', 'price', 'dimensions'].includes(spec.key))
       .map(spec => ({ key: spec.key, label: spec.label }));
 
     return [...baseFields, ...categoryFields];
@@ -176,30 +165,48 @@ export default function ProductCompare() {
 
         {/* Enhanced Comparison Table */}
         <div className="overflow-auto border rounded-xl shadow bg-white">
-          <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
+          <table className="min-w-full text-sm text-left table-fixed">
+            <thead className="bg-gray-50 text-gray-700">
               <tr>
-                <th className="p-3 text-left font-medium text-gray-700">Product</th>
-                <th className="p-3 text-left font-medium text-gray-700">Brand</th>
-                <th className="p-3 text-left font-medium text-gray-700">Price/SF</th>
-                <th className="p-3 text-left font-medium text-gray-700">Size</th>
-                {specFields.slice(3).map(field => (
-                  <th key={field.key} className="p-3 text-left font-medium text-gray-700">{field.label}</th>
+                <th className="p-4 w-1/4 font-semibold">Specification</th>
+                {selectedMaterials.map((material) => (
+                  <th key={material.id} className="p-4 w-1/4 font-semibold">
+                    <div className="space-y-2">
+                      <div className="font-semibold text-gray-900">{material.name}</div>
+                      <Badge variant="secondary" className="text-xs">{material.brand}</Badge>
+                    </div>
+                  </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
-              {selectedMaterials.map((material) => (
-                <tr key={material.id} className="hover:bg-gray-50">
-                  <td className="p-3 font-medium text-gray-900">{material.name}</td>
-                  <td className="p-3 text-gray-700">{material.brand}</td>
-                  <td className="p-3 text-green-600 font-medium">${material.price}</td>
-                  <td className="p-3 text-gray-700">{material.dimensions}</td>
-                  {specFields.slice(3).map(field => (
-                    <td key={`${material.id}-${field.key}`} className="p-3 text-gray-700">
-                      {getSpecValue(material, field.key)}
-                    </td>
-                  ))}
+            <tbody className="text-gray-800">
+              {specFields.map(field => (
+                <tr key={field.key} className="border-t border-gray-200 hover:bg-gray-50">
+                  <td className="p-4 font-medium text-gray-700">{field.label}</td>
+                  {selectedMaterials.map((material) => {
+                    let value = '';
+                    if (field.key === 'price') {
+                      value = `$${material.price}`;
+                    } else if (field.key === 'dimensions') {
+                      value = material.dimensions;
+                    } else if (field.key === 'brand') {
+                      value = material.brand;
+                    } else if (field.key === 'category') {
+                      return (
+                        <td key={material.id} className="p-4">
+                          <Badge variant="secondary">{material.category}</Badge>
+                        </td>
+                      );
+                    } else {
+                      value = getSpecValue(material, field.key);
+                    }
+                    
+                    return (
+                      <td key={material.id} className={`p-4 ${field.key === 'price' ? 'text-green-600 font-medium' : ''}`}>
+                        {value || '—'}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
