@@ -1,0 +1,73 @@
+Add a “Done” / “Apply Filters” Button
+Place this button at the bottom of the FilterPanel.
+
+When clicked, it will apply the filters the user entered.
+
+Until then, no filtering occurs — this gives users control.
+
+2. Only Show Matching Products
+Once "Done" is clicked:
+
+Filter your displayed product list by those values.
+
+Only show products that match all filled-in fields.
+
+3. Reset Option
+Add a “Clear Filters” button near the top or beside “Done.”
+
+This should reset all filter fields and show the full product list again.
+
+✍️ Code Update for FilterPanel
+Here’s how you’d modify your FilterPanel.tsx:
+
+tsx
+Copy
+Edit
+const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFiltersChange }) => {
+  const [tempFilters, setTempFilters] = useState<Record<string, string>>({});
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
+    setTempFilters({ ...tempFilters, [name]: e.target.value });
+  };
+
+  const handleApply = () => {
+    onFiltersChange(tempFilters);
+  };
+
+  const handleReset = () => {
+    setTempFilters({});
+    onFiltersChange({});
+  };
+
+  return (
+    <div className="bg-white rounded-md shadow p-4 w-full lg:w-1/3">
+      <h2 className="text-lg font-semibold mb-4">Filter By</h2>
+      {filters.map((filter) => (
+        <div key={filter} className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">{filter}</label>
+          <input
+            type="text"
+            className="mt-1 block w-full border border-gray-300 rounded px-3 py-2"
+            placeholder={`Enter ${filter}`}
+            value={tempFilters[filter] || ""}
+            onChange={(e) => handleChange(e, filter)}
+          />
+        </div>
+      ))}
+      <div className="flex gap-2 mt-4">
+        <button
+          className="bg-royal text-white px-4 py-2 rounded hover:bg-blue-600"
+          onClick={handleApply}
+        >
+          Done
+        </button>
+        <button
+          className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
+          onClick={handleReset}
+        >
+          Clear
+        </button>
+      </div>
+    </div>
+  );
+};
