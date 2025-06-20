@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import tilesImage from "@assets/Tile_1750385685010.jpg";
+import slabsImage from "@assets/Stone and slabs_1750385785852.jpg";
+import lvtImage from "@assets/Vinyl_1750385685009.jpg";
+import hardwoodImage from "@assets/Hardwood_1750385685009.jpg";
+import heatImage from "@assets/Thermostat_1750385685008.jpg";
+import carpetImage from "@assets/Carpet_1750385685009.jpg";
 
 interface CategoryGridProps {
   onCategorySelect: (category: string) => void;
@@ -63,12 +69,12 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
           >
             <div className="h-40 bg-gray-100 relative overflow-hidden">
               <img 
-                src={category.id === 'tiles' ? '/attached_assets/Tile_1750385685010.jpg' : 
-                     category.id === 'slabs' ? '/attached_assets/Stone and slabs_1750385785852.jpg' : 
-                     category.id === 'lvt' ? '/attached_assets/Vinyl_1750385685009.jpg' : 
-                     category.id === 'hardwood' ? '/attached_assets/Hardwood_1750385685009.jpg' : 
-                     category.id === 'heat' ? '/attached_assets/Thermostat_1750385685008.jpg' : 
-                     '/attached_assets/Carpet_1750385685009.jpg'} 
+                src={category.id === 'tiles' ? tilesImage : 
+                     category.id === 'slabs' ? slabsImage : 
+                     category.id === 'lvt' ? lvtImage : 
+                     category.id === 'hardwood' ? hardwoodImage : 
+                     category.id === 'heat' ? heatImage : 
+                     carpetImage} 
                 alt={category.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 onError={(e) => {
