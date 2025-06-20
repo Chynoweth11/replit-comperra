@@ -502,14 +502,8 @@ export class ProductScraper {
         ...Array.from($('ul li, ol li')).map(el => $(el).text()),
         ...Array.from($('.spec-item, .feature-item, .attribute')).map(el => $(el).text()),
         
-        // Divs and spans with specification patterns
-        ...Array.from($('div, span')).filter((i, el) => {
-          const text = $(el).text().toLowerCase();
-          return text.length > 0 && text.length < 200 && (
-            /specification|feature|detail|property/i.test(text) || 
-            /pei|dcof|absorption|finish|color|texture|material/i.test(text)
-          );
-        }).map((i, el) => $(el).text()).get()
+        // Additional text content for comprehensive extraction
+        html
       ];
 
       // PHASE 2: AI-Style Pattern Recognition for Each Field  
@@ -838,7 +832,7 @@ export class ProductScraper {
       });
 
       console.log(`Universal scraper extracted ${Object.keys(specs).length} fields for ${category}`);
-      console.log('Extracted specs:', specs);
+      console.log('Final extracted specs:', specs);
 
       console.log(`Universal scraper extracted ${Object.keys(specs).length} fields for ${category}`);
       console.log('Key specifications found:', {
