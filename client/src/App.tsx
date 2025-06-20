@@ -36,6 +36,7 @@ function Router() {
         <Route path="/product/:id" component={ProductDetail} />
         <Route path="/article/:id" component={ArticleDetail} />
         <Route path="/compare" component={ProductCompare} />
+        <Route path="/product-compare" component={ProductCompare} />
         <Route path="/admin/import" component={DataImport} />
         <Route path="/categories" component={Categories} />
         <Route path="/brands" component={Brands} />

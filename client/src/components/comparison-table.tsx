@@ -29,7 +29,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
   const [leadModalOpen, setLeadModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [pasteUrl, setPasteUrl] = useState("");
-  const [location, navigate] = useLocation();
+  const [location, setLocation] = useLocation();
   const [visibleSpecs, setVisibleSpecs] = useState({
     price: true,
     brand: true,
