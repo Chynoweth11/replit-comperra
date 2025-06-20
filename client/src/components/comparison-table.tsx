@@ -188,6 +188,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
 
   const renderSpecificationCell = (material: Material, category: string, specType: string) => {
     const specs = material.specifications as any;
+    const categorySpecs = getCategorySpecifications(category);
     
     switch (category) {
       case "tiles":

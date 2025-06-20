@@ -88,17 +88,30 @@ export default function ProductCompare() {
     if (typeof value === "boolean") {
       return value ? "Yes" : "No";
     }
-    return value ? String(value) : "N/A";
+    if (value === null || value === undefined) {
+      return "—";
+    }
+    return String(value);
   };
 
-  const getAllSpecKeys = (materials: Material[]): string[] => {
-    const keys = new Set<string>();
-    materials.forEach(material => {
-      if (material.specifications && typeof material.specifications === 'object') {
-        Object.keys(material.specifications as Record<string, any>).forEach(key => keys.add(key));
-      }
-    });
-    return Array.from(keys);
+  // Enhanced specification fields based on category using centralized config
+  const getSpecFields = (category: string) => {
+    const specs = getCategorySpecifications(category);
+    
+    // Always include base fields first
+    const baseFields = [
+      { key: 'brand', label: 'Brand' },
+      { key: 'price', label: 'Price per SF' },
+      { key: 'dimensions', label: 'Dimensions' },
+      { key: 'category', label: 'Category' }
+    ];
+
+    // Add category-specific fields from centralized config
+    const categoryFields = specs
+      .filter(spec => !['name', 'brand', 'price', 'dimensions'].includes(spec.key))
+      .map(spec => ({ key: spec.key, label: spec.label }));
+
+    return [...baseFields, ...categoryFields];
   };
 
   const formatSpecKey = (key: string): string => {
