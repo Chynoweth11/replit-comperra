@@ -471,11 +471,11 @@ export class ProductScraper {
     return match ? match[2]?.trim() || match[1]?.trim() || '—' : '—';
   }
 
-  // Enhanced universal scraper using comprehensive field extraction
+  // AI-Powered Universal Specification Extractor
   async scrapeUniversalProduct(url: string): Promise<ScrapedProduct | null> {
     try {
       const response = await axios.get(url, { 
-        timeout: 10000,
+        timeout: 15000,
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
@@ -491,85 +491,242 @@ export class ProductScraper {
         'Product URL': url
       };
 
-      // MSI-specific specification extraction for their unique structure
-      if (url.includes('msisurfaces.com')) {
-        // MSI uses .specs-heading and .specs-label structure
-        $('.specs-heading').each((_, el) => {
-          const heading = $(el).text().toLowerCase().trim();
-          const label = $(el).next('.specs-label').text().trim();
-          
-          if (heading && label && label !== heading) {
-            if (/pei/i.test(heading)) specs['PEI Rating'] = label;
-            if (/primary color|color/i.test(heading)) specs['Color'] = label;
-            if (/tile type|finish/i.test(heading)) specs['Finish'] = label;
-            if (/material type/i.test(heading)) specs['Material Type'] = label;
-            if (/edge/i.test(heading)) specs['Edge Type'] = label;
-            if (/texture/i.test(heading)) specs['Texture'] = label;
-            if (/slip|dcof|cof/i.test(heading)) specs['DCOF / Slip Rating'] = label;
-            if (/water absorption/i.test(heading)) specs['Water Absorption'] = label;
-          }
-        });
+      // PHASE 1: Intelligent Content Extraction - Get all potential specification areas
+      const specificationSections = [
+        // Tables and structured data
+        ...Array.from($('table')).map(el => $(el).text()),
+        ...Array.from($('dl')).map(el => $(el).text()),
+        ...Array.from($('.specs, .specifications, .product-specs, .tech-specs, .features, .details')).map(el => $(el).text()),
+        
+        // Lists and items
+        ...Array.from($('ul li, ol li')).map(el => $(el).text()),
+        ...Array.from($('.spec-item, .feature-item, .attribute')).map(el => $(el).text()),
+        
+        // Divs with specification patterns
+        ...Array.from($('div')).filter((_, el) => {
+          const text = $(el).text().toLowerCase();
+          return /specification|feature|detail|property/i.test(text) || 
+                 /pei|dcof|absorption|finish|color|texture|material/i.test(text);
+        }).map(el => $(el).text())
+      ];
 
-        // MSI application-specific extraction
-        $('.specs-app').each((_, el) => {
-          const appText = $(el).text();
-          if (/flooring.*residential.*yes/i.test(appText)) {
-            specs['Install Location'] = 'Floor';
-          }
-          if (/wall.*residential.*yes/i.test(appText)) {
-            if (specs['Install Location'] === 'Floor') {
-              specs['Install Location'] = 'Floor, Wall';
-            } else {
-              specs['Install Location'] = 'Wall';
-            }
-          }
-        });
-      }
-
-      // Generic specification table extraction for other sites
-      $('table.product-specs tr, table.specs tr, .specifications tr, .spec-table tr').each((_, el) => {
-        const label = $(el).find('th, td:first-child, .spec-label').text().toLowerCase().trim();
-        const value = $(el).find('td:last-child, .spec-value').text().trim();
-
-        if (label && value && value !== label) {
-          if (/pei/i.test(label) && !specs['PEI Rating']) specs['PEI Rating'] = value;
-          if (/slip|dcof|cof/i.test(label) && !specs['DCOF / Slip Rating']) specs['DCOF / Slip Rating'] = value;
-          if (/water absorption/i.test(label) && !specs['Water Absorption']) specs['Water Absorption'] = value;
-          if (/finish/i.test(label) && !specs['Finish']) specs['Finish'] = value;
-          if (/edge/i.test(label) && !specs['Edge Type']) specs['Edge Type'] = value;
-          if (/color/i.test(label) && !specs['Color']) specs['Color'] = value;
-          if (/texture/i.test(label) && !specs['Texture']) specs['Texture'] = value;
-          if (/install location/i.test(label) && !specs['Install Location']) specs['Install Location'] = value;
-          if (/material/i.test(label) && !specs['Material Type']) specs['Material Type'] = value;
-        }
-      });
-
-      // Fallback: List item extraction for unstructured data
-      $('li, .spec-item, .feature').each((_, el) => {
-        const text = $(el).text().trim();
-        fields.forEach(field => {
-          const label = field.toLowerCase().split(' ')[0]; // Use first word for matching
-          if (!specs[field] && text.toLowerCase().includes(label)) {
-            const parts = text.split(':');
-            if (parts.length > 1) {
-              const value = parts[1].trim();
-              if (value && value.length < 100 && value !== '—' && value !== text) {
-                specs[field] = value;
+      // PHASE 2: AI-Style Pattern Recognition for Each Field
+      const extractSpecification = (fieldName: string, patterns: RegExp[], context: string[]): string => {
+        for (const pattern of patterns) {
+          for (const text of context) {
+            const match = text.match(pattern);
+            if (match) {
+              const value = match[1] || match[2] || match[3];
+              if (value && value.length < 50 && value.toLowerCase() !== fieldName.toLowerCase()) {
+                return value.trim();
               }
             }
           }
-        });
-      });
+        }
+        return '—';
+      };
 
-      // Enhanced brand detection from domain
+      // PHASE 3: Comprehensive Field Extraction with Multiple Pattern Recognition
+      
+      // PEI Rating - All possible patterns
+      if (!specs['PEI Rating']) {
+        specs['PEI Rating'] = extractSpecification('PEI Rating', [
+          /PEI\s*(?:Rating|Class)?[:\s]*([0-5])/gi,
+          /Class\s*([0-5])/gi,
+          /Traffic\s*Rating[:\s]*([0-5])/gi,
+          /Wear\s*Rating[:\s]*([0-5])/gi,
+          /<span[^>]*>([0-5])<\/span>/gi,
+          /Rating[:\s]*([0-5])/gi
+        ], [html, ...specificationSections]);
+      }
+
+      // DCOF / Slip Rating - Comprehensive patterns
+      if (!specs['DCOF / Slip Rating']) {
+        specs['DCOF / Slip Rating'] = extractSpecification('DCOF', [
+          /(?:DCOF|D\.C\.O\.F)[:\s]*([>≥]?\s*[0-9.]+)/gi,
+          /(?:COF|C\.O\.F)[:\s]*([>≥]?\s*[0-9.]+)/gi,
+          /Slip\s*(?:Resistance|Rating)[:\s]*([>≥]?\s*[0-9.]+)/gi,
+          /Coefficient[:\s]*([>≥]?\s*[0-9.]+)/gi,
+          /Friction[:\s]*([>≥]?\s*[0-9.]+)/gi
+        ], [html, ...specificationSections]);
+      }
+
+      // Water Absorption - All formats
+      if (!specs['Water Absorption']) {
+        specs['Water Absorption'] = extractSpecification('Water Absorption', [
+          /Water\s*Absorption[:\s]*([<≤]?\s*[0-9.]+\s*%?)/gi,
+          /Absorption[:\s]*([<≤]?\s*[0-9.]+\s*%?)/gi,
+          /Water\s*Uptake[:\s]*([<≤]?\s*[0-9.]+\s*%?)/gi,
+          /Porosity[:\s]*([<≤]?\s*[0-9.]+\s*%?)/gi
+        ], [html, ...specificationSections]);
+      }
+
+      // Material Type - Comprehensive detection
+      if (!specs['Material Type']) {
+        specs['Material Type'] = extractSpecification('Material Type', [
+          /Material\s*(?:Type)?[:\s]*([A-Za-z\s]+)/gi,
+          /(Porcelain|Ceramic|Natural Stone|Quartz|Granite|Marble|Limestone|Travertine|Slate)/gi,
+          /Type[:\s]*([A-Za-z\s]+)/gi,
+          /Made\s*(?:from|of)[:\s]*([A-Za-z\s]+)/gi
+        ], [html, ...specificationSections]);
+      }
+
+      // Finish - All finish types
+      if (!specs['Finish']) {
+        specs['Finish'] = extractSpecification('Finish', [
+          /Finish[:\s]*([A-Za-z\s]+)/gi,
+          /Surface[:\s]*([A-Za-z\s]+)/gi,
+          /(Glossy|Matte|Polished|Honed|Textured|Lappato|Satin|Natural|Brushed|Antique)/gi,
+          /Treatment[:\s]*([A-Za-z\s]+)/gi
+        ], [html, ...specificationSections]);
+      }
+
+      // Color - Intelligent color extraction
+      if (!specs['Color']) {
+        specs['Color'] = extractSpecification('Color', [
+          /(?:Primary\s*)?Color[s]?[:\s]*([A-Za-z\s\-]+)/gi,
+          /Shade[:\s]*([A-Za-z\s\-]+)/gi,
+          /Tone[:\s]*([A-Za-z\s\-]+)/gi,
+          /(White|Black|Gray|Grey|Blue|Navy|Beige|Brown|Green|Red|Cream|Tan|Oak|Cherry|Walnut|Hale)/gi
+        ], [html, ...specificationSections]);
+      }
+
+      // Edge Type
+      if (!specs['Edge Type']) {
+        specs['Edge Type'] = extractSpecification('Edge Type', [
+          /Edge[:\s]*([A-Za-z\s]+)/gi,
+          /(Rectified|Natural|Pressed|Straight|Beveled)/gi,
+          /Trim[:\s]*([A-Za-z\s]+)/gi
+        ], [html, ...specificationSections]);
+      }
+
+      // Texture
+      if (!specs['Texture']) {
+        specs['Texture'] = extractSpecification('Texture', [
+          /Texture[:\s]*([A-Za-z\s]+)/gi,
+          /Pattern[:\s]*([A-Za-z\s]+)/gi,
+          /(Wood Grain|Stone|Marble|Concrete|Linear|Smooth|Rough|Structured)/gi,
+          /Surface\s*Pattern[:\s]*([A-Za-z\s]+)/gi
+        ], [html, ...specificationSections]);
+      }
+
+      // Install Location - Application detection
+      if (!specs['Install Location']) {
+        const applications = [];
+        const appText = html.toLowerCase();
+        if (/floor|flooring/i.test(appText)) applications.push('Floor');
+        if (/wall/i.test(appText)) applications.push('Wall');
+        if (/countertop|counter/i.test(appText)) applications.push('Countertop');
+        if (/outdoor|exterior/i.test(appText)) applications.push('Outdoor');
+        specs['Install Location'] = applications.join(', ') || '—';
+      }
+
+      // PHASE 4: Category-Specific Intelligent Extraction
+      if (category === 'lvt') {
+        // LVT-specific fields
+        if (!specs['Wear Layer']) {
+          specs['Wear Layer'] = extractSpecification('Wear Layer', [
+            /Wear\s*Layer[:\s]*([0-9]+\s*mil)/gi,
+            /Top\s*Layer[:\s]*([0-9]+\s*mil)/gi,
+            /Protection[:\s]*([0-9]+\s*mil)/gi
+          ], [html, ...specificationSections]);
+        }
+        
+        if (!specs['Total Thickness']) {
+          specs['Total Thickness'] = extractSpecification('Total Thickness', [
+            /(?:Total\s*)?Thickness[:\s]*([0-9.]+\s*mm)/gi,
+            /Overall\s*Thickness[:\s]*([0-9.]+\s*mm)/gi
+          ], [html, ...specificationSections]);
+        }
+        
+        if (!specs['Waterproof Rating']) {
+          const waterproofText = html.toLowerCase();
+          specs['Waterproof Rating'] = /waterproof|100%\s*waterproof/i.test(waterproofText) ? 'Yes' : 
+                                      /water\s*resistant/i.test(waterproofText) ? 'Water Resistant' : '—';
+        }
+      }
+
+      if (category === 'hardwood') {
+        // Hardwood-specific fields
+        if (!specs['Wood Species']) {
+          specs['Wood Species'] = extractSpecification('Wood Species', [
+            /Species[:\s]*([A-Za-z\s]+)/gi,
+            /Wood[:\s]*([A-Za-z\s]+)/gi,
+            /(Oak|Maple|Cherry|Walnut|Hickory|Pine|Ash|Birch)/gi
+          ], [html, ...specificationSections]);
+        }
+        
+        if (!specs['Hardness (Janka)']) {
+          specs['Hardness (Janka)'] = extractSpecification('Janka', [
+            /Janka[:\s]*([0-9,]+)/gi,
+            /Hardness[:\s]*([0-9,]+)/gi,
+            /Janka\s*(?:Hardness|Rating)[:\s]*([0-9,]+)/gi
+          ], [html, ...specificationSections]);
+        }
+      }
+
+      if (category === 'heat') {
+        // Heating system fields
+        if (!specs['Voltage']) {
+          specs['Voltage'] = extractSpecification('Voltage', [
+            /Voltage[:\s]*([0-9]+V?)/gi,
+            /([0-9]+)V/gi,
+            /Power[:\s]*([0-9]+V?)/gi
+          ], [html, ...specificationSections]);
+        }
+        
+        if (!specs['Coverage Area (SF)']) {
+          specs['Coverage Area (SF)'] = extractSpecification('Coverage', [
+            /Coverage[:\s]*([0-9]+\s*(?:sq\.?\s*ft|SF))/gi,
+            /Area[:\s]*([0-9]+\s*(?:sq\.?\s*ft|SF))/gi,
+            /([0-9]+)\s*(?:sq\.?\s*ft|SF)/gi
+          ], [html, ...specificationSections]);
+        }
+      }
+
+      if (category === 'carpet') {
+        // Carpet-specific fields
+        if (!specs['Fiber Type']) {
+          specs['Fiber Type'] = extractSpecification('Fiber Type', [
+            /Fiber[:\s]*([A-Za-z\s]+)/gi,
+            /Material[:\s]*([A-Za-z\s]+)/gi,
+            /(Nylon|Polyester|Polypropylene|Wool|Triexta)/gi
+          ], [html, ...specificationSections]);
+        }
+        
+        if (!specs['Pile Style']) {
+          specs['Pile Style'] = extractSpecification('Pile Style', [
+            /Pile[:\s]*([A-Za-z\s]+)/gi,
+            /Style[:\s]*([A-Za-z\s]+)/gi,
+            /(Loop|Cut|Berber|Frieze|Plush|Saxony)/gi
+          ], [html, ...specificationSections]);
+        }
+      }
+
+      // Universal brand detection
       if (!specs['Brand']) {
-        if (url.includes('daltile')) specs['Brand'] = 'Daltile';
-        else if (url.includes('msi')) specs['Brand'] = 'MSI';
-        else if (url.includes('cambria')) specs['Brand'] = 'Cambria';
-        else if (url.includes('marazzi')) specs['Brand'] = 'Marazzi';
-        else if (url.includes('shaw')) specs['Brand'] = 'Shaw';
-        else if (url.includes('mohawk')) specs['Brand'] = 'Mohawk';
-        else specs['Brand'] = this.extractBrandFromURL(url);
+        // Domain-based detection
+        const domainBrands = {
+          'daltile': 'Daltile', 'msi': 'MSI', 'cambria': 'Cambria', 'marazzi': 'Marazzi',
+          'shaw': 'Shaw', 'mohawk': 'Mohawk', 'flor': 'FLOR', 'armstrong': 'Armstrong',
+          'mannington': 'Mannington', 'tarkett': 'Tarkett', 'karndean': 'Karndean'
+        };
+        
+        for (const [domain, brand] of Object.entries(domainBrands)) {
+          if (url.includes(domain)) {
+            specs['Brand'] = brand;
+            break;
+          }
+        }
+        
+        // Fallback brand extraction
+        if (!specs['Brand']) {
+          specs['Brand'] = extractSpecification('Brand', [
+            /Brand[:\s]*([A-Za-z\s]+)/gi,
+            /Manufacturer[:\s]*([A-Za-z\s]+)/gi,
+            /Made\s*by[:\s]*([A-Za-z\s]+)/gi
+          ], [html, ...specificationSections]) || this.extractBrandFromURL(url);
+        }
       }
 
       // Enhanced product name extraction
@@ -620,23 +777,36 @@ export class ProductScraper {
       
       specs['Dimensions'] = dimensions || '—';
 
-      // Enhanced regex fallbacks for missing specifications
-      if (!specs['PEI Rating']) {
-        specs['PEI Rating'] = this.textMatch(html, /PEI\s?(RATING)?[:\s]*([0-5])/i) ||
-                             this.textMatch(html, /<span>([0-5])<\/span>/i);
-      }
-      if (!specs['DCOF / Slip Rating']) {
-        specs['DCOF / Slip Rating'] = this.textMatch(html, /(DCOF|COF|Slip Resistance)[:\s]*([>\w\.]+)/i);
-      }
-      if (!specs['Water Absorption']) {
-        specs['Water Absorption'] = this.textMatch(html, /Water Absorption[:\s]*([<>\d.%]+)/i);
-      }
-      if (!specs['Finish'] && category === 'tiles') {
-        specs['Finish'] = this.textMatch(html, /(Glazed|Matte|Polished|Honed|Textured)/i);
-      }
-      if (!specs['Material Type'] && category === 'tiles') {
-        specs['Material Type'] = this.textMatch(html, /(Porcelain|Ceramic|Natural Stone)/i);
-      }
+      // PHASE 5: Final Intelligent Cleanup and Validation
+      Object.keys(specs).forEach(key => {
+        if (typeof specs[key] === 'string') {
+          // Clean up extracted values
+          specs[key] = specs[key]
+            .replace(/^[:\s-]+|[:\s-]+$/g, '') // Remove leading/trailing separators
+            .replace(/\s+/g, ' ') // Normalize whitespace
+            .replace(/^(yes|no|true|false)\s*/i, '') // Remove boolean prefixes
+            .trim();
+          
+          // Validate and normalize common values
+          if (key === 'PEI Rating' && specs[key] && !/^[0-5]$/.test(specs[key])) {
+            const peiMatch = specs[key].match(/([0-5])/);
+            specs[key] = peiMatch ? peiMatch[1] : '—';
+          }
+          
+          if (key === 'DCOF / Slip Rating' && specs[key] && !/[0-9.]/.test(specs[key])) {
+            specs[key] = '—';
+          }
+          
+          if (key === 'Water Absorption' && specs[key] && !/[0-9.]/.test(specs[key])) {
+            specs[key] = '—';
+          }
+          
+          // If field is empty or just the field name, mark as missing
+          if (!specs[key] || specs[key] === key || specs[key].length > 100) {
+            specs[key] = '—';
+          }
+        }
+      });
 
       // Normalize missing fields and prevent label duplication
       fields.forEach(field => {
