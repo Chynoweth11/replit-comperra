@@ -840,12 +840,21 @@ export class ProductScraper {
       console.log(`Universal scraper extracted ${Object.keys(specs).length} fields for ${category}`);
       console.log('Extracted specs:', specs);
 
+      console.log(`Universal scraper extracted ${Object.keys(specs).length} fields for ${category}`);
+      console.log('Key specifications found:', {
+        'PEI Rating': specs['PEI Rating'],
+        'Color': specs['Color'], 
+        'Finish': specs['Finish'],
+        'Material Type': specs['Material Type'],
+        'Install Location': specs['Install Location']
+      });
+
       return {
-        name: productName,
+        name: title,
         brand: specs['Brand'],
         price: specs['Price per SF'],
         category,
-        description: $('.product-description, .description').first().text().trim().substring(0, 500) || '',
+        description: $('.product-intro p, .product-description').first().text().trim().substring(0, 500) || '',
         imageUrl: specs['Image URL'],
         dimensions: specs['Dimensions'],
         specifications: specs,
