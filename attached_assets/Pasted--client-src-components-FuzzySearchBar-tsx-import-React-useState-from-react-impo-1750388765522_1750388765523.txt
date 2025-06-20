@@ -1,0 +1,81 @@
+// === /client/src/components/FuzzySearchBar.tsx ===
+import React, { useState } from 'react';
+import Fuse from 'fuse.js';
+
+interface Product {
+  id: string;
+  category: string; // Tiles, Stone & Slabs, etc.
+  name: string;
+  brand: string;
+  color?: string;
+  materialType?: string;
+  [key: string]: any;
+}
+
+interface Props {
+  products: Product[];
+  onResults: (results: Product[]) => void;
+}
+
+const FuzzySearchBar: React.FC<Props> = ({ products, onResults }) => {
+  const [query, setQuery] = useState('');
+
+  const fuse = new Fuse(products, {
+    threshold: 0.4,
+    keys: ['name', 'brand', 'category', 'materialType', 'color'],
+  });
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+
+    const results = fuse.search(query);
+    const matchedProducts = results.map((res) => res.item);
+    onResults(matchedProducts);
+  };
+
+  return (
+    <form onSubmit={handleSearch} className="w-full flex items-center gap-2 mb-4">
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search products by name, brand, type, or color..."
+        className="w-full px-4 py-2 border border-gray-300 rounded shadow-sm"
+      />
+      <button
+        type="submit"
+        className="bg-royal text-white px-4 py-2 rounded hover:bg-blue-600"
+      >
+        Search
+      </button>
+    </form>
+  );
+};
+
+export default FuzzySearchBar;
+
+
+// === USAGE EXAMPLE in /client/src/pages/browse.tsx ===
+import React, { useEffect, useState } from 'react';
+import FuzzySearchBar from '../components/FuzzySearchBar';
+import ProductGrid from '../components/ProductGrid';
+import { fetchAllProducts } from '../utils/api';
+
+const BrowsePage: React.FC = () => {
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [results, setResults] = useState<Product[]>([]);
+
+  useEffect(() => {
+    fetchAllProducts().then(setAllProducts);
+  }, []);
+
+  return (
+    <div className="max-w-7xl mx-auto p-4">
+      <FuzzySearchBar products={allProducts} onResults={setResults} />
+      <ProductGrid products={results.length ? results : allProducts} />
+    </div>
+  );
+};
+
+export default BrowsePage;

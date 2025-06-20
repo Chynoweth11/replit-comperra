@@ -22,6 +22,7 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ✅ **June 19, 2025**: Added FuzzySearchBar component for enhanced product search on comparison pages
 - ✅ **June 19, 2025**: Implemented fuzzy search with Fuse.js for better brand and product matching with typos
 - ✅ **June 19, 2025**: Added "Apply Filters" and "Clear All" buttons to category filter panel for better user control
 - ✅ **June 19, 2025**: Integrated user-provided category images - authentic tile patterns, stone countertops, vinyl planks, hardwood installation, thermostat, and carpet texture

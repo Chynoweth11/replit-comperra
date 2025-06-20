@@ -1,0 +1,103 @@
+// === /client/src/components/FuzzySearchBar.tsx ===
+import React, { useState } from 'react';
+import Fuse from 'fuse.js';
+
+interface Product {
+  id: string;
+  category: string; // Tiles, Stone & Slabs, etc.
+  name: string;
+  brand: string;
+  color?: string;
+  materialType?: string;
+  [key: string]: any;
+}
+
+interface Props {
+  products: Product[];
+  onResults: (results: Product[]) => void;
+}
+
+const FuzzySearchBar: React.FC<Props> = ({ products, onResults }) => {
+  const [query, setQuery] = useState('');
+
+  const fuse = new Fuse(products, {
+    threshold: 0.4,
+    keys: ['name', 'brand', 'category', 'materialType', 'color'],
+  });
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+
+    const results = fuse.search(query);
+    const matchedProducts = results.map((res) => res.item);
+    onResults(matchedProducts);
+  };
+
+  return (
+    <form onSubmit={handleSearch} className="w-full flex items-center gap-2 mb-4">
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search products by name, brand, type, or color..."
+        className="w-full px-4 py-2 border border-gray-300 rounded shadow-sm"
+      />
+      <button
+        type="submit"
+        className="bg-royal text-white px-4 py-2 rounded hover:bg-blue-600"
+      >
+        Search
+      </button>
+    </form>
+  );
+};
+
+export default FuzzySearchBar;
+
+
+// === USAGE EXAMPLE in comparison.tsx or browser.tsx ===
+// import FuzzySearchBar from '../components/FuzzySearchBar';
+// const [results, setResults] = useState<Product[]>([]);
+
+{/* <FuzzySearchBar products={allProducts} onResults={setResults} /> */}
+{/* <ProductGrid products={results.length ? results : allProducts} /> */}
+What It Does
+Searches across: name, brand, category, material type, color
+
+Uses Fuse.js for typo-tolerant fuzzy matching (Datile still returns Daltile)
+
+Automatically updates results with onResults() callback
+
+Designed for: Tiles, Stone & Slabs, Vinyl & LVT, Hardwood, Heating, and Carpet
+
+💡 How to Use It
+Add to Your Page:
+
+tsx
+Copy
+Edit
+import FuzzySearchBar from '../components/FuzzySearchBar';
+const [results, setResults] = useState<Product[]>([]);
+
+<FuzzySearchBar products={allProducts} onResults={setResults} />
+<ProductGrid products={results.length ? results : allProducts} />
+Make sure allProducts is loaded from Airtable or JSON with the correct structure:
+
+ts
+Copy
+Edit
+{
+  id: "123",
+  name: "Carrara Tile",
+  brand: "Daltile",
+  category: "Tile",
+  color: "White",
+  materialType: "Porcelain"
+}
+Install Fuse.js
+
+bash
+Copy
+Edit
+npm install fuse.js

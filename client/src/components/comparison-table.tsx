@@ -19,9 +19,10 @@ interface ComparisonTableProps {
     maxPrice: string;
     search: string;
   };
+  overrideMaterials?: Material[];
 }
 
-export default function ComparisonTable({ category, filters }: ComparisonTableProps) {
+export default function ComparisonTable({ category, filters, overrideMaterials }: ComparisonTableProps) {
   const [sortBy, setSortBy] = useState("price-low");
   const [selectedMaterials, setSelectedMaterials] = useState<number[]>([]);
   const [leadModalOpen, setLeadModalOpen] = useState(false);
