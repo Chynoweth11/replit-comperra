@@ -35,7 +35,6 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
     dimensions: true,
     specifications: true
   });
-  const [, navigate] = useLocation();
 
   // Subscribe to comparison store
   useEffect(() => {
