@@ -491,48 +491,56 @@ export class ProductScraper {
         'Product URL': url
       };
 
-      // Enhanced specification table extraction with proper label/value separation
+      // MSI-specific specification extraction for their unique structure
+      if (url.includes('msisurfaces.com')) {
+        // MSI uses .specs-heading and .specs-label structure
+        $('.specs-heading').each((_, el) => {
+          const heading = $(el).text().toLowerCase().trim();
+          const label = $(el).next('.specs-label').text().trim();
+          
+          if (heading && label && label !== heading) {
+            if (/pei/i.test(heading)) specs['PEI Rating'] = label;
+            if (/primary color|color/i.test(heading)) specs['Color'] = label;
+            if (/tile type|finish/i.test(heading)) specs['Finish'] = label;
+            if (/material type/i.test(heading)) specs['Material Type'] = label;
+            if (/edge/i.test(heading)) specs['Edge Type'] = label;
+            if (/texture/i.test(heading)) specs['Texture'] = label;
+            if (/slip|dcof|cof/i.test(heading)) specs['DCOF / Slip Rating'] = label;
+            if (/water absorption/i.test(heading)) specs['Water Absorption'] = label;
+          }
+        });
+
+        // MSI application-specific extraction
+        $('.specs-app').each((_, el) => {
+          const appText = $(el).text();
+          if (/flooring.*residential.*yes/i.test(appText)) {
+            specs['Install Location'] = 'Floor';
+          }
+          if (/wall.*residential.*yes/i.test(appText)) {
+            if (specs['Install Location'] === 'Floor') {
+              specs['Install Location'] = 'Floor, Wall';
+            } else {
+              specs['Install Location'] = 'Wall';
+            }
+          }
+        });
+      }
+
+      // Generic specification table extraction for other sites
       $('table.product-specs tr, table.specs tr, .specifications tr, .spec-table tr').each((_, el) => {
         const label = $(el).find('th, td:first-child, .spec-label').text().toLowerCase().trim();
         const value = $(el).find('td:last-child, .spec-value').text().trim();
 
         if (label && value && value !== label) {
-          // PEI Rating extraction
-          if (/pei/i.test(label) && !specs['PEI Rating']) {
-            specs['PEI Rating'] = value;
-          }
-          // DCOF / Slip Rating extraction  
-          if (/slip|dcof|cof/i.test(label) && !specs['DCOF / Slip Rating']) {
-            specs['DCOF / Slip Rating'] = value;
-          }
-          // Water Absorption extraction
-          if (/water absorption/i.test(label) && !specs['Water Absorption']) {
-            specs['Water Absorption'] = value;
-          }
-          // Finish extraction
-          if (/finish/i.test(label) && !specs['Finish']) {
-            specs['Finish'] = value;
-          }
-          // Edge Type extraction
-          if (/edge/i.test(label) && !specs['Edge Type']) {
-            specs['Edge Type'] = value;
-          }
-          // Color extraction
-          if (/color/i.test(label) && !specs['Color']) {
-            specs['Color'] = value;
-          }
-          // Texture extraction
-          if (/texture/i.test(label) && !specs['Texture']) {
-            specs['Texture'] = value;
-          }
-          // Install Location extraction
-          if (/install location/i.test(label) && !specs['Install Location']) {
-            specs['Install Location'] = value;
-          }
-          // Material Type extraction
-          if (/material/i.test(label) && !specs['Material Type']) {
-            specs['Material Type'] = value;
-          }
+          if (/pei/i.test(label) && !specs['PEI Rating']) specs['PEI Rating'] = value;
+          if (/slip|dcof|cof/i.test(label) && !specs['DCOF / Slip Rating']) specs['DCOF / Slip Rating'] = value;
+          if (/water absorption/i.test(label) && !specs['Water Absorption']) specs['Water Absorption'] = value;
+          if (/finish/i.test(label) && !specs['Finish']) specs['Finish'] = value;
+          if (/edge/i.test(label) && !specs['Edge Type']) specs['Edge Type'] = value;
+          if (/color/i.test(label) && !specs['Color']) specs['Color'] = value;
+          if (/texture/i.test(label) && !specs['Texture']) specs['Texture'] = value;
+          if (/install location/i.test(label) && !specs['Install Location']) specs['Install Location'] = value;
+          if (/material/i.test(label) && !specs['Material Type']) specs['Material Type'] = value;
         }
       });
 
@@ -612,17 +620,22 @@ export class ProductScraper {
       
       specs['Dimensions'] = dimensions || '—';
 
-      // Category-specific enhancements
-      if (category === 'tiles') {
-        if (!specs['PEI Rating']) {
-          specs['PEI Rating'] = this.textMatch(html, /PEI\s?(Rating)?:?\s?(\w+)/i);
-        }
-        if (!specs['DCOF / Slip Rating']) {
-          specs['DCOF / Slip Rating'] = this.textMatch(html, /(DCOF|COF|Slip Resistance):?\s?([>\w\.]+)/i);
-        }
-        if (!specs['Water Absorption']) {
-          specs['Water Absorption'] = this.textMatch(html, /Water Absorption:?\s?([\d<>%-]+)/i);
-        }
+      // Enhanced regex fallbacks for missing specifications
+      if (!specs['PEI Rating']) {
+        specs['PEI Rating'] = this.textMatch(html, /PEI\s?(RATING)?[:\s]*([0-5])/i) ||
+                             this.textMatch(html, /<span>([0-5])<\/span>/i);
+      }
+      if (!specs['DCOF / Slip Rating']) {
+        specs['DCOF / Slip Rating'] = this.textMatch(html, /(DCOF|COF|Slip Resistance)[:\s]*([>\w\.]+)/i);
+      }
+      if (!specs['Water Absorption']) {
+        specs['Water Absorption'] = this.textMatch(html, /Water Absorption[:\s]*([<>\d.%]+)/i);
+      }
+      if (!specs['Finish'] && category === 'tiles') {
+        specs['Finish'] = this.textMatch(html, /(Glazed|Matte|Polished|Honed|Textured)/i);
+      }
+      if (!specs['Material Type'] && category === 'tiles') {
+        specs['Material Type'] = this.textMatch(html, /(Porcelain|Ceramic|Natural Stone)/i);
       }
 
       // Normalize missing fields and prevent label duplication
@@ -643,6 +656,7 @@ export class ProductScraper {
       });
 
       console.log(`Universal scraper extracted ${Object.keys(specs).length} fields for ${category}`);
+      console.log('Extracted specs:', specs);
 
       return {
         name: productName,
