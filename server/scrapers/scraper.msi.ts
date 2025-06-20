@@ -37,6 +37,73 @@ export async function scrapeMSIProduct(url: string, category: string) {
 
     console.log('Extracting MSI product specifications...');
 
+    // Universal Key-Value Parser (like ChatGPT uses internally)
+    function extractStructuredSpecs(rawHtml: string): Record<string, string> {
+      const specs: Record<string, string> = {};
+      const lines = rawHtml
+        .replace(/<[^>]+>/g, '') // strip HTML tags
+        .replace(/\\n+/g, '\n')
+        .split('\n')
+        .map(line => line.trim())
+        .filter(Boolean);
+
+      for (let i = 0; i < lines.length; i++) {
+        const label = lines[i].toLowerCase();
+
+        // Detect and pair lines
+        if (label.includes('pei') && !specs['PEI Rating']) {
+          const nextLine = lines[i + 1];
+          if (nextLine && /[0-5]/.test(nextLine)) {
+            specs['PEI Rating'] = nextLine.match(/([0-5])/)?.[1] || '—';
+          }
+        }
+        if ((label.includes('dcof') || label.includes('slip')) && !specs['DCOF / Slip Rating']) {
+          specs['DCOF / Slip Rating'] = lines[i + 1] || '—';
+        }
+        if (label.includes('absorption') && !specs['Water Absorption']) {
+          specs['Water Absorption'] = lines[i + 1] || '—';
+        }
+        if (label.includes('material') && !specs['Material Type']) {
+          specs['Material Type'] = lines[i + 1] || '—';
+        }
+        if (label.includes('finish') && !specs['Finish']) {
+          specs['Finish'] = lines[i + 1] || '—';
+        }
+        if ((label.includes('color') || label.includes('primary color')) && !specs['Color']) {
+          const nextLine = lines[i + 1];
+          if (nextLine && !nextLine.toLowerCase().includes('color') && nextLine !== '—') {
+            specs['Color'] = nextLine;
+          }
+        }
+        if (label.includes('edge') && !specs['Edge Type']) {
+          specs['Edge Type'] = lines[i + 1] || '—';
+        }
+        if (label.includes('install') && !specs['Install Location']) {
+          specs['Install Location'] = lines[i + 1] || '—';
+        }
+        if ((label.includes('dimension') || label.includes('size')) && !specs['Dimensions']) {
+          const nextLine = lines[i + 1];
+          if (nextLine && /\d+.*x.*\d+/.test(nextLine)) {
+            specs['Dimensions'] = nextLine;
+          }
+        }
+        if (label.includes('texture') && !specs['Texture']) {
+          specs['Texture'] = lines[i + 1] || '—';
+        }
+        if (label.includes('shade') && !specs['Shade Variation']) {
+          specs['Shade Variation'] = lines[i + 1] || '—';
+        }
+      }
+
+      return specs;
+    }
+
+    // Extract specifications using the universal parser
+    const universalSpecs = extractStructuredSpecs(html);
+    Object.assign(specs, universalSpecs);
+
+    console.log('Universal parser extracted:', universalSpecs);
+
     // Direct HTML string extraction for MSI's exact structure
     // PEI Rating extraction
     let peiMatch = html.match(/<div class='specs-heading'><span>PEI RATING<\/span><\/div><div class='specs-label'><span>([0-5])<\/span><\/div>/i);
@@ -151,12 +218,18 @@ export async function scrapeMSIProduct(url: string, category: string) {
       specs['Price per SF'] = price;
     }
 
+    // Add missing required fields
+    specs['Brand'] = 'MSI';
+    specs['Product URL'] = url;
+    if (!specs['Price per SF']) specs['Price per SF'] = price;
+
     console.log('Final MSI specifications:', {
       'PEI Rating': specs['PEI Rating'] || '—',
       'Color': specs['Color'] || '—',
       'Finish': specs['Finish'] || '—',
       'Dimensions': specs['Dimensions'] || '—',
-      'Applications': specs['Applications'] || '—'
+      'Applications': specs['Applications'] || '—',
+      'Material Type': specs['Material Type'] || 'Porcelain'
     });
 
     return {

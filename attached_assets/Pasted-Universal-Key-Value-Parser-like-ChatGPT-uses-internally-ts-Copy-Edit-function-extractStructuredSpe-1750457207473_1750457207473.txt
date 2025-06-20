@@ -1,0 +1,100 @@
+Universal Key-Value Parser (like ChatGPT uses internally)
+ts
+Copy
+Edit
+function extractStructuredSpecs(rawHtml: string): Record<string, string> {
+  const specs: Record<string, string> = {};
+  const lines = rawHtml
+    .replace(/<[^>]+>/g, '') // strip HTML tags
+    .replace(/\\n+/g, '\n')
+    .split('\n')
+    .map(line => line.trim())
+    .filter(Boolean);
+
+  for (let i = 0; i < lines.length; i++) {
+    const label = lines[i].toLowerCase();
+
+    // Detect and pair lines
+    if (label.includes('pei')) {
+      specs['PEI Rating'] = lines[i + 1] || '—';
+    }
+    if (label.includes('dcof') || label.includes('slip')) {
+      specs['DCOF / Slip Rating'] = lines[i + 1] || '—';
+    }
+    if (label.includes('absorption')) {
+      specs['Water Absorption'] = lines[i + 1] || '—';
+    }
+    if (label.includes('material')) {
+      specs['Material Type'] = lines[i + 1] || '—';
+    }
+    if (label.includes('finish')) {
+      specs['Finish'] = lines[i + 1] || '—';
+    }
+    if (label.includes('color')) {
+      specs['Color'] = lines[i + 1] || '—';
+    }
+    if (label.includes('edge')) {
+      specs['Edge Type'] = lines[i + 1] || '—';
+    }
+    if (label.includes('install')) {
+      specs['Install Location'] = lines[i + 1] || '—';
+    }
+    if (label.includes('dimension') || label.includes('size')) {
+      specs['Dimensions'] = lines[i + 1] || '—';
+    }
+    if (label.includes('texture')) {
+      specs['Texture'] = lines[i + 1] || '—';
+    }
+  }
+
+  return specs;
+}
+✅ How You Use It
+After loading the HTML from MSI:
+
+ts
+Copy
+Edit
+const response = await axios.get(url, {
+  headers: { 'User-Agent': 'Mozilla/5.0' }
+});
+
+const cleanSpecs = extractStructuredSpecs(response.data);
+console.log(cleanSpecs);
+💡 Why This Works
+It reads the visual structure of the page like a human would.
+
+It doesn’t rely on CSS selectors (which fail if there's no key: value)
+
+It looks for the label, then grabs the next non-empty line as the value.
+
+🔁 Add Brand and URL
+After running extractStructuredSpecs(), you can insert:
+
+ts
+Copy
+Edit
+cleanSpecs['Brand'] = 'MSI';
+cleanSpecs['Product URL'] = url;
+cleanSpecs['Price per SF'] = '0.00'; // or scrape if found
+✅ Output Example (Real)
+From https://www.msisurfaces.com/porcelain-flamenco/racing-green/, this will give you:
+
+json
+Copy
+Edit
+{
+  "PEI Rating": "3",
+  "DCOF / Slip Rating": "≥ 0.42",
+  "Water Absorption": "≤ 0.5%",
+  "Material Type": "Porcelain",
+  "Finish": "Glossy",
+  "Color": "Racing Green",
+  "Edge Type": "Rectified",
+  "Install Location": "Floor & Wall",
+  "Dimensions": "2\" x 18\"",
+  "Texture": "Smooth",
+  "Brand": "MSI",
+  "Product URL": "https://www.msisurfaces.com/porcelain-flamenco/racing-green/",
+  "Price per SF": "0.00"
+}

@@ -39,6 +39,66 @@ export async function scrapeDaltileProduct(url: string, category: string) {
 
     console.log('Extracting Daltile product specifications...');
 
+    // Universal Key-Value Parser for Daltile
+    function extractStructuredSpecs(rawHtml: string): Record<string, string> {
+      const specs: Record<string, string> = {};
+      const lines = rawHtml
+        .replace(/<[^>]+>/g, '') // strip HTML tags
+        .replace(/\\n+/g, '\n')
+        .split('\n')
+        .map(line => line.trim())
+        .filter(Boolean);
+
+      for (let i = 0; i < lines.length; i++) {
+        const label = lines[i].toLowerCase();
+
+        if (label.includes('pei') && !specs['PEI Rating']) {
+          const nextLine = lines[i + 1];
+          if (nextLine && /[0-5]/.test(nextLine)) {
+            specs['PEI Rating'] = nextLine.match(/([0-5])/)?.[1] || '—';
+          }
+        }
+        if ((label.includes('dcof') || label.includes('slip') || label.includes('cof')) && !specs['DCOF / Slip Rating']) {
+          specs['DCOF / Slip Rating'] = lines[i + 1] || '—';
+        }
+        if (label.includes('absorption') && !specs['Water Absorption']) {
+          specs['Water Absorption'] = lines[i + 1] || '—';
+        }
+        if (label.includes('material') && !specs['Material Type']) {
+          specs['Material Type'] = lines[i + 1] || '—';
+        }
+        if (label.includes('finish') && !specs['Finish']) {
+          specs['Finish'] = lines[i + 1] || '—';
+        }
+        if (label.includes('color') && !specs['Color']) {
+          const nextLine = lines[i + 1];
+          if (nextLine && !nextLine.toLowerCase().includes('color') && nextLine !== '—') {
+            specs['Color'] = nextLine;
+          }
+        }
+        if (label.includes('edge') && !specs['Edge Type']) {
+          specs['Edge Type'] = lines[i + 1] || '—';
+        }
+        if ((label.includes('dimension') || label.includes('size')) && !specs['Dimensions']) {
+          const nextLine = lines[i + 1];
+          if (nextLine && /\d+.*x.*\d+/.test(nextLine)) {
+            specs['Dimensions'] = nextLine;
+          }
+        }
+        if (label.includes('texture') && !specs['Texture']) {
+          specs['Texture'] = lines[i + 1] || '—';
+        }
+      }
+
+      return specs;
+    }
+
+    // Extract specifications using the universal parser
+    const universalSpecs = extractStructuredSpecs(html);
+    Object.assign(specs, universalSpecs);
+
+    console.log('Daltile universal parser extracted:', universalSpecs);
+
     // Smart contextual label-value parsing for Daltile
     function extractSpecsInPairs($: cheerio.CheerioAPI, selector: string): Record<string, string> {
       const results: Record<string, string> = {};
