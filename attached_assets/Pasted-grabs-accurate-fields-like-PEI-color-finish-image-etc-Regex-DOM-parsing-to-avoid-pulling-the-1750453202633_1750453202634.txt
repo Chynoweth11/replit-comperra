@@ -1,0 +1,70 @@
+grabs accurate fields like PEI, color, finish, image, etc.
+
+Regex + DOM parsing to avoid pulling the label instead of the value (e.g., Color = “YesCommercial Light” is likely from bad sibling targeting).
+
+A fallback that leaves fields blank if values truly aren’t there, but doesn’t duplicate data.
+
+🚀 Scalable Scraper Code for MSI (Tiles Example)
+Here’s updated TypeScript (Node.js) scraper logic:
+
+ts
+Copy
+Edit
+// scraper/msi.ts
+import axios from 'axios';
+import cheerio from 'cheerio';
+
+export async function scrapeMSITileProduct(url: string) {
+  const { data: html } = await axios.get(url);
+  const $ = cheerio.load(html);
+
+  const product: any = {
+    category: 'tiles',
+    productURL: url,
+    brand: 'MSI',
+  };
+
+  // Product Name
+  product.name = $('h1.product-title').text().trim() || $('meta[property="og:title"]').attr('content');
+
+  // Image
+  product.imageURL = $('meta[property="og:image"]').attr('content') || $('.product-image img').attr('src');
+
+  // Specs Table
+  $('table.product-specs tr').each((_, el) => {
+    const label = $(el).find('th, td:first-child').text().toLowerCase().trim();
+    const value = $(el).find('td:last-child').text().trim();
+
+    if (/pei/i.test(label)) product.peiRating = value;
+    if (/slip|dcof|cof/i.test(label)) product.slipRating = value;
+    if (/water absorption/i.test(label)) product.waterAbsorption = value;
+    if (/finish/i.test(label)) product.finish = value;
+    if (/edge/i.test(label)) product.edgeType = value;
+    if (/color/i.test(label)) product.color = value;
+    if (/texture/i.test(label)) product.texture = value;
+    if (/install location/i.test(label)) product.installLocation = value;
+    if (/material/i.test(label)) product.materialType = value;
+  });
+
+  // Dimensions
+  const sizeMatch = html.match(/Size:\s*<\/strong>\s*([\d"x\s]+)/i);
+  if (sizeMatch) product.dimensions = sizeMatch[1].trim();
+
+  // Price
+  product.pricePerSF = 0.0; // Replace with logic to fetch live price if available
+
+  return product;
+}
+✅ What This Fixes:
+No more pulling label text as values (e.g., “YesCommercial Light”).
+
+Adds accurate product.name, product.imageURL, and dimensions.
+
+Leaves fields undefined only if no data exists—no false values.
+
+🔄 Next Steps:
+Add similar parsing logic for other brands like Daltile, Cambria, Shaw, etc.
+
+Combine into your main scrapeProduct(url) function.
+
+Use this object to populate your Airtable or local DB.

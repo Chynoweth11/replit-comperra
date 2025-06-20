@@ -22,6 +22,9 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ✅ **June 20, 2025**: Enhanced field extraction with proper label/value separation to prevent contamination (e.g., Color = "YesCommercial Light")
+- ✅ **June 20, 2025**: Added structured table parsing with regex fallbacks for accurate specification extraction
+- ✅ **June 20, 2025**: Implemented field cleaning logic to remove boolean prefixes and common label suffixes
 - ✅ **June 20, 2025**: Added comprehensive universal scraper with systematic field extraction for all categories and brands
 - ✅ **June 20, 2025**: Implemented CATEGORY_FIELDS structure with complete field definitions for tiles, slabs, LVT, hardwood, heating, and carpet
 - ✅ **June 20, 2025**: Enhanced scraper prioritizes universal extraction before falling back to brand-specific methods

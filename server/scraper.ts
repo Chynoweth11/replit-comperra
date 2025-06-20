@@ -491,16 +491,61 @@ export class ProductScraper {
         'Product URL': url
       };
 
-      // Universal field extraction - searches entire page for each field
-      $('*').each((i, el) => {
+      // Enhanced specification table extraction with proper label/value separation
+      $('table.product-specs tr, table.specs tr, .specifications tr, .spec-table tr').each((_, el) => {
+        const label = $(el).find('th, td:first-child, .spec-label').text().toLowerCase().trim();
+        const value = $(el).find('td:last-child, .spec-value').text().trim();
+
+        if (label && value && value !== label) {
+          // PEI Rating extraction
+          if (/pei/i.test(label) && !specs['PEI Rating']) {
+            specs['PEI Rating'] = value;
+          }
+          // DCOF / Slip Rating extraction  
+          if (/slip|dcof|cof/i.test(label) && !specs['DCOF / Slip Rating']) {
+            specs['DCOF / Slip Rating'] = value;
+          }
+          // Water Absorption extraction
+          if (/water absorption/i.test(label) && !specs['Water Absorption']) {
+            specs['Water Absorption'] = value;
+          }
+          // Finish extraction
+          if (/finish/i.test(label) && !specs['Finish']) {
+            specs['Finish'] = value;
+          }
+          // Edge Type extraction
+          if (/edge/i.test(label) && !specs['Edge Type']) {
+            specs['Edge Type'] = value;
+          }
+          // Color extraction
+          if (/color/i.test(label) && !specs['Color']) {
+            specs['Color'] = value;
+          }
+          // Texture extraction
+          if (/texture/i.test(label) && !specs['Texture']) {
+            specs['Texture'] = value;
+          }
+          // Install Location extraction
+          if (/install location/i.test(label) && !specs['Install Location']) {
+            specs['Install Location'] = value;
+          }
+          // Material Type extraction
+          if (/material/i.test(label) && !specs['Material Type']) {
+            specs['Material Type'] = value;
+          }
+        }
+      });
+
+      // Fallback: List item extraction for unstructured data
+      $('li, .spec-item, .feature').each((_, el) => {
         const text = $(el).text().trim();
         fields.forEach(field => {
-          const label = field.toLowerCase();
+          const label = field.toLowerCase().split(' ')[0]; // Use first word for matching
           if (!specs[field] && text.toLowerCase().includes(label)) {
             const parts = text.split(':');
             if (parts.length > 1) {
               const value = parts[1].trim();
-              if (value && value.length < 100 && value !== '—') {
+              if (value && value.length < 100 && value !== '—' && value !== text) {
                 specs[field] = value;
               }
             }
@@ -519,13 +564,15 @@ export class ProductScraper {
         else specs['Brand'] = this.extractBrandFromURL(url);
       }
 
-      // Extract product name from title
-      const productName = $('title').text().split('|')[0].trim() ||
-                         $('h1').first().text().trim() ||
+      // Enhanced product name extraction
+      const productName = $('h1.product-title, h1.product-name, h1').first().text().trim() ||
+                         $('meta[property="og:title"]').attr('content') ||
+                         $('title').text().split('|')[0].trim() ||
                          'Product Name Not Found';
 
-      // Enhanced image extraction
+      // Enhanced image extraction with multiple fallbacks
       let imageUrl = $('meta[property="og:image"]').attr('content') ||
+                    $('.product-image img, .hero-image img, .gallery img').first().attr('src') ||
                     $('img').first().attr('src') || '';
       
       if (imageUrl && !imageUrl.startsWith('http')) {
@@ -539,10 +586,31 @@ export class ProductScraper {
       const priceMatch = priceText.match(/\$(\d+(?:\.\d{1,2})?)/);
       specs['Price per SF'] = priceMatch ? priceMatch[1] : '0.00';
 
-      // Enhanced dimensions extraction
-      const dimensionText = $('*:contains("Size"), *:contains("Dimensions")').text();
-      const dimMatch = dimensionText.match(/(\d+["']?\s*[xX×]\s*\d+["']?)/);
-      specs['Dimensions'] = dimMatch ? dimMatch[1] : this.textMatch(html, /(\d+["']?\s*[xX×]\s*\d+["']?)/);
+      // Enhanced dimensions extraction with structured search
+      let dimensions = '';
+      
+      // First try structured data extraction
+      $('table tr, li, .spec-item').each((_, el) => {
+        const text = $(el).text();
+        if (/size|dimension/i.test(text) && !dimensions) {
+          const parts = text.split(':');
+          if (parts.length > 1) {
+            const dimValue = parts[1].trim();
+            const dimMatch = dimValue.match(/(\d+["']?\s*[xX×]\s*\d+["']?)/);
+            if (dimMatch) dimensions = dimMatch[1];
+          }
+        }
+      });
+      
+      // Fallback to regex search in HTML
+      if (!dimensions) {
+        const sizeMatch = html.match(/Size:\s*<\/strong>\s*([\d"x\s]+)/i) ||
+                         html.match(/Dimensions?:\s*<\/[^>]+>\s*([\d"x\s]+)/i) ||
+                         html.match(/(\d+["']?\s*[xX×]\s*\d+["']?)/);
+        if (sizeMatch) dimensions = sizeMatch[1].trim();
+      }
+      
+      specs['Dimensions'] = dimensions || '—';
 
       // Category-specific enhancements
       if (category === 'tiles') {
@@ -557,10 +625,20 @@ export class ProductScraper {
         }
       }
 
-      // Normalize missing fields
+      // Normalize missing fields and prevent label duplication
       fields.forEach(field => {
-        if (!specs[field] || specs[field] === '') {
+        if (!specs[field] || specs[field] === '' || specs[field] === field) {
           specs[field] = '—';
+        }
+        // Clean up common label contamination
+        if (typeof specs[field] === 'string') {
+          specs[field] = specs[field]
+            .replace(/^(yes|no|true|false)\s*/i, '') // Remove boolean prefixes
+            .replace(/\s*(commercial|residential|light|heavy)\s*$/i, '') // Remove common suffixes that are likely labels
+            .trim();
+          
+          // If field becomes empty after cleaning, mark as missing
+          if (!specs[field]) specs[field] = '—';
         }
       });
 
