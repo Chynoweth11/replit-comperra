@@ -22,10 +22,9 @@ export default function ProductCompare() {
   useEffect(() => {
     const loadSelectedProducts = async () => {
       const comparisonIds = JSON.parse(localStorage.getItem('comparisonIds') || '[]');
+      console.log("Loading products by IDs:", comparisonIds);
       
-      if (comparisonIds.length > 0 && allMaterials.length > 0) {
-        console.log("Loading products by IDs:", comparisonIds);
-        
+      if (comparisonIds.length > 0) {
         const products: Material[] = [];
         for (const id of comparisonIds) {
           try {
@@ -41,16 +40,12 @@ export default function ProductCompare() {
         
         console.log("Loaded products from API:", products);
         setSelectedMaterials(products);
-        setIsLoading(false);
-      } else {
-        setIsLoading(false);
       }
+      setIsLoading(false);
     };
 
-    if (allMaterials.length > 0) {
-      loadSelectedProducts();
-    }
-  }, [allMaterials]);
+    loadSelectedProducts();
+  }, []);
 
   const clearComparison = () => {
     localStorage.removeItem('comparisonIds');
@@ -143,21 +138,27 @@ export default function ProductCompare() {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Categories
-            </Button>
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Product Comparison ({selectedMaterials.length} items)
-          </h1>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <Link href="/">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Categories
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Product Comparison
+              </h1>
+              <p className="text-gray-600">
+                Comparing {selectedMaterials.length} {selectedMaterials[0]?.category || 'products'}
+              </p>
+            </div>
+          </div>
           <Button 
             variant="outline" 
             size="sm" 
             onClick={clearComparison}
-            className="ml-auto"
           >
             Clear All
           </Button>

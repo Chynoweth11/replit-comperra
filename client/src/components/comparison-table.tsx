@@ -124,8 +124,19 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
       return;
     }
     
+    // Validate all selected materials are from the same category
+    const selectedMaterialData = filteredMaterials.filter(m => selectedIds.includes(m.id));
+    const categories = new Set(selectedMaterialData.map(m => m.category));
+    
+    if (categories.size > 1) {
+      const categoryList = Array.from(categories).join(", ");
+      alert(`Cannot compare materials from different categories: ${categoryList}. Please select materials from the same category only.`);
+      return;
+    }
+    
     // Store the IDs and navigate to comparison page
     localStorage.setItem('comparisonIds', JSON.stringify(selectedIds));
+    console.log('Stored IDs in localStorage and navigating to /compare');
     setLocation('/compare');
   };
 
