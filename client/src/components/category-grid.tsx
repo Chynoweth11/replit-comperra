@@ -63,12 +63,12 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
           >
             <div className="h-40 bg-gray-100 relative overflow-hidden">
               <img 
-                src={`https://images.pexels.com/photos/${category.id === 'tiles' ? '4210315/pexels-photo-4210315.jpeg' : 
-                     category.id === 'slabs' ? '1080721/pexels-photo-1080721.jpeg' : 
-                     category.id === 'lvt' ? '5824878/pexels-photo-5824878.jpeg' : 
-                     category.id === 'hardwood' ? '1669799/pexels-photo-1669799.jpeg' : 
-                     category.id === 'heat' ? '4450337/pexels-photo-4450337.jpeg' : 
-                     '4846100/pexels-photo-4846100.jpeg'}?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop`} 
+                src={`https://images.unsplash.com/photo-${category.id === 'tiles' ? '1571069985395-e96c6a2bf1e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80' : 
+                     category.id === 'slabs' ? '1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80' : 
+                     category.id === 'lvt' ? '1586105251261-72a756497a11?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80' : 
+                     category.id === 'hardwood' ? '1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80' : 
+                     category.id === 'heat' ? '1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80' : 
+                     '1584464491033-06628f3a6b7b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80'}`} 
                 alt={category.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 onError={(e) => {
