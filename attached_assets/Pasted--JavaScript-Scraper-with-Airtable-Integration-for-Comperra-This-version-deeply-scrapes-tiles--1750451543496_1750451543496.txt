@@ -1,0 +1,66 @@
+// ✅ JavaScript Scraper with Airtable Integration for Comperra
+// This version deeply scrapes tiles, slabs, vinyl, hardwood, heating, carpet specs
+// Supports Daltile, MSI, and generic sources
+
+const axios = require('axios');
+const cheerio = require('cheerio');
+const Airtable = require('airtable');
+
+const base = new Airtable({
+  apiKey: process.env.AIRTABLE_API_KEY
+}).base(process.env.AIRTABLE_BASE_ID);
+
+async function scrapeMSI(url) {
+  const { data: html } = await axios.get(url);
+  const $ = cheerio.load(html);
+  const product = {};
+
+  product['Product URL'] = url;
+  product['Brand'] = 'MSI';
+  product['Product Name'] = $('h1').text().trim();
+  product['Price/SF'] = 'N/A'; // Not always shown
+
+  $('li').each((i, el) => {
+    const text = $(el).text().toLowerCase();
+    if (text.includes('pei')) product['PEI Rating'] = $(el).text().split(':').pop().trim();
+    if (text.includes('cof') || text.includes('slip')) product['DCOF / Slip Rating'] = $(el).text().split(':').pop().trim();
+    if (text.includes('water')) product['Water Absorption'] = $(el).text().split(':').pop().trim();
+    if (text.includes('finish')) product['Finish'] = $(el).text().split(':').pop().trim();
+    if (text.includes('material')) product['Material Type'] = $(el).text().split(':').pop().trim();
+    if (text.includes('size') || text.includes('dimension')) product['Dimensions'] = $(el).text().split(':').pop().trim();
+    if (text.includes('color')) product['Color'] = $(el).text().split(':').pop().trim();
+  });
+
+  const image = $('img[src*="product"]').first().attr('src');
+  if (image) {
+    product['Image URL'] = image.startsWith('http') ? image : `https://www.msisurfaces.com${image}`;
+  }
+
+  return product;
+}
+
+async function saveToAirtable(record) {
+  try {
+    await base(process.env.AIRTABLE_TABLE_NAME).create([{ fields: record }]);
+    console.log('✅ Saved to Airtable');
+  } catch (err) {
+    console.error('❌ Airtable save error:', err.message);
+  }
+}
+
+async function scrapeAndSave(url) {
+  let result;
+  if (url.includes('msisurfaces.com')) {
+    result = await scrapeMSI(url);
+  } else {
+    throw new Error('Unsupported domain');
+  }
+
+  console.log('Scraped Product:', result);
+  await saveToAirtable(result);
+}
+
+// Run Example
+// scrapeAndSave('https://www.msisurfaces.com/porcelain-flamenco/hale-navy/');
+
+module.exports = { scrapeAndSave };

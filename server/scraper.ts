@@ -2,6 +2,19 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import type { InsertMaterial } from '@shared/schema';
 
+// Airtable integration (optional - only if AIRTABLE_API_KEY is available)
+let airtableBase: any = null;
+try {
+  if (process.env.AIRTABLE_API_KEY) {
+    const Airtable = require('airtable');
+    airtableBase = new Airtable({
+      apiKey: process.env.AIRTABLE_API_KEY
+    }).base(process.env.AIRTABLE_BASE_ID || 'appQJoO5GkIxDMiHS');
+  }
+} catch (error) {
+  console.log('Airtable not available, continuing without Airtable integration');
+}
+
 export interface ScrapedProduct {
   name: string;
   brand: string;
@@ -432,6 +445,53 @@ export class ProductScraper {
       inStock: true,
       sourceUrl: scrapedProduct.sourceUrl
     };
+  }
+
+  // Enhanced Airtable integration for scraped products
+  async saveToAirtable(scrapedProduct: ScrapedProduct): Promise<boolean> {
+    if (!airtableBase) {
+      console.log('Airtable not configured, skipping Airtable save');
+      return false;
+    }
+
+    try {
+      const airtableRecord = {
+        'Product Name': scrapedProduct.name,
+        'Brand': scrapedProduct.brand,
+        'Category': scrapedProduct.category,
+        'Price per SF': scrapedProduct.price,
+        'Product URL': scrapedProduct.sourceUrl,
+        'Image URL': scrapedProduct.imageUrl || '',
+        'Description': scrapedProduct.description || '',
+        'Dimensions': scrapedProduct.dimensions || '',
+        ...scrapedProduct.specifications // Spread all specifications
+      };
+
+      await airtableBase('Products').create([{ fields: airtableRecord }]);
+      console.log(`✅ Saved ${scrapedProduct.name} to Airtable`);
+      return true;
+    } catch (error) {
+      console.error('❌ Airtable save error:', error);
+      return false;
+    }
+  }
+
+  // Enhanced scrape and save method
+  async scrapeAndSave(url: string): Promise<ScrapedProduct | null> {
+    const scrapedProduct = await this.scrapeProduct(url);
+    
+    if (scrapedProduct) {
+      // Try to save to Airtable if available
+      await this.saveToAirtable(scrapedProduct);
+      console.log('Scraped Product:', {
+        name: scrapedProduct.name,
+        brand: scrapedProduct.brand,
+        category: scrapedProduct.category,
+        specifications: Object.keys(scrapedProduct.specifications).length
+      });
+    }
+    
+    return scrapedProduct;
   }
 }
 

@@ -22,6 +22,10 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ✅ **June 20, 2025**: Integrated Airtable direct saving for all scraped products with comprehensive specifications
+- ✅ **June 20, 2025**: Enhanced scraper with automatic Airtable backup for product data preservation
+- ✅ **June 20, 2025**: Added dual-save functionality - local storage + Airtable for complete data redundancy
+- ✅ **June 20, 2025**: Implemented enhanced bulk scraping with progress tracking and Airtable integration
 - ✅ **June 20, 2025**: Upgraded scraping system with full six-category support and enhanced specification templates
 - ✅ **June 20, 2025**: Added category-specific spec templates (Tiles, Stone & Slabs, Vinyl & LVT, Hardwood, Heating, Carpet)
 - ✅ **June 20, 2025**: Enhanced brand detection for Marazzi and Flor manufacturers
