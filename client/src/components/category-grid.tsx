@@ -62,12 +62,28 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
             className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow group h-full flex flex-col"
           >
             <div className="h-40 bg-gray-100 relative overflow-hidden">
+              <img 
+                src={category.id === 'tiles' ? '/attached_assets/Tile_1750385685010.jpg' : 
+                     category.id === 'slabs' ? '/attached_assets/Stone and slabs_1750385785852.jpg' : 
+                     category.id === 'lvt' ? '/attached_assets/Vinyl_1750385685009.jpg' : 
+                     category.id === 'hardwood' ? '/attached_assets/Hardwood_1750385685009.jpg' : 
+                     category.id === 'heat' ? '/attached_assets/Thermostat_1750385685008.jpg' : 
+                     '/attached_assets/Carpet_1750385685009.jpg'} 
+                alt={category.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
+              />
               <div className={`w-full h-full bg-gradient-to-br ${category.id === 'tiles' ? 'from-blue-400 to-blue-600' : 
                                category.id === 'slabs' ? 'from-gray-400 to-gray-600' : 
                                category.id === 'lvt' ? 'from-green-400 to-green-600' : 
                                category.id === 'hardwood' ? 'from-amber-500 to-amber-700' : 
                                category.id === 'heat' ? 'from-red-400 to-red-600' : 'from-purple-400 to-purple-600'} 
-                               flex items-center justify-center text-white text-7xl`}>
+                               hidden items-center justify-center text-white text-7xl absolute top-0 left-0`}>
                 <div>
                   {category.id === 'tiles' ? '🏛️' : 
                    category.id === 'slabs' ? '🗿' : 
@@ -76,25 +92,6 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
                    category.id === 'heat' ? '🔥' : '🧶'}
                 </div>
               </div>
-              <img 
-                src={`https://picsum.photos/400/300?random=${category.id === 'tiles' ? '1' : 
-                     category.id === 'slabs' ? '2' : 
-                     category.id === 'lvt' ? '3' : 
-                     category.id === 'hardwood' ? '4' : 
-                     category.id === 'heat' ? '5' : '6'}`} 
-                alt={category.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 absolute top-0 left-0"
-                onLoad={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'block';
-                  const fallback = target.previousElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'none';
-                }}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
-              />
             </div>
             
             <div className="p-6 flex flex-col flex-grow">
