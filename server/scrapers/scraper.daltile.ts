@@ -39,6 +39,27 @@ export async function scrapeDaltileProduct(url: string, category: string) {
 
     console.log('Extracting Daltile product specifications...');
 
+    // Smart contextual label-value parsing for Daltile
+    function extractSpecsInPairs($: cheerio.CheerioAPI, selector: string): Record<string, string> {
+      const results: Record<string, string> = {};
+      const elements = $(selector);
+      
+      for (let i = 0; i < elements.length - 1; i++) {
+        const label = $(elements[i]).text().replace(/\s+/g, ' ').trim();
+        const value = $(elements[i + 1]).text().replace(/\s+/g, ' ').trim();
+
+        if (
+          /pei|dcof|absorption|material|finish|color|edge|install|dimension|texture|location|size|shade|variation/i.test(label) &&
+          value !== '—' && value !== '' && value !== label &&
+          value.length > 0 && value.length < 100
+        ) {
+          console.log(`Daltile smart extraction: ${label} = ${value}`);
+          results[label] = value;
+        }
+      }
+      return results;
+    }
+
     // Extract from specification tables and structured data
     $('table.specs, .specification-item, .spec-row, .product-specs tr, .specs-table tr, .technical-specs tr').each((_, elem) => {
       const key = $(elem).find('.spec-label, .label, td:first-child, th').text().trim();
@@ -47,6 +68,10 @@ export async function scrapeDaltileProduct(url: string, category: string) {
         specs[key] = value;
       }
     });
+
+    // Enhanced extraction using smart parsing
+    const smartSpecs = extractSpecsInPairs($, '.product-detail-specs li, table td, .specifications div, .spec-item, .technical-specs td');
+    Object.assign(specs, smartSpecs);
 
     // Enhanced regex-based extraction from full page content
     const bodyText = $('body').text();

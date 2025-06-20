@@ -59,7 +59,31 @@ export async function scrapeUniversalProduct(url: string, category: string) {
 
     console.log(`Extracting universal product specifications for ${brand}...`);
 
-    // Universal extraction from structured data
+    // Smart contextual label-value parsing for universal brands
+    function extractSpecsInPairs($: cheerio.CheerioAPI, selector: string): Record<string, string> {
+      const results: Record<string, string> = {};
+      const elements = $(selector);
+      
+      for (let i = 0; i < elements.length - 1; i++) {
+        const label = $(elements[i]).text().replace(/\s+/g, ' ').trim();
+        const value = $(elements[i + 1]).text().replace(/\s+/g, ' ').trim();
+
+        if (
+          /pei|dcof|absorption|material|finish|color|edge|install|dimension|texture|location|size|shade|variation|thickness|species|fiber|pile/i.test(label) &&
+          value !== '—' && value !== '' && value !== label &&
+          value.length > 0 && value.length < 100
+        ) {
+          console.log(`Universal smart extraction: ${label} = ${value}`);
+          results[label] = value;
+        }
+      }
+      return results;
+    }
+
+    // Universal extraction from structured data with smart parsing
+    const smartSpecs = extractSpecsInPairs($, '.product-detail-specs li, table td, .specifications div, .spec-item, ul li, .specs div');
+    
+    // Legacy extraction for colon-separated values
     $('table, ul, li, div, span, .specs, .specifications, .product-specs').each((_, el) => {
       const text = $(el).text();
       const match = text.split(':');
@@ -67,29 +91,34 @@ export async function scrapeUniversalProduct(url: string, category: string) {
         const key = match[0].trim();
         const value = match[1].trim();
         
-        if (key && value && key.length < 50 && value.length < 100) {
-          // Map common field variations
-          if (/pei/i.test(key)) {
-            const peiValue = value.match(/([0-5])/);
-            if (peiValue) specs['PEI Rating'] = peiValue[1];
-          } else if (/color/i.test(key)) {
-            specs['Color'] = value;
-          } else if (/finish|surface/i.test(key)) {
-            specs['Finish'] = value;
-          } else if (/size|dimension/i.test(key)) {
-            specs['Dimensions'] = value;
-          } else if (/material|type/i.test(key)) {
-            specs['Material Type'] = value;
-          } else if (/thickness/i.test(key)) {
-            specs['Thickness'] = value;
-          } else if (/absorption/i.test(key)) {
-            specs['Water Absorption'] = value;
-          } else if (/slip|dcof|cof/i.test(key)) {
-            specs['DCOF / Slip Rating'] = value;
-          } else {
-            specs[key] = value;
-          }
+        if (key && value && key.length < 50 && value.length < 100 && !smartSpecs[key]) {
+          smartSpecs[key] = value;
         }
+      }
+    });
+
+    // Map common field variations
+    Object.keys(smartSpecs).forEach(key => {
+      const value = smartSpecs[key];
+      if (/pei/i.test(key)) {
+        const peiValue = value.match(/([0-5])/);
+        if (peiValue) specs['PEI Rating'] = peiValue[1];
+      } else if (/color/i.test(key)) {
+        specs['Color'] = value;
+      } else if (/finish|surface/i.test(key)) {
+        specs['Finish'] = value;
+      } else if (/size|dimension/i.test(key)) {
+        specs['Dimensions'] = value;
+      } else if (/material|type/i.test(key)) {
+        specs['Material Type'] = value;
+      } else if (/thickness/i.test(key)) {
+        specs['Thickness'] = value;
+      } else if (/absorption/i.test(key)) {
+        specs['Water Absorption'] = value;
+      } else if (/slip|dcof|cof/i.test(key)) {
+        specs['DCOF / Slip Rating'] = value;
+      } else {
+        specs[key] = value;
       }
     });
 

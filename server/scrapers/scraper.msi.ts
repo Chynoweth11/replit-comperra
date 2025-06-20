@@ -84,31 +84,64 @@ export async function scrapeMSIProduct(url: string, category: string) {
       console.log(`Found Applications: ${applications.join(', ')}`);
     }
 
-    // Fallback extraction using cheerio selectors
-    $('ul.list-unstyled li, .tab-content li, table tr').each((_, el) => {
-      const text = $(el).text();
-      const match = text.split(':');
-      if (match.length === 2) {
-        const key = match[0].trim();
-        const value = match[1].trim();
-        
-        if (key && value && !specs[key]) {
-          // Map common field names
-          if (/pei/i.test(key) && !specs['PEI Rating']) {
-            const peiValue = value.match(/([0-5])/);
-            if (peiValue) specs['PEI Rating'] = peiValue[1];
-          } else if (/color/i.test(key) && !specs['Color']) {
-            specs['Color'] = value;
-          } else if (/finish|type/i.test(key) && !specs['Finish']) {
-            specs['Finish'] = value;
-          } else if (/size|dimension/i.test(key) && !specs['Dimensions']) {
-            specs['Dimensions'] = value;
-          } else {
-            specs[key] = value;
-          }
+    // Smart contextual label-value parsing
+    function extractSpecsInPairs($: cheerio.CheerioAPI, selector: string): Record<string, string> {
+      const results: Record<string, string> = {};
+      const elements = $(selector);
+      
+      for (let i = 0; i < elements.length - 1; i++) {
+        const label = $(elements[i]).text().replace(/\s+/g, ' ').trim();
+        const value = $(elements[i + 1]).text().replace(/\s+/g, ' ').trim();
+
+        if (
+          /pei|dcof|absorption|material|finish|color|edge|install|dimension|texture|location|size|shade|variation/i.test(label) &&
+          value !== '—' && value !== '' && value !== label &&
+          value.length > 0 && value.length < 100
+        ) {
+          console.log(`Smart extraction found: ${label} = ${value}`);
+          results[label] = value;
         }
       }
-    });
+      return results;
+    }
+
+    // Enhanced fallback extraction using smart parsing
+    const smartSpecs = extractSpecsInPairs($, '.product-detail-specs li, table td, .specifications div, .spec-item, ul.list-unstyled li, .tab-content li');
+    
+    // Normalize and map extracted specs
+    function remapSpecs(specs: Record<string, string>): Record<string, string> {
+      const map: Record<string, string> = {
+        'P E I Rating': 'PEI Rating',
+        'PEI RATING': 'PEI Rating', 
+        'D C O F / Slip Rating': 'DCOF / Slip Rating',
+        'DCOF': 'DCOF / Slip Rating',
+        'Water Absorption': 'Water Absorption',
+        'Finish': 'Finish',
+        'Tile Type': 'Finish',
+        'Material Type': 'Material Type',
+        'Edge Type': 'Edge Type',
+        'Install Location': 'Install Location',
+        'Dimensions': 'Dimensions',
+        'Size': 'Dimensions',
+        'Item Size': 'Dimensions',
+        'Color': 'Color',
+        'Primary Color(s)': 'Color',
+        'Texture': 'Texture',
+        'Shade Variations': 'Shade Variation'
+      };
+
+      const normalized: Record<string, string> = {};
+      for (const key in specs) {
+        const newKey = map[key] || key;
+        if (!normalized[newKey]) {  // Don't overwrite existing values
+          normalized[newKey] = specs[key];
+        }
+      }
+      return normalized;
+    }
+
+    const remappedSpecs = remapSpecs(smartSpecs);
+    Object.assign(specs, remappedSpecs);
 
     // Price extraction
     let price = '0.00';

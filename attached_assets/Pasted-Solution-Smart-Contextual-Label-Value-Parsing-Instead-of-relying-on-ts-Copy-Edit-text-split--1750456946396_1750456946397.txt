@@ -1,0 +1,76 @@
+Solution: Smart Contextual Label-Value Parsing
+🔄 Instead of relying on:
+ts
+Copy
+Edit
+text.split(':')
+We need to track label-value pairs in visual order, even without colons.
+
+✅ Fix: Enhanced Key-Value Extractor
+I'll add this logic to your scrapers:
+
+ts
+Copy
+Edit
+function extractSpecsInPairs($: cheerio.CheerioAPI, selector: string): Record<string, string> {
+  const results: Record<string, string> = {};
+  const elements = $(selector);
+  for (let i = 0; i < elements.length - 1; i++) {
+    const label = $(elements[i]).text().replace(/\s+/g, ' ').trim();
+    const value = $(elements[i + 1]).text().replace(/\s+/g, ' ').trim();
+
+    if (
+      /pei|dcof|absorption|material|finish|color|edge|install|dimension|texture|location|size/i.test(label) &&
+      value !== '—' && value !== ''
+    ) {
+      results[label] = value;
+    }
+  }
+  return results;
+}
+🔁 Use it in scraper.msi.ts
+Replace the $('table, ul, li...') loop with:
+
+ts
+Copy
+Edit
+const specs = extractSpecsInPairs($, '.product-detail-specs li, table td, .specifications div, .spec-item');
+
+specs['Product URL'] = url;
+specs['Brand'] = 'MSI';
+💡 Bonus: Normalize mapped keys
+You can also rename the extracted keys to your internal format:
+
+ts
+Copy
+Edit
+function remapSpecs(specs: Record<string, string>): Record<string, string> {
+  const map: Record<string, string> = {
+    'P E I Rating': 'PEI Rating',
+    'D C O F / Slip Rating': 'DCOF / Slip Rating',
+    'Water Absorption': 'Water Absorption',
+    'Finish': 'Finish',
+    'Material Type': 'Material Type',
+    'Edge Type': 'Edge Type',
+    'Install Location': 'Install Location',
+    'Dimensions': 'Dimensions',
+    'Size': 'Dimensions',
+    'Color': 'Color',
+    'Texture': 'Texture'
+  };
+
+  const normalized: Record<string, string> = {};
+  for (const key in specs) {
+    const newKey = map[key] || key;
+    normalized[newKey] = specs[key];
+  }
+  return normalized;
+}
+✅ Result
+This will finally fix:
+
+— values showing up where real values are nearby
+
+Visual-only key-value pairs (e.g., PEI above, value below)
+
+Incorrect Color: transparent or Dimensions: —
