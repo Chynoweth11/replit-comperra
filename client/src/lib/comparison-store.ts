@@ -52,3 +52,6 @@ class ComparisonStore {
 }
 
 export const comparisonStore = new ComparisonStore();
+
+// Make it globally accessible for clearing from other components
+(window as any).comparisonStore = comparisonStore;

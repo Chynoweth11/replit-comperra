@@ -9,6 +9,7 @@ import { ArrowLeft } from "lucide-react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { MATERIAL_SPECIFICATIONS } from "@shared/material-specifications";
+import { comparisonStore } from "@/lib/comparison-store";
 import type { Material } from "@shared/schema";
 
 export default function ProductCompare() {
@@ -48,15 +49,27 @@ export default function ProductCompare() {
   }, []);
 
   const clearComparison = () => {
+    // Clear localStorage
     localStorage.removeItem('comparisonIds');
+    
+    // Clear local state
     setSelectedMaterials([]);
+    
+    // Clear the comparison store so checkboxes are unchecked in the main table
+    comparisonStore.clear();
   };
 
   const removeProduct = (id: number) => {
+    // Update localStorage
     const currentIds = JSON.parse(localStorage.getItem('comparisonIds') || '[]');
     const updatedIds = currentIds.filter((compId: number) => compId !== id);
     localStorage.setItem('comparisonIds', JSON.stringify(updatedIds));
+    
+    // Update local state
     setSelectedMaterials(prev => prev.filter(product => product.id !== id));
+    
+    // Update comparison store so checkbox gets unchecked in main table
+    comparisonStore.remove(id);
   };
 
   const getSpecValue = (material: Material, key: string): string => {
