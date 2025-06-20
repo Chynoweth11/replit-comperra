@@ -104,6 +104,30 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
     setVisibleSpecs(prev => ({ ...prev, [spec]: !prev[spec] }));
   };
 
+  const toggleMaterialSelection = (id: number) => {
+    console.log(`Toggling material selection:`, id);
+    comparisonStore.toggle(id);
+  };
+
+  const handleCompareSelected = () => {
+    const selectedIds = comparisonStore.getSelected();
+    console.log('Compare button clicked with selections:', selectedIds);
+    
+    if (selectedIds.length === 0) {
+      alert('Please select at least one product to compare.');
+      return;
+    }
+    
+    if (selectedIds.length > 5) {
+      alert('Please select no more than 5 products to compare.');
+      return;
+    }
+    
+    // Navigate to comparison page with selected IDs
+    const idsParam = selectedIds.join(',');
+    navigate(`/compare?ids=${idsParam}`);
+  };
+
   const { data: materials = [], isLoading } = useQuery<Material[]>({
     queryKey: ["/api/materials", { 
       category,
@@ -242,10 +266,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
     return null;
   };
 
-  const toggleMaterialSelection = (materialId: number) => {
-    console.log('Toggling material selection:', materialId);
-    comparisonStore.toggle(materialId);
-  };
+
 
   const headers = getHeaders(category);
 
