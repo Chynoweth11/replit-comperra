@@ -12,17 +12,56 @@ import type { Material } from "@shared/schema";
 
 export default function ProductCompare() {
   const [selectedMaterials, setSelectedMaterials] = useState<Material[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const { data: allMaterials = [] } = useQuery<Material[]>({
     queryKey: ["/api/materials"],
   });
 
   useEffect(() => {
-    const stored = localStorage.getItem('comparisonIds');
-    if (stored) {
-      const storedIds = JSON.parse(stored);
-      const materials = allMaterials.filter(m => storedIds.includes(m.id));
-      setSelectedMaterials(materials);
+    const loadSelectedProducts = async () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const idsParam = urlParams.get('ids');
+        
+        if (idsParam) {
+          // Load products by IDs from URL
+          const ids = idsParam.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+          console.log('Loading products by IDs:', ids);
+          
+          const products: Material[] = [];
+          for (const id of ids) {
+            try {
+              const response = await fetch(`/api/materials/${id}`);
+              if (response.ok) {
+                const product = await response.json();
+                products.push(product);
+              }
+            } catch (error) {
+              console.error(`Error loading product ${id}:`, error);
+            }
+          }
+          
+          setSelectedMaterials(products);
+          console.log('Loaded products from API:', products);
+        } else {
+          // Fallback to localStorage
+          const stored = localStorage.getItem('comparisonIds');
+          if (stored) {
+            const storedIds = JSON.parse(stored);
+            const materials = allMaterials.filter(m => storedIds.includes(m.id));
+            setSelectedMaterials(materials);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading selected products:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (allMaterials.length > 0) {
+      loadSelectedProducts();
     }
   }, [allMaterials]);
 

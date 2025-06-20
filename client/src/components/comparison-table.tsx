@@ -28,6 +28,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
   const [leadModalOpen, setLeadModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [pasteUrl, setPasteUrl] = useState("");
+  const [location, navigate] = useLocation();
   const [visibleSpecs, setVisibleSpecs] = useState({
     price: true,
     brand: true,
@@ -338,8 +339,19 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
           <Button variant="outline" size="sm" className="bg-gray-100" title="Table View">
             <i className="fas fa-list text-gray-600"></i>
           </Button>
-          <Button variant="outline" size="sm" title="Compare Selected">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            title="Compare Selected"
+            onClick={handleCompareSelected}
+            className={comparisonStore.getCount() > 0 ? "bg-blue-50 border-blue-200" : ""}
+          >
             <i className="fas fa-balance-scale text-gray-600"></i>
+            {comparisonStore.getCount() > 0 && (
+              <span className="ml-1 text-xs bg-blue-500 text-white rounded-full px-1.5 py-0.5">
+                {comparisonStore.getCount()}
+              </span>
+            )}
           </Button>
         </div>
       </div>
