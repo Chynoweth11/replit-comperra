@@ -1,0 +1,100 @@
+add se this upgraded React JSX table component, styled with Tailwind, and ready for dynamic data:
+
+tsx
+Copy
+Edit
+import React from 'react';
+
+const CompareTable = ({ products }) => {
+  if (!products || products.length < 2) {
+    return <div className="p-4 text-gray-600">Select two or more products to compare.</div>;
+  }
+
+  const specFields = [
+    { key: 'brand', label: 'Brand' },
+    { key: 'price', label: 'Price per SF' },
+    { key: 'size', label: 'Dimensions' },
+    { key: 'pei', label: 'PEI Rating' },
+    { key: 'slipRating', label: 'Slip Rating' },
+    { key: 'absorption', label: 'Water Absorption' },
+    { key: 'finish', label: 'Finish' },
+    { key: 'materialType', label: 'Material Type' },
+    { key: 'category', label: 'Category' },
+    { key: 'installLocation', label: 'Install Location' },
+    { key: 'color', label: 'Color' },
+  ];
+
+  return (
+    <div className="overflow-auto border rounded-xl shadow bg-white mt-6">
+      <table className="min-w-full text-sm text-left table-fixed">
+        <thead className="bg-gray-50 text-gray-700">
+          <tr>
+            <th className="p-4 w-1/4">Specification</th>
+            {products.map((p, i) => (
+              <th key={i} className="p-4 w-1/4 font-semibold">{p.name}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="text-gray-800">
+          {specFields.map(field => (
+            <tr key={field.key} className="border-t border-gray-200">
+              <td className="p-4 font-medium">{field.label}</td>
+              {products.map((p, i) => (
+                <td key={i} className="p-4">{p[field.key] || '—'}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default CompareTable;                                                                    1. 🔧 Scraper Tool (One-time scrape)
+Use a backend tool to scrape specs once and save to Airtable or JSON:
+
+ts
+Copy
+Edit
+// server/scrape-product.js (Node.js)
+const axios = require('axios');
+const cheerio = require('cheerio');
+const fs = require('fs');
+
+async function scrapeTile(url) {
+  const { data } = await axios.get(url);
+  const $ = cheerio.load(data);
+
+  const product = {
+    name: $('h1').text().trim(),
+    brand: url.includes('msisurfaces') ? 'MSI' : 'Daltile',
+    size: $("li:contains('Size')").text().split(':')[1]?.trim() || '',
+    pei: $("li:contains('PEI')").text().split(':')[1]?.trim() || '',
+    dcof: $("li:contains('Slip Resistance')").text().split(':')[1]?.trim() || '',
+    absorption: $("li:contains('Water Absorption')").text().split(':')[1]?.trim() || '',
+    finish: $("li:contains('Finish')").text().split(':')[1]?.trim() || '',
+    material: $("li:contains('Material')").text().split(':')[1]?.trim() || '',
+  };
+
+  fs.writeFileSync('scrapedTile.json', JSON.stringify(product, null, 2));
+}
+2. 💾 Save Results to Airtable or Local JSON
+Store all product specs in Airtable (you already do this) or in local files:
+
+json
+Copy
+Edit
+[
+  {
+    "id": "daltile-regent-honey",
+    "brand": "Daltile",
+    "name": "Regent Honey",
+    "category": "Tile",
+    "size": "3x6",
+    "pei": "3",
+    "dcof": "≥ 0.42",
+    "absorption": "≤ 0.5%",
+    "material": "Porcelain",
+    "finish": "Matte"
+  }
+]
