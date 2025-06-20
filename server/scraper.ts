@@ -80,10 +80,12 @@ export class ProductScraper {
       });
 
       const $ = cheerio.load(response.data);
+      const html = response.data;
       
-      // Enhanced name extraction
+      // Enhanced name extraction with multiple fallbacks
       let name = $('h1.product-title, h1.pdp-product-name, .product-name h1, h1').first().text().trim() ||
                 $('.product-title, .pdp-title').text().trim() ||
+                $('meta[property="og:title"]').attr('content') ||
                 $('title').text().split('|')[0].trim() ||
                 'Product Name Not Found';
       
@@ -93,22 +95,26 @@ export class ProductScraper {
       const description = $('.product-description, .description, .product-overview, .pdp-description')
         .first().text().trim().substring(0, 500) || '';
       
-      // Enhanced image extraction
+      // Enhanced image extraction with multiple fallbacks
       let imageUrl = $('img.product-image, .product-photo img, .hero-image img, .pdp-image img, img[alt*="product"]')
-        .first().attr('src') || $('img').first().attr('src') || '';
+        .first().attr('src') || 
+        $('meta[property="og:image"]').attr('content') ||
+        $('img').first().attr('src') || '';
       
       if (imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
+      if (imageUrl.startsWith('/') && !imageUrl.startsWith('//')) {
+        imageUrl = 'https://www.daltile.com' + imageUrl;
+      }
       
-      // Category-specific specification extraction using templates
+      // Enhanced specification extraction using multiple sources
       const specs: any = {};
       const fields = specTemplates[category as keyof typeof specTemplates] || [];
       
-      // Extract specifications from tables and structured data
-      $('.specification-item, .spec-row, .product-specs tr, .specs-table tr, .technical-specs tr').each((_, elem) => {
+      // 1. Extract from specification tables and structured data
+      $('table.specs, .specification-item, .spec-row, .product-specs tr, .specs-table tr, .technical-specs tr').each((_, elem) => {
         const key = $(elem).find('.spec-label, .label, td:first-child, th').text().trim();
         const value = $(elem).find('.spec-value, .value, td:last-child').text().trim();
         if (key && value && key !== value) {
-          // Map to template fields
           fields.forEach(field => {
             if (key.toLowerCase().includes(field.toLowerCase().split(' ')[0]) || 
                 field.toLowerCase().includes(key.toLowerCase())) {
@@ -118,35 +124,121 @@ export class ProductScraper {
         }
       });
 
-      // Category-specific field extraction
-      const pageText = $('body').text();
+      // 2. Enhanced regex-based extraction from full page content
+      const bodyText = $('body').text();
+      const specsTable = $('table.specs').text();
+      const headings = $('h2, h3').text();
+      const fullText = `${bodyText} ${specsTable} ${headings}`;
+
+      // Universal specification extraction (works for all categories)
       
-      if (category === 'tiles') {
-        if (!specs['PEI Rating']) {
-          const peiMatch = pageText.match(/PEI[\s:]?(\d+)/i);
-          if (peiMatch) specs['PEI Rating'] = peiMatch[1];
+      // PEI Rating extraction
+      if (!specs['PEI Rating']) {
+        const peiMatch = fullText.match(/PEI(?: Rating)?:?\s*(\d)/i);
+        if (peiMatch) specs['PEI Rating'] = peiMatch[1];
+      }
+
+      // DCOF / Slip Rating extraction
+      if (!specs['DCOF / Slip Rating']) {
+        const dcofMatch = fullText.match(/(?:COF|DCOF)(?: \/ DCOF)?:?\s*(>?\s?0\.\d+)/i) ||
+                         fullText.match(/Slip Resistance:?\s*([\d.]+)/i);
+        if (dcofMatch) specs['DCOF / Slip Rating'] = dcofMatch[1];
+      }
+
+      // Water Absorption extraction
+      if (!specs['Water Absorption']) {
+        const waterMatch = fullText.match(/Water Absorption:?[\s<]*(\d+%|<\s?[\d.]+%)/i) ||
+                          fullText.match(/Absorption:?[\s<]*(\d+\.?\d*%?)/i);
+        if (waterMatch) specs['Water Absorption'] = waterMatch[1];
+      }
+
+      // Material Type extraction
+      if (!specs['Material Type']) {
+        const materialMatch = fullText.match(/(Ceramic|Porcelain|Natural Stone|Quartz|Glazed|Unglazed|Stone|Granite|Marble)/i);
+        if (materialMatch) specs['Material Type'] = materialMatch[1];
+      }
+
+      // Finish extraction
+      if (!specs['Finish']) {
+        const finishMatch = fullText.match(/Finish:?\s*(Glossy|Matte|Polished|Honed|Textured|Lappato|Satin)/i) ||
+                           fullText.match(/(Glossy|Matte|Polished|Honed|Textured|Lappato|Satin)/i);
+        if (finishMatch) specs['Finish'] = finishMatch[1];
+      }
+
+      // Color extraction
+      if (!specs['Color']) {
+        const colorMatch = fullText.match(/Color:?\s*([a-zA-Z\s\-]+)/i) ||
+                          name.match(/(White|Black|Gray|Grey|Blue|Navy|Beige|Brown|Green|Red|Cream|Tan)/i);
+        if (colorMatch) specs['Color'] = colorMatch[1].trim();
+      }
+
+      // Edge Type extraction
+      if (!specs['Edge Type']) {
+        const edgeMatch = fullText.match(/Edge:?\s*(Rectified|Natural|Pressed|Straight)/i);
+        if (edgeMatch) specs['Edge Type'] = edgeMatch[1];
+      }
+
+      // Texture extraction
+      if (!specs['Texture']) {
+        const textureMatch = fullText.match(/Texture:?\s*(Smooth|Textured|Rough|Structured)/i) ||
+                            fullText.match(/(Wood Grain|Stone|Marble|Concrete|Slate)/i);
+        if (textureMatch) specs['Texture'] = textureMatch[1];
+      }
+
+      // Install Location extraction
+      if (!specs['Install Location']) {
+        const locationMatch = fullText.match(/(Floor|Wall|Indoor|Outdoor|Commercial|Residential|Bathroom|Kitchen)/i);
+        if (locationMatch) specs['Install Location'] = locationMatch[1];
+      }
+
+      // Category-specific extractions
+      if (category === 'hardwood') {
+        // Wood Species
+        if (!specs['Wood Species']) {
+          const speciesMatch = fullText.match(/(Oak|Maple|Cherry|Walnut|Pine|Hickory|Ash|Birch)/i);
+          if (speciesMatch) specs['Wood Species'] = speciesMatch[1];
         }
         
-        if (!specs['DCOF / Slip Rating']) {
-          const dcofMatch = pageText.match(/DCOF[\s:]?([\d.]+)/i);
-          if (dcofMatch) specs['DCOF / Slip Rating'] = dcofMatch[1];
-        }
-        
-        if (!specs['Water Absorption']) {
-          const waterMatch = pageText.match(/water\s+absorption[\s:]*([\d.]+%?)/i);
-          if (waterMatch) specs['Water Absorption'] = waterMatch[1];
+        // Janka Rating
+        if (!specs['Janka Rating']) {
+          const jankaMatch = fullText.match(/Janka:?\s*(\d+)/i);
+          if (jankaMatch) specs['Janka Rating'] = jankaMatch[1];
         }
       }
 
-      // Extract dimensions
-      let dimensions = $('.size, .dimensions, .product-size, .tile-size').text().trim() || '';
+      if (category === 'heat') {
+        // Coverage Area
+        if (!specs['Coverage Area (SF)']) {
+          const coverageMatch = fullText.match(/Coverage:?\s*(\d+)\s*(?:SF|sq\.?\s?ft)/i);
+          if (coverageMatch) specs['Coverage Area (SF)'] = coverageMatch[1];
+        }
+        
+        // Voltage
+        if (!specs['Voltage']) {
+          const voltageMatch = fullText.match(/(\d+)V/i);
+          if (voltageMatch) specs['Voltage'] = voltageMatch[1] + 'V';
+        }
+      }
+
+      if (category === 'carpet') {
+        // Fiber Type
+        if (!specs['Fiber Type']) {
+          const fiberMatch = fullText.match(/(Nylon|Polyester|Wool|Polypropylene)/i);
+          if (fiberMatch) specs['Fiber Type'] = fiberMatch[1];
+        }
+      }
+
+      // Enhanced dimensions extraction
+      let dimensions = $('.size, .dimensions, .product-size, .tile-size, .nominal-size').text().trim() || '';
       if (!dimensions) {
-        const dimMatch = pageText.match(/(\d+["']?\s*[xX×]\s*\d+["']?)/);
+        const dimMatch = fullText.match(/(?:Size|Dimension|Nominal)s?:?\s*(\d+["']?\s*[xX×]\s*\d+["']?(?:\s*[xX×]\s*\d+["']?)?)/i) ||
+                        fullText.match(/(\d+["']?\s*[xX×]\s*\d+["']?)/);
         if (dimMatch) dimensions = dimMatch[1];
       }
       specs['Dimensions'] = dimensions;
+      specs['Size'] = dimensions;
       
-      // Extract price
+      // Enhanced price extraction
       let price = '0.00';
       const priceSelectors = [
         '.price-current, .price .amount, .product-price .price',
@@ -165,8 +257,14 @@ export class ProductScraper {
           }
         }
       }
+      
+      // Fallback price search in page content
+      if (price === '0.00') {
+        const priceMatch = fullText.match(/\$\s?([\d,]+\.?\d*)\s?\/?\s?(?:SF|sq\.?\s?ft|per\s?sq|square)/i);
+        if (priceMatch) price = priceMatch[1].replace(',', '');
+      }
 
-      // Add required fields
+      // Add required template fields
       specs['Brand'] = 'Daltile';
       specs['Price per SF'] = price;
       specs['Product URL'] = url;
@@ -197,23 +295,35 @@ export class ProductScraper {
       });
 
       const $ = cheerio.load(response.data);
+      const html = response.data;
       
-      const name = $('h1.product-name, .product-title, h1').first().text().trim();
-      const description = $('.product-overview, .product-description').text().trim();
-      let imageUrl = $('.product-gallery img, .hero-image img').first().attr('src') || '';
+      // Enhanced name extraction
+      const name = $('h1.product-name, .product-title, h1').first().text().trim() ||
+                  $('meta[property="og:title"]').attr('content') || 
+                  $('title').text().split('|')[0].trim();
+      
+      // Enhanced description extraction
+      const description = $('.product-overview, .product-description, .description').text().trim();
+      
+      // Enhanced image extraction with multiple fallbacks
+      let imageUrl = $('.product-gallery img, .hero-image img').first().attr('src') ||
+                    $('meta[property="og:image"]').attr('content') ||
+                    $('.main-product-image img').first().attr('src') || '';
       
       if (imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
+      if (imageUrl.startsWith('/') && !imageUrl.startsWith('//')) {
+        imageUrl = 'https://www.msisurfaces.com' + imageUrl;
+      }
       
-      // Category-specific specification extraction using templates
+      // Enhanced specification extraction using multiple sources
       const specs: any = {};
       const fields = specTemplates[category as keyof typeof specTemplates] || [];
       
-      // Extract from specification tables
-      $('.product-specs .spec-item, .specifications tr, .specs tr').each((_, elem) => {
-        const key = $(elem).find('td:first-child, .spec-name, .label').text().trim();
+      // 1. Extract from specification tables and structured data
+      $('table.specs, .product-specs, .specifications, .tech-specs').find('tr, .spec-item').each((_, elem) => {
+        const key = $(elem).find('td:first-child, .spec-name, .label, th').text().trim();
         const value = $(elem).find('td:last-child, .spec-value, .value').text().trim();
         if (key && value) {
-          // Map to template fields
           fields.forEach(field => {
             if (key.toLowerCase().includes(field.toLowerCase().split(' ')[0]) || 
                 field.toLowerCase().includes(key.toLowerCase())) {
@@ -223,21 +333,92 @@ export class ProductScraper {
         }
       });
 
-      // Extract dimensions and other key specs
-      let dimensions = $('.size-info, .dimensions, .size').text().trim() || '';
+      // 2. Enhanced regex-based extraction from full page content
+      const bodyText = $('body').text();
+      const specsTable = $('table.specs').text();
+      const headings = $('h2, h3').text();
+      const fullText = `${bodyText} ${specsTable} ${headings}`;
+
+      // PEI Rating extraction
+      if (!specs['PEI Rating']) {
+        const peiMatch = fullText.match(/PEI(?: Rating)?:?\s*(\d)/i);
+        if (peiMatch) specs['PEI Rating'] = peiMatch[1];
+      }
+
+      // DCOF / Slip Rating extraction
+      if (!specs['DCOF / Slip Rating']) {
+        const dcofMatch = fullText.match(/(?:COF|DCOF)(?: \/ DCOF)?:?\s*(>?\s?0\.\d+)/i) ||
+                         fullText.match(/Slip Resistance:?\s*([\d.]+)/i);
+        if (dcofMatch) specs['DCOF / Slip Rating'] = dcofMatch[1];
+      }
+
+      // Water Absorption extraction
+      if (!specs['Water Absorption']) {
+        const waterMatch = fullText.match(/Water Absorption:?[\s<]*(\d+%|<\s?[\d.]+%)/i) ||
+                          fullText.match(/Absorption:?[\s<]*(\d+\.?\d*%?)/i);
+        if (waterMatch) specs['Water Absorption'] = waterMatch[1];
+      }
+
+      // Material Type extraction
+      if (!specs['Material Type']) {
+        const materialMatch = fullText.match(/(Ceramic|Porcelain|Natural Stone|Quartz|Glazed|Unglazed)/i);
+        if (materialMatch) specs['Material Type'] = materialMatch[1];
+      }
+
+      // Finish extraction
+      if (!specs['Finish']) {
+        const finishMatch = fullText.match(/Finish:?\s*(Glossy|Matte|Polished|Honed|Textured|Lappato)/i) ||
+                           fullText.match(/(Glossy|Matte|Polished|Honed|Textured|Lappato)/i);
+        if (finishMatch) specs['Finish'] = finishMatch[1];
+      }
+
+      // Color extraction
+      if (!specs['Color']) {
+        const colorMatch = fullText.match(/Color:?\s*([a-zA-Z\s\-]+)/i) ||
+                          name.match(/(White|Black|Gray|Grey|Blue|Navy|Beige|Brown|Green)/i);
+        if (colorMatch) specs['Color'] = colorMatch[1].trim();
+      }
+
+      // Edge Type extraction
+      if (!specs['Edge Type']) {
+        const edgeMatch = fullText.match(/Edge:?\s*(Rectified|Natural|Pressed)/i);
+        if (edgeMatch) specs['Edge Type'] = edgeMatch[1];
+      }
+
+      // Texture extraction
+      if (!specs['Texture']) {
+        const textureMatch = fullText.match(/Texture:?\s*(Smooth|Textured|Rough|Structured)/i) ||
+                            fullText.match(/(Wood Grain|Stone|Marble|Concrete)/i);
+        if (textureMatch) specs['Texture'] = textureMatch[1];
+      }
+
+      // Install Location extraction
+      if (!specs['Install Location']) {
+        const locationMatch = fullText.match(/(Floor|Wall|Indoor|Outdoor|Commercial|Residential)/i);
+        if (locationMatch) specs['Install Location'] = locationMatch[1];
+      }
+
+      // Enhanced dimensions extraction
+      let dimensions = $('.size-info, .dimensions, .size, .nominal-size').text().trim() || '';
       if (!dimensions) {
-        const pageText = $('body').text();
-        const dimMatch = pageText.match(/(\d+["']?\s*[xX×]\s*\d+["']?)/);
+        const dimMatch = fullText.match(/(?:Size|Dimension|Nominal)s?:?\s*(\d+["']?\s*[xX×]\s*\d+["']?(?:\s*[xX×]\s*\d+["']?)?)/i) ||
+                        fullText.match(/(\d+["']?\s*[xX×]\s*\d+["']?)/);
         if (dimMatch) dimensions = dimMatch[1];
       }
       specs['Dimensions'] = dimensions;
       specs['Size'] = dimensions;
 
-      // Extract price
-      const priceText = $('.price-display, .price, .cost').text().trim();
-      const price = priceText.match(/[\d.]+/)?.[0] || '0.00';
+      // Enhanced price extraction
+      const priceText = $('.price-display, .price, .cost, .msrp').text().trim();
+      let price = priceText.match(/\$?([\d,]+\.?\d*)/)?.[0]?.replace(/[,$]/g, '') || '0.00';
+      
+      // Fallback price search in page content
+      if (price === '0.00') {
+        const priceMatch = fullText.match(/\$\s?([\d,]+\.?\d*)\s?\/?\s?(?:SF|sq\.?\s?ft|per\s?sq|square)/i);
+        if (priceMatch) price = priceMatch[1].replace(',', '');
+      }
 
-      // Add required fields
+      // Add required template fields
       specs['Brand'] = 'MSI';
       specs['Price per SF'] = price;
       specs['Product URL'] = url;
@@ -268,20 +449,26 @@ export class ProductScraper {
       });
 
       const $ = cheerio.load(response.data);
+      const html = response.data;
       
-      // Enhanced name extraction
+      // Enhanced name extraction with multiple fallbacks
       let name = $('h1.product-title, h1.product-name, .product-title h1, h1').first().text().trim() ||
                 $('.product-title, .product-name, .pdp-title, .item-title').text().trim() ||
+                $('meta[property="og:title"]').attr('content') ||
                 $('title').text().split('|')[0].split('-')[0].trim() ||
                 'Product Name Not Found';
       
       name = name.replace(/\s+/g, ' ').trim();
       
+      // Enhanced description extraction
       const description = $('.product-description, .description, .overview, .product-details, .about-product')
         .first().text().trim().substring(0, 500) || '';
       
+      // Enhanced image extraction with multiple fallbacks
       let imageUrl = $('.product-image img, .hero-image img, .gallery img, .main-image img, img[alt*="product"]')
-        .first().attr('src') || $('img').first().attr('src') || '';
+        .first().attr('src') || 
+        $('meta[property="og:image"]').attr('content') ||
+        $('img').first().attr('src') || '';
       
       if (imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
       if (imageUrl.startsWith('/') && !imageUrl.startsWith('//')) {
@@ -289,12 +476,12 @@ export class ProductScraper {
         imageUrl = baseUrl + imageUrl;
       }
       
-      // Category-specific specification extraction using templates
+      // Enhanced specification extraction using multiple sources
       const specs: any = {};
       const fields = specTemplates[category as keyof typeof specTemplates] || [];
       
-      // Extract from tables and specification sections
-      $('table, .specs, .product-details, .specifications').find('tr, li, .spec-item').each((_, elem) => {
+      // 1. Extract from specification tables and structured data
+      $('table.specs, .specs, .product-details, .specifications, .tech-specs').find('tr, li, .spec-item').each((_, elem) => {
         const text = $(elem).text();
         const cells = $(elem).find('td');
         
@@ -323,36 +510,179 @@ export class ProductScraper {
         }
       });
 
-      // Category-specific field extraction from page content
-      const pageText = $('body').text();
+      // 2. Enhanced regex-based extraction from full page content
+      const bodyText = $('body').text();
+      const specsTable = $('table.specs').text();
+      const headings = $('h2, h3').text();
+      const fullText = `${bodyText} ${specsTable} ${headings}`;
+
+      // Universal specification extraction (works for all categories and brands)
       
-      if (category === 'tiles') {
-        if (!specs['PEI Rating']) {
-          const peiMatch = pageText.match(/PEI[\s:]?(\d+)/i);
-          if (peiMatch) specs['PEI Rating'] = peiMatch[1];
+      // PEI Rating extraction
+      if (!specs['PEI Rating']) {
+        const peiMatch = fullText.match(/PEI(?: Rating)?:?\s*(\d)/i);
+        if (peiMatch) specs['PEI Rating'] = peiMatch[1];
+      }
+
+      // DCOF / Slip Rating extraction
+      if (!specs['DCOF / Slip Rating']) {
+        const dcofMatch = fullText.match(/(?:COF|DCOF)(?: \/ DCOF)?:?\s*(>?\s?0\.\d+)/i) ||
+                         fullText.match(/Slip Resistance:?\s*([\d.]+)/i);
+        if (dcofMatch) specs['DCOF / Slip Rating'] = dcofMatch[1];
+      }
+
+      // Water Absorption extraction
+      if (!specs['Water Absorption']) {
+        const waterMatch = fullText.match(/Water Absorption:?[\s<]*(\d+%|<\s?[\d.]+%)/i) ||
+                          fullText.match(/Absorption:?[\s<]*(\d+\.?\d*%?)/i);
+        if (waterMatch) specs['Water Absorption'] = waterMatch[1];
+      }
+
+      // Material Type extraction
+      if (!specs['Material Type']) {
+        const materialMatch = fullText.match(/(Ceramic|Porcelain|Natural Stone|Quartz|Glazed|Unglazed|Stone|Granite|Marble|LVT|SPC|WPC)/i);
+        if (materialMatch) specs['Material Type'] = materialMatch[1];
+      }
+
+      // Finish extraction
+      if (!specs['Finish']) {
+        const finishMatch = fullText.match(/Finish:?\s*(Glossy|Matte|Polished|Honed|Textured|Lappato|Satin|Brushed)/i) ||
+                           fullText.match(/(Glossy|Matte|Polished|Honed|Textured|Lappato|Satin|Brushed)/i);
+        if (finishMatch) specs['Finish'] = finishMatch[1];
+      }
+
+      // Color extraction
+      if (!specs['Color']) {
+        const colorMatch = fullText.match(/Color:?\s*([a-zA-Z\s\-]+)/i) ||
+                          name.match(/(White|Black|Gray|Grey|Blue|Navy|Beige|Brown|Green|Red|Cream|Tan|Oak|Cherry|Walnut)/i);
+        if (colorMatch) specs['Color'] = colorMatch[1].trim();
+      }
+
+      // Edge Type extraction
+      if (!specs['Edge Type']) {
+        const edgeMatch = fullText.match(/Edge:?\s*(Rectified|Natural|Pressed|Straight|Beveled)/i);
+        if (edgeMatch) specs['Edge Type'] = edgeMatch[1];
+      }
+
+      // Texture extraction
+      if (!specs['Texture']) {
+        const textureMatch = fullText.match(/Texture:?\s*(Smooth|Textured|Rough|Structured|Embossed)/i) ||
+                            fullText.match(/(Wood Grain|Stone|Marble|Concrete|Slate|Linear)/i);
+        if (textureMatch) specs['Texture'] = textureMatch[1];
+      }
+
+      // Install Location extraction
+      if (!specs['Install Location']) {
+        const locationMatch = fullText.match(/(Floor|Wall|Indoor|Outdoor|Commercial|Residential|Bathroom|Kitchen|Countertop)/i);
+        if (locationMatch) specs['Install Location'] = locationMatch[1];
+      }
+
+      // Category-specific extractions for all brands
+      if (category === 'hardwood') {
+        // Wood Species
+        if (!specs['Wood Species']) {
+          const speciesMatch = fullText.match(/(Oak|Maple|Cherry|Walnut|Pine|Hickory|Ash|Birch|Bamboo|Acacia)/i);
+          if (speciesMatch) specs['Wood Species'] = speciesMatch[1];
         }
         
-        if (!specs['DCOF / Slip Rating']) {
-          const dcofMatch = pageText.match(/DCOF[\s:]?([\d.]+)/i);
-          if (dcofMatch) specs['DCOF / Slip Rating'] = dcofMatch[1];
+        // Janka Rating
+        if (!specs['Janka Rating']) {
+          const jankaMatch = fullText.match(/Janka:?\s*(\d+)/i);
+          if (jankaMatch) specs['Janka Rating'] = jankaMatch[1];
         }
-        
-        if (!specs['Water Absorption']) {
-          const waterMatch = pageText.match(/water\s+absorption[\s:]*([\d.]+%?)/i);
-          if (waterMatch) specs['Water Absorption'] = waterMatch[1];
+
+        // Construction Type
+        if (!specs['Construction Type']) {
+          const constructionMatch = fullText.match(/(Solid|Engineered|Laminate)/i);
+          if (constructionMatch) specs['Construction Type'] = constructionMatch[1];
         }
       }
 
-      // Extract dimensions
-      let dimensions = $('.size, .dimensions, .product-size, .tile-size').text().trim() || '';
+      if (category === 'lvt') {
+        // Wear Layer
+        if (!specs['Wear Layer']) {
+          const wearMatch = fullText.match(/Wear Layer:?\s*([\d.]+\s?mil)/i);
+          if (wearMatch) specs['Wear Layer'] = wearMatch[1];
+        }
+
+        // Type (SPC/WPC/LVT)
+        if (!specs['Type (SPC/WPC/LVT)']) {
+          const typeMatch = fullText.match(/(SPC|WPC|LVT|Luxury Vinyl)/i);
+          if (typeMatch) specs['Type (SPC/WPC/LVT)'] = typeMatch[1];
+        }
+
+        // Water Resistance
+        if (!specs['Water Resistance']) {
+          const waterResMatch = fullText.match(/(Waterproof|Water Resistant|100% Waterproof)/i);
+          if (waterResMatch) specs['Water Resistance'] = waterResMatch[1];
+        }
+      }
+
+      if (category === 'slabs') {
+        // Thickness
+        if (!specs['Thickness']) {
+          const thicknessMatch = fullText.match(/Thickness:?\s*(\d+\s?(?:mm|cm|inch))/i);
+          if (thicknessMatch) specs['Thickness'] = thicknessMatch[1];
+        }
+
+        // Stone Type
+        if (!specs['Stone Type']) {
+          const stoneMatch = fullText.match(/(Quartz|Granite|Marble|Quartzite|Natural Stone)/i);
+          if (stoneMatch) specs['Stone Type'] = stoneMatch[1];
+        }
+      }
+
+      if (category === 'heat') {
+        // Coverage Area
+        if (!specs['Coverage Area (SF)']) {
+          const coverageMatch = fullText.match(/Coverage:?\s*(\d+)\s*(?:SF|sq\.?\s?ft)/i);
+          if (coverageMatch) specs['Coverage Area (SF)'] = coverageMatch[1];
+        }
+        
+        // Voltage
+        if (!specs['Voltage']) {
+          const voltageMatch = fullText.match(/(\d+)V/i);
+          if (voltageMatch) specs['Voltage'] = voltageMatch[1] + 'V';
+        }
+
+        // Max Temperature
+        if (!specs['Max Temperature']) {
+          const tempMatch = fullText.match(/(?:Max|Maximum) Temperature:?\s*(\d+°?F?)/i);
+          if (tempMatch) specs['Max Temperature'] = tempMatch[1];
+        }
+      }
+
+      if (category === 'carpet') {
+        // Fiber Type
+        if (!specs['Fiber Type']) {
+          const fiberMatch = fullText.match(/(Nylon|Polyester|Wool|Polypropylene|Olefin)/i);
+          if (fiberMatch) specs['Fiber Type'] = fiberMatch[1];
+        }
+
+        // Pile Height
+        if (!specs['Pile Height']) {
+          const pileMatch = fullText.match(/Pile Height:?\s*([\d.]+\s?(?:inch|in))/i);
+          if (pileMatch) specs['Pile Height'] = pileMatch[1];
+        }
+
+        // Face Weight
+        if (!specs['Face Weight']) {
+          const weightMatch = fullText.match(/Face Weight:?\s*(\d+\s?oz)/i);
+          if (weightMatch) specs['Face Weight'] = weightMatch[1];
+        }
+      }
+
+      // Enhanced dimensions extraction
+      let dimensions = $('.size, .dimensions, .product-size, .tile-size, .nominal-size').text().trim() || '';
       if (!dimensions) {
-        const dimMatch = pageText.match(/(\d+["']?\s*[xX×]\s*\d+["']?(?:\s*[xX×]\s*\d+["']?)?)/);
+        const dimMatch = fullText.match(/(?:Size|Dimension|Nominal)s?:?\s*(\d+["']?\s*[xX×]\s*\d+["']?(?:\s*[xX×]\s*\d+["']?)?)/i) ||
+                        fullText.match(/(\d+["']?\s*[xX×]\s*\d+["']?)/);
         if (dimMatch) dimensions = dimMatch[1];
       }
       specs['Dimensions'] = dimensions;
       specs['Size'] = dimensions;
 
-      // Extract price
+      // Enhanced price extraction
       let price = '0.00';
       const priceSelectors = [
         '.price, .cost, .msrp, .product-price',
@@ -372,7 +702,13 @@ export class ProductScraper {
         }
       }
 
-      // Add required fields
+      // Fallback price search in page content
+      if (price === '0.00') {
+        const priceMatch = fullText.match(/\$\s?([\d,]+\.?\d*)\s?\/?\s?(?:SF|sq\.?\s?ft|per\s?sq|square)/i);
+        if (priceMatch) price = priceMatch[1].replace(',', '');
+      }
+
+      // Add required template fields
       specs['Brand'] = this.extractBrandFromURL(url);
       specs['Price per SF'] = price;
       specs['Product URL'] = url;
