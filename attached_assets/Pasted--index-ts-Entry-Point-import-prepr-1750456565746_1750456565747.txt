@@ -1,0 +1,214 @@
+// ==========================
+// index.ts - Entry Point
+// ==========================
+import { preprocessURL } from './preprocessor';
+import { scrapeMSIProduct } from './scraper.msi';
+import { scrapeDaltileProduct } from './scraper.daltile';
+import { scrapeUniversalProduct } from './scraper.universal';
+import { normalizeSpecs } from './normalizer';
+
+export async function scrapeProduct(url: string) {
+  const { brand, category } = await preprocessURL(url);
+  let result = null;
+
+  switch (brand) {
+    case 'MSI':
+      result = await scrapeMSIProduct(url, category);
+      break;
+    case 'Daltile':
+      result = await scrapeDaltileProduct(url, category);
+      break;
+    default:
+      result = await scrapeUniversalProduct(url, category);
+  }
+
+  if (result) {
+    result.specifications = normalizeSpecs(result.specifications);
+  }
+
+  return result;
+}
+
+
+// ==========================
+// preprocessor.ts
+// ==========================
+export async function preprocessURL(url: string): Promise<{ brand: string; category: string }> {
+  const domain = new URL(url).hostname.toLowerCase();
+
+  const brandMap: Record<string, string> = {
+    'msisurfaces.com': 'MSI',
+    'daltile.com': 'Daltile',
+    'arizonatile.com': 'Arizona Tile',
+    'florida.tile': 'Florida Tile',
+    'marazziusa.com': 'Marazzi',
+    'shawfloors.com': 'Shaw',
+    'cambriausa.com': 'Cambria',
+    'flor.com': 'Flor',
+    'mohawkflooring.com': 'Mohawk',
+    'emser.com': 'Emser Tile'
+  };
+
+  let brand = 'Unknown';
+  for (const domainKey in brandMap) {
+    if (domain.includes(domainKey)) {
+      brand = brandMap[domainKey];
+      break;
+    }
+  }
+
+  let category = 'tiles';
+  const urlLower = url.toLowerCase();
+  if (urlLower.includes('slab') || urlLower.includes('quartz') || urlLower.includes('marble')) category = 'slabs';
+  else if (urlLower.includes('lvt') || urlLower.includes('vinyl')) category = 'lvt';
+  else if (urlLower.includes('hardwood')) category = 'hardwood';
+  else if (urlLower.includes('carpet')) category = 'carpet';
+  else if (urlLower.includes('heat') || urlLower.includes('thermostat')) category = 'heat';
+
+  return { brand, category };
+}
+
+
+// ==========================
+// normalizer.ts
+// ==========================
+export function normalizeSpecs(specs: Record<string, string>): Record<string, string> {
+  const normalized: Record<string, string> = {};
+  for (const [key, value] of Object.entries(specs)) {
+    const cleanKey = key.trim();
+    const cleanValue = value.replace(/\s+/g, ' ').trim();
+    if (cleanValue && cleanValue !== '—') {
+      normalized[cleanKey] = cleanValue;
+    }
+  }
+
+  const defaults = [
+    'Brand', 'Dimensions', 'Finish', 'Material Type', 'PEI Rating', 'DCOF / Slip Rating',
+    'Water Absorption', 'Coverage', 'Applications', 'Product URL'
+  ];
+
+  for (const field of defaults) {
+    if (!normalized[field]) {
+      normalized[field] = '—';
+    }
+  }
+
+  return normalized;
+}
+
+
+// ==========================
+// scraper.msi.ts
+// ==========================
+import axios from 'axios';
+import * as cheerio from 'cheerio';
+
+export async function scrapeMSIProduct(url: string, category: string) {
+  const response = await axios.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+  const $ = cheerio.load(response.data);
+
+  const name = $('h1').first().text().trim();
+  let imageUrl = $('meta[property="og:image"]').attr('content') || '';
+  if (imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
+  if (imageUrl.startsWith('/')) imageUrl = 'https://www.msisurfaces.com' + imageUrl;
+
+  const specs: any = {};
+
+  $('table, ul, li, div, span').each((_, el) => {
+    const text = $(el).text();
+    const match = text.split(':');
+    if (match.length === 2) {
+      const key = match[0].trim();
+      const value = match[1].trim();
+      specs[key] = value;
+    }
+  });
+
+  specs['Product URL'] = url;
+  specs['Brand'] = 'MSI';
+
+  return {
+    name,
+    brand: 'MSI',
+    category,
+    imageUrl,
+    specifications: specs,
+    sourceUrl: url
+  };
+}
+
+
+// ==========================
+// scraper.daltile.ts
+// ==========================
+import axios from 'axios';
+import * as cheerio from 'cheerio';
+
+export async function scrapeDaltileProduct(url: string, category: string) {
+  const response = await axios.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+  const $ = cheerio.load(response.data);
+
+  const name = $('h1').first().text().trim();
+  const imageUrl = $('meta[property="og:image"]').attr('content') || '';
+  const specs: any = {};
+
+  $('table, ul, li, div, span').each((_, el) => {
+    const text = $(el).text();
+    const match = text.split(':');
+    if (match.length === 2) {
+      const key = match[0].trim();
+      const value = match[1].trim();
+      specs[key] = value;
+    }
+  });
+
+  specs['Product URL'] = url;
+  specs['Brand'] = 'Daltile';
+
+  return {
+    name,
+    brand: 'Daltile',
+    category,
+    imageUrl,
+    specifications: specs,
+    sourceUrl: url
+  };
+}
+
+
+// ==========================
+// scraper.universal.ts
+// ==========================
+import axios from 'axios';
+import * as cheerio from 'cheerio';
+
+export async function scrapeUniversalProduct(url: string, category: string) {
+  const response = await axios.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+  const $ = cheerio.load(response.data);
+
+  const name = $('h1').first().text().trim();
+  const imageUrl = $('meta[property="og:image"]').attr('content') || '';
+  const specs: any = {};
+
+  $('table, ul, li, div, span').each((_, el) => {
+    const text = $(el).text();
+    const match = text.split(':');
+    if (match.length === 2) {
+      const key = match[0].trim();
+      const value = match[1].trim();
+      specs[key] = value;
+    }
+  });
+
+  specs['Product URL'] = url;
+  specs['Brand'] = 'Unknown';
+
+  return {
+    name,
+    brand: 'Unknown',
+    category,
+    imageUrl,
+    specifications: specs,
+    sourceUrl: url
+  };
+}

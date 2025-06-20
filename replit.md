@@ -22,29 +22,13 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
-- ✅ **June 20, 2025**: Built AI-powered universal specification extractor for thousands of brands and hundreds of thousands of products
-- ✅ **June 20, 2025**: Implemented 5-phase intelligent extraction: content identification, pattern recognition, comprehensive field mapping, category-specific logic, and validation
-- ✅ **June 20, 2025**: Added multi-pattern regex recognition with fallback chains for maximum specification capture across any website structure
-- ✅ **June 20, 2025**: Enhanced field extraction with proper label/value separation to prevent contamination (e.g., Color = "YesCommercial Light")
-- ✅ **June 20, 2025**: Added structured table parsing with regex fallbacks for accurate specification extraction
-- ✅ **June 20, 2025**: Implemented field cleaning logic to remove boolean prefixes and common label suffixes
-- ✅ **June 20, 2025**: Added comprehensive universal scraper with systematic field extraction for all categories and brands
-- ✅ **June 20, 2025**: Implemented CATEGORY_FIELDS structure with complete field definitions for tiles, slabs, LVT, hardwood, heating, and carpet
-- ✅ **June 20, 2025**: Enhanced scraper prioritizes universal extraction before falling back to brand-specific methods
-- ✅ **June 20, 2025**: Implemented enhanced universal scraper with full page HTML text extraction and comprehensive regex patterns for hidden specifications
-- ✅ **June 20, 2025**: Added deep text scanning capabilities using textMatch() function for extracting scattered specs from all page content
-- ✅ **June 20, 2025**: Added category-specific field extraction (PEI, DCOF, Janka rating, coverage area, fiber type, etc.) for all manufacturers
-- ✅ **June 20, 2025**: Implemented fallback text scanning with advanced regex patterns for missing specifications
-- ✅ **June 20, 2025**: Enhanced image and price extraction with multiple fallback methods across all scraper functions
-- ✅ **June 20, 2025**: Integrated Airtable direct saving for all scraped products with comprehensive specifications
-- ✅ **June 20, 2025**: Enhanced scraper with automatic Airtable backup for product data preservation
-- ✅ **June 20, 2025**: Added dual-save functionality - local storage + Airtable for complete data redundancy
-- ✅ **June 20, 2025**: Implemented enhanced bulk scraping with progress tracking and Airtable integration
-- ✅ **June 20, 2025**: Upgraded scraping system with full six-category support and enhanced specification templates
-- ✅ **June 20, 2025**: Added category-specific spec templates (Tiles, Stone & Slabs, Vinyl & LVT, Hardwood, Heating, Carpet)
-- ✅ **June 20, 2025**: Enhanced brand detection for Marazzi and Flor manufacturers
-- ✅ **June 20, 2025**: Implemented template-based specification mapping for consistent data extraction
-- ✅ **June 20, 2025**: Added Product URL tracking in all scraped results for full traceability
+- ✅ **June 20, 2025**: Implemented new modular scraping architecture with separate brand-specific scrapers
+- ✅ **June 20, 2025**: Created enhanced MSI scraper with direct HTML pattern matching for accurate specification extraction
+- ✅ **June 20, 2025**: Built improved Daltile scraper with comprehensive field detection and multiple fallback methods
+- ✅ **June 20, 2025**: Developed universal scraper supporting Arizona Tile, Florida Tile, Marazzi, Shaw, Mohawk, Cambria, Flor, and Emser
+- ✅ **June 20, 2025**: Added preprocessor module for automatic brand and category detection from URLs
+- ✅ **June 20, 2025**: Integrated specification normalizer for consistent field formatting and validation
+- ✅ **June 20, 2025**: Enhanced scraper architecture with proper error handling and fallback to legacy scrapers
 - ✅ **June 20, 2025**: Fixed comparison page synchronization - Clear All now properly updates main table checkboxes
 - ✅ **June 20, 2025**: Made "Add to Compare" button functional in product detail pages with real-time state updates
 - ✅ **June 20, 2025**: Enhanced product detail pages with comprehensive specifications under Technical Specifications section
