@@ -21,42 +21,28 @@ export default function ProductCompare() {
 
   useEffect(() => {
     const loadSelectedProducts = async () => {
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const idsParam = urlParams.get('ids');
+      const comparisonIds = JSON.parse(localStorage.getItem('comparisonIds') || '[]');
+      
+      if (comparisonIds.length > 0 && allMaterials.length > 0) {
+        console.log("Loading products by IDs:", comparisonIds);
         
-        if (idsParam) {
-          // Load products by IDs from URL
-          const ids = idsParam.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
-          console.log('Loading products by IDs:', ids);
-          
-          const products: Material[] = [];
-          for (const id of ids) {
-            try {
-              const response = await fetch(`/api/materials/${id}`);
-              if (response.ok) {
-                const product = await response.json();
-                products.push(product);
-              }
-            } catch (error) {
-              console.error(`Error loading product ${id}:`, error);
+        const products: Material[] = [];
+        for (const id of comparisonIds) {
+          try {
+            const response = await fetch(`/api/materials/${id}`);
+            if (response.ok) {
+              const product = await response.json();
+              products.push(product);
             }
-          }
-          
-          setSelectedMaterials(products);
-          console.log('Loaded products from API:', products);
-        } else {
-          // Fallback to localStorage
-          const stored = localStorage.getItem('comparisonIds');
-          if (stored) {
-            const storedIds = JSON.parse(stored);
-            const materials = allMaterials.filter(m => storedIds.includes(m.id));
-            setSelectedMaterials(materials);
+          } catch (error) {
+            console.error(`Error loading product ${id}:`, error);
           }
         }
-      } catch (error) {
-        console.error('Error loading selected products:', error);
-      } finally {
+        
+        console.log("Loaded products from API:", products);
+        setSelectedMaterials(products);
+        setIsLoading(false);
+      } else {
         setIsLoading(false);
       }
     };
@@ -114,29 +100,35 @@ export default function ProductCompare() {
     return [...baseFields, ...categoryFields];
   };
 
-  const formatSpecKey = (key: string): string => {
-    return key
-      .replace(/_/g, " ")
-      .replace(/([A-Z])/g, " $1")
-      .replace(/^./, (str) => str.toUpperCase());
-  };
-
-
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading comparison...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (selectedMaterials.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <Card className="p-8 text-center">
-            <h1 className="text-2xl font-bold mb-4">No Products Selected</h1>
-            <p className="text-gray-600 mb-6">Please select materials to compare from the comparison table.</p>
-            <Link href="/categories">
-              <Button className="bg-blue-600 text-white hover:bg-blue-700">
-                Browse Categories
-              </Button>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-16">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">No Products Selected</h1>
+            <p className="text-gray-600 mb-8">
+              Please select materials to compare from the comparison table.
+            </p>
+            <Link href="/">
+              <Button>Browse Categories</Button>
             </Link>
-          </Card>
+          </div>
         </div>
         <Footer />
       </div>
@@ -150,158 +142,122 @@ export default function ProductCompare() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Product Comparison</h1>
-            <p className="text-gray-600">Comparing {selectedMaterials.length} products side by side</p>
-          </div>
-          <div className="space-x-2">
-            <Link href="/categories">
-              <Button variant="outline">Add More Products</Button>
-            </Link>
-            <Button 
-              variant="outline"
-              onClick={clearComparison}
-            >
-              Clear All
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center gap-4 mb-6">
+          <Link href="/">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Categories
             </Button>
-          </div>
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Product Comparison ({selectedMaterials.length} items)
+          </h1>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={clearComparison}
+            className="ml-auto"
+          >
+            Clear All
+          </Button>
         </div>
 
-        {/* Comparison Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+        {/* Enhanced Comparison Table */}
+        <div className="overflow-auto border rounded-xl shadow bg-white">
+          <table className="min-w-full text-sm text-left table-fixed">
+            <thead className="bg-gray-50 text-gray-700">
+              <tr>
+                <th className="p-4 w-1/4 font-semibold">Specification</th>
+                {selectedMaterials.map((material) => (
+                  <th key={material.id} className="p-4 w-1/4 font-semibold">
+                    <div className="space-y-2">
+                      <div className="font-semibold text-gray-900">{material.name}</div>
+                      <Badge variant="secondary" className="text-xs">{material.brand}</Badge>
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="text-gray-800">
+              {specFields.map(field => (
+                <tr key={field.key} className="border-t border-gray-200 hover:bg-gray-50">
+                  <td className="p-4 font-medium text-gray-700">{field.label}</td>
+                  {selectedMaterials.map((material) => {
+                    let value = '';
+                    if (field.key === 'price') {
+                      value = `$${material.price}`;
+                    } else if (field.key === 'dimensions') {
+                      value = material.dimensions;
+                    } else if (field.key === 'brand') {
+                      value = material.brand;
+                    } else if (field.key === 'category') {
+                      return (
+                        <td key={material.id} className="p-4">
+                          <Badge variant="secondary">{material.category}</Badge>
+                        </td>
+                      );
+                    } else {
+                      value = getSpecValue(material, field.key);
+                    }
+                    
+                    return (
+                      <td key={material.id} className={`p-4 ${field.key === 'price' ? 'text-green-600 font-medium' : ''}`}>
+                        {value || '—'}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Product Images Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8">
           {selectedMaterials.map((material) => (
-            <Card key={material.id} className="overflow-hidden">
-              {/* Product Image */}
-              <div className="h-48 bg-gray-100 relative">
-                {material.imageUrl ? (
-                  <img
-                    src={material.imageUrl}
+            <Card key={material.id} className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => removeProduct(material.id)}
+                className="absolute top-2 right-2 h-8 w-8 p-0 text-red-600 hover:text-red-700 z-10"
+              >
+                ×
+              </Button>
+              
+              {material.imageUrl && (
+                <div className="aspect-video w-full overflow-hidden rounded-t-lg">
+                  <img 
+                    src={material.imageUrl} 
                     alt={material.name}
                     className="w-full h-full object-cover"
                   />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <i className="fas fa-image text-3xl text-gray-400"></i>
-                  </div>
-                )}
-                <div className="absolute top-2 left-2">
-                  <Badge variant="secondary">{material.category}</Badge>
                 </div>
-              </div>
-
-              {/* Product Info */}
+              )}
+              
               <div className="p-4">
-                <h3 className="font-bold text-lg mb-1">{material.name}</h3>
-                <p className="text-sm text-gray-600 mb-2">{material.brand}</p>
-                <p className="text-xl font-bold text-royal mb-3">${material.price}/SF</p>
-                
-                {material.dimensions && (
-                  <p className="text-sm text-gray-600 mb-3">Size: {material.dimensions}</p>
-                )}
-
-                <div className="flex gap-2">
-                  <Link href={`/product/${material.id}`}>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                    >
-                      View Details
-                    </Button>
-                  </Link>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => removeProduct(material.id)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    Remove
-                  </Button>
+                <h3 className="font-semibold text-lg mb-2">{material.name}</h3>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Brand:</span>
+                    <span className="font-medium">{material.brand}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Price:</span>
+                    <span className="font-medium text-green-600">${material.price}/sf</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Size:</span>
+                    <span>{material.dimensions}</span>
+                  </div>
                 </div>
               </div>
             </Card>
           ))}
         </div>
-
-        {/* Detailed Specifications Comparison */}
-        <Card className="overflow-hidden">
-          <div className="p-6 border-b">
-            <h2 className="text-2xl font-bold">Detailed Specifications</h2>
-          </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="text-left p-4 font-semibold sticky left-0 bg-gray-50 border-r">Specification</th>
-                  {selectedMaterials.map((material) => (
-                    <th key={material.id} className="text-center p-4 font-semibold min-w-48">
-                      <div className="flex flex-col items-center">
-                        <span className="text-sm">{material.name}</span>
-                        <Badge variant="outline" className="mt-1">{material.brand}</Badge>
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {/* Basic Info */}
-                <tr className="border-b">
-                  <td className="p-4 font-medium sticky left-0 bg-white border-r">Price per SF</td>
-                  {selectedMaterials.map((material) => (
-                    <td key={material.id} className="p-4 text-center font-semibold text-royal">
-                      ${material.price}
-                    </td>
-                  ))}
-                </tr>
-                
-                <tr className="border-b bg-gray-50">
-                  <td className="p-4 font-medium sticky left-0 bg-gray-50 border-r">Dimensions</td>
-                  {selectedMaterials.map((material) => (
-                    <td key={material.id} className="p-4 text-center">
-                      {material.dimensions || "N/A"}
-                    </td>
-                  ))}
-                </tr>
-
-                {/* Specifications */}
-                {specKeys.map((key, index) => (
-                  <tr key={key} className={`border-b ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                    <td className="p-4 font-medium sticky left-0 bg-inherit border-r">
-                      {formatSpecKey(key)}
-                    </td>
-                    {selectedMaterials.map((material) => (
-                      <td key={material.id} className="p-4 text-center">
-                        {getSpecValue(material, key)}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-
-        {/* Actions */}
-        <div className="flex justify-center gap-4 mt-8">
-          <Button 
-            variant="outline"
-            onClick={() => window.history.back()}
-            className="border-royal text-royal hover:bg-royal hover:text-white"
-          >
-            <i className="fas fa-arrow-left mr-2"></i>
-            Back to Comparison
-          </Button>
-          <Button className="bg-royal text-white hover:bg-royal-dark">
-            <i className="fas fa-download mr-2"></i>
-            Export Comparison
-          </Button>
-        </div>
       </div>
-
+      
       <Footer />
     </div>
   );
