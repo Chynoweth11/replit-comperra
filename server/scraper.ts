@@ -1137,6 +1137,20 @@ export class ProductScraper {
     }
     
     // Fallback to specific scrapers
+    // Use new modular scraper architecture
+    try {
+      const { scrapeProduct } = await import('./scrapers/index');
+      const result = await scrapeProduct(url);
+      
+      if (result) {
+        console.log(`New modular scraper extracted ${Object.keys(result.specifications).length} fields for ${result.category}`);
+        return result;
+      }
+    } catch (error) {
+      console.error(`New modular scraper failed for ${url}:`, error);
+    }
+    
+    // Fallback to legacy scrapers
     if (url.includes('daltile.com')) {
       return this.scrapeDaltileProduct(url, category);
     } else if (url.includes('msisurfaces.com')) {
