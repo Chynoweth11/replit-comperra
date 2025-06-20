@@ -168,7 +168,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
       .slice(0, 4) // Limit to 4 additional columns
       .map(spec => spec.label);
     
-    return [...baseHeaders, ...importantSpecs, "Size", "Actions"];
+    return [...baseHeaders, ...importantSpecs, "Dimensions", "Actions"];
   };
 
   const getSpecBadge = (value: any, type: string) => {

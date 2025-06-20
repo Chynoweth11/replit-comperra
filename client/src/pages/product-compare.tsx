@@ -143,7 +143,8 @@ export default function ProductCompare() {
     );
   }
 
-  const specKeys = getAllSpecKeys(selectedMaterials);
+  const primaryCategory = selectedMaterials[0]?.category || '';
+  const specFields = getSpecFields(primaryCategory);
 
   return (
     <div className="min-h-screen bg-gray-50">
