@@ -54,6 +54,11 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
     setLeadModalOpen(true);
   };
 
+  const handleRequestSamples = (productName: string) => {
+    setSelectedProduct(`Sample Request: ${productName}`);
+    setLeadModalOpen(true);
+  };
+
   const handleScrapeUrl = async () => {
     if (!pasteUrl.trim()) return;
     
@@ -490,13 +495,23 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                       >
                         View Details
                       </Button>
-                      <Button 
-                        size="sm" 
-                        className="bg-green-600 text-white hover:bg-green-700"
-                        onClick={() => handleGetPricing(material.name)}
-                      >
-                        Get Pricing
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          className="bg-green-600 text-white hover:bg-green-700 flex-1"
+                          onClick={() => handleGetPricing(material.name)}
+                        >
+                          Get Pricing
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="border-green-600 text-green-600 hover:bg-green-50 flex-1"
+                          onClick={() => handleRequestSamples(material.name)}
+                        >
+                          Request Samples
+                        </Button>
+                      </div>
                     </div>
                   </td>
                 </tr>
