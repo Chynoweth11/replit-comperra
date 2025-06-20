@@ -62,28 +62,12 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
             className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow group h-full flex flex-col"
           >
             <div className="h-40 bg-gray-100 relative overflow-hidden">
-              <img 
-                src={`https://images.unsplash.com/photo-${category.id === 'tiles' ? '1571069985395-e96c6a2bf1e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80' : 
-                     category.id === 'slabs' ? '1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80' : 
-                     category.id === 'lvt' ? '1586105251261-72a756497a11?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80' : 
-                     category.id === 'hardwood' ? '1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80' : 
-                     category.id === 'heat' ? '1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80' : 
-                     '1584464491033-06628f3a6b7b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80'}`} 
-                alt={category.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const fallback = target.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'flex';
-                }}
-              />
               <div className={`w-full h-full bg-gradient-to-br ${category.id === 'tiles' ? 'from-blue-400 to-blue-600' : 
                                category.id === 'slabs' ? 'from-gray-400 to-gray-600' : 
                                category.id === 'lvt' ? 'from-green-400 to-green-600' : 
                                category.id === 'hardwood' ? 'from-amber-500 to-amber-700' : 
                                category.id === 'heat' ? 'from-red-400 to-red-600' : 'from-purple-400 to-purple-600'} 
-                               hidden items-center justify-center text-white text-7xl absolute top-0 left-0`}>
+                               flex items-center justify-center text-white text-7xl`}>
                 <div>
                   {category.id === 'tiles' ? '🏛️' : 
                    category.id === 'slabs' ? '🗿' : 
@@ -92,6 +76,25 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
                    category.id === 'heat' ? '🔥' : '🧶'}
                 </div>
               </div>
+              <img 
+                src={`https://picsum.photos/400/300?random=${category.id === 'tiles' ? '1' : 
+                     category.id === 'slabs' ? '2' : 
+                     category.id === 'lvt' ? '3' : 
+                     category.id === 'hardwood' ? '4' : 
+                     category.id === 'heat' ? '5' : '6'}`} 
+                alt={category.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 absolute top-0 left-0"
+                onLoad={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'block';
+                  const fallback = target.previousElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'none';
+                }}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
             </div>
             
             <div className="p-6 flex flex-col flex-grow">
