@@ -124,9 +124,9 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
       return;
     }
     
-    // Navigate to comparison page with selected IDs
-    const idsParam = selectedIds.join(',');
-    navigate(`/compare?ids=${idsParam}`);
+    // Store the IDs and navigate to comparison page
+    localStorage.setItem('comparisonIds', JSON.stringify(selectedIds));
+    setLocation('/compare');
   };
 
   const { data: materials = [], isLoading } = useQuery<Material[]>({
@@ -475,7 +475,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                         variant="ghost" 
                         size="sm" 
                         className="text-royal hover:text-royal-dark"
-                        onClick={() => navigate(`/product/${material.id}`)}
+                        onClick={() => setLocation(`/product/${material.id}`)}
                       >
                         View Details
                       </Button>
