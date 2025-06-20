@@ -1,6 +1,6 @@
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,17 +8,33 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import LeadCaptureModal from "@/components/lead-capture-modal";
+import { comparisonStore } from "@/lib/comparison-store";
 import type { Material } from "@shared/schema";
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const [leadModalOpen, setLeadModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<string>("");
+  const [isInComparison, setIsInComparison] = useState(false);
   
   const { data: material, isLoading } = useQuery<Material>({
     queryKey: [`/api/materials/${id}`],
     enabled: !!id,
   });
+
+  // Check if product is already in comparison
+  useEffect(() => {
+    if (material) {
+      const unsubscribe = comparisonStore.subscribe(() => {
+        setIsInComparison(comparisonStore.hasSelected(material.id));
+      });
+      
+      // Initial check
+      setIsInComparison(comparisonStore.hasSelected(material.id));
+      
+      return unsubscribe;
+    }
+  }, [material]);
 
   const handleGetPricing = (productName: string) => {
     setSelectedProduct(productName);
@@ -28,6 +44,12 @@ export default function ProductDetail() {
   const handleRequestSamples = (productName: string) => {
     setSelectedProduct(`Sample Request: ${productName}`);
     setLeadModalOpen(true);
+  };
+
+  const handleToggleCompare = () => {
+    if (material) {
+      comparisonStore.toggle(material.id);
+    }
   };
 
   const getSpecDisplayValue = (key: string, value: any): string => {
@@ -169,8 +191,12 @@ export default function ProductDetail() {
               >
                 Request Samples
               </Button>
-              <Button variant="outline">
-                Add to Compare
+              <Button 
+                variant={isInComparison ? "default" : "outline"}
+                className={isInComparison ? "bg-blue-600 text-white hover:bg-blue-700" : ""}
+                onClick={handleToggleCompare}
+              >
+                {isInComparison ? "Remove from Compare" : "Add to Compare"}
               </Button>
             </div>
           </div>
