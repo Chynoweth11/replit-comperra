@@ -1,20 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Fuse from 'fuse.js';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import type { Material } from "@shared/schema";
 
 interface FuzzySearchBarProps {
   materials: Material[];
   onResults: (results: Material[]) => void;
   placeholder?: string;
+  categoryFilter?: string;
 }
 
 const FuzzySearchBar: React.FC<FuzzySearchBarProps> = ({ 
   materials, 
   onResults, 
-  placeholder = "Search products by name, brand, type, or color..." 
+  placeholder = "Search products by name, brand, type, or color...",
+  categoryFilter
 }) => {
   const [query, setQuery] = useState('');
 
