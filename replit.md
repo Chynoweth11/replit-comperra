@@ -22,6 +22,8 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ✅ **June 19, 2025**: Fixed search engine with fuzzy matching, category filtering, and cross-category comparison validation
+- ✅ **June 19, 2025**: Enhanced comparison system with proper specification field mapping and error handling
 - ✅ **June 19, 2025**: Implemented centralized material specifications system with category-specific field definitions
 - ✅ **June 19, 2025**: Enhanced product scraping system with improved specification extraction using cheerio selectors
 - ✅ **June 19, 2025**: Enhanced comparison page with upgraded table component showing category-specific specifications
