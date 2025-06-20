@@ -1,0 +1,86 @@
+// ✅ Enhanced Universal Scraper (MSI, Daltile, All Categories)
+// Supports categories: Tiles, Stone & Slabs, Vinyl & LVT, Hardwood, Heating, Carpet
+
+const axios = require('axios');
+const cheerio = require('cheerio');
+const Airtable = require('airtable');
+
+const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID);
+
+async function scrapeUniversalProduct(url) {
+  try {
+    const { data } = await axios.get(url);
+    const $ = cheerio.load(data);
+
+    const brand = extractBrandFromURL(url);
+    const productName = $('h1').first().text().trim();
+    const image = $('img').first().attr('src') || $('meta[property="og:image"]').attr('content');
+    const dimensions = $('li:contains("Size")').text().split(':')[1]?.trim() || $('li:contains("Dimensions")').text().split(':')[1]?.trim();
+    const price = extractPrice($);
+    const pei = textMatch(data, /PEI\s?(Rating)?:?\s?(\w+)/i);
+    const dcof = textMatch(data, /(DCOF|COF|Slip Resistance):?\s?([>\w\.]+)/i);
+    const absorption = textMatch(data, /Water Absorption:?\s?([\d<>%-]+)/i);
+    const finish = textMatch(data, /Finish:?\s?(\w+)/i);
+    const material = textMatch(data, /Material:?\s?([\w ]+)/i);
+    const color = textMatch(data, /Color:?\s?([\w ]+)/i);
+    const category = assignCategoryFromURL(url);
+
+    const materialData = {
+      Product: productName,
+      Brand: brand,
+      'Price/SF': price,
+      Dimensions: dimensions,
+      'PEI Rating': pei,
+      'DCOF / Slip Rating': dcof,
+      'Water Absorption': absorption,
+      Finish: finish,
+      'Material Type': material,
+      Color: color,
+      Category: category,
+      'Product URL': url,
+      'Image URL': image
+    };
+
+    console.log('Scraped:', materialData);
+    return materialData;
+  } catch (error) {
+    console.error('Scrape failed:', error.message);
+    return null;
+  }
+}
+
+function extractPrice($) {
+  const priceText = $('*:contains("Price")').text();
+  const match = priceText.match(/\$(\d+(\.\d{1,2})?)/);
+  return match ? `$${match[1]}` : '$0.00';
+}
+
+function textMatch(html, regex) {
+  const match = html.match(regex);
+  return match ? match[2]?.trim() : '—';
+}
+
+function extractBrandFromURL(url) {
+  if (url.includes('msisurfaces.com')) return 'MSI';
+  if (url.includes('daltile.com')) return 'Daltile';
+  if (url.includes('marazziusa.com')) return 'Marazzi';
+  return 'Generic';
+}
+
+function assignCategoryFromURL(url) {
+  if (url.includes('tile') || url.includes('porcelain') || url.includes('ceramic')) return 'Tiles';
+  if (url.includes('slab') || url.includes('granite') || url.includes('marble')) return 'Stone & Slabs';
+  if (url.includes('vinyl') || url.includes('lvt')) return 'Vinyl & LVT';
+  if (url.includes('hardwood')) return 'Hardwood';
+  if (url.includes('heating') || url.includes('thermostat') || url.includes('mats')) return 'Heating';
+  if (url.includes('carpet')) return 'Carpet';
+  return 'Other';
+}
+
+// Example usage
+// (async () => {
+//   const product = await scrapeUniversalProduct('https://www.msisurfaces.com/porcelain-flamenco/hale-navy/');
+//   await base('Products').create([{ fields: product }]);
+// })();
+
+module.exports = scrapeUniversalProduct;

@@ -1,0 +1,60 @@
+Scrape All Page Text, Not Just Table
+Add logic to pull page body text:
+
+ts
+Copy
+Edit
+const bodyText = $('body').text();
+Then match the missing specs using regex:
+
+ts
+Copy
+Edit
+const peiMatch = bodyText.match(/PEI(?: Rating)?[:\s]*([0-5])/i);
+const dcofMatch = bodyText.match(/(?:DCOF|COF)[:\s>]*([0-9.]+)/i);
+const waterAbsorptionMatch = bodyText.match(/Water Absorption[:\s<]*([0-9.<%]+)/i);
+✅ 2. Add Description Scanning
+ts
+Copy
+Edit
+const descriptionText = $('.product-description, .product-overview, .features').text();
+const materialTypeMatch = descriptionText.match(/(Porcelain|Ceramic|Stone|Quartz)/i);
+const finishMatch = descriptionText.match(/(Glossy|Matte|Polished|Honed)/i);
+const colorMatch = descriptionText.match(/Color[:\s]*([a-z\s]+)/i);
+✅ 3. Use OpenGraph Tags for Image and Title
+ts
+Copy
+Edit
+const imageUrl = $('meta[property="og:image"]').attr('content');
+const productName = $('meta[property="og:title"]').attr('content');
+✨ BONUS: Enhanced scrapeMSIProduct() Template (Node + Cheerio)
+ts
+Copy
+Edit
+async function scrapeMSIProduct(url: string) {
+  const { data: html } = await axios.get(url);
+  const $ = cheerio.load(html);
+
+  const bodyText = $('body').text();
+
+  return {
+    name: $('h1').text() || $('meta[property="og:title"]').attr('content') || 'N/A',
+    brand: 'MSI',
+    pricePerSF: 0.0,
+    dimensions: $('table.specs').text().match(/\d+["']?x\d+["']?/)?.[0] || 'N/A',
+    peiRating: bodyText.match(/PEI(?: Rating)?[:\s]*([0-5])/i)?.[1] || '—',
+    dcof: bodyText.match(/(?:DCOF|COF)[:\s>]*([0-9.]+)/i)?.[1] || '—',
+    waterAbsorption: bodyText.match(/Water Absorption[:\s<]*([0-9.<%]+)/i)?.[1] || '—',
+    finish: bodyText.match(/(Glossy|Matte|Polished|Honed)/i)?.[1] || '—',
+    materialType: bodyText.match(/(Porcelain|Ceramic|Stone|Quartz)/i)?.[1] || '—',
+    imageUrl: $('meta[property="og:image"]').attr('content') || '—',
+    productUrl: url,
+    category: 'tiles'
+  };
+}
+✅ Next Steps
+✅ Replace your current scrapeMSIProduct() with the one above.
+
+✅ Confirm your output JSON matches your comparison config (brand, pei, dcof, finish, etc.).
+
+✅ Ensure your frontend is using these fields in the comparison table.

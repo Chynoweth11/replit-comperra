@@ -297,131 +297,128 @@ export class ProductScraper {
       const $ = cheerio.load(response.data);
       const html = response.data;
       
-      // Enhanced name extraction
-      const name = $('h1.product-name, .product-title, h1').first().text().trim() ||
+      // Enhanced name extraction with fallbacks
+      const name = $('h1').first().text().trim() ||
                   $('meta[property="og:title"]').attr('content') || 
-                  $('title').text().split('|')[0].trim();
+                  $('title').text().split('|')[0].trim() ||
+                  'Product Name Not Found';
       
       // Enhanced description extraction
-      const description = $('.product-overview, .product-description, .description').text().trim();
+      const description = $('.product-overview, .product-description, .description, .features').text().trim();
       
-      // Enhanced image extraction with multiple fallbacks
-      let imageUrl = $('.product-gallery img, .hero-image img').first().attr('src') ||
-                    $('meta[property="og:image"]').attr('content') ||
-                    $('.main-product-image img').first().attr('src') || '';
+      // Enhanced image extraction using OpenGraph and multiple sources
+      let imageUrl = $('meta[property="og:image"]').attr('content') ||
+                    $('.product-gallery img, .hero-image img').first().attr('src') ||
+                    $('img').first().attr('src') || '';
       
-      if (imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
-      if (imageUrl.startsWith('/') && !imageUrl.startsWith('//')) {
+      if (imageUrl && imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
+      if (imageUrl && imageUrl.startsWith('/') && !imageUrl.startsWith('//')) {
         imageUrl = 'https://www.msisurfaces.com' + imageUrl;
       }
       
-      // Enhanced specification extraction using multiple sources
+      // Universal text matching function for deep extraction
+      const textMatch = (regex: RegExp): string => {
+        const match = html.match(regex);
+        return match ? match[2]?.trim() || match[1]?.trim() || '—' : '—';
+      };
+
+      // Enhanced specification extraction using full page text scanning
       const specs: any = {};
       const fields = specTemplates[category as keyof typeof specTemplates] || [];
       
-      // 1. Extract from specification tables and structured data
-      $('table.specs, .product-specs, .specifications, .tech-specs').find('tr, .spec-item').each((_, elem) => {
-        const key = $(elem).find('td:first-child, .spec-name, .label, th').text().trim();
-        const value = $(elem).find('td:last-child, .spec-value, .value').text().trim();
-        if (key && value) {
-          fields.forEach(field => {
-            if (key.toLowerCase().includes(field.toLowerCase().split(' ')[0]) || 
-                field.toLowerCase().includes(key.toLowerCase())) {
-              specs[field] = value;
+      // 1. Extract from structured data first
+      $('table.specs, .product-specs, .specifications, li').each((_, elem) => {
+        const text = $(elem).text();
+        fields.forEach(field => {
+          if (text.toLowerCase().includes(field.toLowerCase().split(' ')[0])) {
+            const parts = text.split(':');
+            if (parts.length > 1) {
+              const value = parts[1].trim();
+              if (value && !specs[field]) specs[field] = value;
             }
-          });
-        }
+          }
+        });
       });
 
-      // 2. Enhanced regex-based extraction from full page content
-      const bodyText = $('body').text();
-      const specsTable = $('table.specs').text();
-      const headings = $('h2, h3').text();
-      const fullText = `${bodyText} ${specsTable} ${headings}`;
-
-      // PEI Rating extraction
+      // 2. Deep text extraction using comprehensive regex patterns
+      
+      // PEI Rating - multiple patterns
       if (!specs['PEI Rating']) {
-        const peiMatch = fullText.match(/PEI(?: Rating)?:?\s*(\d)/i);
-        if (peiMatch) specs['PEI Rating'] = peiMatch[1];
+        specs['PEI Rating'] = textMatch(/PEI\s?(Rating)?:?\s?(\w+)/i) ||
+                             textMatch(/Class\s*([0-5])/i) ||
+                             textMatch(/Rating[:\s]*([0-5])/i);
       }
 
-      // DCOF / Slip Rating extraction
+      // DCOF / Slip Rating - comprehensive extraction
       if (!specs['DCOF / Slip Rating']) {
-        const dcofMatch = fullText.match(/(?:COF|DCOF)(?: \/ DCOF)?:?\s*(>?\s?0\.\d+)/i) ||
-                         fullText.match(/Slip Resistance:?\s*([\d.]+)/i);
-        if (dcofMatch) specs['DCOF / Slip Rating'] = dcofMatch[1];
+        specs['DCOF / Slip Rating'] = textMatch(/(DCOF|COF|Slip Resistance):?\s?([>\w\.]+)/i) ||
+                                     textMatch(/Coefficient[:\s]*([0-9.]+)/i);
       }
 
-      // Water Absorption extraction
+      // Water Absorption - enhanced patterns
       if (!specs['Water Absorption']) {
-        const waterMatch = fullText.match(/Water Absorption:?[\s<]*(\d+%|<\s?[\d.]+%)/i) ||
-                          fullText.match(/Absorption:?[\s<]*(\d+\.?\d*%?)/i);
-        if (waterMatch) specs['Water Absorption'] = waterMatch[1];
+        specs['Water Absorption'] = textMatch(/Water Absorption:?\s?([\d<>%-]+)/i) ||
+                                   textMatch(/Absorption[:\s<]*([\d<>%-]+)/i);
       }
 
-      // Material Type extraction
+      // Material Type - broader matching
       if (!specs['Material Type']) {
-        const materialMatch = fullText.match(/(Ceramic|Porcelain|Natural Stone|Quartz|Glazed|Unglazed)/i);
-        if (materialMatch) specs['Material Type'] = materialMatch[1];
+        specs['Material Type'] = textMatch(/Material:?\s?([\w ]+)/i) ||
+                                textMatch(/(Porcelain|Ceramic|Stone|Quartz|Natural Stone)/i);
       }
 
-      // Finish extraction
+      // Finish - enhanced extraction
       if (!specs['Finish']) {
-        const finishMatch = fullText.match(/Finish:?\s*(Glossy|Matte|Polished|Honed|Textured|Lappato)/i) ||
-                           fullText.match(/(Glossy|Matte|Polished|Honed|Textured|Lappato)/i);
-        if (finishMatch) specs['Finish'] = finishMatch[1];
+        specs['Finish'] = textMatch(/Finish:?\s?(\w+)/i) ||
+                         textMatch(/(Glossy|Matte|Polished|Honed|Textured|Lappato)/i);
       }
 
-      // Color extraction
+      // Color - multiple sources
       if (!specs['Color']) {
-        const colorMatch = fullText.match(/Color:?\s*([a-zA-Z\s\-]+)/i) ||
-                          name.match(/(White|Black|Gray|Grey|Blue|Navy|Beige|Brown|Green)/i);
-        if (colorMatch) specs['Color'] = colorMatch[1].trim();
+        specs['Color'] = textMatch(/Color:?\s?([\w ]+)/i) ||
+                        name.match(/(White|Black|Gray|Grey|Blue|Navy|Beige|Brown|Green|Hale)/i)?.[1] || '—';
       }
 
-      // Edge Type extraction
+      // Edge Type
       if (!specs['Edge Type']) {
-        const edgeMatch = fullText.match(/Edge:?\s*(Rectified|Natural|Pressed)/i);
-        if (edgeMatch) specs['Edge Type'] = edgeMatch[1];
+        specs['Edge Type'] = textMatch(/Edge:?\s?(\w+)/i);
       }
 
-      // Texture extraction
+      // Texture
       if (!specs['Texture']) {
-        const textureMatch = fullText.match(/Texture:?\s*(Smooth|Textured|Rough|Structured)/i) ||
-                            fullText.match(/(Wood Grain|Stone|Marble|Concrete)/i);
-        if (textureMatch) specs['Texture'] = textureMatch[1];
+        specs['Texture'] = textMatch(/Texture:?\s?(\w+)/i) ||
+                          textMatch(/(Wood Grain|Stone|Marble|Concrete|Linear)/i);
       }
 
-      // Install Location extraction
+      // Install Location
       if (!specs['Install Location']) {
-        const locationMatch = fullText.match(/(Floor|Wall|Indoor|Outdoor|Commercial|Residential)/i);
-        if (locationMatch) specs['Install Location'] = locationMatch[1];
+        specs['Install Location'] = textMatch(/(Floor|Wall|Indoor|Outdoor|Commercial|Residential)/i);
       }
 
       // Enhanced dimensions extraction
-      let dimensions = $('.size-info, .dimensions, .size, .nominal-size').text().trim() || '';
-      if (!dimensions) {
-        const dimMatch = fullText.match(/(?:Size|Dimension|Nominal)s?:?\s*(\d+["']?\s*[xX×]\s*\d+["']?(?:\s*[xX×]\s*\d+["']?)?)/i) ||
-                        fullText.match(/(\d+["']?\s*[xX×]\s*\d+["']?)/);
-        if (dimMatch) dimensions = dimMatch[1];
-      }
+      let dimensions = $('li:contains("Size")').text().split(':')[1]?.trim() ||
+                      $('li:contains("Dimensions")').text().split(':')[1]?.trim() ||
+                      textMatch(/(?:Size|Dimensions?)[:\s]*(\d+["']?\s*[xX×]\s*\d+["']?)/i) ||
+                      textMatch(/(\d+["']?\s*[xX×]\s*\d+["']?)/);
+      
       specs['Dimensions'] = dimensions;
       specs['Size'] = dimensions;
 
       // Enhanced price extraction
-      const priceText = $('.price-display, .price, .cost, .msrp').text().trim();
-      let price = priceText.match(/\$?([\d,]+\.?\d*)/)?.[0]?.replace(/[,$]/g, '') || '0.00';
-      
-      // Fallback price search in page content
-      if (price === '0.00') {
-        const priceMatch = fullText.match(/\$\s?([\d,]+\.?\d*)\s?\/?\s?(?:SF|sq\.?\s?ft|per\s?sq|square)/i);
-        if (priceMatch) price = priceMatch[1].replace(',', '');
-      }
+      const extractPrice = ($: cheerio.CheerioAPI): string => {
+        const priceText = $('*:contains("Price")').text();
+        const match = priceText.match(/\$(\d+(\.\d{1,2})?)/);
+        return match ? match[1] : '0.00';
+      };
+
+      const price = extractPrice($) || '0.00';
 
       // Add required template fields
       specs['Brand'] = 'MSI';
       specs['Price per SF'] = price;
       specs['Product URL'] = url;
+
+      console.log('MSI Scraped specs:', Object.keys(specs).length, 'fields');
 
       return {
         name,
@@ -440,6 +437,12 @@ export class ProductScraper {
     }
   }
 
+  // Universal text matching function for all scrapers
+  private textMatch(html: string, regex: RegExp): string {
+    const match = html.match(regex);
+    return match ? match[2]?.trim() || match[1]?.trim() || '—' : '—';
+  }
+
   async scrapeGenericProduct(url: string, category: string): Promise<ScrapedProduct | null> {
     try {
       const response = await axios.get(url, {
@@ -451,11 +454,10 @@ export class ProductScraper {
       const $ = cheerio.load(response.data);
       const html = response.data;
       
-      // Enhanced name extraction with multiple fallbacks
-      let name = $('h1.product-title, h1.product-name, .product-title h1, h1').first().text().trim() ||
-                $('.product-title, .product-name, .pdp-title, .item-title').text().trim() ||
+      // Enhanced name extraction using universal approach
+      let name = $('h1').first().text().trim() ||
                 $('meta[property="og:title"]').attr('content') ||
-                $('title').text().split('|')[0].split('-')[0].trim() ||
+                $('title').text().split('|')[0].trim() ||
                 'Product Name Not Found';
       
       name = name.replace(/\s+/g, ' ').trim();
@@ -464,11 +466,10 @@ export class ProductScraper {
       const description = $('.product-description, .description, .overview, .product-details, .about-product')
         .first().text().trim().substring(0, 500) || '';
       
-      // Enhanced image extraction with multiple fallbacks
-      let imageUrl = $('.product-image img, .hero-image img, .gallery img, .main-image img, img[alt*="product"]')
-        .first().attr('src') || 
-        $('meta[property="og:image"]').attr('content') ||
-        $('img').first().attr('src') || '';
+      // Enhanced image extraction using OpenGraph priority
+      let imageUrl = $('meta[property="og:image"]').attr('content') ||
+                    $('.product-image img, .hero-image img, .gallery img').first().attr('src') ||
+                    $('img').first().attr('src') || '';
       
       if (imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
       if (imageUrl.startsWith('/') && !imageUrl.startsWith('//')) {
@@ -516,46 +517,40 @@ export class ProductScraper {
       const headings = $('h2, h3').text();
       const fullText = `${bodyText} ${specsTable} ${headings}`;
 
-      // Universal specification extraction (works for all categories and brands)
+      // Universal specification extraction using comprehensive regex patterns
       
-      // PEI Rating extraction
+      // Enhanced PEI Rating extraction
       if (!specs['PEI Rating']) {
-        const peiMatch = fullText.match(/PEI(?: Rating)?:?\s*(\d)/i);
-        if (peiMatch) specs['PEI Rating'] = peiMatch[1];
+        specs['PEI Rating'] = this.textMatch(fullPageHtml, /PEI\s?(Rating)?:?\s?(\w+)/i) ||
+                             this.textMatch(fullPageHtml, /Class\s*([0-5])/i);
       }
 
-      // DCOF / Slip Rating extraction
+      // Enhanced DCOF / Slip Rating extraction  
       if (!specs['DCOF / Slip Rating']) {
-        const dcofMatch = fullText.match(/(?:COF|DCOF)(?: \/ DCOF)?:?\s*(>?\s?0\.\d+)/i) ||
-                         fullText.match(/Slip Resistance:?\s*([\d.]+)/i);
-        if (dcofMatch) specs['DCOF / Slip Rating'] = dcofMatch[1];
+        specs['DCOF / Slip Rating'] = this.textMatch(fullPageHtml, /(DCOF|COF|Slip Resistance):?\s?([>\w\.]+)/i);
       }
 
-      // Water Absorption extraction
+      // Enhanced Water Absorption extraction
       if (!specs['Water Absorption']) {
-        const waterMatch = fullText.match(/Water Absorption:?[\s<]*(\d+%|<\s?[\d.]+%)/i) ||
-                          fullText.match(/Absorption:?[\s<]*(\d+\.?\d*%?)/i);
-        if (waterMatch) specs['Water Absorption'] = waterMatch[1];
+        specs['Water Absorption'] = this.textMatch(fullPageHtml, /Water Absorption:?\s?([\d<>%-]+)/i);
       }
 
-      // Material Type extraction
+      // Enhanced Material Type extraction
       if (!specs['Material Type']) {
-        const materialMatch = fullText.match(/(Ceramic|Porcelain|Natural Stone|Quartz|Glazed|Unglazed|Stone|Granite|Marble|LVT|SPC|WPC)/i);
-        if (materialMatch) specs['Material Type'] = materialMatch[1];
+        specs['Material Type'] = this.textMatch(fullPageHtml, /Material:?\s?([\w ]+)/i) ||
+                                this.textMatch(fullPageHtml, /(Porcelain|Ceramic|Stone|Quartz|Natural Stone|LVT|SPC|WPC)/i);
       }
 
-      // Finish extraction
+      // Enhanced Finish extraction
       if (!specs['Finish']) {
-        const finishMatch = fullText.match(/Finish:?\s*(Glossy|Matte|Polished|Honed|Textured|Lappato|Satin|Brushed)/i) ||
-                           fullText.match(/(Glossy|Matte|Polished|Honed|Textured|Lappato|Satin|Brushed)/i);
-        if (finishMatch) specs['Finish'] = finishMatch[1];
+        specs['Finish'] = this.textMatch(fullPageHtml, /Finish:?\s?(\w+)/i) ||
+                         this.textMatch(fullPageHtml, /(Glossy|Matte|Polished|Honed|Textured|Lappato)/i);
       }
 
-      // Color extraction
+      // Enhanced Color extraction
       if (!specs['Color']) {
-        const colorMatch = fullText.match(/Color:?\s*([a-zA-Z\s\-]+)/i) ||
-                          name.match(/(White|Black|Gray|Grey|Blue|Navy|Beige|Brown|Green|Red|Cream|Tan|Oak|Cherry|Walnut)/i);
-        if (colorMatch) specs['Color'] = colorMatch[1].trim();
+        specs['Color'] = this.textMatch(fullPageHtml, /Color:?\s?([\w ]+)/i) ||
+                        name.match(/(White|Black|Gray|Grey|Blue|Navy|Beige|Brown|Green|Red|Cream|Tan|Oak|Cherry|Walnut)/i)?.[1] || '—';
       }
 
       // Edge Type extraction
@@ -682,31 +677,14 @@ export class ProductScraper {
       specs['Dimensions'] = dimensions;
       specs['Size'] = dimensions;
 
-      // Enhanced price extraction
-      let price = '0.00';
-      const priceSelectors = [
-        '.price, .cost, .msrp, .product-price',
-        '.price-current, .price-value, .amount',
-        '[data-price], .price-display, .retail-price'
-      ];
-      
-      for (const selector of priceSelectors) {
-        const priceElement = $(selector);
-        if (priceElement.length) {
-          const priceText = priceElement.text().trim();
-          const priceMatch = priceText.match(/\$?([\d,]+\.?\d*)/);
-          if (priceMatch) {
-            price = priceMatch[1].replace(',', '');
-            break;
-          }
-        }
-      }
+      // Enhanced price extraction using universal function
+      const extractPrice = ($: cheerio.CheerioAPI): string => {
+        const priceText = $('*:contains("Price")').text();
+        const match = priceText.match(/\$(\d+(\.\d{1,2})?)/);
+        return match ? match[1] : '0.00';
+      };
 
-      // Fallback price search in page content
-      if (price === '0.00') {
-        const priceMatch = fullText.match(/\$\s?([\d,]+\.?\d*)\s?\/?\s?(?:SF|sq\.?\s?ft|per\s?sq|square)/i);
-        if (priceMatch) price = priceMatch[1].replace(',', '');
-      }
+      const price = extractPrice($) || '0.00';
 
       // Add required template fields
       specs['Brand'] = this.extractBrandFromURL(url);
