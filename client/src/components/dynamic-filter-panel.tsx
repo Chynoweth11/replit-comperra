@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { getCategorySpecifications, SpecificationField } from "@shared/material-specifications";
+import { MATERIAL_SPECIFICATIONS, SpecificationField } from "@shared/material-specifications";
 
 interface DynamicFilterPanelProps {
   category: string;
@@ -14,7 +14,7 @@ interface DynamicFilterPanelProps {
 
 export default function DynamicFilterPanel({ category, filters, onFiltersChange }: DynamicFilterPanelProps) {
   const [localFilters, setLocalFilters] = useState(filters);
-  const specs = getCategorySpecifications(category);
+  const specs = MATERIAL_SPECIFICATIONS[category] || [];
 
   useEffect(() => {
     setLocalFilters(filters);

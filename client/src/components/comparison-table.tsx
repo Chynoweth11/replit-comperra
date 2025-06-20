@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import LeadCaptureModal from "./lead-capture-modal";
 import { comparisonStore } from "@/lib/comparison-store";
+import { MATERIAL_SPECIFICATIONS } from "@shared/material-specifications";
 import type { Material } from "@shared/schema";
 
 interface ComparisonTableProps {
@@ -158,7 +159,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
   });
 
   const getHeaders = (category: string) => {
-    const specs = getCategorySpecifications(category);
+    const specs = MATERIAL_SPECIFICATIONS[category] || [];
     const baseHeaders = ["Product", "Brand", "Price/SF"];
     
     // Get the most important specs for table headers (limit to avoid overcrowding)
@@ -188,7 +189,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
 
   const renderSpecificationCell = (material: Material, category: string, specType: string) => {
     const specs = material.specifications as any;
-    const categorySpecs = getCategorySpecifications(category);
+    const categorySpecs = MATERIAL_SPECIFICATIONS[category] || [];
     
     switch (category) {
       case "tiles":

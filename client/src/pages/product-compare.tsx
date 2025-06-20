@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import { getCategorySpecifications } from "@shared/material-specifications";
+import { MATERIAL_SPECIFICATIONS } from "@shared/material-specifications";
 import type { Material } from "@shared/schema";
 
 export default function ProductCompare() {
@@ -96,7 +96,7 @@ export default function ProductCompare() {
 
   // Enhanced specification fields based on category using centralized config
   const getSpecFields = (category: string) => {
-    const specs = getCategorySpecifications(category);
+    const specs = MATERIAL_SPECIFICATIONS[category] || [];
     
     // Always include base fields first
     const baseFields = [
