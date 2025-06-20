@@ -1,0 +1,83 @@
+// === Comperra Scraper: Full Category & Brand Support ===
+
+const axios = require('axios');
+const cheerio = require('cheerio');
+
+// --- Spec Templates ---
+const specTemplates = {
+  Tiles: ["Brand", "Price per SF", "Dimensions", "PEI Rating", "DCOF / Slip Rating", "Water Absorption", "Finish", "Material Type", "Edge Type", "Install Location", "Color", "Texture", "Product URL"],
+  "Stone & Slabs": ["Brand", "Price per SF", "Size", "Thickness", "Finish", "Stone Type", "Pattern/Vein", "Edge Type", "Country of Origin", "Product URL"],
+  "Vinyl & LVT": ["Brand", "Price per SF", "Size", "Wear Layer", "Type (SPC/WPC/LVT)", "Underlayment", "Water Resistance", "Install Method", "Texture", "Color", "Product URL"],
+  Hardwood: ["Brand", "Price per SF", "Size", "Wood Species", "Janka Rating", "Finish", "Construction Type", "Installation Method", "Warranty", "Product URL"],
+  Heating: ["Brand", "Type", "Voltage", "Coverage Area (SF)", "Programmable Features", "Sensor Type", "Thermostat Included", "Install Location", "Max Temperature", "Product URL"],
+  Carpet: ["Brand", "Price per SF", "Fiber Type", "Pile Height", "Backing", "Face Weight", "Stain Resistance", "Color Options", "Product URL"]
+};
+
+// --- Category Assignment ---
+function assignCategoryFromURL(url) {
+  if (url.includes('tile') || url.includes('porcelain')) return 'Tiles';
+  if (url.includes('slab') || url.includes('marble') || url.includes('granite')) return 'Stone & Slabs';
+  if (url.includes('vinyl') || url.includes('lvt')) return 'Vinyl & LVT';
+  if (url.includes('hardwood')) return 'Hardwood';
+  if (url.includes('heat') || url.includes('thermostat')) return 'Heating';
+  if (url.includes('carpet')) return 'Carpet';
+  return 'Tiles'; // fallback
+}
+
+// --- Brand Detection ---
+function extractBrandFromURL(url) {
+  if (url.includes('msisurfaces')) return 'MSI';
+  if (url.includes('daltile')) return 'Daltile';
+  if (url.includes('marazzi')) return 'Marazzi';
+  if (url.includes('shaw')) return 'Shaw';
+  if (url.includes('mohawk')) return 'Mohawk';
+  if (url.includes('flor.com')) return 'Flor';
+  return 'Unknown';
+}
+
+// --- Scraper Router ---
+async function scrapeProduct(url) {
+  const category = assignCategoryFromURL(url);
+  if (url.includes('daltile.com')) return await scrapeDaltileProduct(url, category);
+  if (url.includes('msisurfaces.com')) return await scrapeMSIProduct(url, category);
+  return await scrapeGenericProduct(url, category);
+}
+
+// --- Generic Scraper ---
+async function scrapeGenericProduct(url, category) {
+  try {
+    const { data: html } = await axios.get(url);
+    const $ = cheerio.load(html);
+    const specs = {};
+    const fields = specTemplates[category];
+
+    $('table, .specs, .product-details').find('tr, li').each((i, el) => {
+      const text = $(el).text();
+      fields.forEach(field => {
+        if (text.toLowerCase().includes(field.toLowerCase().split(' ')[0])) {
+          const value = text.split(':')[1]?.trim();
+          if (value) specs[field] = value;
+        }
+      });
+    });
+
+    return {
+      name: $('h1').first().text().trim(),
+      brand: extractBrandFromURL(url),
+      url,
+      category,
+      specs,
+    };
+  } catch (err) {
+    console.error('Generic scrape error:', err);
+    return null;
+  }
+}
+
+// --- Exports ---
+module.exports = {
+  scrapeProduct,
+  assignCategoryFromURL,
+  extractBrandFromURL,
+  specTemplates,
+};

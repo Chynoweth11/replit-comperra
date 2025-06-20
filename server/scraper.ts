@@ -14,6 +14,16 @@ export interface ScrapedProduct {
   sourceUrl: string;
 }
 
+// Enhanced spec templates for all six categories
+const specTemplates = {
+  tiles: ["Brand", "Price per SF", "Dimensions", "PEI Rating", "DCOF / Slip Rating", "Water Absorption", "Finish", "Material Type", "Edge Type", "Install Location", "Color", "Texture", "Product URL"],
+  slabs: ["Brand", "Price per SF", "Size", "Thickness", "Finish", "Stone Type", "Pattern/Vein", "Edge Type", "Country of Origin", "Product URL"],
+  lvt: ["Brand", "Price per SF", "Size", "Wear Layer", "Type (SPC/WPC/LVT)", "Underlayment", "Water Resistance", "Install Method", "Texture", "Color", "Product URL"],
+  hardwood: ["Brand", "Price per SF", "Size", "Wood Species", "Janka Rating", "Finish", "Construction Type", "Installation Method", "Warranty", "Product URL"],
+  heat: ["Brand", "Type", "Voltage", "Coverage Area (SF)", "Programmable Features", "Sensor Type", "Thermostat Included", "Install Location", "Max Temperature", "Product URL"],
+  carpet: ["Brand", "Price per SF", "Fiber Type", "Pile Height", "Backing", "Face Weight", "Stain Resistance", "Color Options", "Product URL"]
+};
+
 export class ProductScraper {
   private delay = 1000; // 1 second between requests
 
@@ -35,18 +45,20 @@ export class ProductScraper {
   extractBrandFromURL(url: string): string {
     if (url.includes('daltile.com')) return 'Daltile';
     if (url.includes('msisurfaces.com')) return 'MSI';
+    if (url.includes('marazzi.com')) return 'Marazzi';
     if (url.includes('arizonatile.com')) return 'Arizona Tile';
     if (url.includes('floridatile.com')) return 'Florida Tile';
     if (url.includes('akdo.com')) return 'AKDO';
     if (url.includes('shawfloors.com')) return 'Shaw';
     if (url.includes('mohawkflooring.com')) return 'Mohawk';
+    if (url.includes('flor.com')) return 'Flor';
     if (url.includes('cambriausa.com')) return 'Cambria';
     if (url.includes('caesarstoneus.com')) return 'Caesarstone';
     if (url.includes('silestone.com')) return 'Silestone';
     return 'Unknown';
   }
 
-  async scrapeDaltileProduct(url: string): Promise<ScrapedProduct | null> {
+  async scrapeDaltileProduct(url: string, category: string): Promise<ScrapedProduct | null> {
     try {
       const response = await axios.get(url, {
         headers: {
@@ -62,7 +74,6 @@ export class ProductScraper {
                 $('title').text().split('|')[0].trim() ||
                 'Product Name Not Found';
       
-      // Clean up the name
       name = name.replace(/\s+/g, ' ').trim();
       
       // Enhanced description extraction
@@ -75,54 +86,54 @@ export class ProductScraper {
       
       if (imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
       
-      // Enhanced specifications extraction
+      // Category-specific specification extraction using templates
       const specs: any = {};
+      const fields = specTemplates[category as keyof typeof specTemplates] || [];
       
-      // Try multiple specification selectors
+      // Extract specifications from tables and structured data
       $('.specification-item, .spec-row, .product-specs tr, .specs-table tr, .technical-specs tr').each((_, elem) => {
         const key = $(elem).find('.spec-label, .label, td:first-child, th').text().trim();
         const value = $(elem).find('.spec-value, .value, td:last-child').text().trim();
         if (key && value && key !== value) {
-          specs[key.toLowerCase().replace(/[\s-]+/g, '_')] = value;
+          // Map to template fields
+          fields.forEach(field => {
+            if (key.toLowerCase().includes(field.toLowerCase().split(' ')[0]) || 
+                field.toLowerCase().includes(key.toLowerCase())) {
+              specs[field] = value;
+            }
+          });
         }
       });
 
-      // Extract tile-specific specifications
-      if (this.assignCategoryFromURL(url) === 'tiles') {
-        // PEI Rating
-        if (!specs.pei_rating) {
-          const peiText = $('*:contains("PEI")').text();
-          const peiMatch = peiText.match(/PEI[\s:]?(\d+)/i);
-          if (peiMatch) specs.pei_rating = peiMatch[1];
+      // Category-specific field extraction
+      const pageText = $('body').text();
+      
+      if (category === 'tiles') {
+        if (!specs['PEI Rating']) {
+          const peiMatch = pageText.match(/PEI[\s:]?(\d+)/i);
+          if (peiMatch) specs['PEI Rating'] = peiMatch[1];
         }
         
-        // DCOF/Slip Rating
-        if (!specs.slip_rating && !specs.dcof) {
-          const dcofText = $('*:contains("DCOF"), *:contains("slip")').text();
-          const dcofMatch = dcofText.match(/DCOF[\s:]?([\d.]+)/i) || dcofText.match(/([\d.]+)/);
-          if (dcofMatch) specs.slip_rating = dcofMatch[1];
+        if (!specs['DCOF / Slip Rating']) {
+          const dcofMatch = pageText.match(/DCOF[\s:]?([\d.]+)/i);
+          if (dcofMatch) specs['DCOF / Slip Rating'] = dcofMatch[1];
         }
         
-        // Water Absorption
-        if (!specs.water_absorption) {
-          const waterText = $('*:contains("absorption"), *:contains("water")').text();
-          const waterMatch = waterText.match(/([\d.]+%?)/);
-          if (waterMatch) specs.water_absorption = waterMatch[1];
+        if (!specs['Water Absorption']) {
+          const waterMatch = pageText.match(/water\s+absorption[\s:]*([\d.]+%?)/i);
+          if (waterMatch) specs['Water Absorption'] = waterMatch[1];
         }
       }
 
-      // Enhanced dimensions extraction
-      let dimensions = $('.size, .dimensions, .product-size, .tile-size').text().trim() ||
-                      specs.size || specs.dimensions || specs.nominal_size || '';
-      
-      // Try to find dimensions in text content
+      // Extract dimensions
+      let dimensions = $('.size, .dimensions, .product-size, .tile-size').text().trim() || '';
       if (!dimensions) {
-        const dimText = $('body').text();
-        const dimMatch = dimText.match(/(\d+["']?\s*[xX×]\s*\d+["']?)/);
+        const dimMatch = pageText.match(/(\d+["']?\s*[xX×]\s*\d+["']?)/);
         if (dimMatch) dimensions = dimMatch[1];
       }
+      specs['Dimensions'] = dimensions;
       
-      // Enhanced price extraction
+      // Extract price
       let price = '0.00';
       const priceSelectors = [
         '.price-current, .price .amount, .product-price .price',
@@ -142,11 +153,16 @@ export class ProductScraper {
         }
       }
 
+      // Add required fields
+      specs['Brand'] = 'Daltile';
+      specs['Price per SF'] = price;
+      specs['Product URL'] = url;
+
       return {
         name,
         brand: 'Daltile',
         price,
-        category: this.assignCategoryFromURL(url),
+        category,
         description,
         imageUrl,
         dimensions,
@@ -159,7 +175,7 @@ export class ProductScraper {
     }
   }
 
-  async scrapeMSIProduct(url: string): Promise<ScrapedProduct | null> {
+  async scrapeMSIProduct(url: string, category: string): Promise<ScrapedProduct | null> {
     try {
       const response = await axios.get(url, {
         headers: {
@@ -169,30 +185,57 @@ export class ProductScraper {
 
       const $ = cheerio.load(response.data);
       
-      const name = $('h1.product-name, .product-title').first().text().trim();
+      const name = $('h1.product-name, .product-title, h1').first().text().trim();
       const description = $('.product-overview, .product-description').text().trim();
-      const imageUrl = $('.product-gallery img').first().attr('src') || '';
+      let imageUrl = $('.product-gallery img, .hero-image img').first().attr('src') || '';
       
+      if (imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
+      
+      // Category-specific specification extraction using templates
       const specs: any = {};
-      $('.product-specs .spec-item, .specifications tr').each((_, elem) => {
-        const key = $(elem).find('td:first-child, .spec-name').text().trim();
-        const value = $(elem).find('td:last-child, .spec-value').text().trim();
+      const fields = specTemplates[category as keyof typeof specTemplates] || [];
+      
+      // Extract from specification tables
+      $('.product-specs .spec-item, .specifications tr, .specs tr').each((_, elem) => {
+        const key = $(elem).find('td:first-child, .spec-name, .label').text().trim();
+        const value = $(elem).find('td:last-child, .spec-value, .value').text().trim();
         if (key && value) {
-          specs[key.toLowerCase().replace(/\s+/g, '_')] = value;
+          // Map to template fields
+          fields.forEach(field => {
+            if (key.toLowerCase().includes(field.toLowerCase().split(' ')[0]) || 
+                field.toLowerCase().includes(key.toLowerCase())) {
+              specs[field] = value;
+            }
+          });
         }
       });
 
-      const dimensions = specs.size || specs.dimensions || $('.size-info').text().trim() || '';
-      const priceText = $('.price-display').text().trim();
+      // Extract dimensions and other key specs
+      let dimensions = $('.size-info, .dimensions, .size').text().trim() || '';
+      if (!dimensions) {
+        const pageText = $('body').text();
+        const dimMatch = pageText.match(/(\d+["']?\s*[xX×]\s*\d+["']?)/);
+        if (dimMatch) dimensions = dimMatch[1];
+      }
+      specs['Dimensions'] = dimensions;
+      specs['Size'] = dimensions;
+
+      // Extract price
+      const priceText = $('.price-display, .price, .cost').text().trim();
       const price = priceText.match(/[\d.]+/)?.[0] || '0.00';
+
+      // Add required fields
+      specs['Brand'] = 'MSI';
+      specs['Price per SF'] = price;
+      specs['Product URL'] = url;
 
       return {
         name,
         brand: 'MSI',
         price,
-        category: this.assignCategoryFromURL(url),
+        category,
         description,
-        imageUrl: imageUrl.startsWith('//') ? 'https:' + imageUrl : imageUrl,
+        imageUrl,
         dimensions,
         specifications: specs,
         sourceUrl: url
@@ -203,7 +246,7 @@ export class ProductScraper {
     }
   }
 
-  async scrapeGenericProduct(url: string): Promise<ScrapedProduct | null> {
+  async scrapeGenericProduct(url: string, category: string): Promise<ScrapedProduct | null> {
     try {
       const response = await axios.get(url, {
         headers: {
@@ -213,7 +256,7 @@ export class ProductScraper {
 
       const $ = cheerio.load(response.data);
       
-      // Enhanced generic selectors for better data extraction
+      // Enhanced name extraction
       let name = $('h1.product-title, h1.product-name, .product-title h1, h1').first().text().trim() ||
                 $('.product-title, .product-name, .pdp-title, .item-title').text().trim() ||
                 $('title').text().split('|')[0].split('-')[0].trim() ||
@@ -233,63 +276,70 @@ export class ProductScraper {
         imageUrl = baseUrl + imageUrl;
       }
       
-      // Enhanced specifications extraction
+      // Category-specific specification extraction using templates
       const specs: any = {};
+      const fields = specTemplates[category as keyof typeof specTemplates] || [];
       
-      // Try multiple specification table formats
-      $('.specs tr, .specifications tr, .product-details tr, .tech-specs tr, .spec-table tr').each((_, elem) => {
+      // Extract from tables and specification sections
+      $('table, .specs, .product-details, .specifications').find('tr, li, .spec-item').each((_, elem) => {
+        const text = $(elem).text();
         const cells = $(elem).find('td');
+        
         if (cells.length >= 2) {
           const key = $(cells[0]).text().trim();
           const value = $(cells[1]).text().trim();
-          if (key && value && key !== value) {
-            specs[key.toLowerCase().replace(/[\s-]+/g, '_')] = value;
+          if (key && value) {
+            fields.forEach(field => {
+              if (key.toLowerCase().includes(field.toLowerCase().split(' ')[0]) || 
+                  field.toLowerCase().includes(key.toLowerCase())) {
+                specs[field] = value;
+              }
+            });
           }
+        } else {
+          // Handle text-based specs
+          fields.forEach(field => {
+            if (text.toLowerCase().includes(field.toLowerCase().split(' ')[0])) {
+              const parts = text.split(':');
+              if (parts.length > 1) {
+                const value = parts[1].trim();
+                if (value) specs[field] = value;
+              }
+            }
+          });
         }
       });
 
-      // Alternative specification patterns
-      $('.spec-item, .detail-item, .specification-row').each((_, elem) => {
-        const label = $(elem).find('.label, .name, .key, .spec-name').text().trim();
-        const value = $(elem).find('.value, .spec-value, .detail-value').text().trim();
-        if (label && value && label !== value) {
-          specs[label.toLowerCase().replace(/[\s-]+/g, '_')] = value;
-        }
-      });
-
-      // Category-specific enhancements
-      const category = this.assignCategoryFromURL(url);
+      // Category-specific field extraction from page content
+      const pageText = $('body').text();
+      
       if (category === 'tiles') {
-        // Extract tile-specific specs from page content
-        const pageText = $('body').text();
-        
-        if (!specs.pei_rating) {
+        if (!specs['PEI Rating']) {
           const peiMatch = pageText.match(/PEI[\s:]?(\d+)/i);
-          if (peiMatch) specs.pei_rating = peiMatch[1];
+          if (peiMatch) specs['PEI Rating'] = peiMatch[1];
         }
         
-        if (!specs.slip_rating && !specs.dcof) {
+        if (!specs['DCOF / Slip Rating']) {
           const dcofMatch = pageText.match(/DCOF[\s:]?([\d.]+)/i);
-          if (dcofMatch) specs.slip_rating = dcofMatch[1];
+          if (dcofMatch) specs['DCOF / Slip Rating'] = dcofMatch[1];
         }
         
-        if (!specs.water_absorption) {
+        if (!specs['Water Absorption']) {
           const waterMatch = pageText.match(/water\s+absorption[\s:]*([\d.]+%?)/i);
-          if (waterMatch) specs.water_absorption = waterMatch[1];
+          if (waterMatch) specs['Water Absorption'] = waterMatch[1];
         }
       }
 
-      // Enhanced dimensions extraction
-      let dimensions = $('.size, .dimensions, .product-size, .tile-size').text().trim() ||
-                      specs.size || specs.dimensions || specs.nominal_size || '';
-      
+      // Extract dimensions
+      let dimensions = $('.size, .dimensions, .product-size, .tile-size').text().trim() || '';
       if (!dimensions) {
-        const pageText = $('body').text();
         const dimMatch = pageText.match(/(\d+["']?\s*[xX×]\s*\d+["']?(?:\s*[xX×]\s*\d+["']?)?)/);
         if (dimMatch) dimensions = dimMatch[1];
       }
+      specs['Dimensions'] = dimensions;
+      specs['Size'] = dimensions;
 
-      // Enhanced price extraction
+      // Extract price
       let price = '0.00';
       const priceSelectors = [
         '.price, .cost, .msrp, .product-price',
@@ -308,6 +358,11 @@ export class ProductScraper {
           }
         }
       }
+
+      // Add required fields
+      specs['Brand'] = this.extractBrandFromURL(url);
+      specs['Price per SF'] = price;
+      specs['Product URL'] = url;
 
       return {
         name,
@@ -329,12 +384,14 @@ export class ProductScraper {
   async scrapeProduct(url: string): Promise<ScrapedProduct | null> {
     await this.sleep(this.delay);
     
+    const category = this.assignCategoryFromURL(url);
+    
     if (url.includes('daltile.com')) {
-      return this.scrapeDaltileProduct(url);
+      return this.scrapeDaltileProduct(url, category);
     } else if (url.includes('msisurfaces.com')) {
-      return this.scrapeMSIProduct(url);
+      return this.scrapeMSIProduct(url, category);
     } else {
-      return this.scrapeGenericProduct(url);
+      return this.scrapeGenericProduct(url, category);
     }
   }
 

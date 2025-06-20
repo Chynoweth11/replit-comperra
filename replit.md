@@ -22,6 +22,15 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ✅ **June 20, 2025**: Upgraded scraping system with full six-category support and enhanced specification templates
+- ✅ **June 20, 2025**: Added category-specific spec templates (Tiles, Stone & Slabs, Vinyl & LVT, Hardwood, Heating, Carpet)
+- ✅ **June 20, 2025**: Enhanced brand detection for Marazzi and Flor manufacturers
+- ✅ **June 20, 2025**: Implemented template-based specification mapping for consistent data extraction
+- ✅ **June 20, 2025**: Added Product URL tracking in all scraped results for full traceability
+- ✅ **June 20, 2025**: Fixed comparison page synchronization - Clear All now properly updates main table checkboxes
+- ✅ **June 20, 2025**: Made "Add to Compare" button functional in product detail pages with real-time state updates
+- ✅ **June 20, 2025**: Enhanced product detail pages with comprehensive specifications under Technical Specifications section
+- ✅ **June 20, 2025**: Added "Request Samples" buttons alongside all "Get Pricing" buttons with lead capture integration
 - ✅ **June 19, 2025**: Fixed search engine with fuzzy matching, category filtering, and cross-category comparison validation
 - ✅ **June 19, 2025**: Enhanced comparison system with proper specification field mapping and error handling
 - ✅ **June 19, 2025**: Implemented centralized material specifications system with category-specific field definitions
