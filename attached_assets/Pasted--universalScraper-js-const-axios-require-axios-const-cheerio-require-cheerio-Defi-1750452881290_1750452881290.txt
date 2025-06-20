@@ -1,0 +1,101 @@
+// universalScraper.js
+
+const axios = require('axios');
+const cheerio = require('cheerio');
+
+// Define universal field structure for each category
+const CATEGORY_FIELDS = {
+  tiles: [
+    'Brand', 'Price per SF', 'Dimensions', 'Category', 'PEI Rating',
+    'DCOF / Slip Rating', 'Water Absorption', 'Finish', 'Material Type',
+    'Edge Type', 'Install Location', 'Color', 'Texture', 'Product URL', 'Image URL'
+  ],
+  slabs: [
+    'Brand', 'Price per SF', 'Dimensions', 'Category', 'Material Type',
+    'Finish', 'Color Pattern', 'Thickness', 'Water Absorption',
+    'Scratch Resistance', 'Applications', 'Product URL', 'Image URL'
+  ],
+  lvt: [
+    'Brand', 'Price per SF', 'Dimensions', 'Category', 'Wear Layer',
+    'Total Thickness', 'Finish', 'Waterproof Rating', 'Installation Method',
+    'Underlayment Included', 'Slip Resistance', 'Application Zones',
+    'Warranty', 'Product URL', 'Image URL'
+  ],
+  hardwood: [
+    'Brand', 'Price per SF', 'Dimensions', 'Category', 'Wood Species',
+    'Finish', 'Construction', 'Thickness', 'Hardness (Janka)',
+    'Installation Method', 'Moisture Resistance', 'Product URL', 'Image URL'
+  ],
+  heat: [
+    'Brand', 'Price per SF', 'Dimensions', 'Category', 'Type', 'Voltage',
+    'Coverage Area (SF)', 'Wattage', 'Sensor Type', 'Thermostat Included',
+    'Max Temperature', 'Programmable', 'Install Location', 'Product URL', 'Image URL'
+  ],
+  carpet: [
+    'Brand', 'Price per SF', 'Dimensions', 'Category', 'Fiber Type',
+    'Pile Style', 'Face Weight', 'Density', 'Backing', 'Stain Protection',
+    'Traffic Rating', 'Install Type', 'Product URL', 'Image URL'
+  ]
+};
+
+function detectCategory(url) {
+  if (url.includes('/tile') || url.includes('/porcelain') || url.includes('/ceramic')) return 'tiles';
+  if (url.includes('/slab') || url.includes('/stone')) return 'slabs';
+  if (url.includes('/lvt') || url.includes('/vinyl')) return 'lvt';
+  if (url.includes('/hardwood') || url.includes('/wood')) return 'hardwood';
+  if (url.includes('/heat') || url.includes('/thermostat')) return 'heat';
+  if (url.includes('/carpet')) return 'carpet';
+  return 'tiles'; // default fallback
+}
+
+async function scrapeUniversalProduct(url) {
+  try {
+    const { data: html } = await axios.get(url, { timeout: 10000 });
+    const $ = cheerio.load(html);
+
+    const category = detectCategory(url);
+    const fields = CATEGORY_FIELDS[category];
+    const result = {
+      'Category': category,
+      'Product URL': url
+    };
+
+    // Fallback patterns - use for ANY brand
+    $('*').each((i, el) => {
+      const text = $(el).text().trim();
+      fields.forEach(field => {
+        const label = field.toLowerCase();
+        if (!result[field] && text.toLowerCase().includes(label)) {
+          const value = text.split(':')[1]?.trim() || '';
+          if (value && value.length < 100) result[field] = value;
+        }
+      });
+    });
+
+    // Brand detection from domain
+    if (!result['Brand']) {
+      if (url.includes('daltile')) result['Brand'] = 'Daltile';
+      else if (url.includes('msi')) result['Brand'] = 'MSI';
+      else if (url.includes('cambria')) result['Brand'] = 'Cambria';
+    }
+
+    // Extract title as product name
+    result['Product'] = $('title').text().split('|')[0].trim();
+
+    // Try extract image
+    const img = $('img').first().attr('src');
+    if (img) result['Image URL'] = img.startsWith('http') ? img : `https:${img}`;
+
+    // Normalize missing fields
+    fields.forEach(field => {
+      if (!result[field]) result[field] = '—';
+    });
+
+    return result;
+  } catch (err) {
+    console.error('Scraping failed for:', url, err.message);
+    return null;
+  }
+}
+
+module.exports = { scrapeUniversalProduct };

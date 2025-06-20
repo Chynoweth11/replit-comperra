@@ -27,15 +27,43 @@ export interface ScrapedProduct {
   sourceUrl: string;
 }
 
-// Enhanced spec templates for all six categories
-const specTemplates = {
-  tiles: ["Brand", "Price per SF", "Dimensions", "PEI Rating", "DCOF / Slip Rating", "Water Absorption", "Finish", "Material Type", "Edge Type", "Install Location", "Color", "Texture", "Product URL"],
-  slabs: ["Brand", "Price per SF", "Size", "Thickness", "Finish", "Stone Type", "Pattern/Vein", "Edge Type", "Country of Origin", "Product URL"],
-  lvt: ["Brand", "Price per SF", "Size", "Wear Layer", "Type (SPC/WPC/LVT)", "Underlayment", "Water Resistance", "Install Method", "Texture", "Color", "Product URL"],
-  hardwood: ["Brand", "Price per SF", "Size", "Wood Species", "Janka Rating", "Finish", "Construction Type", "Installation Method", "Warranty", "Product URL"],
-  heat: ["Brand", "Type", "Voltage", "Coverage Area (SF)", "Programmable Features", "Sensor Type", "Thermostat Included", "Install Location", "Max Temperature", "Product URL"],
-  carpet: ["Brand", "Price per SF", "Fiber Type", "Pile Height", "Backing", "Face Weight", "Stain Resistance", "Color Options", "Product URL"]
+// Enhanced universal field structure for comprehensive extraction
+const CATEGORY_FIELDS = {
+  tiles: [
+    'Brand', 'Price per SF', 'Dimensions', 'Category', 'PEI Rating',
+    'DCOF / Slip Rating', 'Water Absorption', 'Finish', 'Material Type',
+    'Edge Type', 'Install Location', 'Color', 'Texture', 'Product URL', 'Image URL'
+  ],
+  slabs: [
+    'Brand', 'Price per SF', 'Dimensions', 'Category', 'Material Type',
+    'Finish', 'Color Pattern', 'Thickness', 'Water Absorption',
+    'Scratch Resistance', 'Applications', 'Product URL', 'Image URL'
+  ],
+  lvt: [
+    'Brand', 'Price per SF', 'Dimensions', 'Category', 'Wear Layer',
+    'Total Thickness', 'Finish', 'Waterproof Rating', 'Installation Method',
+    'Underlayment Included', 'Slip Resistance', 'Application Zones',
+    'Warranty', 'Product URL', 'Image URL'
+  ],
+  hardwood: [
+    'Brand', 'Price per SF', 'Dimensions', 'Category', 'Wood Species',
+    'Finish', 'Construction', 'Thickness', 'Hardness (Janka)',
+    'Installation Method', 'Moisture Resistance', 'Product URL', 'Image URL'
+  ],
+  heat: [
+    'Brand', 'Price per SF', 'Dimensions', 'Category', 'Type', 'Voltage',
+    'Coverage Area (SF)', 'Wattage', 'Sensor Type', 'Thermostat Included',
+    'Max Temperature', 'Programmable', 'Install Location', 'Product URL', 'Image URL'
+  ],
+  carpet: [
+    'Brand', 'Price per SF', 'Dimensions', 'Category', 'Fiber Type',
+    'Pile Style', 'Face Weight', 'Density', 'Backing', 'Stain Protection',
+    'Traffic Rating', 'Install Type', 'Product URL', 'Image URL'
+  ]
 };
+
+// Legacy template support for backward compatibility
+const specTemplates = CATEGORY_FIELDS;
 
 export class ProductScraper {
   private delay = 1000; // 1 second between requests
@@ -443,6 +471,118 @@ export class ProductScraper {
     return match ? match[2]?.trim() || match[1]?.trim() || '—' : '—';
   }
 
+  // Enhanced universal scraper using comprehensive field extraction
+  async scrapeUniversalProduct(url: string): Promise<ScrapedProduct | null> {
+    try {
+      const response = await axios.get(url, { 
+        timeout: 10000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      });
+
+      const $ = cheerio.load(response.data);
+      const html = response.data;
+
+      const category = this.assignCategoryFromURL(url);
+      const fields = CATEGORY_FIELDS[category as keyof typeof CATEGORY_FIELDS] || CATEGORY_FIELDS.tiles;
+      const specs: any = {
+        'Category': category,
+        'Product URL': url
+      };
+
+      // Universal field extraction - searches entire page for each field
+      $('*').each((i, el) => {
+        const text = $(el).text().trim();
+        fields.forEach(field => {
+          const label = field.toLowerCase();
+          if (!specs[field] && text.toLowerCase().includes(label)) {
+            const parts = text.split(':');
+            if (parts.length > 1) {
+              const value = parts[1].trim();
+              if (value && value.length < 100 && value !== '—') {
+                specs[field] = value;
+              }
+            }
+          }
+        });
+      });
+
+      // Enhanced brand detection from domain
+      if (!specs['Brand']) {
+        if (url.includes('daltile')) specs['Brand'] = 'Daltile';
+        else if (url.includes('msi')) specs['Brand'] = 'MSI';
+        else if (url.includes('cambria')) specs['Brand'] = 'Cambria';
+        else if (url.includes('marazzi')) specs['Brand'] = 'Marazzi';
+        else if (url.includes('shaw')) specs['Brand'] = 'Shaw';
+        else if (url.includes('mohawk')) specs['Brand'] = 'Mohawk';
+        else specs['Brand'] = this.extractBrandFromURL(url);
+      }
+
+      // Extract product name from title
+      const productName = $('title').text().split('|')[0].trim() ||
+                         $('h1').first().text().trim() ||
+                         'Product Name Not Found';
+
+      // Enhanced image extraction
+      let imageUrl = $('meta[property="og:image"]').attr('content') ||
+                    $('img').first().attr('src') || '';
+      
+      if (imageUrl && !imageUrl.startsWith('http')) {
+        imageUrl = imageUrl.startsWith('//') ? 'https:' + imageUrl : 
+                  imageUrl.startsWith('/') ? new URL(url).origin + imageUrl : imageUrl;
+      }
+      specs['Image URL'] = imageUrl;
+
+      // Enhanced price extraction
+      const priceText = $('*:contains("Price"), *:contains("$")').text();
+      const priceMatch = priceText.match(/\$(\d+(?:\.\d{1,2})?)/);
+      specs['Price per SF'] = priceMatch ? priceMatch[1] : '0.00';
+
+      // Enhanced dimensions extraction
+      const dimensionText = $('*:contains("Size"), *:contains("Dimensions")').text();
+      const dimMatch = dimensionText.match(/(\d+["']?\s*[xX×]\s*\d+["']?)/);
+      specs['Dimensions'] = dimMatch ? dimMatch[1] : this.textMatch(html, /(\d+["']?\s*[xX×]\s*\d+["']?)/);
+
+      // Category-specific enhancements
+      if (category === 'tiles') {
+        if (!specs['PEI Rating']) {
+          specs['PEI Rating'] = this.textMatch(html, /PEI\s?(Rating)?:?\s?(\w+)/i);
+        }
+        if (!specs['DCOF / Slip Rating']) {
+          specs['DCOF / Slip Rating'] = this.textMatch(html, /(DCOF|COF|Slip Resistance):?\s?([>\w\.]+)/i);
+        }
+        if (!specs['Water Absorption']) {
+          specs['Water Absorption'] = this.textMatch(html, /Water Absorption:?\s?([\d<>%-]+)/i);
+        }
+      }
+
+      // Normalize missing fields
+      fields.forEach(field => {
+        if (!specs[field] || specs[field] === '') {
+          specs[field] = '—';
+        }
+      });
+
+      console.log(`Universal scraper extracted ${Object.keys(specs).length} fields for ${category}`);
+
+      return {
+        name: productName,
+        brand: specs['Brand'],
+        price: specs['Price per SF'],
+        category,
+        description: $('.product-description, .description').first().text().trim().substring(0, 500) || '',
+        imageUrl: specs['Image URL'],
+        dimensions: specs['Dimensions'],
+        specifications: specs,
+        sourceUrl: url
+      };
+    } catch (error) {
+      console.error('Universal scraping failed for:', url, error);
+      return null;
+    }
+  }
+
   async scrapeGenericProduct(url: string, category: string): Promise<ScrapedProduct | null> {
     try {
       const response = await axios.get(url, {
@@ -713,6 +853,13 @@ export class ProductScraper {
     
     const category = this.assignCategoryFromURL(url);
     
+    // Try universal scraper first for comprehensive field extraction
+    const universalResult = await this.scrapeUniversalProduct(url);
+    if (universalResult) {
+      return universalResult;
+    }
+    
+    // Fallback to specific scrapers
     if (url.includes('daltile.com')) {
       return this.scrapeDaltileProduct(url, category);
     } else if (url.includes('msisurfaces.com')) {
