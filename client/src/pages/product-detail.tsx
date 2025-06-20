@@ -1,20 +1,34 @@
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import LeadCaptureModal from "@/components/lead-capture-modal";
 import type { Material } from "@shared/schema";
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
+  const [leadModalOpen, setLeadModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<string>("");
   
   const { data: material, isLoading } = useQuery<Material>({
     queryKey: [`/api/materials/${id}`],
     enabled: !!id,
   });
+
+  const handleGetPricing = (productName: string) => {
+    setSelectedProduct(productName);
+    setLeadModalOpen(true);
+  };
+
+  const handleRequestSamples = (productName: string) => {
+    setSelectedProduct(`Sample Request: ${productName}`);
+    setLeadModalOpen(true);
+  };
 
   const getSpecDisplayValue = (key: string, value: any): string => {
     if (Array.isArray(value)) {
@@ -142,13 +156,21 @@ export default function ProductDetail() {
             )}
 
             <div className="flex gap-4">
-              <Button className="flex-1 bg-royal text-white hover:bg-royal-dark">
-                <i className="fas fa-shopping-cart mr-2"></i>
-                Add to Project
+              <Button 
+                className="bg-green-600 text-white hover:bg-green-700"
+                onClick={() => handleGetPricing(material.name)}
+              >
+                Get Pricing
               </Button>
-              <Button variant="outline" className="flex-1">
-                <i className="fas fa-heart mr-2"></i>
-                Save to Favorites
+              <Button 
+                variant="outline"
+                className="border-green-600 text-green-600 hover:bg-green-50"
+                onClick={() => handleRequestSamples(material.name)}
+              >
+                Request Samples
+              </Button>
+              <Button variant="outline">
+                Add to Compare
               </Button>
             </div>
           </div>
@@ -197,6 +219,13 @@ export default function ProductDetail() {
           </Link>
         </div>
       </div>
+
+      {/* Lead Capture Modal */}
+      <LeadCaptureModal 
+        isOpen={leadModalOpen}
+        onClose={() => setLeadModalOpen(false)}
+        productName={selectedProduct}
+      />
 
       <Footer />
     </div>
