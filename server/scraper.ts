@@ -502,22 +502,28 @@ export class ProductScraper {
         ...Array.from($('ul li, ol li')).map(el => $(el).text()),
         ...Array.from($('.spec-item, .feature-item, .attribute')).map(el => $(el).text()),
         
-        // Divs with specification patterns
-        ...Array.from($('div')).filter((_, el) => {
+        // Divs and spans with specification patterns
+        ...Array.from($('div, span')).filter((i, el) => {
           const text = $(el).text().toLowerCase();
-          return /specification|feature|detail|property/i.test(text) || 
-                 /pei|dcof|absorption|finish|color|texture|material/i.test(text);
-        }).map(el => $(el).text())
+          return text.length > 0 && text.length < 200 && (
+            /specification|feature|detail|property/i.test(text) || 
+            /pei|dcof|absorption|finish|color|texture|material/i.test(text)
+          );
+        }).map((i, el) => $(el).text()).get()
       ];
 
-      // PHASE 2: AI-Style Pattern Recognition for Each Field
+      // PHASE 2: AI-Style Pattern Recognition for Each Field  
       const extractSpecification = (fieldName: string, patterns: RegExp[], context: string[]): string => {
         for (const pattern of patterns) {
           for (const text of context) {
+            if (!text || typeof text !== 'string') continue;
             const match = text.match(pattern);
             if (match) {
               const value = match[1] || match[2] || match[3];
-              if (value && value.length < 50 && value.toLowerCase() !== fieldName.toLowerCase()) {
+              if (value && value.length > 0 && value.length < 50 && 
+                  value.toLowerCase() !== fieldName.toLowerCase() &&
+                  !value.toLowerCase().includes('spec') &&
+                  !value.toLowerCase().includes('feature')) {
                 return value.trim();
               }
             }
@@ -525,6 +531,12 @@ export class ProductScraper {
         }
         return '—';
       };
+
+      // Enhanced HTML text extraction for deep scanning
+      const fullPageText = html.replace(/<script[^>]*>.*?<\/script>/gis, '')
+                              .replace(/<style[^>]*>.*?<\/style>/gis, '')
+                              .replace(/<[^>]+>/g, ' ')
+                              .replace(/\s+/g, ' ');
 
       // PHASE 3: Comprehensive Field Extraction with Multiple Pattern Recognition
       
@@ -725,7 +737,7 @@ export class ProductScraper {
             /Brand[:\s]*([A-Za-z\s]+)/gi,
             /Manufacturer[:\s]*([A-Za-z\s]+)/gi,
             /Made\s*by[:\s]*([A-Za-z\s]+)/gi
-          ], [html, ...specificationSections]) || this.extractBrandFromURL(url);
+          ], [html, fullPageText, ...specificationSections]) || this.extractBrandFromURL(url);
         }
       }
 
