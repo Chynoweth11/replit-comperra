@@ -508,7 +508,8 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
             onClick={() => {
               console.log('Compare button clicked with selections:', selectedMaterials);
               if (selectedMaterials.length >= 1) {
-                navigate(`/compare?ids=${selectedMaterials.join(',')}`);
+                localStorage.setItem('comparisonIds', JSON.stringify(selectedMaterials));
+                setLocation('/compare');
               }
             }}
           >
@@ -541,7 +542,8 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                 disabled={selectedMaterials.length < 2}
                 onClick={() => {
                   if (selectedMaterials.length >= 2) {
-                    navigate(`/compare?ids=${selectedMaterials.join(',')}`);
+                    localStorage.setItem('comparisonIds', JSON.stringify(selectedMaterials));
+                    setLocation('/compare');
                   }
                 }}
               >
