@@ -11,7 +11,7 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Expert Buying Guides**: 6 comprehensive guides covering all material categories with professional insights
 - **Lead Capture System**: Airtable-integrated lead capture for pricing requests
 - **Enhanced Web Scraping System**: Improved bulk and single product import with better specification extraction from manufacturer websites
-- **Enhanced Comparison Tools**: URL scraping, CSV upload, spec filtering, floating comparison bar
+- **Dynamic Comparison System**: Category-aware filtering, comparison tables, and specification validation using centralized field definitions
 - **Security Hardened**: XSS-protected comparison system with proper HTML escaping
 
 ## Architecture
@@ -22,6 +22,7 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ✅ **June 19, 2025**: Implemented centralized material specifications system with category-specific field definitions
 - ✅ **June 19, 2025**: Enhanced product scraping system with improved specification extraction using cheerio selectors
 - ✅ **June 19, 2025**: Enhanced comparison page with upgraded table component showing category-specific specifications
 - ✅ **June 19, 2025**: Fixed comparison system functionality - selection, navigation, and side-by-side comparison now working perfectly

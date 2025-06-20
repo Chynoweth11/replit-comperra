@@ -158,24 +158,16 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
   });
 
   const getHeaders = (category: string) => {
+    const specs = getCategorySpecifications(category);
     const baseHeaders = ["Product", "Brand", "Price/SF"];
     
-    switch (category) {
-      case "tiles":
-        return [...baseHeaders, "PEI Rating", "Slip Rating", "Water Absorption", "Size", "Actions"];
-      case "slabs":
-        return [...baseHeaders, "Thickness", "Warranty", "Edge Options", "Slab Size", "Actions"];
-      case "lvt":
-        return [...baseHeaders, "Wear Layer", "Core Type", "Waterproof", "Plank Size", "Actions"];
-      case "hardwood":
-        return [...baseHeaders, "Species", "Finish", "Width", "Thickness", "Actions"];
-      case "heat":
-        return [...baseHeaders, "Voltage", "Coverage", "Features", "Power", "Actions"];
-      case "carpet":
-        return [...baseHeaders, "Fiber", "Stain Resist", "Pile Height", "Width", "Actions"];
-      default:
-        return [...baseHeaders, "Specifications", "Size", "Actions"];
-    }
+    // Get the most important specs for table headers (limit to avoid overcrowding)
+    const importantSpecs = specs
+      .filter(spec => spec.required && !['name', 'brand', 'price'].includes(spec.key))
+      .slice(0, 4) // Limit to 4 additional columns
+      .map(spec => spec.label);
+    
+    return [...baseHeaders, ...importantSpecs, "Size", "Actions"];
   };
 
   const getSpecBadge = (value: any, type: string) => {

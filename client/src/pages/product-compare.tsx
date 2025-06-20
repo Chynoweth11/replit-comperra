@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import { getCategorySpecifications } from "@shared/material-specifications";
 import type { Material } from "@shared/schema";
 
 export default function ProductCompare() {
