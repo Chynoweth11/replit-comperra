@@ -73,9 +73,13 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
         const result = await response.json();
         setPasteUrl("");
         
-        // Refresh the materials data without full page reload
-        // The product will appear in the correct category where the user pasted the URL
-        window.location.reload();
+        // Redirect to the correct category page based on scraped product category
+        if (result.product && result.product.category) {
+          setLocation(`/comparison/${result.product.category}`);
+        } else {
+          // Refresh if category is unknown
+          window.location.reload();
+        }
       } else {
         const error = await response.json();
         console.error('Scraping failed:', error.error);
