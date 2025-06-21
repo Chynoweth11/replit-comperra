@@ -512,7 +512,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                         {material.specifications?.['Voltage'] || material.specifications?.voltage || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Coverage'] || material.specifications?.coverageArea || '—'}
+                        {material.specifications?.['Coverage'] || material.specifications?.coverageArea || material.specifications?.['Coverage Area (SF)'] || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
                         {material.specifications?.['Features'] || (Array.isArray(material.specifications?.features) ? material.specifications.features.join(', ') : material.specifications?.features) || '—'}
