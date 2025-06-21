@@ -46,27 +46,41 @@ export default function ProductDetail() {
     setLeadModalOpen(true);
   };
 
-  const handleToggleCompare = () => {
-    if (material) {
-      comparisonStore.toggle(material.id);
-    }
+  const formatSpecKey = (key: string): string => {
+    return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
   };
 
-  const getSpecDisplayValue = (key: string, value: any): string => {
+  const getSpecDisplayValue = (key: string, value: any): React.ReactNode => {
+    // Special handling for Product URL to make it clickable
+    if (key === 'Product URL' && value && typeof value === 'string') {
+      return (
+        <a 
+          href={value} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-800 underline break-all"
+        >
+          {value}
+        </a>
+      );
+    }
+    
     if (Array.isArray(value)) {
       return value.join(", ");
     }
     if (typeof value === "boolean") {
       return value ? "Yes" : "No";
     }
+    if (value === null || value === undefined) {
+      return "—";
+    }
     return String(value);
   };
 
-  const formatSpecKey = (key: string): string => {
-    return key
-      .replace(/_/g, " ")
-      .replace(/([A-Z])/g, " $1")
-      .replace(/^./, (str) => str.toUpperCase());
+  const handleToggleCompare = () => {
+    if (material) {
+      comparisonStore.toggle(material.id);
+    }
   };
 
   if (isLoading) {
@@ -211,7 +225,9 @@ export default function ProductDetail() {
               {Object.entries(material.specifications as Record<string, any>).map(([key, value]) => (
                 <div key={key} className="flex justify-between items-center py-3 border-b border-gray-200">
                   <span className="font-medium text-gray-700">{formatSpecKey(key)}</span>
-                  <span className="text-gray-900">{getSpecDisplayValue(key, value)}</span>
+                  <div className="text-gray-900 text-right max-w-xs break-words">
+                    {getSpecDisplayValue(key, value)}
+                  </div>
                 </div>
               ))}
             </div>
