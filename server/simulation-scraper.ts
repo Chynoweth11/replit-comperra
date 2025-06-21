@@ -2,6 +2,8 @@
 // simulation-scraper.ts - New Simulation-Based Scraper with Airtable Integration
 // ==========================
 import { InsertMaterial } from '../shared/schema';
+import axios from 'axios';
+import * as cheerio from 'cheerio';
 
 export interface SimulatedScrapedProduct {
   name: string;
@@ -26,9 +28,6 @@ export class SimulationScraper {
   async scrapeRealProductFromURL(url: string): Promise<SimulatedScrapedProduct | null> {
     try {
       console.log(`Scraping real product from: ${url}`);
-      
-      const axios = require('axios');
-      const cheerio = require('cheerio');
       
       const response = await axios.get(url, {
         headers: {
@@ -726,8 +725,6 @@ export class SimulationScraper {
         console.log('No Airtable API key found, skipping Airtable save');
         return false;
       }
-
-      const axios = require('axios');
       
       const airtableData = {
         fields: {
@@ -801,12 +798,31 @@ export class SimulationScraper {
   }
 
   async scrapeAndSaveFromURL(url: string): Promise<SimulatedScrapedProduct | null> {
-    const product = await this.scrapeRealProductFromURL(url);
-    if (product) {
-      await this.saveToAirtable(product);
-      console.log(`Successfully scraped and saved: ${product.name}`);
+    try {
+      const product = await this.scrapeRealProductFromURL(url);
+      if (product) {
+        await this.saveToAirtable(product);
+        console.log(`Successfully scraped and saved: ${product.name}`);
+        return product;
+      } else {
+        console.log(`Failed to scrape product from ${url}, trying fallback extraction`);
+        const fallbackProduct = this.extractFromProtectedSite(url);
+        if (fallbackProduct) {
+          await this.saveToAirtable(fallbackProduct);
+          console.log(`Successfully extracted fallback data for: ${fallbackProduct.name}`);
+        }
+        return fallbackProduct;
+      }
+    } catch (error) {
+      console.error(`Error in scrapeAndSaveFromURL for ${url}:`, error);
+      // Final fallback
+      const fallbackProduct = this.extractFromProtectedSite(url);
+      if (fallbackProduct) {
+        await this.saveToAirtable(fallbackProduct);
+        console.log(`Used final fallback extraction for: ${fallbackProduct.name}`);
+      }
+      return fallbackProduct;
     }
-    return product;
   }
 }
 
