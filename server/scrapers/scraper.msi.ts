@@ -151,57 +151,78 @@ export async function scrapeMSIProduct(url: string, category: string) {
       console.log(`Found Applications: ${applications.join(', ')}`);
     }
 
-    // Smart contextual label-value parsing
-    function extractSpecsInPairs($: cheerio.CheerioAPI, selector: string): Record<string, string> {
+    // Alternating specs extraction for proper HTML structure parsing
+    function extractAlternatingSpecs($: cheerio.CheerioAPI, selector: string): Record<string, string> {
       const results: Record<string, string> = {};
-      const elements = $(selector);
-      
-      for (let i = 0; i < elements.length - 1; i++) {
-        const label = $(elements[i]).text().replace(/\s+/g, ' ').trim();
-        const value = $(elements[i + 1]).text().replace(/\s+/g, ' ').trim();
+      const items = $(selector);
 
-        if (
-          /pei|dcof|absorption|material|finish|color|edge|install|dimension|texture|location|size|shade|variation/i.test(label) &&
-          value !== '—' && value !== '' && value !== label &&
-          value.length > 0 && value.length < 100
-        ) {
-          console.log(`Smart extraction found: ${label} = ${value}`);
-          results[label] = value;
+      for (let i = 0; i < items.length; i += 2) {
+        const key = $(items[i]).text().replace(/\s+/g, ' ').trim();
+        const value = $(items[i + 1])?.text().replace(/\s+/g, ' ').trim() || '—';
+
+        if (key && !results[key]) {
+          console.log(`Alternating extraction found: ${key} = ${value}`);
+          results[key] = value;
         }
       }
+
       return results;
     }
 
-    // Enhanced fallback extraction using smart parsing
-    const smartSpecs = extractSpecsInPairs($, '.product-detail-specs li, table td, .specifications div, .spec-item, ul.list-unstyled li, .tab-content li');
+    // Enhanced extraction using alternating specs parsing
+    const smartSpecs = extractAlternatingSpecs($, '.product-detail-specs li, table td, .specifications div, .spec-item, ul.list-unstyled li, .tab-content li');
     
-    // Normalize and map extracted specs
+    // Normalize and map extracted specs with enhanced key mapping
     function remapSpecs(specs: Record<string, string>): Record<string, string> {
       const map: Record<string, string> = {
         'P E I Rating': 'PEI Rating',
-        'PEI RATING': 'PEI Rating', 
+        'PEI RATING': 'PEI Rating',
+        'PEI Rating': 'PEI Rating',
         'D C O F / Slip Rating': 'DCOF / Slip Rating',
         'DCOF': 'DCOF / Slip Rating',
+        'COF': 'DCOF / Slip Rating',
         'Water Absorption': 'Water Absorption',
+        'Absorption': 'Water Absorption',
         'Finish': 'Finish',
         'Tile Type': 'Finish',
+        'Surface Finish': 'Finish',
         'Material Type': 'Material Type',
+        'Material': 'Material Type',
         'Edge Type': 'Edge Type',
+        'Edge': 'Edge Type',
         'Install Location': 'Install Location',
+        'Installation': 'Install Location',
+        'Applications': 'Install Location',
         'Dimensions': 'Dimensions',
         'Size': 'Dimensions',
         'Item Size': 'Dimensions',
+        'Nominal Size': 'Dimensions',
         'Color': 'Color',
         'Primary Color(s)': 'Color',
+        'Primary Color': 'Color',
         'Texture': 'Texture',
-        'Shade Variations': 'Shade Variation'
+        'Surface Texture': 'Texture',
+        'Shade Variations': 'Shade Variation',
+        'Shade Variation': 'Shade Variation',
+        'Variation': 'Shade Variation'
       };
 
       const normalized: Record<string, string> = {};
       for (const key in specs) {
-        const newKey = map[key] || key;
-        if (!normalized[newKey]) {  // Don't overwrite existing values
-          normalized[newKey] = specs[key];
+        const cleanKey = key.replace(/\s+/g, ' ').trim();
+        const newKey = map[cleanKey] || cleanKey;
+        
+        // Only use valid values, not navigation text or empty values
+        const value = specs[key];
+        if (value && value !== '—' && value !== '' && 
+            !value.toLowerCase().includes('download') &&
+            !value.toLowerCase().includes('project') &&
+            !value.toLowerCase().includes('inventory') &&
+            !value.toLowerCase().includes('selector') &&
+            value.length < 50) {
+          if (!normalized[newKey]) {  // Don't overwrite existing values
+            normalized[newKey] = value;
+          }
         }
       }
       return normalized;

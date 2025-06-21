@@ -99,24 +99,21 @@ export async function scrapeDaltileProduct(url: string, category: string) {
 
     console.log('Daltile universal parser extracted:', universalSpecs);
 
-    // Smart contextual label-value parsing for Daltile
-    function extractSpecsInPairs($: cheerio.CheerioAPI, selector: string): Record<string, string> {
+    // Alternating specs extraction for Daltile
+    function extractAlternatingSpecs($: cheerio.CheerioAPI, selector: string): Record<string, string> {
       const results: Record<string, string> = {};
-      const elements = $(selector);
-      
-      for (let i = 0; i < elements.length - 1; i++) {
-        const label = $(elements[i]).text().replace(/\s+/g, ' ').trim();
-        const value = $(elements[i + 1]).text().replace(/\s+/g, ' ').trim();
+      const items = $(selector);
 
-        if (
-          /pei|dcof|absorption|material|finish|color|edge|install|dimension|texture|location|size|shade|variation/i.test(label) &&
-          value !== '—' && value !== '' && value !== label &&
-          value.length > 0 && value.length < 100
-        ) {
-          console.log(`Daltile smart extraction: ${label} = ${value}`);
-          results[label] = value;
+      for (let i = 0; i < items.length; i += 2) {
+        const key = $(items[i]).text().replace(/\s+/g, ' ').trim();
+        const value = $(items[i + 1])?.text().replace(/\s+/g, ' ').trim() || '—';
+
+        if (key && !results[key]) {
+          console.log(`Daltile alternating extraction: ${key} = ${value}`);
+          results[key] = value;
         }
       }
+
       return results;
     }
 
@@ -129,9 +126,33 @@ export async function scrapeDaltileProduct(url: string, category: string) {
       }
     });
 
-    // Enhanced extraction using smart parsing
-    const smartSpecs = extractSpecsInPairs($, '.product-detail-specs li, table td, .specifications div, .spec-item, .technical-specs td');
-    Object.assign(specs, smartSpecs);
+    // Enhanced extraction using alternating parsing
+    const smartSpecs = extractAlternatingSpecs($, '.product-detail-specs li, table td, .specifications div, .spec-item, .technical-specs td');
+    
+    // Remap and filter specs
+    function remapDaltileSpecs(specs: Record<string, string>): Record<string, string> {
+      const map: Record<string, string> = {
+        'P E I Rating': 'PEI Rating',
+        'PEI RATING': 'PEI Rating',
+        'D C O F / Slip Rating': 'DCOF / Slip Rating',
+        'Primary Color': 'Color',
+        'Tile Type': 'Finish',
+        'Item Size': 'Dimensions'
+      };
+
+      const normalized: Record<string, string> = {};
+      for (const key in specs) {
+        const newKey = map[key] || key;
+        const value = specs[key];
+        if (value && value !== '—' && value.length < 50) {
+          normalized[newKey] = value;
+        }
+      }
+      return normalized;
+    }
+
+    const remappedSpecs = remapDaltileSpecs(smartSpecs);
+    Object.assign(specs, remappedSpecs);
 
     // Enhanced regex-based extraction from full page content
     const bodyText = $('body').text();

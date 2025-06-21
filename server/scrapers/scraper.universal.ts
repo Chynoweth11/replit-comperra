@@ -137,29 +137,26 @@ export async function scrapeUniversalProduct(url: string, category: string) {
 
     console.log(`${brand} universal parser extracted:`, universalSpecs);
 
-    // Smart contextual label-value parsing for universal brands
-    function extractSpecsInPairs($: cheerio.CheerioAPI, selector: string): Record<string, string> {
+    // Alternating specs extraction for universal brands
+    function extractAlternatingSpecs($: cheerio.CheerioAPI, selector: string): Record<string, string> {
       const results: Record<string, string> = {};
-      const elements = $(selector);
-      
-      for (let i = 0; i < elements.length - 1; i++) {
-        const label = $(elements[i]).text().replace(/\s+/g, ' ').trim();
-        const value = $(elements[i + 1]).text().replace(/\s+/g, ' ').trim();
+      const items = $(selector);
 
-        if (
-          /pei|dcof|absorption|material|finish|color|edge|install|dimension|texture|location|size|shade|variation|thickness|species|fiber|pile/i.test(label) &&
-          value !== '—' && value !== '' && value !== label &&
-          value.length > 0 && value.length < 100
-        ) {
-          console.log(`Universal smart extraction: ${label} = ${value}`);
-          results[label] = value;
+      for (let i = 0; i < items.length; i += 2) {
+        const key = $(items[i]).text().replace(/\s+/g, ' ').trim();
+        const value = $(items[i + 1])?.text().replace(/\s+/g, ' ').trim() || '—';
+
+        if (key && !results[key]) {
+          console.log(`Universal alternating extraction: ${key} = ${value}`);
+          results[key] = value;
         }
       }
+
       return results;
     }
 
-    // Universal extraction from structured data with smart parsing
-    const smartSpecs = extractSpecsInPairs($, '.product-detail-specs li, table td, .specifications div, .spec-item, ul li, .specs div');
+    // Universal extraction from structured data with alternating parsing
+    const smartSpecs = extractAlternatingSpecs($, '.product-detail-specs li, table td, .specifications div, .spec-item, ul li, .specs div');
     
     // Legacy extraction for colon-separated values
     $('table, ul, li, div, span, .specs, .specifications, .product-specs').each((_, el) => {
