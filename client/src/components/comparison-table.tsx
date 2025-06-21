@@ -467,13 +467,28 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                   {category === "slabs" && (
                     <>
                       <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Material Type'] || material.specifications?.materialType || material.specifications?.material || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Finish'] || material.specifications?.finish || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Color'] || material.specifications?.color || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
                         {material.specifications?.['Thickness'] || material.specifications?.thickness || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Warranty'] || material.specifications?.warranty || '—'}
+                        {material.specifications?.['Water Absorption'] || material.specifications?.waterAbsorption || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Edge Options'] || material.specifications?.edgeOptions?.length + ' Options' || '—'}
+                        {material.specifications?.['Applications'] || (Array.isArray(material.specifications?.applications) ? material.specifications.applications.join(', ') : material.specifications?.applications) || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Dimensions'] || material.specifications?.slabSize || material.specifications?.['Slab Dimensions'] || material.dimensions || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Scratch Resistance'] || material.specifications?.scratchResistance || material.specifications?.['Scratch / Etch Resistance'] || '—'}
                       </td>
                     </>
                   )}

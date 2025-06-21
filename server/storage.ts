@@ -138,11 +138,18 @@ export class MemStorage implements IStorage {
         imageUrl: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
         description: "Cambria Quartz Countertop",
         specifications: {
-          thickness: "3cm",
-          warranty: "Lifetime",
-          edgeOptions: ["Straight", "Beveled", "Bullnose", "Ogee", "Waterfall"],
-          slabSize: "126\"x63\"",
-          material: "Quartz"
+          'Material Type': 'Quartz',
+          'Thickness': '3cm',
+          'Finish': 'Polished',
+          'Color': 'White with Gray Veining',
+          'Water Absorption': 'Non-Porous',
+          'Applications': 'Countertops, Backsplashes, Vanities',
+          'Dimensions': '126" x 63"',
+          'Scratch Resistance': 'Excellent',
+          'Heat Resistance': 'Up to 400°F',
+          'Edge Options': 'Straight, Beveled, Bullnose, Ogee, Waterfall',
+          'Maintenance': 'No Sealing Required',
+          'Country of Origin': 'USA'
         },
         dimensions: "126\"x63\"",
         inStock: true,
