@@ -849,6 +849,8 @@ export class SimulationScraper {
       'Price per SF': '0.00'
     };
     
+    console.log(`Detected category for URL ${url}: ${category}`);
+    
     // Add category-specific default specifications
     if (category === 'tiles') {
       specs['PEI Rating'] = '3';
@@ -1170,6 +1172,9 @@ export class SimulationScraper {
       });
     }
 
+    console.log(`Final category for ${name}: ${category}`);
+    console.log(`Final specifications:`, Object.keys(fullSpecs));
+    
     return {
       name,
       brand,
