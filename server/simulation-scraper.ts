@@ -783,6 +783,11 @@ export class SimulationScraper {
         name = 'Arizona Tile Product';
         imageUrl = 'https://arizonatile.widen.net/content/z47fxxxz95/webp/Master%20Bath%20V3.tif';
       }
+    } else if (domain.includes('hermitage')) {
+      brand = 'The Hermitage Collection';
+      name = 'European Oak Premium';
+      category = 'hardwood';
+      imageUrl = 'https://images.unsplash.com/photo-1586105251261-72a756497a11?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300';
     } else if (domain.includes('cambria')) {
       brand = 'Cambria';
       name = 'Cambria Quartz Slab';
