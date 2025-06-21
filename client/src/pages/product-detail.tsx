@@ -222,7 +222,13 @@ export default function ProductDetail() {
           
           {material.specifications && typeof material.specifications === 'object' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {Object.entries(material.specifications as Record<string, any>).map(([key, value]) => (
+              {Object.entries(material.specifications as Record<string, any>)
+                .filter(([key, value]) => {
+                  // Filter out basic fields and empty values
+                  const basicFields = ['Brand', 'Category', 'Price per SF'];
+                  return !basicFields.includes(key) && value !== '—' && value !== '' && value != null && value !== undefined;
+                })
+                .map(([key, value]) => (
                 <div key={key} className="flex justify-between items-center py-3 border-b border-gray-200">
                   <span className="font-medium text-gray-700">{formatSpecKey(key)}</span>
                   <div className="text-gray-900 text-right max-w-xs break-words">

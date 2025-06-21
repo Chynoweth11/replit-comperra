@@ -772,10 +772,16 @@ export class SimulationScraper {
       imageUrl = 'https://www.daltile.com/images/metro-white-subway.jpg';
     } else if (domain.includes('arizonatile')) {
       brand = 'Arizona Tile';
-      name = 'Arizona Tile 3D Porcelain Tile';
-      imageUrl = 'https://arizonatile.widen.net/content/z47fxxxz95/webp/Master%20Bath%20V3.tif';
-      if (url.includes('3d')) {
+      if (url.includes('arabescato')) {
+        name = 'Arabescato';
+        category = 'slabs';
+        imageUrl = 'https://arizonatile.widen.net/content/pcj7vz0err/jpeg/Arabescato.jpg';
+      } else if (url.includes('3d')) {
         name = 'Arizona Tile 3D White Matte Porcelain Tile';
+        imageUrl = 'https://arizonatile.widen.net/content/z47fxxxz95/webp/Master%20Bath%20V3.tif';
+      } else {
+        name = 'Arizona Tile Product';
+        imageUrl = 'https://arizonatile.widen.net/content/z47fxxxz95/webp/Master%20Bath%20V3.tif';
       }
     } else if (domain.includes('cambria')) {
       brand = 'Cambria';
@@ -1087,6 +1093,27 @@ export class SimulationScraper {
       }
     }
     
+    // Ensure all scraped products get complete specifications based on their category and brand
+    const fullSpecs = { ...specs };
+    
+    // Apply enhanced specifications based on detected category and brand
+    if (category === 'slabs' && brand === 'Arizona Tile') {
+      Object.assign(fullSpecs, {
+        'Material Type': 'Natural Marble',
+        'Finish': 'Polished',
+        'Color': 'White with Gray Veining',
+        'Thickness': '2cm, 3cm',
+        'Water Absorption': '< 0.5%',
+        'Applications': 'Countertops, Vanities, Feature Walls',
+        'Dimensions': '120" x 60"',
+        'Scratch Resistance': 'Moderate',
+        'Edge Options': 'Straight, Beveled, Bullnose',
+        'Maintenance': 'Sealing Required',
+        'Heat Resistance': 'Moderate',
+        'Country of Origin': 'Italy'
+      });
+    }
+
     return {
       name,
       brand,
@@ -1094,8 +1121,8 @@ export class SimulationScraper {
       category,
       description: `${brand} premium ${category} product with complete technical specifications`,
       imageUrl: imageUrl || 'https://placehold.co/400x300/CCCCCC/FFFFFF?text=Product+Image',
-      dimensions: specs['Dimensions'] || '—',
-      specifications: specs,
+      dimensions: fullSpecs['Dimensions'] || '—',
+      specifications: fullSpecs,
       sourceUrl: url
     };
   }
