@@ -447,7 +447,9 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                     </div>
                   </td>
                   <td className="px-4 py-4 text-sm text-gray-900">{material.brand}</td>
-                  <td className="px-4 py-4 text-sm font-semibold text-gray-900">${material.price}</td>
+                  <td className="px-4 py-4 text-sm font-semibold text-gray-900">
+                    {material.price === 'N/A' || material.price === '0.00' ? 'N/A' : `$${material.price}`}
+                  </td>
                   
                   {/* Category-specific specification columns */}
                   {category === "tiles" && (
@@ -467,28 +469,28 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                   {category === "slabs" && (
                     <>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Material Type'] || material.specifications?.materialType || material.specifications?.material || '—'}
+                        {material.specifications?.['Material Type'] || material.specifications?.materialType || material.specifications?.material || 'N/A'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Finish'] || material.specifications?.finish || '—'}
+                        {material.specifications?.['Finish'] || material.specifications?.finish || 'N/A'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Color / Pattern'] || material.specifications?.['Color'] || material.specifications?.color || '—'}
+                        {material.specifications?.['Color / Pattern'] || material.specifications?.['Color'] || material.specifications?.color || 'N/A'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Thickness'] || material.specifications?.thickness || '—'}
+                        {material.specifications?.['Thickness'] || material.specifications?.thickness || 'N/A'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Water Absorption'] || material.specifications?.waterAbsorption || '—'}
+                        {material.specifications?.['Water Absorption'] || material.specifications?.waterAbsorption || 'N/A'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Applications'] || (Array.isArray(material.specifications?.applications) ? material.specifications.applications.join(', ') : material.specifications?.applications) || '—'}
+                        {material.specifications?.['Applications'] || (Array.isArray(material.specifications?.applications) ? material.specifications.applications.join(', ') : material.specifications?.applications) || 'N/A'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Slab Dimensions'] || material.specifications?.['Dimensions'] || material.specifications?.slabSize || material.dimensions || '—'}
+                        {material.specifications?.['Slab Dimensions'] || material.specifications?.['Dimensions'] || material.specifications?.slabSize || material.dimensions || 'N/A'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Scratch / Etch Resistance'] || material.specifications?.['Scratch Resistance'] || material.specifications?.scratchResistance || '—'}
+                        {material.specifications?.['Scratch / Etch Resistance'] || material.specifications?.['Scratch Resistance'] || material.specifications?.scratchResistance || 'N/A'}
                       </td>
                     </>
                   )}

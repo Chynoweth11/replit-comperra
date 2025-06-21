@@ -850,6 +850,25 @@ export class SimulationScraper {
       specs['Install Location'] = 'Floor, Wall';
       specs['Dimensions'] = '12x22';
       specs['Texture'] = 'Smooth';
+    } else if (category === 'slabs') {
+      // Default slab specifications that will be enhanced by brand-specific logic
+      specs['Product Name'] = name;
+      specs['Brand / Manufacturer'] = brand;
+      specs['Category'] = 'Stone';
+      specs['Material Type'] = 'Natural Stone';
+      specs['Color / Pattern'] = 'Natural Patterns';
+      specs['Finish'] = 'Polished';
+      specs['Thickness'] = '2cm, 3cm';
+      specs['Slab Dimensions'] = '120" x 60"';
+      specs['Edge Type'] = 'Straight, Beveled';
+      specs['Applications'] = 'Countertops, Vanities';
+      specs['Water Absorption'] = '< 0.5%';
+      specs['Scratch / Etch Resistance'] = 'Moderate';
+      specs['Heat Resistance'] = 'Moderate';
+      specs['Country of Origin'] = 'N/A';
+      specs['Price per SF'] = 'N/A';
+      specs['Image URL'] = imageUrl;
+      specs['Product URL'] = url;
       
       // Comprehensive brand-specific specifications for ALL brands
       if (brand === 'MSI') {
@@ -1143,11 +1162,11 @@ export class SimulationScraper {
     return {
       name,
       brand,
-      price: '0.00',
+      price: 'N/A',
       category,
       description: `${brand} premium ${category} product with complete technical specifications`,
       imageUrl: imageUrl || 'https://placehold.co/400x300/CCCCCC/FFFFFF?text=Product+Image',
-      dimensions: fullSpecs['Dimensions'] || '—',
+      dimensions: fullSpecs['Slab Dimensions'] || fullSpecs['Dimensions'] || 'N/A',
       specifications: fullSpecs,
       sourceUrl: url
     };

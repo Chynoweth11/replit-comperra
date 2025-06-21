@@ -174,7 +174,9 @@ export default function ProductDetail() {
                 <Badge variant="outline">{material.brand}</Badge>
               </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{material.name}</h1>
-              <p className="text-xl font-semibold text-royal">${material.price}/SF</p>
+              <p className="text-xl font-semibold text-royal">
+                {material.price === 'N/A' || material.price === '0.00' ? 'N/A' : `$${material.price}/SF`}
+              </p>
             </div>
 
             {material.description && (
@@ -224,8 +226,8 @@ export default function ProductDetail() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {Object.entries(material.specifications as Record<string, any>)
                 .filter(([key, value]) => {
-                  // Only filter out completely empty values and dashes
-                  return value !== '—' && value !== '' && value != null && value !== undefined;
+                  // Filter out empty values, dashes, and meaningless data
+                  return value !== '—' && value !== '' && value != null && value !== undefined && value !== '0.00';
                 })
                 .map(([key, value]) => (
                 <div key={key} className="flex justify-between items-center py-3 border-b border-gray-200">
