@@ -72,9 +72,23 @@ export default function ProductCompare() {
     comparisonStore.remove(id);
   };
 
-  const getSpecValue = (material: Material, key: string): string => {
+  const getSpecValue = (material: Material, key: string): React.ReactNode => {
     const specs = material.specifications as Record<string, any>;
     const value = specs?.[key];
+    
+    // Special handling for Product URL to make it clickable
+    if (key === 'Product URL' && value && typeof value === 'string') {
+      return (
+        <a 
+          href={value} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-800 underline break-all"
+        >
+          {value}
+        </a>
+      );
+    }
     
     if (Array.isArray(value)) {
       return value.join(", ");
@@ -92,17 +106,17 @@ export default function ProductCompare() {
   const getSpecFields = (category: string) => {
     const specs = MATERIAL_SPECIFICATIONS[category] || [];
     
-    // Always include base fields first
+    // Always include base fields first with Product URL as the first field
     const baseFields = [
+      { key: 'Product URL', label: 'Product URL' },
       { key: 'brand', label: 'Brand' },
-      { key: 'price', label: 'Price per SF' },
-      { key: 'dimensions', label: 'Dimensions' },
-      { key: 'category', label: 'Category' }
+      { key: 'category', label: 'Category' },
+      { key: 'price', label: 'Price per SF' }
     ];
 
     // Add category-specific fields from centralized config
     const categoryFields = specs
-      .filter(spec => !['name', 'brand', 'price', 'dimensions'].includes(spec.key))
+      .filter(spec => !['name', 'brand', 'price', 'dimensions', 'Product URL', 'category'].includes(spec.key))
       .map(spec => ({ key: spec.key, label: spec.label }));
 
     return [...baseFields, ...categoryFields];
