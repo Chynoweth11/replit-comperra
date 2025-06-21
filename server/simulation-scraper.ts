@@ -170,19 +170,12 @@ export class SimulationScraper {
       console.error(`Error scraping real product from ${url}:`, error);
       
       // If blocked by Cloudflare or other protection, return a basic product with the URL
-      if (error.response && (error.response.status === 403 || error.response.status === 503 || error.response.status === 429)) {
-        console.log(`Website blocking detected for ${url} (Status: ${error.response.status}), creating basic product entry`);
+      if (error.response && (error.response.status === 403 || error.response.status === 503)) {
+        console.log(`Website blocking detected for ${url}, creating basic product entry`);
         
         const urlPath = new URL(url).pathname;
         const segments = urlPath.split('/').filter(Boolean);
-        let productName = segments[segments.length - 1]?.replace(/-/g, ' ')?.replace(/\b\w/g, l => l.toUpperCase()) || 'Product';
-        
-        // Better product name extraction for specific cases
-        if (url.includes('arizonatile.com') && segments.includes('3d')) {
-          productName = '3D Textured Tile';
-        } else if (url.includes('msisurfaces.com') && segments.includes('racing-green')) {
-          productName = 'Flamenco Racing Green';
-        }
+        const productName = segments[segments.length - 1]?.replace(/-/g, ' ')?.replace(/\b\w/g, l => l.toUpperCase()) || 'Product';
         
         let brand = 'Unknown';
         let category = 'tiles';
@@ -207,9 +200,8 @@ export class SimulationScraper {
         else if (url.includes('hardwood')) category = 'hardwood';
         else if (url.includes('carpet')) category = 'carpet';
         else if (url.includes('heat') || url.includes('thermostat')) category = 'heat';
-        else if (url.includes('porcelain') || url.includes('ceramic') || url.includes('tile')) category = 'tiles';
         
-        const fallbackProduct = {
+        return {
           name: `${brand} ${productName}`,
           brand,
           price: '0.00',
@@ -226,9 +218,6 @@ export class SimulationScraper {
           },
           sourceUrl: url
         };
-        
-        console.log(`Created fallback product: ${fallbackProduct.name}`);
-        return fallbackProduct;
       }
       
       return null;
@@ -758,11 +747,8 @@ export class SimulationScraper {
     if (product) {
       await this.saveToAirtable(product);
       console.log(`Successfully scraped and saved: ${product.name}`);
-      return product;
-    } else {
-      console.log(`Failed to scrape product from: ${url}`);
-      return null;
     }
+    return product;
   }
 }
 

@@ -192,37 +192,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "URL is required" });
       }
 
-      console.log(`Starting real product scrape for: ${url}`);
-      
-      // Use simulation scraper with real URL scraping
-      const { simulationScraper } = await import('./simulation-scraper');
-      const scrapedProduct = await simulationScraper.scrapeAndSaveFromURL(url);
-      
-      if (scrapedProduct) {
-        const material = simulationScraper.convertToMaterial(scrapedProduct);
-        const savedMaterial = await storage.createMaterial(material);
-        
-        const hasProtectionNote = scrapedProduct.specifications?.Note?.includes('blocking');
-        
-        res.json({
-          message: hasProtectionNote ? 
-            "Product URL saved - website blocking prevented full extraction" : 
-            "Product scraped and saved successfully from real URL",
-          material: savedMaterial,
-          scrapedData: {
-            name: scrapedProduct.name,
-            brand: scrapedProduct.brand,
-            imageUrl: scrapedProduct.imageUrl,
-            specifications: scrapedProduct.specifications
-          },
-          warning: hasProtectionNote ? "Some websites use anti-bot protection. Product URL and basic info were saved." : null
-        });
-      } else {
-        res.status(404).json({ message: "Failed to scrape product from URL" });
+      const scrapedProduct = await productScraper.scrapeProduct(url);
+      if (!scrapedProduct) {
+        return res.status(404).json({ message: "Failed to scrape product data" });
       }
+
+      const material = productScraper.convertToMaterial(scrapedProduct);
+      const savedMaterial = await storage.createMaterial(material);
+
+      res.json({
+        message: "Product scraped and saved successfully",
+        material: savedMaterial
+      });
     } catch (error) {
-      console.error("Single scrape error:", error);
-      res.status(500).json({ error: "Internal server error during scraping" });
+      console.error("Single scraping error:", error);
+      res.status(500).json({ message: "Failed to scrape product" });
     }
   });
 
