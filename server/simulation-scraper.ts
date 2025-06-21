@@ -976,7 +976,7 @@ export class SimulationScraper {
         specs['Scratch / Etch Resistance'] = 'Excellent';
         specs['Heat Resistance'] = 'Up to 400°F';
         specs['Country of Origin'] = 'USA';
-        specs['Price per SF'] = '$0.00';
+        specs['Price per SF'] = 'N/A';
         specs['Image URL'] = imageUrl;
         specs['Product URL'] = url;
       } else if (brand === 'Arizona Tile') {
@@ -994,7 +994,7 @@ export class SimulationScraper {
         specs['Scratch / Etch Resistance'] = 'Moderate';
         specs['Heat Resistance'] = 'Moderate';
         specs['Country of Origin'] = 'Italy';
-        specs['Price per SF'] = '$0.00';
+        specs['Price per SF'] = 'N/A';
         specs['Image URL'] = imageUrl;
         specs['Product URL'] = url;
       } else {
@@ -1012,7 +1012,7 @@ export class SimulationScraper {
         specs['Scratch / Etch Resistance'] = 'Good';
         specs['Heat Resistance'] = 'Moderate';
         specs['Country of Origin'] = 'Unknown';
-        specs['Price per SF'] = '$0.00';
+        specs['Price per SF'] = 'N/A';
         specs['Image URL'] = imageUrl;
         specs['Product URL'] = url;
       }
