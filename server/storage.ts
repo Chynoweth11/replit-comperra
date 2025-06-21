@@ -224,11 +224,12 @@ export class MemStorage implements IStorage {
         imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
         description: "Natural Stone Floor Tile",
         specifications: {
-          peiRating: 3,
-          slipRating: "COF 0.48",
-          waterAbsorption: "2-6%",
-          finish: "Honed",
-          materialType: "Natural Stone"
+          'PEI Rating': '3',
+          'DCOF / Slip Rating': '0.48',
+          'Water Absorption': '2-6%',
+          'Finish': 'Honed',
+          'Material Type': 'Natural Stone',
+          'Dimensions': '18x18'
         },
         dimensions: "18\"x18\"",
         inStock: true,

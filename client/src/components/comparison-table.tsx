@@ -436,9 +436,15 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                   {/* Category-specific specification columns */}
                   {category === "tiles" && (
                     <>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "pei")}</td>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "slip")}</td>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "water")}</td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['PEI Rating'] || material.specifications?.peiRating || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['DCOF / Slip Rating'] || material.specifications?.slipRating || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Water Absorption'] || material.specifications?.waterAbsorption || '—'}
+                      </td>
                     </>
                   )}
                   
@@ -484,7 +490,9 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                     </>
                   )}
                   
-                  <td className="px-4 py-4 text-sm text-gray-900">{material.dimensions}</td>
+                  <td className="px-4 py-4 text-sm text-gray-900 text-center">
+                    {material.specifications?.['Dimensions'] || material.dimensions || '—'}
+                  </td>
                   <td className="px-4 py-4">
                     <div className="flex gap-2">
                       <Button 
