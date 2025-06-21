@@ -788,6 +788,11 @@ export class SimulationScraper {
       name = 'European Oak Premium';
       category = 'hardwood';
       imageUrl = 'https://images.unsplash.com/photo-1586105251261-72a756497a11?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300';
+    } else if (domain.includes('elmwood') || domain.includes('timber')) {
+      brand = 'Elmwood Reclaimed Timber';
+      name = 'Antique Heart Pine Flooring';
+      category = 'hardwood';
+      imageUrl = 'https://www.elmwoodreclaimedtimber.com/wp-content/uploads/2020/11/Reclaimed-Antique-Heart-Pine-Flooring_0.jpg';
     } else if (domain.includes('cambria')) {
       brand = 'Cambria';
       name = 'Cambria Quartz Slab';
@@ -819,12 +824,13 @@ export class SimulationScraper {
       imageUrl = 'https://www.coretecfloors.com/images/lvt-flooring.jpg';
     }
     
-    // Category detection from URL path
-    if (url.includes('slab') || url.includes('quartz') || url.includes('marble') || url.includes('granite')) category = 'slabs';
+    // Category detection from URL path - Check hardwood keywords first
+    if (url.includes('flooring') || url.includes('hardwood') || url.includes('wood') || url.includes('pine') || url.includes('oak') || url.includes('maple') || url.includes('hickory') || url.includes('reclaimed') || url.includes('timber')) category = 'hardwood';
+    else if (url.includes('slab') || url.includes('quartz') || url.includes('marble') || url.includes('granite')) category = 'slabs';
     else if (url.includes('lvt') || url.includes('vinyl') || url.includes('luxury')) category = 'lvt';
-    else if (url.includes('hardwood') || url.includes('wood')) category = 'hardwood';
     else if (url.includes('carpet') || url.includes('rug')) category = 'carpet';
     else if (url.includes('heat') || url.includes('thermostat') || url.includes('warm')) category = 'heat';
+    else if (url.includes('tile') || url.includes('porcelain') || url.includes('ceramic')) category = 'tiles';
     
     // Extract product name from URL path if possible
     const pathParts = url.split('/').filter(part => part && !part.includes('www') && !part.includes('http'));
