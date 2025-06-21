@@ -11,6 +11,7 @@ import Footer from "@/components/footer";
 import { MATERIAL_SPECIFICATIONS } from "@shared/material-specifications";
 import { comparisonStore } from "@/lib/comparison-store";
 import type { Material } from "@shared/schema";
+import { ComparisonDebug } from "@/components/comparison-debug";
 
 export default function ProductCompare() {
   const [selectedMaterials, setSelectedMaterials] = useState<Material[]>([]);
