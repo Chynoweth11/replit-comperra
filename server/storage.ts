@@ -370,11 +370,15 @@ export class MemStorage implements IStorage {
         imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
         description: "240V Electric Radiant Mat",
         specifications: {
-          voltage: "240V",
-          coverageArea: "50 sq ft",
-          features: ["WiFi Ready", "Programmable", "GFCI Protected"],
-          power: "500W",
-          compatibility: ["Tile", "Stone", "Engineered Wood"]
+          'Voltage': '240V',
+          'Coverage': '50 sq ft',
+          'Features': 'WiFi Ready, Programmable, GFCI Protected',
+          'Power': '500W',
+          'Type': 'Electric Radiant Mat',
+          'Applications': 'Tile, Stone, Engineered Wood',
+          'Warranty': '15 Years',
+          'Installation': 'Professional Recommended',
+          'Dimensions': '50 sq ft'
         },
         dimensions: "50 sq ft",
         inStock: true,

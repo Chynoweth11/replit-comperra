@@ -1018,19 +1018,27 @@ export class SimulationScraper {
       if (brand === 'Warmup') {
         specs['Type'] = 'StickyMat Heating Mat';
         specs['Voltage'] = '120V';
+        specs['Coverage'] = '10 SF to 150 SF kits';
+        specs['Features'] = 'Floor Sensor Included, 25 Year Warranty, Professional Installation';
+        specs['Power'] = '12 Watts/SqFt';
         specs['Wattage'] = '12 Watts/SqFt';
         specs['Coverage Area (SF)'] = '10 SF to 150 SF kits';
         specs['Applications'] = 'Tile, Stone, Hardwood';
         specs['Warranty'] = '25 Years';
         specs['Sensor Type'] = 'Floor Sensor Included';
         specs['Installation'] = 'Professional Required';
+        specs['Dimensions'] = 'Various kit sizes';
       } else {
         specs['Type'] = 'Electric Heating Mat';
         specs['Voltage'] = '120V';
+        specs['Coverage'] = '30 sq ft';
+        specs['Features'] = 'Programmable, WiFi Ready, Easy Install';
+        specs['Power'] = '240W';
         specs['Wattage'] = '15 Watts/SqFt';
         specs['Coverage Area (SF)'] = 'Various sizes';
         specs['Applications'] = 'Under tile, stone';
         specs['Warranty'] = '20 Years';
+        specs['Dimensions'] = '30 sq ft';
       }
     } else if (category === 'carpet') {
       if (brand === 'Shaw Floors' || brand === 'Shaw') {
