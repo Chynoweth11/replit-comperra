@@ -2,8 +2,6 @@
 // simulation-scraper.ts - New Simulation-Based Scraper with Airtable Integration
 // ==========================
 import { InsertMaterial } from '../shared/schema';
-import axios from 'axios';
-import * as cheerio from 'cheerio';
 
 export interface SimulatedScrapedProduct {
   name: string;
@@ -29,7 +27,8 @@ export class SimulationScraper {
     try {
       console.log(`Scraping real product from: ${url}`);
       
-      // Using imported axios and cheerio
+      const axios = require('axios');
+      const cheerio = require('cheerio');
       
       const response = await axios.get(url, {
         headers: {
@@ -169,16 +168,10 @@ export class SimulationScraper {
       
     } catch (error) {
       console.error(`Error scraping real product from ${url}:`, error);
-      console.error(`Error details:`, error.response?.status, error.response?.statusText);
       
-      // Handle various error types including network errors and blocking  
-      const shouldCreateFallback = (error.response && (error.response.status === 403 || error.response.status === 503 || error.response.status === 429)) || 
-          error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT' || error.message?.includes('require is not defined') ||
-          !error.response; // Network errors without response
-          
-      if (shouldCreateFallback) {
-        const statusText = error.response?.status ? `Status: ${error.response.status}` : 'Network/Import Error';
-        console.log(`Website blocking or error detected for ${url} (${statusText}), creating basic product entry`);
+      // If blocked by Cloudflare or other protection, return a basic product with the URL
+      if (error.response && (error.response.status === 403 || error.response.status === 503 || error.response.status === 429)) {
+        console.log(`Website blocking detected for ${url} (Status: ${error.response.status}), creating basic product entry`);
         
         const urlPath = new URL(url).pathname;
         const segments = urlPath.split('/').filter(Boolean);
@@ -687,7 +680,7 @@ export class SimulationScraper {
         return false;
       }
 
-      // Using imported axios
+      const axios = require('axios');
       
       const airtableData = {
         fields: {
