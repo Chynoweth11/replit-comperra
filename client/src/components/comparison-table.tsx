@@ -278,7 +278,9 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
 
 
 
-  const headers = getHeaders(category);
+  const headers = category === "tiles" 
+    ? ["Product", "Brand", "Price/SF", "PEI Rating", "DCOF / Slip Rating", "Water Absorption", "Dimensions", "Actions"]
+    : ["Product", "Brand", "Price/SF", "Dimensions", "Actions"];
 
   if (isLoading) {
     return (
@@ -448,46 +450,9 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                     </>
                   )}
                   
-                  {category === "slabs" && (
-                    <>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "thickness")}</td>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "warranty")}</td>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "edges")}</td>
-                    </>
-                  )}
-                  
-                  {category === "lvt" && (
-                    <>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "wear")}</td>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "core")}</td>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "waterproof")}</td>
-                    </>
-                  )}
-                  
-                  {category === "hardwood" && (
-                    <>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "species")}</td>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "finish")}</td>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "width")}</td>
-                    </>
-                  )}
-                  
-                  {category === "heat" && (
-                    <>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "voltage")}</td>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "coverage")}</td>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "features")}</td>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "power")}</td>
-                    </>
-                  )}
-                  
-                  {category === "carpet" && (
-                    <>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "fiber")}</td>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "stain")}</td>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "pile")}</td>
-                      <td className="px-4 py-4">{renderSpecificationCell(material, category, "width")}</td>
-                    </>
+                  {/* Only show additional columns for non-tiles categories */}
+                  {category !== "tiles" && (
+                    <td className="px-4 py-4 text-center">—</td>
                   )}
                   
                   <td className="px-4 py-4 text-sm text-gray-900 text-center">
