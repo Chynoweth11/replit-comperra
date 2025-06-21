@@ -265,11 +265,16 @@ export class MemStorage implements IStorage {
         imageUrl: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
         description: "Premium Quartz Countertop",
         specifications: {
-          thickness: "3cm",
-          warranty: "Lifetime",
-          edgeOptions: ["Straight", "Beveled", "Bullnose", "Ogee"],
-          slabSize: "126\"x63\"",
-          material: "Quartz"
+          'Material Type': 'Quartz',
+          'Thickness': '3cm',
+          'Finish': 'Polished',
+          'Color': 'White with Gold Veining',
+          'Water Absorption': 'Non-Porous',
+          'Applications': 'Countertops, Backsplashes, Vanities',
+          'Dimensions': '126" x 63"',
+          'Scratch Resistance': 'Excellent',
+          'Edge Options': 'Straight, Beveled, Bullnose, Ogee',
+          'Maintenance': 'No Sealing Required'
         },
         dimensions: "126\"x63\"",
         inStock: true,
@@ -282,11 +287,16 @@ export class MemStorage implements IStorage {
         imageUrl: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
         description: "Natural Marble Slab",
         specifications: {
-          thickness: "2cm",
-          warranty: "10 Years",
-          edgeOptions: ["Straight", "Beveled", "Bullnose"],
-          slabSize: "118\"x55\"",
-          material: "Marble"
+          'Material Type': 'Marble',
+          'Thickness': '2cm',
+          'Finish': 'Polished',
+          'Color': 'White with Gray Veining',
+          'Water Absorption': '< 0.5%',
+          'Applications': 'Countertops, Vanities',
+          'Dimensions': '118" x 55"',
+          'Scratch Resistance': 'Moderate',
+          'Edge Options': 'Straight, Beveled, Bullnose',
+          'Maintenance': 'Sealing Required'
         },
         dimensions: "118\"x55\"",
         inStock: true,

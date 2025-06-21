@@ -941,10 +941,23 @@ export class SimulationScraper {
         specs['Finish'] = 'Polished';
         specs['Color'] = 'White with Grey Veining';
         specs['Thickness'] = '2cm, 3cm';
-        specs['Water Absorption'] = '< 0.02%';
+        specs['Water Absorption'] = 'Non-Porous';
         specs['Applications'] = 'Kitchen Countertops, Vanities, Commercial';
         specs['Dimensions'] = '132" x 65"';
         specs['Scratch Resistance'] = 'Excellent';
+        specs['Edge Options'] = 'Straight, Eased, Beveled, Bullnose, Ogee';
+        specs['Maintenance'] = 'No Sealing Required';
+      } else if (brand === 'Arizona Tile') {
+        specs['Material Type'] = 'Natural Marble';
+        specs['Finish'] = 'Polished';
+        specs['Color'] = 'White with Gray Veining';
+        specs['Thickness'] = '2cm, 3cm';
+        specs['Water Absorption'] = '< 0.5%';
+        specs['Applications'] = 'Countertops, Vanities, Feature Walls';
+        specs['Dimensions'] = '120" x 60"';
+        specs['Scratch Resistance'] = 'Moderate';
+        specs['Edge Options'] = 'Straight, Beveled, Bullnose';
+        specs['Maintenance'] = 'Sealing Required';
       } else {
         specs['Material Type'] = 'Natural Stone';
         specs['Finish'] = 'Honed';
@@ -953,6 +966,9 @@ export class SimulationScraper {
         specs['Water Absorption'] = '< 0.5%';
         specs['Applications'] = 'Countertops, Vanities';
         specs['Dimensions'] = '120" x 60"';
+        specs['Scratch Resistance'] = 'Good';
+        specs['Edge Options'] = 'Straight, Beveled';
+        specs['Maintenance'] = 'Sealing Required';
       }
     } else if (category === 'lvt') {
       if (brand === 'COREtec') {
