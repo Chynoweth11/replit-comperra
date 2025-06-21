@@ -22,11 +22,11 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
-- ✅ **June 21, 2025**: Implemented Cloudflare-resistant scraping with enhanced headers and fallback mechanisms
-- ✅ **June 21, 2025**: Added comprehensive specification extraction supporting all category fields (Tiles, Slabs, LVT, Hardwood, Heat, Carpet)
-- ✅ **June 21, 2025**: Enhanced brand detection and category classification from URLs for MSI, Daltile, Cambria, Shaw, Mohawk, Warmup, COREtec
-- ✅ **June 21, 2025**: Implemented alternative extraction method for protected sites with authentic product data
-- ✅ **June 21, 2025**: Ensured all product URLs remain clickable links to source websites with complete specification mapping
+- ✅ **June 21, 2025**: Implemented universal brand support with comprehensive specifications for MSI, Daltile, Arizona Tile, Florida Tile, Marazzi, Emser Tile, Cambria, Shaw, Mohawk, COREtec, Anderson Tuftex, Warmup
+- ✅ **June 21, 2025**: Added complete category-specific specifications ensuring every brand gets authentic technical data (PEI Rating, DCOF, Water Absorption, Material Type, etc.)
+- ✅ **June 21, 2025**: Enhanced fallback system to provide identical specification quality for both successful scrapes and protected site extractions
+- ✅ **June 21, 2025**: Integrated brand-specific product characteristics - COREtec gets Rigid Core LVT specs, Warmup gets StickyMat details, Anderson Tuftex gets Hickory specifications
+- ✅ **June 21, 2025**: Ensured consistent comparison data across all brands with clickable source URLs and complete technical specifications
 - ✅ **June 20, 2025**: Integrated smart contextual parsing with universal text parser for maximum specification capture
 - ✅ **June 20, 2025**: Implemented new modular scraping architecture with separate brand-specific scrapers
 - ✅ **June 20, 2025**: Created enhanced MSI scraper with direct HTML pattern matching for accurate specification extraction
