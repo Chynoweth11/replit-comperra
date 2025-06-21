@@ -1,0 +1,739 @@
+import React, { useState } from 'react';
+
+// Main App component for the advanced web scraper
+const App = () => {
+  const [url, setUrl] = useState(''); // State for the URL input (not used in simulation but kept for UI)
+  const [extractedData, setExtractedData] = useState(null); // State for ALL extracted JSON data
+  const [loading, setLoading] = useState(false); // State for loading indicator
+  const [error, setError] = useState(''); // State for error messages
+  const [selectedCategory, setSelectedCategory] = useState('All Categories'); // State for selected category filter
+
+  // List of all possible product categories
+  const categories = [
+    'All Categories',
+    'Tiles',
+    'Slabs',
+    'LVT / Vinyl',
+    'Hardwood',
+    'Heat',
+    'Carpet'
+  ];
+
+  // Function to simulate a headless browser rendering and then calling the LLM
+  const handleScrape = async () => {
+    setError(''); // Clear previous errors
+    setExtractedData(null); // Clear previous data
+    setLoading(true); // Set loading state
+
+    // --- START: Simulation of Headless Browser Output for Multiple Products and Categories ---
+    // This 'renderedHtml' simulates the full DOM after a headless browser
+    // has loaded and rendered a page containing various product listings across categories.
+    const simulatedRenderedHtml = `
+      <div class="product-catalog-page">
+        <h1 class="page-header">Our Extensive Product Catalog</h1>
+
+        <!-- Tiles Section -->
+        <section class="category-section tiles-section">
+          <h2>Tiles Collection</h2>
+          <!-- Product Block 1: Tile - MSI Flamenco -->
+          <div class="product-listing-item tile-category">
+              <h2 class="product-title-main">MSI Flamenco Racing Green 2x18 Glossy Tile</h2>
+              <div class="image-wrapper">
+                  <img src="https://placehold.co/400x300/556B2F/FFFFFF?text=MSI+Flamenco" alt="MSI Flamenco Tile" class="product-photo" />
+                  <meta property="og:image" content="https://www.msisurfaces.com/images/flamenco-green-tile.jpg" />
+              </div>
+              <p class="brand-info">Brand: <strong>MSI</strong></p>
+              <ul class="specs-list">
+                  <li>Price Per SF: <span class="data-point">$0.00</span> (contact for details)</li>
+                  <li>Size: <span>2x18</span> inches</li>
+                  <li>Type: <span class="category-tag">Tiles</span></li>
+                  <li><label>PEI:</label> &mdash; (Not Rated)</li>
+                  <li>Slip Rating (DCOF): Not Applicable for this product.</li>
+                  <li>Water Absorption Rate: &mdash;</li>
+                  <li>Surface Finish: Polished, <span class="visual-cue">Glossy</span></li>
+                  <li>Material: Quality Porcelain</li>
+                  <li>Edge: Precision Rectified</li>
+                  <li>Install Areas: Floors, Walls (Indoor)</li>
+                  <li>Coloration: Deep Green</li>
+                  <li>Texture: Very Smooth</li>
+              </ul>
+              <a href="https://www.msisurfaces.com/tiles/flamenco-green-2x18" class="product-link">Product Details & Availability</a>
+              <span class="junk-text">Click here to add to basket!</span>
+              <link rel="canonical" href="https://www.msisurfaces.com/tiles/flamenco-green-2x18" />
+          </div>
+
+          <div class="spacer"></div>
+
+          <!-- Product Block 7: Tile - Daltile Metro White Subway -->
+          <div class="product-listing-item tile-category">
+              <h2 class="product-name">Daltile Metro White Subway Tile</h2>
+              <img class="tile-img" src="https://placehold.co/400x300/F0F0F0/000000?text=Daltile+Subway" alt="Daltile Metro White Subway Tile" />
+              <meta property="og:image" content="https://www.daltile.com/images/metro-white-subway-tile.jpg" />
+              <div class="tile-brand">Daltile</div>
+              <p class="tile-price">Price per SF: $1.89</p>
+              <div class="tile-specs-block">
+                  <div class="spec-row">
+                      <span class="spec-label">Dimensions:</span> <span class="spec-value">3"x6"</span>
+                  </div>
+                  <div class="spec-row">
+                      <span class="spec-label">Category:</span> <span class="spec-value">Tiles</span>
+                  </div>
+                  <div class="spec-row">
+                      <span class="spec-label">PEI Rating:</span> <span class="spec-value">1</span>
+                  </div>
+                  <div class="spec-row">
+                      <span class="spec-label">DCOF:</span> <span class="spec-value">0.35</span>
+                  </div>
+                  <div class="spec-row">
+                      <span class="spec-label">Water Absorption:</span> <span class="spec-value">7-10%</span>
+                  </div>
+                  <div class="spec-row">
+                      <span class="spec-label">Finish:</span> <span class="spec-value">Glossy</span>
+                  </div>
+                  <div class="spec-row">
+                      <span class="spec-label">Material Type:</span> <span class="spec-value">Ceramic</span>
+                  </div>
+                  <div class="spec-row">
+                      <span class="spec-label">Edge Type:</span> <span class="spec-value">Straight</span>
+                  </div>
+                  <div class="spec-row">
+                      <span class="spec-label">Install Location:</span> <span class="spec-value">Walls, Backsplashes</span>
+                  </div>
+                   <div class="spec-row">
+                      <span class="spec-label">Color:</span> <span class="spec-value">White</span>
+                  </div>
+                   <div class="spec-row">
+                      <span class="spec-label">Texture:</span> <span class="spec-value">Smooth</span>
+                  </div>
+              </div>
+              <a href="https://www.daltile.com/metro-white-subway" class="product-page-link">Product URL</a>
+              <link rel="canonical" href="https://www.daltile.com/metro-white-subway" />
+          </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Slabs Section -->
+        <section class="category-section slabs-section">
+          <h2>Slabs Collection</h2>
+          <!-- Product Block 2: Slab - Cambria Quartz -->
+          <div class="product-listing-item slab-category">
+              <h2 class="product-name">Cambria Brittanicca Quartz Slab</h2>
+              <p>A stunning quartz surface.</p>
+              <figure class="product-image-container">
+                  <img src="https://placehold.co/400x300/C0C0C0/000000?text=Cambria+Slab" alt="Cambria Quartz Slab" />
+                  <figcaption>Brittanicca - Premium Quartz</figcaption>
+                  <meta property="og:image" content="https://www.cambriausa.com/images/brittanicca-slab.jpg" />
+              </figure>
+              <div class="meta-data">
+                  Brand: <span class="brand-name">Cambria</span> | Category: <span class="cat-type">Quartz Slabs</span>
+              </div>
+              <p class="price-estimate">Estimated Price: $85.00 / square foot</p>
+              <ul class="slab-details">
+                  <li>Nominal Dimensions: 132" x 65"</li>
+                  <li>Material Type: Engineered Quartz</li>
+                  <li>Finish Type: Honed</li>
+                  <li>Color/Pattern: White with flowing grey veins</li>
+                  <li>Thickness Options: 2cm, 3cm</li>
+                  <li>Water Abs. (%): Very Low, 0.02%</li>
+                  <li>Scratch Resistance: Excellent</li>
+                  <li>Applications: Kitchen Countertops, Vanities, Commercial Surfaces</li>
+              </ul>
+              <a href="https://www.cambriausa.com/products/brittanicca" class="view-slab-link">Explore Brittanicca</a>
+              <button class="add-to-cart">Add to Quote</button>
+              <link rel="canonical" href="https://www.cambriausa.com/products/brittanicca" />
+          </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- LVT / Vinyl Section -->
+        <section class="category-section lvt-section">
+          <h2>LVT / Vinyl Flooring</h2>
+          <!-- Product Block 3: LVT / Vinyl - Coretec Pro Plus -->
+          <div class="product-listing-item lvt-category">
+              <h2 class="lvt-heading">COREtec Pro Plus Enhanced XL - Oak Look</h2>
+              <img class="lvt-pic" src="https://placehold.co/400x300/8B4513/FFFFFF?text=COREtec+LVT" alt="COREtec LVT Flooring" />
+              <meta property="og:image" content="https://www.coretecfloors.com/images/coretec-lvt.jpg" />
+              <div class="lvt-info-grid">
+                  <span>Brand: COREtec</span>
+                  <span>Price: $3.99 per sq ft</span>
+                  <span>Dimensions: 9" x 60" planks</span>
+                  <span>Type of Flooring: LVT / Vinyl (Rigid Core)</span>
+                  <span>Wear Layer: 20 mil</span>
+                  <span>Total Thickness: 8mm</span>
+                  <span>Surface: Matte Finish</span>
+                  <span>Waterproof: 100% Waterproof</span>
+                  <span>Installation: Click Lock System</span>
+                  <span>Underlayment: Attached Pad Included</span>
+                  <span>Slip Resistance R-Value: R10</span>
+                  <span>Application Zones: Residential & Light Commercial</span>
+                  <span>Warranty: Limited Lifetime Residential</span>
+              </div>
+              <a href="https://www.coretecfloors.com/pro-plus-oak" class="lvt-url">COREtec Product Page</a>
+              <link rel="canonical" href="https://www.coretecfloors.com/pro-plus-oak" />
+          </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Hardwood Section -->
+        <section class="category-section hardwood-section">
+          <h2>Hardwood Flooring</h2>
+          <!-- Product Block 4: Hardwood - Anderson Tuftex -->
+          <div class="product-listing-item hardwood-category">
+              <h2 class="hw-product-name">Anderson Tuftex Old World Hickory</h2>
+              <div class="img-wrapper">
+                  <img src="https://placehold.co/400x300/A0522D/FFFFFF?text=Hardwood+Floor" alt="Hardwood Flooring" />
+                  <meta property="og:image" content="https://www.andersontuftex.com/images/old-world-hickory.jpg" />
+              </div>
+              <span class="hw-brand">Brand: Anderson Tuftex</span>
+              <div class="price-area">Special Price: $6.50 / Sq.Ft.</div>
+              <div class="hw-details-list">
+                  <p>Dimensions: 7.5" Wide, Random Lengths</p>
+                  <p>Category: Hardwood Flooring</p>
+                  <p>Wood Species: American Hickory</p>
+                  <p>Finish: TruFinish® Oil Finish</p>
+                  <p>Construction: Engineered Hardwood</p>
+                  <p>Thickness: 1/2 inch</p>
+                  <p>Janka Hardness Rating: 1820</p>
+                  <p>Installation: Nail, Glue, Float</p>
+                  <p>Moisture Resistance: Enhanced Core</p>
+              </div>
+              <a href="https://www.andersontuftex.com/old-world-hickory" class="hw-product-link">Learn More</a>
+              <link rel="canonical" href="https://www.andersontuftex.com/old-world-hickory" />
+          </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Heat Section -->
+        <section class="category-section heat-section">
+          <h2>Heating Systems</h2>
+          <!-- Product Block 5: Heat - Warmup Underfloor Heating -->
+          <div class="product-listing-item heat-category">
+              <h2 class="heat-title">Warmup StickyMat Underfloor Heating Mat</h2>
+              <img src="https://placehold.co/400x300/4682B4/FFFFFF?text=Warmup+Mat" alt="Warmup Heating Mat" />
+              <meta property="og:image" content="https://www.warmup.com/images/stickymat.jpg" />
+              <div class="heat-brand">WARMUP</div>
+              <span class="heat-price">$12.50 per SqFt (approx)</span>
+              <p>Dimensions: Varies by size kit</p>
+              <p>Category: Underfloor Heating Mats</p>
+              <ul class="heat-specs">
+                  <li>Type: Heating Mat (Adhesive Backed)</li>
+                  <li>Voltage: 120V</li>
+                  <li>Coverage Area: From 10 SF to 150 SF kits</li>
+                  <li>Wattage: 12 Watts/SqFt</li>
+                  <li>Sensor: Floor Sensor Included</li>
+                  <li>Thermostat: Not Included (Sold Separately)</li>
+                  <li>Max Temperature: 85°F (29°C)</li>
+                  <li>Programmable: Yes (with compatible thermostat)</li>
+                  <li>Install Location: Under Tile, Stone, LVT</li>
+              </ul>
+              <a href="https://www.warmup.com/stickymat-120v" class="heat-link">Shop Warmup Mats</a>
+              <link rel="canonical" href="https://www.warmup.com/stickymat-120v" />
+          </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Carpet Section -->
+        <section class="category-section carpet-section">
+          <h2>Carpet & Rugs</h2>
+          <!-- Product Block 6: Carpet - Shaw Floors -->
+          <div class="product-listing-item carpet-category">
+              <h2 class="carpet-name">Shaw Floors - Caress Soft II</h2>
+              <img src="https://placehold.co/400x300/8B0000/FFFFFF?text=Shaw+Carpet" alt="Shaw Carpet Roll" />
+              <meta property="og:image" content="https://www.shawfloors.com/images/caress-soft-ii.jpg" />
+              <span class="brand-tag">Brand: Shaw Floors</span>
+              <div class="carpet-price-info">Price: $2.89 / sq.ft.</div>
+              <div class="carpet-dims">Dimensions: 12 ft wide rolls</div>
+              <p class="carpet-type">Category: Residential Carpet</p>
+              <ul class="carpet-features">
+                  <li>Fiber Type: Anso Nylon</li>
+                  <li>Pile Style: Textured Saxony</li>
+                  <li>Face Weight: 45 oz/yd²</li>
+                  <li>Density: High Density</li>
+                  <li>Backing: SoftBac Platinum</li>
+                  <li>Stain Protection: R2X Stain and Soil Resistance</li>
+                  <li>Traffic Rating: Heavy Residential</li>
+                  <li>Install Type: Stretch-In</li>
+              </ul>
+              <a href="https://www.shawfloors.com/caress-soft-ii" class="carpet-product-url">View Carpet Details</a>
+              <link rel="canonical" href="https://www.shawfloors.com/caress-soft-ii" />
+          </div>
+        </section>
+
+        <div class="footer">
+            <p>&copy; 2025 Global Surfaces Inc. All rights reserved.</p>
+        </div>
+      </div>
+    `;
+    // --- END: Simulation of Headless Browser Output ---
+
+    try {
+      // Define the chat history for the LLM prompt
+      let chatHistory = [];
+      chatHistory.push({
+        role: "user",
+        parts: [{
+          text: `
+          **CRITICAL JSON OUTPUT REQUIREMENT**:
+          Your entire response MUST be a single, valid JSON object, strictly conforming to the provided schema.
+          All string values within the JSON MUST be properly escaped, especially for characters like double quotes (") and backslashes (\\). Newline characters within strings should be represented as \\n.
+          Do NOT include any preamble, postamble, explanations, comments, or any text whatsoever outside the JSON object.
+          If the HTML contains content that might break JSON (e.g., unescaped quotes), you must escape it.
+
+          **PRODUCT DATA EXTRACTION TASK**:
+          The following is a block of HTML content that has been fully rendered by a browser.
+          It contains multiple product listings for various building materials, organized into sections.
+          Your goal is to extract product specifications for EACH product found and return them as a single JSON object.
+          This JSON object should have product categories as its top-level keys.
+          The value for each category key should be an array of product objects belonging to that specific category.
+
+          **FOR EACH PRODUCT**:
+          1.  **Identify Category**: Accurately determine its general 'Category' from this precise list:
+              "Tiles", "Slabs", "LVT / Vinyl", "Hardwood", "Heat", "Carpet".
+          2.  **Extract Core Details**:
+              * 'Specification': The full product title/name.
+              * 'Product URL': The direct URL to the product's details page. Look for 'href' in relevant '<a>' tags or 'link rel="canonical"' tags.
+              * 'Image URL': The direct URL to the product's main image. Look for 'src' in '<img>' tags or 'meta property="og:image"' tags. If no image is found, use 'https://placehold.co/400x300/CCCCCC/FFFFFF?text=No+Image'.
+          3.  **Extract Specific Details ('Details' Object)**:
+              * Extract *all relevant specific details* for that product, mapping them to the JSON keys provided in the comprehensive list below.
+              * **You MUST ONLY include keys that are relevant to the product's identified 'Category' AND whose values are present in the HTML.** Do NOT include irrelevant keys.
+              * **Crucially, if a specific value for a field is explicitly stated as "Not Applicable", "Not Rated", "—", "N/A", or similarly indicates absence or irrelevance in the HTML, extract that exact string value.** Do NOT omit the key or leave the value as null/empty if such an explicit indicator is present.
+              * If a field is mentioned but has no content (e.g., "Color: " with nothing following), include the key with an empty string "" as its value.
+              * **Scan for Implied Values**: You must also scan for implied values not explicitly marked as 'Label: Value'. For example:
+                  * If a description says "ideal for floors and countertops," interpret that as 'Install Location': "Floors, Countertops".
+                  * If a tile is "highly polished with no bevel," extract 'Finish': "Polished" and 'Edge Type': "No Bevel" or "Straight".
+                  * If numeric specifications are present (e.g., size, water absorption), always preserve their units and context (e.g., '2x18', '<0.5%', '20 mil', '120V', '45 oz/yd²').
+              * **Normalize Field Names**: Handle variations in naming (e.g., "P E I Rating", "P.E.I. Rating", "PEI" should all map to "PEI Rating"; "DCOF", "Slip Rating", "COF" should map to "DCOF / Slip Rating").
+
+          **IGNORE**: Any UI elements like buttons ("Add to Cart", "Get Quote"), navigation links not directly serving as product URLs, general descriptive text not representing a specific spec, or any "junk text".
+
+          **Comprehensive List of ALL Possible JSON Keys and their desired content (you should only use the ones relevant to the product's category):**
+
+          General Product Details (Common Across Categories):
+          - 'Brand'
+          - 'Price per SF'
+          - 'Dimensions'
+
+          Tiles Specific:
+          - 'PEI Rating'
+          - 'DCOF / Slip Rating'
+          - 'Water Absorption'
+          - 'Finish'
+          - 'Material Type'
+          - 'Edge Type'
+          - 'Install Location'
+          - 'Color'
+          - 'Texture'
+
+          Slabs Specific:
+          - 'Material Type'
+          - 'Finish'
+          - 'Color Pattern'
+          - 'Thickness'
+          - 'Water Absorption'
+          - 'Scratch Resistance'
+          - 'Applications'
+
+          LVT / Vinyl Specific:
+          - 'Wear Layer'
+          - 'Total Thickness'
+          - 'Finish'
+          - 'Waterproof Rating'
+          - 'Installation Method'
+          - 'Underlayment Included': Whether underlayment is included.
+          - 'Slip Resistance': The slip resistance rating.
+          - 'Application Zones': Recommended application zones.
+          - 'Warranty': The product warranty.
+
+          Hardwood Specific:
+          - 'Wood Species'
+          - 'Finish'
+          - 'Construction'
+          - 'Thickness'
+          - 'Hardness (Janka)'
+          - 'Installation Method'
+          - 'Moisture Resistance'
+
+          Heat (Mats, Cables, Thermostats) Specific:
+          - 'Type'
+          - 'Voltage'
+          - 'Coverage Area (SF)'
+          - 'Wattage'
+          - 'Sensor Type'
+          - 'Thermostat Included'
+          - 'Max Temperature'
+          - 'Programmable'
+          - 'Install Location'
+
+          Carpet Specific:
+          - 'Fiber Type'
+          - 'Pile Style'
+          - 'Face Weight'
+          - 'Density'
+          - 'Backing'
+          - 'Stain Protection': Type of stain protection.
+          - 'Traffic Rating': The traffic rating.
+          - 'Install Type': How it's installed.
+
+          HTML Content:
+          \`\`\`html
+          ${simulatedRenderedHtml}
+          \`\`\`
+          `
+        }]
+      });
+
+      // Define the payload for the Gemini API call, including the response schema
+      // The schema will be broad, relying on the prompt to guide the LLM to fill
+      // only the relevant 'Details' properties for each product's category.
+      const payload = {
+        contents: chatHistory,
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT", // Top-level is now an OBJECT, not an ARRAY
+            properties: {
+              // Define each category as a property that holds an array of products
+              "Tiles": {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    "Specification": { "type": "STRING" },
+                    // Category is implied by the key, but included for consistency if needed
+                    "Category": { "type": "STRING" },
+                    "Product URL": { "type": "STRING" },
+                    "Image URL": { "type": "STRING" },
+                    "Details": {
+                      type: "OBJECT",
+                      properties: {
+                        "Brand": { "type": "STRING" },
+                        "Price per SF": { "type": "STRING" },
+                        "Dimensions": { "type": "STRING" },
+                        "PEI Rating": { "type": "STRING" },
+                        "DCOF / Slip Rating": { "type": "STRING" },
+                        "Water Absorption": { "type": "STRING" },
+                        "Finish": { "type": "STRING" },
+                        "Material Type": { "type": "STRING" },
+                        "Edge Type": { "type": "STRING" },
+                        "Install Location": { "type": "STRING" },
+                        "Color": { "type": "STRING" },
+                        "Texture": { "type": "STRING" }
+                      },
+                      additionalProperties: false
+                    }
+                  },
+                  propertyOrdering: ["Specification", "Category", "Product URL", "Image URL", "Details"]
+                }
+              },
+              "Slabs": {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    "Specification": { "type": "STRING" },
+                    "Category": { "type": "STRING" },
+                    "Product URL": { "type": "STRING" },
+                    "Image URL": { "type": "STRING" },
+                    "Details": {
+                      type: "OBJECT",
+                      properties: {
+                        "Brand": { "type": "STRING" },
+                        "Price per SF": { "type": "STRING" },
+                        "Dimensions": { "type": "STRING" },
+                        "Material Type": { "type": "STRING" },
+                        "Finish": { "type": "STRING" },
+                        "Color Pattern": { "type": "STRING" },
+                        "Thickness": { "type": "STRING" },
+                        "Water Absorption": { "type": "STRING" },
+                        "Scratch Resistance": { "type": "STRING" },
+                        "Applications": { "type": "STRING" }
+                      },
+                      additionalProperties: false
+                    }
+                  },
+                  propertyOrdering: ["Specification", "Category", "Product URL", "Image URL", "Details"]
+                }
+              },
+              "LVT / Vinyl": {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    "Specification": { "type": "STRING" },
+                    "Category": { "type": "STRING" },
+                    "Product URL": { "type": "STRING" },
+                    "Image URL": { "type": "STRING" },
+                    "Details": {
+                      type: "OBJECT",
+                      properties: {
+                        "Brand": { "type": "STRING" },
+                        "Price per SF": { "type": "STRING" },
+                        "Dimensions": { "type": "STRING" },
+                        "Wear Layer": { "type": "STRING" },
+                        "Total Thickness": { "type": "STRING" },
+                        "Finish": { "type": "STRING" },
+                        "Waterproof Rating": { "type": "STRING" },
+                        "Installation Method": { "type": "STRING" },
+                        "Underlayment Included": { "type": "STRING" },
+                        "Slip Resistance": { "type": "STRING" },
+                        "Application Zones": { "type": "STRING" },
+                        "Warranty": { "type": "STRING" }
+                      },
+                      additionalProperties: false
+                    }
+                  },
+                  propertyOrdering: ["Specification", "Category", "Product URL", "Image URL", "Details"]
+                }
+              },
+              "Hardwood": {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    "Specification": { "type": "STRING" },
+                    "Category": { "type": "STRING" },
+                    "Product URL": { "type": "STRING" },
+                    "Image URL": { "type": "STRING" },
+                    "Details": {
+                      type: "OBJECT",
+                      properties: {
+                        "Brand": { "type": "STRING" },
+                        "Price per SF": { "type": "STRING" },
+                        "Dimensions": { "type": "STRING" },
+                        "Wood Species": { "type": "STRING" },
+                        "Finish": { "type": "STRING" },
+                        "Construction": { "type": "STRING" },
+                        "Thickness": { "type": "STRING" },
+                        "Hardness (Janka)": { "type": "STRING" },
+                        "Installation Method": { "type": "STRING" },
+                        "Moisture Resistance": { "type": "STRING" }
+                      },
+                      additionalProperties: false
+                    }
+                  },
+                  propertyOrdering: ["Specification", "Category", "Product URL", "Image URL", "Details"]
+                }
+              },
+              "Heat": {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    "Specification": { "type": "STRING" },
+                    "Category": { "type": "STRING" },
+                    "Product URL": { "type": "STRING" },
+                    "Image URL": { "type": "STRING" },
+                    "Details": {
+                      type: "OBJECT",
+                      properties: {
+                        "Brand": { "type": "STRING" },
+                        "Price per SF": { "type": "STRING" },
+                        "Dimensions": { "type": "STRING" },
+                        "Type": { "type": "STRING" },
+                        "Voltage": { "type": "STRING" },
+                        "Coverage Area (SF)": { "type": "STRING" },
+                        "Wattage": { "type": "STRING" },
+                        "Sensor Type": { "type": "STRING" },
+                        "Thermostat Included": { "type": "STRING" },
+                        "Max Temperature": { "type": "STRING" },
+                        "Programmable": { "type": "STRING" },
+                        "Install Location": { "type": "STRING" }
+                      },
+                      additionalProperties: false
+                    }
+                  },
+                  propertyOrdering: ["Specification", "Category", "Product URL", "Image URL", "Details"]
+                }
+              },
+              "Carpet": {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    "Specification": { "type": "STRING" },
+                    "Category": { "type": "STRING" },
+                    "Product URL": { "type": "STRING" },
+                    "Image URL": { "type": "STRING" },
+                    "Details": {
+                      type: "OBJECT",
+                      properties: {
+                        "Brand": { "type": "STRING" },
+                        "Price per SF": { "type": "STRING" },
+                        "Dimensions": { "type": "STRING" },
+                        "Fiber Type": { "type": "STRING" },
+                        "Pile Style": { "type": "STRING" },
+                        "Face Weight": { "type": "STRING" },
+                        "Density": { "type": "STRING" },
+                        "Backing": { "type": "STRING" },
+                        "Stain Protection": { "type": "STRING" },
+                        "Traffic Rating": { "type": "STRING" },
+                        "Install Type": { "type": "STRING" }
+                      },
+                      additionalProperties: false
+                    }
+                  },
+                  propertyOrdering: ["Specification", "Category", "Product URL", "Image URL", "Details"]
+                }
+              }
+            },
+            additionalProperties: false // Ensures only defined categories are included
+          }
+        }
+      };
+
+      // API key is automatically handled by the Canvas environment when left as an empty string
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+      // Make the fetch call to the Gemini API
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json(); // Parse the JSON response from the API
+
+      // Check if the API response contains valid content before parsing
+      if (result.candidates && result.candidates.length > 0 &&
+          result.candidates[0].content && result.candidates[0].content.parts &&
+          result.candidates[0].content.parts.length > 0) {
+        const jsonString = result.candidates[0].content.parts[0].text;
+        console.log("Raw LLM response string:", jsonString); // Log the raw string for debugging
+        try {
+          const parsedJson = JSON.parse(jsonString); // Attempt to parse the JSON string
+          setExtractedData(parsedJson); // Set the extracted data
+        } catch (parseError) {
+          setError(`Failed to parse JSON from LLM response: ${parseError.message}. Check console for raw output.`);
+          console.error("JSON parsing error:", parseError);
+          // It's helpful to show the raw string if parsing fails
+          console.error("Malformed JSON string from LLM:", jsonString);
+        }
+      } else {
+        // Handle cases where the LLM response structure is unexpected or content is missing
+        setError("LLM did not return data or returned data in an unexpected format. Please try again.");
+        console.error("LLM response structure unexpected or empty:", result);
+      }
+    } catch (err) {
+      // Catch any errors during the fetch or network issues
+      console.error("Scraping or LLM API call error:", err);
+      setError(`Failed to fetch or process LLM response: ${err.message}. Please check your network or API status.`);
+    } finally {
+      setLoading(false); // End loading state
+    }
+  };
+
+  // Function to filter extracted data based on selected category
+  const getFilteredData = () => {
+    if (!extractedData) return null; // No data yet
+
+    if (selectedCategory === 'All Categories') {
+      return extractedData; // Return all data if 'All Categories' is selected
+    } else {
+      // Return only the array for the selected category
+      // If the category key doesn't exist, return an empty array or null
+      const filteredCategoryData = extractedData[selectedCategory] || [];
+      // Wrap it in an object for consistent display structure, or adjust display logic
+      if (filteredCategoryData.length > 0) {
+        return { [selectedCategory]: filteredCategoryData };
+      }
+      return null; // Return null if selected category has no data
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-4 font-inter text-gray-800 flex flex-col items-center">
+      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl">
+        <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">
+          Advanced Multi-Category Web Scraper (LLM-Powered)
+        </h1>
+
+        <p className="text-gray-600 mb-6 text-center">
+          This tool demonstrates how a Large Language Model (LLM) can extract structured data
+          from complex, unstructured web content, across multiple product categories and thousands
+          of variations. In a real scenario, the "Rendered HTML" part would come from a headless browser like Puppeteer.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
+          <input
+            type="text"
+            className="flex-grow p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+            placeholder="Enter URL (e.g., https://www.msisurfaces.com/product)"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            disabled={loading} // Disable input while loading
+          />
+          <button
+            onClick={handleScrape}
+            className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading} // Disable button while loading
+          >
+            {loading ? 'Processing...' : 'Scrape Data'}
+          </button>
+        </div>
+
+        {/* Category Filter Dropdown */}
+        <div className="mb-6 w-full flex items-center justify-center">
+          <label htmlFor="category-select" className="mr-3 font-medium text-gray-700">
+            Filter by Category:
+          </label>
+          <select
+            id="category-select"
+            className="p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            disabled={loading || !extractedData} // Disable if loading or no data extracted yet
+          >
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        </div>
+
+
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6" role="alert">
+            <strong className="font-bold">Error:</strong>
+            <span className="block sm:inline ml-2">{error}</span>
+          </div>
+        )}
+
+        {getFilteredData() && Object.keys(getFilteredData()).length > 0 ? (
+          <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 mt-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Extracted Product Specifications:</h2>
+            <pre className="bg-gray-800 text-green-400 p-4 rounded-lg overflow-x-auto text-sm">
+              <code>{JSON.stringify(getFilteredData(), null, 2)}</code>
+            </pre>
+          </div>
+        ) : (
+          extractedData && !loading && (
+            <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-lg relative mt-6 text-center">
+              No products found for the selected category, or no data extracted yet.
+            </div>
+          )
+        )}
+
+        {loading && (
+          <div className="flex justify-center items-center mt-6">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <p className="ml-3 text-lg text-gray-600">Thinking like a human...</p>
+          </div>
+        )}
+
+        <div className="mt-8 text-center text-gray-500 text-sm">
+          <p>Note: The headless browser rendering step is simulated in this client-side example.</p>
+          <p>For production, this part would run on a dedicated backend server.</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;

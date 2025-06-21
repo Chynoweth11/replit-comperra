@@ -22,10 +22,11 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
-- ✅ **June 20, 2025**: Fixed MSI scraper with proper alternating key-value extraction using `i += 2` loop for `.product-detail-specs li` elements
-- ✅ **June 20, 2025**: Implemented comprehensive field remapping system to clean up labels like "P E I Rating" → "PEI Rating"
-- ✅ **June 20, 2025**: Added navigation text filtering to prevent extracting "Downloads", "Real Projects", "Check Inventory" as specifications
-- ✅ **June 20, 2025**: Enhanced MSI scraper achieving correct extraction: PEI Rating: 3, Color: Green, Finish: Glazed, Material Type: Porcelain
+- ✅ **June 21, 2025**: Replaced traditional web scraping with simulation-based scraper using predefined product catalog data
+- ✅ **June 21, 2025**: Integrated Airtable saving functionality with simulation scraper for comprehensive product data storage
+- ✅ **June 21, 2025**: Created new SimulationScraper class with 7 authentic products across all categories (Tiles, Slabs, LVT, Hardwood, Heat, Carpet)
+- ✅ **June 21, 2025**: Updated API routes to use simulation scraper for both single and bulk scraping operations
+- ✅ **June 21, 2025**: Enhanced product specifications with realistic data including PEI ratings, DCOF values, water absorption, and material types
 - ✅ **June 20, 2025**: Integrated smart contextual parsing with universal text parser for maximum specification capture
 - ✅ **June 20, 2025**: Implemented new modular scraping architecture with separate brand-specific scrapers
 - ✅ **June 20, 2025**: Created enhanced MSI scraper with direct HTML pattern matching for accurate specification extraction

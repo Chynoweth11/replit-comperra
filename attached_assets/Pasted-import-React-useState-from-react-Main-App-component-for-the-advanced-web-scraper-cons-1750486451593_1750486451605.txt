@@ -1,0 +1,1086 @@
+import React, { useState } from 'react';
+
+// Main App component for the advanced web scraper
+const App = () => {
+  const [urlsInput, setUrlsInput] = useState(''); // State for bulk URLs input
+  const [extractedData, setExtractedData] = useState(null); // State for ALL extracted JSON data
+  const [loading, setLoading] = useState(false); // State for loading indicator
+  const [error, setError] = useState(''); // State for error messages
+  const [selectedCategory, setSelectedCategory] = useState('All Categories'); // State for selected category filter
+  const [viewMode, setViewMode] = useState('json'); // 'json' or 'cards'
+  const [loggedErrors, setLoggedErrors] = useState([]); // State for logging errors
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // Number of products to show per page
+
+  // List of all possible product categories
+  const categories = [
+    'All Categories',
+    'Tiles',
+    'Slabs',
+    'LVT / Vinyl',
+    'Hardwood',
+    'Heat',
+    'Carpet'
+  ];
+
+  // Function to simulate a headless browser rendering and then calling the LLM
+  const handleScrape = async () => {
+    setError(''); // Clear previous errors
+    setExtractedData(null); // Clear previous data
+    setLoading(true); // Set loading state
+    setCurrentPage(1); // Reset pagination to first page on new scrape
+    setLoggedErrors([]); // Clear previous logged errors
+
+    // Split the input by new lines to get individual URLs (simulated)
+    const urlsToProcess = urlsInput.split('\n').map(url => url.trim()).filter(url => url !== '');
+
+    // In a real application, you would loop through urlsToProcess and fetch HTML for each
+    // For this demo, we use a single simulated HTML block
+    if (urlsToProcess.length === 0) {
+      setError("Please enter at least one URL (simulated).");
+      setLoading(false);
+      return;
+    }
+
+    // --- START: Simulation of Headless Browser Output for Multiple Products and Categories ---
+    // This 'renderedHtml' simulates the full DOM after a headless browser
+    // has loaded and rendered a page containing various product listings across categories.
+    // In a real scenario, this would come from a backend service (e.g., Puppeteer/Playwright).
+    const simulatedRenderedHtml = `
+      <div class="product-catalog-page">
+        <h1 class="page-header">Our Extensive Product Catalog</h1>
+
+        <!-- Tiles Section -->
+        <section class="category-section tiles-section">
+          <h2>Tiles Collection</h2>
+          <!-- Product Block 1: Tile - MSI Flamenco -->
+          <div class="product-listing-item tile-category">
+              <h2 class="product-title-main">MSI Flamenco Racing Green 2x18 Glossy Tile</h2>
+              <div class="image-wrapper">
+                  <img src="https://placehold.co/400x300/556B2F/FFFFFF?text=MSI+Flamenco" alt="MSI Flamenco Tile" class="product-photo" />
+                  <meta property="og:image" content="https://www.msisurfaces.com/images/flamenco-green-tile.jpg" />
+              </div>
+              <p class="brand-info">Brand: <strong>MSI</strong></p>
+              <ul class="specs-list">
+                  <li>Price Per SF: <span class="data-point">$0.00</span> (contact for details)</li>
+                  <li>Size: <span>2x18</span> inches</li>
+                  <li>Type: <span class="category-tag">Tiles</span></li>
+                  <li><label>PEI:</label> &mdash; (Not Rated)</li>
+                  <li>Slip Rating (DCOF): Not Applicable for this product.</li>
+                  <li>Water Absorption Rate: &mdash;</li>
+                  <li>Surface Finish: Polished, <span class="visual-cue">Glossy</span></li>
+                  <li>Material: Quality Porcelain</li>
+                  <li>Edge: Precision Rectified</li>
+                  <li>Install Areas: Floors, Walls (Indoor)</li>
+                  <li>Coloration: Deep Green</li>
+                  <li>Texture: Very Smooth</li>
+              </ul>
+              <a href="https://www.msisurfaces.com/tiles/flamenco-green-2x18" class="product-link">Product Details & Availability</a>
+              <span class="junk-text">Click here to add to basket!</span>
+              <link rel="canonical" href="https://www.msisurfaces.com/tiles/flamenco-green-2x18" />
+          </div>
+
+          <div class="spacer"></div>
+
+          <!-- Product Block 7: Tile - Daltile Metro White Subway -->
+          <div class="product-listing-item tile-category">
+              <h2 class="product-name">Daltile Metro White Subway Tile</h2>
+              <img class="tile-img" src="https://placehold.co/400x300/F0F0F0/000000?text=Daltile+Subway" alt="Daltile Metro White Subway Tile" />
+              <meta property="og:image" content="https://www.daltile.com/images/metro-white-subway-tile.jpg" />
+              <div class="tile-brand">Daltile</div>
+              <p class="tile-price">Price per SF: $1.89</p>
+              <div class="tile-specs-block">
+                  <div class="spec-row">
+                      <span class="spec-label">Dimensions:</span> <span class="spec-value">3"x6"</span>
+                  </div>
+                  <div class="spec-row">
+                      <span class="spec-label">Category:</span> <span class="spec-value">Tiles</span>
+                  </div>
+                  <div class="spec-row">
+                      <span class="spec-label">PEI Rating:</span> <span class="spec-value">1</span>
+                  </div>
+                  <div class="spec-row">
+                      <span class="spec-label">DCOF:</span> <span class="spec-value">0.35</span>
+                  </div>
+                  <div class="spec-row">
+                      <span class="spec-label">Water Absorption:</span> <span class="spec-value">7-10%</span>
+                  </div>
+                  <div class="spec-row">
+                      <span class="spec-label">Finish:</span> <span class="spec-value">Glossy</span>
+                  </div>
+                  <div class="spec-row">
+                      <span class="spec-label">Material Type:</span> <span class="spec-value">Ceramic</span>
+                  </div>
+                  <div class="spec-row">
+                      <span class="spec-label">Edge Type:</span> <span class="spec-value">Straight</span>
+                  </div>
+                  <div class="spec-row">
+                      <span class="spec-label">Install Location:</span> <span class="spec-value">Walls, Backsplashes</span>
+                  </div>
+                   <div class="spec-row">
+                      <span class="spec-label">Color:</span> <span class="spec-value">White</span>
+                  </div>
+                   <div class="spec-row">
+                      <span class="spec-label">Texture:</span> <span class="spec-value">Smooth</span>
+                  </div>
+              </div>
+              <a href="https://www.daltile.com/metro-white-subway" class="product-page-link">Product URL</a>
+              <link rel="canonical" href="https://www.daltile.com/metro-white-subway" />
+          </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Slabs Section -->
+        <section class="category-section slabs-section">
+          <h2>Slabs Collection</h2>
+          <!-- Product Block 2: Slab - Cambria Quartz -->
+          <div class="product-listing-item slab-category">
+              <h2 class="product-name">Cambria Brittanicca Quartz Slab</h2>
+              <p>A stunning quartz surface.</p>
+              <figure class="product-image-container">
+                  <img src="https://placehold.co/400x300/C0C0C0/000000?text=Cambria+Slab" alt="Cambria Quartz Slab" />
+                  <figcaption>Brittanicca - Premium Quartz</figcaption>
+                  <meta property="og:image" content="https://www.cambriausa.com/images/brittanicca-slab.jpg" />
+              </figure>
+              <div class="meta-data">
+                  Brand: <span class="brand-name">Cambria</span> | Category: <span class="cat-type">Quartz Slabs</span>
+              </div>
+              <p class="price-estimate">Estimated Price: $85.00 / square foot</p>
+              <ul class="slab-details">
+                  <li>Nominal Dimensions: 132" x 65"</li>
+                  <li>Material Type: Engineered Quartz</li>
+                  <li>Finish Type: Honed</li>
+                  <li>Color/Pattern: White with flowing grey veins</li>
+                  <li>Thickness Options: 2cm, 3cm</li>
+                  <li>Water Abs. (%): Very Low, 0.02%</li>
+                  <li>Scratch Resistance: Excellent</li>
+                  <li>Applications: Kitchen Countertops, Vanities, Commercial Surfaces</li>
+              </ul>
+              <a href="https://www.cambriausa.com/products/brittanicca" class="view-slab-link">Explore Brittanicca</a>
+              <button class="add-to-cart">Add to Quote</button>
+              <link rel="canonical" href="https://www.cambriausa.com/products/brittanicca" />
+          </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- LVT / Vinyl Section -->
+        <section class="category-section lvt-section">
+          <h2>LVT / Vinyl Flooring</h2>
+          <!-- Product Block 3: LVT / Vinyl - Coretec Pro Plus -->
+          <div class="product-listing-item lvt-category">
+              <h2 class="lvt-heading">COREtec Pro Plus Enhanced XL - Oak Look</h2>
+              <img class="lvt-pic" src="https://placehold.co/400x300/8B4513/FFFFFF?text=COREtec+LVT" alt="COREtec LVT Flooring" />
+              <meta property="og:image" content="https://www.coretecfloors.com/images/coretec-lvt.jpg" />
+              <div class="lvt-info-grid">
+                  <span>Brand: COREtec</span>
+                  <span>Price: $3.99 per sq ft</span>
+                  <span>Dimensions: 9" x 60" planks</span>
+                  <span>Type of Flooring: LVT / Vinyl (Rigid Core)</span>
+                  <span>Wear Layer: 20 mil</span>
+                  <span>Total Thickness: 8mm</span>
+                  <span>Surface: Matte Finish</span>
+                  <span>Waterproof: 100% Waterproof</span>
+                  <span>Installation: Click Lock System</span>
+                  <span>Underlayment: Attached Pad Included</span>
+                  <span>Slip Resistance R-Value: R10</span>
+                  <span>Application Zones: Residential & Light Commercial</span>
+                  <span>Warranty: Limited Lifetime Residential</span>
+              </div>
+              <a href="https://www.coretecfloors.com/pro-plus-oak" class="lvt-url">COREtec Product Page</a>
+              <link rel="canonical" href="https://www.coretecfloors.com/pro-plus-oak" />
+          </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Hardwood Section -->
+        <section class="category-section hardwood-section">
+          <h2>Hardwood Flooring</h2>
+          <!-- Product Block 4: Hardwood - Anderson Tuftex -->
+          <div class="product-listing-item hardwood-category">
+              <h2 class="hw-product-name">Anderson Tuftex Old World Hickory</h2>
+              <div class="img-wrapper">
+                  <img src="https://placehold.co/400x300/A0522D/FFFFFF?text=Hardwood+Floor" alt="Hardwood Flooring" />
+                  <meta property="og:image" content="https://www.andersontuftex.com/images/old-world-hickory.jpg" />
+              </div>
+              <span class="hw-brand">Brand: Anderson Tuftex</span>
+              <div class="price-area">Special Price: $6.50 / Sq.Ft.</div>
+              <div class="hw-details-list">
+                  <p>Dimensions: 7.5" Wide, Random Lengths</p>
+                  <p>Category: Hardwood Flooring</p>
+                  <p>Wood Species: American Hickory</p>
+                  <p>Finish: TruFinish® Oil Finish</p>
+                  <p>Construction: Engineered Hardwood</p>
+                  <p>Thickness: 1/2 inch</p>
+                  <p>Janka Hardness Rating: 1820</p>
+                  <p>Installation: Nail, Glue, Float</p>
+                  <p>Moisture Resistance: Enhanced Core</p>
+              </div>
+              <a href="https://www.andersontuftex.com/old-world-hickory" class="hw-product-link">Learn More</a>
+              <link rel="canonical" href="https://www.andersontuftex.com/old-world-hickory" />
+          </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Heat Section -->
+        <section class="category-section heat-section">
+          <h2>Heating Systems</h2>
+          <!-- Product Block 5: Heat - Warmup Underfloor Heating -->
+          <div class="product-listing-item heat-category">
+              <h2 class="heat-title">Warmup StickyMat Underfloor Heating Mat</h2>
+              <img src="https://placehold.co/400x300/4682B4/FFFFFF?text=Warmup+Mat" alt="Warmup Heating Mat" />
+              <meta property="og:image" content="https://www.warmup.com/images/stickymat.jpg" />
+              <div class="heat-brand">WARMUP</div>
+              <span class="heat-price">$12.50 per SqFt (approx)</span>
+              <p>Dimensions: Varies by size kit</p>
+              <p>Category: Underfloor Heating Mats</p>
+              <ul class="heat-specs">
+                  <li>Type: Heating Mat (Adhesive Backed)</li>
+                  <li>Voltage: 120V</li>
+                  <li>Coverage Area: From 10 SF to 150 SF kits</li>
+                  <li>Wattage: 12 Watts/SqFt</li>
+                  <li>Sensor: Floor Sensor Included</li>
+                  <li>Thermostat: Not Included (Sold Separately)</li>
+                  <li>Max Temperature: 85°F (29°C)</li>
+                  <li>Programmable: Yes (with compatible thermostat)</li>
+                  <li>Install Location: Under Tile, Stone, LVT</li>
+              </ul>
+              <a href="https://www.warmup.com/stickymat-120v" class="heat-link">Shop Warmup Mats</a>
+              <link rel="canonical" href="https://www.warmup.com/stickymat-120v" />
+          </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Carpet Section -->
+        <section class="category-section carpet-section">
+          <h2>Carpet & Rugs</h2>
+          <!-- Product Block 6: Carpet - Shaw Floors -->
+          <div class="product-listing-item carpet-category">
+              <h2 class="carpet-name">Shaw Floors - Caress Soft II</h2>
+              <img src="https://placehold.co/400x300/8B0000/FFFFFF?text=Shaw+Carpet" alt="Shaw Carpet Roll" />
+              <meta property="og:image" content="https://www.shawfloors.com/images/caress-soft-ii.jpg" />
+              <span class="brand-tag">Brand: Shaw Floors</span>
+              <div class="carpet-price-info">Price: $2.89 / sq.ft.</div>
+              <div class="carpet-dims">Dimensions: 12 ft wide rolls</div>
+              <p class="carpet-type">Category: Residential Carpet</p>
+              <ul class="carpet-features">
+                  <li>Fiber Type: Anso Nylon</li>
+                  <li>Pile Style: Textured Saxony</li>
+                  <li>Face Weight: 45 oz/yd²</li>
+                  <li>Density: High Density</li>
+                  <li>Backing: SoftBac Platinum</li>
+                  <li>Stain Protection: R2X Stain and Soil Resistance</li>
+                  <li>Traffic Rating: Heavy Residential</li>
+                  <li>Install Type: Stretch-In</li>
+              </ul>
+              <a href="https://www.shawfloors.com/caress-soft-ii" class="carpet-product-url">View Carpet Details</a>
+              <link rel="canonical" href="https://www.shawfloors.com/caress-soft-ii" />
+          </div>
+        </section>
+
+        <div class="footer">
+            <p>&copy; 2025 Global Surfaces Inc. All rights reserved.</p>
+        </div>
+      </div>
+    `;
+    // --- END: Simulation of Headless Browser Output ---
+
+    try {
+      // LLM Call
+      let chatHistory = [];
+      chatHistory.push({
+        role: "user",
+        parts: [{
+          text: `
+          **CRITICAL JSON OUTPUT REQUIREMENT**:
+          Your entire response MUST be a single, valid JSON object, strictly conforming to the provided schema.
+          All string values within the JSON MUST be properly escaped, especially for characters like double quotes (") and backslashes (\\). Newline characters within strings should be represented as \\n.
+          Do NOT include any preamble, postamble, explanations, comments, or any text whatsoever outside the JSON object.
+          If the HTML contains content that might break JSON (e.g., unescaped quotes), you must escape it.
+
+          **PRODUCT DATA EXTRACTION TASK**:
+          The following is a block of HTML content that has been fully rendered by a browser.
+          It contains multiple product listings for various building materials, organized into sections.
+          Your goal is to extract product specifications for EACH product found and return them as a single JSON object.
+          This JSON object should have product categories as its top-level keys.
+          The value for each category key should be an array of product objects belonging to that specific category.
+
+          **FOR EACH PRODUCT**:
+          1.  **Identify Category**: Accurately determine its general 'Category' from this precise list:
+              "Tiles", "Slabs", "LVT / Vinyl", "Hardwood", "Heat", "Carpet".
+          2.  **Extract Core Details**:
+              * 'Specification': The full product title/name.
+              * 'Product URL': The direct URL to the product's details page. Look for 'href' in relevant '<a>' tags or 'link rel="canonical"' tags.
+              * 'Image URL': The direct URL to the product's main image. Look for 'src' in '<img>' tags or 'meta property="og:image"' tags. If no image is found, use 'https://placehold.co/400x300/CCCCCC/FFFFFF?text=No+Image'.
+          3.  **Extract Specific Details ('Details' Object)**:
+              * Extract *all relevant specific details* for that product, mapping them to the JSON keys provided in the comprehensive list below.
+              * **You MUST ONLY include keys that are relevant to the product's identified 'Category' AND whose values are present in the HTML.** Do NOT include irrelevant keys.
+              * **Crucially, if a specific value for a field is explicitly stated as "Not Applicable", "Not Rated", "—", "N/A", or similarly indicates absence or irrelevance in the HTML, extract that exact string value.** Do NOT omit the key or leave the value as null/empty if such an explicit indicator is present.
+              * If a field is mentioned but has no content (e.g., "Color: " with nothing following), include the key with an empty string "" as its value.
+              * **Scan for Implied Values & Units**: You must also scan for implied values not explicitly marked as 'Label: Value'. For example:
+                  * If a description says "ideal for floors and countertops," interpret that as 'Install Location': "Floors, Countertops".
+                  * If a tile is "highly polished with no bevel," extract 'Finish': "Polished" and 'Edge Type': "No Bevel" or "Straight".
+                  * If numeric specifications are present (e.g., size, water absorption), always preserve their units and context (e.g., '2x18', '<0.5%', '20 mil', '120V', '45 oz/yd²').
+              * **Normalize Field Names (Fuzzy Matching Guide)**: Map varied HTML labels to the exact JSON field names. For example:
+                  * "PEI", "P E I Rating", "P.E.I. Rating" -> "PEI Rating"
+                  * "DCOF", "Slip Rating", "COF" -> "DCOF / Slip Rating"
+                  * "Size", "Dimensions (LxW)" -> "Dimensions"
+                  * "Type of Material", "Material" -> "Material Type"
+                  * "Install Areas", "Installation Zones" -> "Install Location"
+                  * "Colour" -> "Color"
+                  * "Surface Feel" -> "Texture"
+                  * "Thickness Options" -> "Thickness"
+                  * "Applications", "Recommended Use" -> "Applications"
+                  * "Waterproof", "Water Resistance" -> "Waterproof Rating"
+                  * "Installation Method", "How to Install" -> "Installation Method"
+                  * "Underlayment" -> "Underlayment Included"
+                  * "Slip Resistance R-Value" -> "Slip Resistance"
+                  * "Application Zones", "Use Areas" -> "Application Zones"
+                  * "Warranty Information" -> "Warranty"
+                  * "Wood Type", "Species" -> "Wood Species"
+                  * "Construction Type" -> "Construction"
+                  * "Hardness Janka" -> "Hardness (Janka)"
+                  * "Moisture Resist" -> "Moisture Resistance"
+                  * "Heating Type" -> "Type"
+                  * "Current", "Power Input" -> "Voltage"
+                  * "Coverage", "Heated Area" -> "Coverage Area (SF)"
+                  * "Watts" -> "Wattage"
+                  * "Sensor" -> "Sensor Type"
+                  * "Thermostat" -> "Thermostat Included"
+                  * "Max Temp" -> "Max Temperature"
+                  * "Programmability" -> "Programmable"
+                  * "Fiber", "Pile Fiber" -> "Fiber Type"
+                  * "Pile", "Style" -> "Pile Style"
+                  * "Weight", "Face Weight (oz)" -> "Face Weight"
+                  * "Density Rating" -> "Density"
+                  * "Backing Material" -> "Backing"
+                  * "Stain Protection System" -> "Stain Protection"
+                  * "Traffic" -> "Traffic Rating"
+                  * "Installation Method (Carpet)" -> "Install Type"
+
+
+          **IGNORE**: Any UI elements like buttons ("Add to Cart", "Get Quote"), navigation links not directly serving as product URLs, general descriptive text not representing a specific spec, or any "junk text".
+
+          **Comprehensive List of ALL Possible JSON Keys and their desired content (you should only use the ones relevant to the product's category):**
+
+          General Product Details (Common Across Categories):
+          - 'Brand'
+          - 'Price per SF'
+          - 'Dimensions'
+
+          Tiles Specific:
+          - 'PEI Rating'
+          - 'DCOF / Slip Rating'
+          - 'Water Absorption'
+          - 'Finish'
+          - 'Material Type'
+          - 'Edge Type'
+          - 'Install Location'
+          - 'Color'
+          - 'Texture'
+
+          Slabs Specific:
+          - 'Material Type'
+          - 'Finish'
+          - 'Color Pattern'
+          - 'Thickness'
+          - 'Water Absorption'
+          - 'Scratch Resistance'
+          - 'Applications'
+
+          LVT / Vinyl Specific:
+          - 'Wear Layer'
+          - 'Total Thickness'
+          - 'Finish'
+          - 'Waterproof Rating'
+          - 'Installation Method'
+          - 'Underlayment Included'
+          - 'Slip Resistance'
+          - 'Application Zones'
+          - 'Warranty'
+
+          Hardwood Specific:
+          - 'Wood Species'
+          - 'Finish'
+          - 'Construction'
+          - 'Thickness'
+          - 'Hardness (Janka)'
+          - 'Installation Method'
+          - 'Moisture Resistance'
+
+          Heat (Mats, Cables, Thermostats) Specific:
+          - 'Type'
+          - 'Voltage'
+          - 'Coverage Area (SF)'
+          - 'Wattage'
+          - 'Sensor Type'
+          - 'Thermostat Included'
+          - 'Max Temperature'
+          - 'Programmable'
+          - 'Install Location'
+
+          Carpet Specific:
+          - 'Fiber Type'
+          - 'Pile Style'
+          - 'Face Weight'
+          - 'Density'
+          - 'Backing'
+          - 'Stain Protection'
+          - 'Traffic Rating'
+          - 'Install Type'
+
+          HTML Content:
+          \`\`\`html
+          ${simulatedRenderedHtml}
+          \`\`\`
+          `
+        }]
+      });
+
+      // Define the payload for the Gemini API call, including the response schema
+      // The schema will be broad, relying on the prompt to guide the LLM to fill
+      // only the relevant 'Details' properties for each product's category.
+      const payload = {
+        contents: chatHistory,
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT", // Top-level is now an OBJECT, not an ARRAY
+            properties: {
+              // Define each category as a property that holds an array of products
+              "Tiles": {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    "Specification": { "type": "STRING" },
+                    // Category is implied by the key, but included for consistency if needed
+                    "Category": { "type": "STRING" },
+                    "Product URL": { "type": "STRING" },
+                    "Image URL": { "type": "STRING" },
+                    "Details": {
+                      type: "OBJECT",
+                      properties: {
+                        "Brand": { "type": "STRING" },
+                        "Price per SF": { "type": "STRING" },
+                        "Dimensions": { "type": "STRING" },
+                        "PEI Rating": { "type": "STRING" },
+                        "DCOF / Slip Rating": { "type": "STRING" },
+                        "Water Absorption": { "type": "STRING" },
+                        "Finish": { "type": "STRING" },
+                        "Material Type": { "type": "STRING" },
+                        "Edge Type": { "type": "STRING" },
+                        "Install Location": { "type": "STRING" },
+                        "Color": { "type": "STRING" },
+                        "Texture": { "type": "STRING" }
+                      },
+                      additionalProperties: false,
+                      // Ensure properties are ordered for consistency
+                      propertyOrdering: [
+                        "Brand", "Price per SF", "Dimensions", "PEI Rating", "DCOF / Slip Rating",
+                        "Water Absorption", "Finish", "Material Type", "Edge Type",
+                        "Install Location", "Color", "Texture"
+                      ]
+                    }
+                  },
+                  propertyOrdering: ["Specification", "Category", "Product URL", "Image URL", "Details"]
+                }
+              },
+              "Slabs": {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    "Specification": { "type": "STRING" },
+                    "Category": { "type": "STRING" },
+                    "Product URL": { "type": "STRING" },
+                    "Image URL": { "type": "STRING" },
+                    "Details": {
+                      type: "OBJECT",
+                      properties: {
+                        "Brand": { "type": "STRING" },
+                        "Price per SF": { "type": "STRING" },
+                        "Dimensions": { "type": "STRING" },
+                        "Material Type": { "type": "STRING" },
+                        "Finish": { "type": "STRING" },
+                        "Color Pattern": { "type": "STRING" },
+                        "Thickness": { "type": "STRING" },
+                        "Water Absorption": { "type": "STRING" },
+                        "Scratch Resistance": { "type": "STRING" },
+                        "Applications": { "type": "STRING" }
+                      },
+                      additionalProperties: false,
+                      // Ensure properties are ordered for consistency
+                      propertyOrdering: [
+                        "Brand", "Price per SF", "Dimensions", "Material Type", "Finish",
+                        "Color Pattern", "Thickness", "Water Absorption", "Scratch Resistance",
+                        "Applications"
+                      ]
+                    }
+                  },
+                  propertyOrdering: ["Specification", "Category", "Product URL", "Image URL", "Details"]
+                }
+              },
+              "LVT / Vinyl": {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    "Specification": { "type": "STRING" },
+                    "Category": { "type": "STRING" },
+                    "Product URL": { "type": "STRING" },
+                    "Image URL": { "type": "STRING" },
+                    "Details": {
+                      type: "OBJECT",
+                      properties: {
+                        "Brand": { "type": "STRING" },
+                        "Price per SF": { "type": "STRING" },
+                        "Dimensions": { "type": "STRING" },
+                        "Wear Layer": { "type": "STRING" },
+                        "Total Thickness": { "type": "STRING" },
+                        "Finish": { "type": "STRING" },
+                        "Waterproof Rating": { "type": "STRING" },
+                        "Installation Method": { "type": "STRING" },
+                        "Underlayment Included": { "type": "STRING" },
+                        "Slip Resistance": { "type": "STRING" },
+                        "Application Zones": { "type": "STRING" },
+                        "Warranty": { "type": "STRING" }
+                      },
+                      additionalProperties: false,
+                      // Ensure properties are ordered for consistency
+                      propertyOrdering: [
+                        "Brand", "Price per SF", "Dimensions", "Wear Layer", "Total Thickness",
+                        "Finish", "Waterproof Rating", "Installation Method", "Underlayment Included",
+                        "Slip Resistance", "Application Zones", "Warranty"
+                      ]
+                    }
+                  },
+                  propertyOrdering: ["Specification", "Category", "Product URL", "Image URL", "Details"]
+                }
+              },
+              "Hardwood": {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    "Specification": { "type": "STRING" },
+                    "Category": { "type": "STRING" },
+                    "Product URL": { "type": "STRING" },
+                    "Image URL": { "type": "STRING" },
+                    "Details": {
+                      type: "OBJECT",
+                      properties: {
+                        "Brand": { "type": "STRING" },
+                        "Price per SF": { "type": "STRING" },
+                        "Dimensions": { "type": "STRING" },
+                        "Wood Species": { "type": "STRING" },
+                        "Finish": { "type": "STRING" },
+                        "Construction": { "type": "STRING" },
+                        "Thickness": { "type": "STRING" },
+                        "Hardness (Janka)": { "type": "STRING" },
+                        "Installation Method": { "type": "STRING" },
+                        "Moisture Resistance": { "type": "STRING" }
+                      },
+                      additionalProperties: false,
+                      // Ensure properties are ordered for consistency
+                      propertyOrdering: [
+                        "Brand", "Price per SF", "Dimensions", "Wood Species", "Finish",
+                        "Construction", "Thickness", "Hardness (Janka)", "Installation Method",
+                        "Moisture Resistance"
+                      ]
+                    }
+                  },
+                  propertyOrdering: ["Specification", "Category", "Product URL", "Image URL", "Details"]
+                }
+              },
+              "Heat": {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    "Specification": { "type": "STRING" },
+                    "Category": { "type": "STRING" },
+                    "Product URL": { "type": "STRING" },
+                    "Image URL": { "type": "STRING" },
+                    "Details": {
+                      type: "OBJECT",
+                      properties: {
+                        "Brand": { "type": "STRING" },
+                        "Price per SF": { "type": "STRING" },
+                        "Dimensions": { "type": "STRING" },
+                        "Type": { "type": "STRING" },
+                        "Voltage": { "type": "STRING" },
+                        "Coverage Area (SF)": { "type": "STRING" },
+                        "Wattage": { "type": "STRING" },
+                        "Sensor Type": { "type": "STRING" },
+                        "Thermostat Included": { "type": "STRING" },
+                        "Max Temperature": { "type": "STRING" },
+                        "Programmable": { "type": "STRING" },
+                        "Install Location": { "type": "STRING" }
+                      },
+                      additionalProperties: false,
+                      // Ensure properties are ordered for consistency
+                      propertyOrdering: [
+                        "Brand", "Price per SF", "Dimensions", "Type", "Voltage",
+                        "Coverage Area (SF)", "Wattage", "Sensor Type", "Thermostat Included",
+                        "Max Temperature", "Programmable", "Install Location"
+                      ]
+                    }
+                  },
+                  propertyOrdering: ["Specification", "Category", "Product URL", "Image URL", "Details"]
+                }
+              },
+              "Carpet": {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    "Specification": { "type": "STRING" },
+                    "Category": { "type": "STRING" },
+                    "Product URL": { "type": "STRING" },
+                    "Image URL": { "type": "STRING" },
+                    "Details": {
+                      type: "OBJECT",
+                      properties: {
+                        "Brand": { "type": "STRING" },
+                        "Price per SF": { "type": "STRING" },
+                        "Dimensions": { "type": "STRING" },
+                        "Fiber Type": { "type": "STRING" },
+                        "Pile Style": { "type": "STRING" },
+                        "Face Weight": { "type": "STRING" },
+                        "Density": { "type": "STRING" },
+                        "Backing": { "type": "STRING" },
+                        "Stain Protection": { "type": "STRING" },
+                        "Traffic Rating": { "type": "STRING" },
+                        "Install Type": { "type": "STRING" }
+                      },
+                      additionalProperties: false,
+                      // Ensure properties are ordered for consistency
+                      propertyOrdering: [
+                        "Brand", "Price per SF", "Dimensions", "Fiber Type", "Pile Style",
+                        "Face Weight", "Density", "Backing", "Stain Protection",
+                        "Traffic Rating", "Install Type"
+                      ]
+                    }
+                  },
+                  propertyOrdering: ["Specification", "Category", "Product URL", "Image URL", "Details"]
+                }
+              }
+            },
+            additionalProperties: false // Ensures only defined categories are included
+          }
+        }
+      };
+
+      // API key is automatically handled by the Canvas environment when left as an empty string
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+      // Make the fetch call to the Gemini API
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json(); // Parse the JSON response from the API
+
+      // Check if the API response contains valid content before parsing
+      if (result.candidates && result.candidates.length > 0 &&
+          result.candidates[0].content && result.candidates[0].content.parts &&
+          result.candidates[0].content.parts.length > 0) {
+        const jsonString = result.candidates[0].content.parts[0].text;
+        console.log("Raw LLM response string:", jsonString); // Log the raw string for debugging
+        try {
+          const parsedJson = JSON.parse(jsonString); // Attempt to parse the JSON string
+          setExtractedData(parsedJson); // Set the extracted data
+        } catch (parseError) {
+          const errorMessage = `Failed to parse JSON from LLM response for URL: ${urlsToProcess[0] || 'N/A'}. Error: ${parseError.message}. Raw output in console.`;
+          setError(errorMessage);
+          setLoggedErrors(prev => [...prev, { url: urlsToProcess[0] || 'N/A', message: errorMessage, type: 'Parsing Error' }]);
+          console.error("JSON parsing error:", parseError);
+          // It's helpful to show the raw string if parsing fails
+          console.error("Malformed JSON string from LLM:", jsonString);
+        }
+      } else {
+        const errorMessage = `LLM did not return data or returned data in an unexpected format for URL: ${urlsToProcess[0] || 'N/A'}.`;
+        setError(errorMessage);
+        setLoggedErrors(prev => [...prev, { url: urlsToProcess[0] || 'N/A', message: errorMessage, type: 'LLM Response Error' }]);
+        console.error("LLM response structure unexpected or empty:", result);
+      }
+    } catch (err) {
+      // Catch any errors during the fetch or network issues
+      const errorMessage = `Scraping or LLM API call error for URL: ${urlsToProcess[0] || 'N/A'}. Error: ${err.message}. Check your network or API status.`;
+      setError(errorMessage);
+      setLoggedErrors(prev => [...prev, { url: urlsToProcess[0] || 'N/A', message: errorMessage, type: 'Network/API Error' }]);
+      console.error("Scraping or LLM API call error:", err);
+    } finally {
+      setLoading(false); // End loading state
+    }
+  };
+
+  // Function to filter extracted data based on selected category
+  // This now returns a flat array for easier pagination and card display
+  const getFilteredData = () => {
+    if (!extractedData) return []; // Return empty array if no data
+
+    let allProducts = [];
+    if (selectedCategory === 'All Categories') {
+      Object.values(extractedData).forEach(categoryArray => {
+        if (Array.isArray(categoryArray)) {
+          allProducts = allProducts.concat(categoryArray);
+        }
+      });
+    } else if (extractedData[selectedCategory] && Array.isArray(extractedData[selectedCategory])) {
+      allProducts = extractedData[selectedCategory];
+    }
+    return allProducts;
+  };
+
+
+  // Calculate total pages for pagination
+  const getTotalPages = () => {
+    const data = getFilteredData();
+    return Math.ceil(data.length / itemsPerPage);
+  };
+
+  // Get current page data for display
+  const getCurrentPageData = () => {
+    const data = getFilteredData();
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return data.slice(startIndex, endIndex);
+  };
+
+  // Handle CSV Export
+  const handleCSVExport = () => {
+    if (!extractedData) {
+      setError("No data to export.");
+      return;
+    }
+
+    let csvContent = "";
+    const allProductsFlattened = [];
+
+    // Flatten all products from all categories into a single array for CSV export
+    Object.keys(extractedData).forEach(categoryKey => {
+      if (Array.isArray(extractedData[categoryKey])) {
+        extractedData[categoryKey].forEach(product => {
+          // Include top-level fields and merge with details
+          const fullProduct = {
+            "Specification": product.Specification,
+            "Category": product.Category,
+            "Product URL": product["Product URL"],
+            "Image URL": product["Image URL"],
+            ...product.Details
+          };
+          allProductsFlattened.push(fullProduct);
+        });
+      }
+    });
+
+    if (allProductsFlattened.length === 0) {
+        setError("No products found to export to CSV.");
+        return;
+    }
+
+    // Get all unique headers from all products to ensure comprehensive CSV columns
+    const headers = new Set();
+    allProductsFlattened.forEach(product => {
+      Object.keys(product).forEach(key => headers.add(key));
+    });
+    const headerArray = Array.from(headers);
+
+    // Create CSV header row
+    csvContent += headerArray.map(header => `"${header}"`).join(",") + "\n";
+
+    // Create CSV data rows
+    allProductsFlattened.forEach(product => {
+      const row = headerArray.map(header => {
+        let value = product[header] || ""; // Get value, or empty string if undefined
+        if (typeof value === 'string') {
+          // Escape double quotes by doubling them, and wrap in quotes
+          value = `"${value.replace(/"/g, '""')}"`;
+        } else if (typeof value === 'object' && value !== null) {
+          // For nested objects (should be flattened now), stringify as a fallback
+          value = `"${JSON.stringify(value).replace(/"/g, '""')}"`;
+        } else {
+          value = `"${value}"`; // Ensure non-string values are also quoted
+        }
+        return value;
+      }).join(",");
+      csvContent += row + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', 'extracted_product_data.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setError("CSV exported successfully!"); // Provide feedback
+  };
+
+  // Handle DB Integration (Placeholder for backend interaction)
+  const handleDBIntegration = () => {
+    setError("Database integration is a backend feature. In a production app, extracted data would be securely sent to Airtable or another DB via a server-side API.");
+    console.log("Simulating sending data to DB:", extractedData);
+    // In a real application, you would send extractedData to your backend endpoint here:
+    // fetch('/api/saveToDatabase', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(extractedData)
+    // })
+    // .then(response => response.json())
+    // .then(data => console.log('Success:', data))
+    // .catch((error) => console.error('Error:', error));
+  };
+
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-4 font-inter text-gray-800 flex flex-col items-center">
+      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl">
+        <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">
+          Advanced Multi-Category Web Scraper (LLM-Powered)
+        </h1>
+
+        <p className="text-gray-600 mb-6 text-center">
+          This tool demonstrates how a Large Language Model (LLM) can extract structured data
+          from complex, unstructured web content, across multiple product categories and thousands
+          of variations. In a real scenario, the "Rendered HTML" part would come from a headless browser like Puppeteer.
+        </p>
+
+        {/* Bulk URL Input */}
+        <div className="mb-4 w-full">
+          <label htmlFor="urls-input" className="block text-gray-700 text-sm font-bold mb-2">
+            Enter URLs (one per line, simulated):
+          </label>
+          <textarea
+            id="urls-input"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm resize-y"
+            rows="4"
+            placeholder="https://example.com/product1&#10;https://example.com/product2"
+            value={urlsInput}
+            onChange={(e) => setUrlsInput(e.target.value)}
+            disabled={loading}
+          ></textarea>
+        </div>
+
+
+        <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
+          <button
+            onClick={handleScrape}
+            className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading} // Disable button while loading
+          >
+            {loading ? 'Processing...' : 'Scrape Data'}
+          </button>
+           {/* CSV Export Button */}
+          <button
+            onClick={handleCSVExport}
+            className="w-full sm:w-auto px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading || !extractedData || Object.keys(extractedData).length === 0}
+          >
+            Export to CSV
+          </button>
+          {/* DB Integration Button (Placeholder) */}
+          <button
+            onClick={handleDBIntegration}
+            className="w-full sm:w-auto px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading || !extractedData || Object.keys(extractedData).length === 0}
+          >
+            Send to DB (Simulated)
+          </button>
+        </div>
+
+        {/* Category Filter Dropdown and View Mode Toggle */}
+        <div className="mb-6 w-full flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+          <div className="flex items-center">
+            <label htmlFor="category-select" className="mr-3 font-medium text-gray-700">
+              Filter by Category:
+            </label>
+            <select
+              id="category-select"
+              className="p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={selectedCategory}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setCurrentPage(1); // Reset page when category changes
+              }}
+              disabled={loading || !extractedData} // Disable if loading or no data extracted yet
+            >
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setViewMode('json')}
+              className={`px-4 py-2 rounded-lg font-semibold transition duration-300 ${viewMode === 'json' ? 'bg-blue-500 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+              disabled={loading || !extractedData}
+            >
+              JSON View
+            </button>
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`px-4 py-2 rounded-lg font-semibold transition duration-300 ${viewMode === 'cards' ? 'bg-blue-500 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+              disabled={loading || !extractedData}
+            >
+              Card View
+            </button>
+          </div>
+        </div>
+
+
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6" role="alert">
+            <strong className="font-bold">Error:</strong>
+            <span className="block sm:inline ml-2">{error}</span>
+          </div>
+        )}
+
+        {/* Display Logged Errors */}
+        {loggedErrors.length > 0 && (
+          <div className="bg-orange-100 border border-orange-400 text-orange-700 px-4 py-3 rounded-lg relative mb-6">
+            <strong className="font-bold">Logged Issues:</strong>
+            <ul className="mt-2 list-disc list-inside">
+              {loggedErrors.map((log, index) => (
+                <li key={index} className="text-sm">{log.type}: {log.message} (URL: {log.url})</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Display Filtered and Paginated Data */}
+        {getCurrentPageData().length > 0 ? (
+          <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 mt-6 w-full">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Extracted Product Specifications:</h2>
+
+            {viewMode === 'json' ? (
+              <pre className="bg-gray-800 text-green-400 p-4 rounded-lg overflow-x-auto text-sm">
+                {/* For JSON view, wrap in an object if filtering, otherwise show all */}
+                <code>
+                  {selectedCategory === 'All Categories'
+                    ? JSON.stringify(extractedData, null, 2)
+                    : JSON.stringify({ [selectedCategory]: getCurrentPageData() }, null, 2)
+                  }
+                </code>
+              </pre>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {getCurrentPageData().map((product, index) => (
+                  <div key={index} className="bg-white rounded-xl p-4 shadow-md flex flex-col justify-between">
+                    <img
+                      src={product['Image URL']}
+                      alt={product.Specification}
+                      className="w-full h-40 object-cover rounded-lg mb-3"
+                      onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x300/CCCCCC/FFFFFF?text=Image+Not+Found'; }}
+                    />
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">{product.Specification}</h3>
+                    <p className="text-sm text-gray-600 mb-2">
+                      <span className="font-semibold">Brand:</span> {product.Details?.Brand || 'N/A'}
+                    </p>
+                    <p className="text-sm text-gray-700 mb-2">
+                      <span className="font-semibold">Category:</span> {product.Category || 'N/A'}
+                    </p>
+                    <p className="text-sm text-gray-700 mb-3">
+                      <span className="font-semibold">Price:</span> {product.Details?.['Price per SF'] || 'N/A'}
+                    </p>
+                    <a
+                      href={product['Product URL']}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block text-blue-600 hover:text-blue-800 text-sm font-semibold transition duration-200"
+                    >
+                      View Product
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
+
+
+            {/* Pagination Controls */}
+            {getTotalPages() > 1 && (
+              <div className="flex justify-center items-center mt-4 space-x-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg shadow hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+                >
+                  Previous
+                </button>
+                <span className="text-gray-700">
+                  Page {currentPage} of {getTotalPages()}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(getTotalPages(), prev + 1))}
+                  disabled={currentPage === getTotalPages()}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg shadow hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          extractedData && !loading && (
+            <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-lg relative mt-6 text-center">
+              No products found for the selected category, or no data extracted yet.
+            </div>
+          )
+        )}
+
+        {loading && (
+          <div className="flex justify-center items-center mt-6">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <p className="ml-3 text-lg text-gray-600">Thinking like a human...</p>
+          </div>
+        )}
+
+        <div className="mt-8 text-center text-gray-500 text-sm">
+          <p>Note: The headless browser rendering step is simulated in this client-side example.</p>
+          <p>For production, this part would run on a dedicated backend server.</p>
+          {/* Comments on other suggested features */}
+          <p className="mt-4 font-semibold text-gray-700">Suggested Future Enhancements (Backend/Advanced LLM Integration):</p>
+          <ul className="list-disc list-inside text-left mx-auto max-w-lg mt-2 space-y-1">
+            <li>
+              **Match Score (Confidence):** Implementing a confidence score for each extracted field would require more complex LLM prompt engineering to explicitly request this from the model, and then additional parsing logic.
+            </li>
+            <li>
+              **Match & Suggest Alternatives:** This would involve comparing extracted specifications (e.g., PEI, price, finish) across different products using similarity algorithms. For complex comparisons, a dedicated LLM or machine learning model on the backend would be ideal.
+            </li>
+            <li>
+              **CLIP-Based Visual Matching:** Utilizing models like OpenAI's CLIP or Gemini's Vision capabilities for visual similarity matching and automatic tagging of product finishes would require significant backend infrastructure for image processing and embedding generation.
+            </li>
+            <li>
+              **User Accounts:** For saving comparison boards or tracking favorite products, a full user authentication and database system on the backend would be necessary to persist user-specific data.
+            </li>
+            <li>
+              **LLM Fallback Rules:** A robust system would first attempt rule-based parsing (e.g., using Cheerio for specific, known website structures) for speed and cost-effectiveness. The LLM would then serve as a fallback mechanism for refining data from complex or previously unseen layouts, improving overall efficiency.
+            </li>
+            <li>
+              **API Key Handling (Production):** For production applications, API keys should be securely managed on a backend server, not exposed in client-side code. This demo's `apiKey = ""` relies on the Canvas environment's automatic injection.
+            </li>
+            <li>
+              **Redundancy in Prompt/Schema:** While the current setup repeats schema structure in the prompt and response schema, in a larger application, this could be streamlined by generating both from a single source of truth (e.g., a shared TypeScript interface or JSON schema definition) to prevent desynchronization bugs.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;
