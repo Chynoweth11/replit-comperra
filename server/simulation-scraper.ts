@@ -32,9 +32,24 @@ export class SimulationScraper {
       
       const response = await axios.get(url, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'DNT': '1',
+          'Connection': 'keep-alive',
+          'Upgrade-Insecure-Requests': '1',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-Mode': 'navigate',
+          'Sec-Fetch-Site': 'none',
+          'Sec-Fetch-User': '?1',
+          'Cache-Control': 'max-age=0'
         },
-        timeout: 15000
+        timeout: 30000,
+        maxRedirects: 5,
+        validateStatus: function (status) {
+          return status < 500; // Accept 4xx errors but reject 5xx
+        }
       });
       
       const $ = cheerio.load(response.data);
@@ -153,6 +168,58 @@ export class SimulationScraper {
       
     } catch (error) {
       console.error(`Error scraping real product from ${url}:`, error);
+      
+      // If blocked by Cloudflare or other protection, return a basic product with the URL
+      if (error.response && (error.response.status === 403 || error.response.status === 503)) {
+        console.log(`Website blocking detected for ${url}, creating basic product entry`);
+        
+        const urlPath = new URL(url).pathname;
+        const segments = urlPath.split('/').filter(Boolean);
+        const productName = segments[segments.length - 1]?.replace(/-/g, ' ')?.replace(/\b\w/g, l => l.toUpperCase()) || 'Product';
+        
+        let brand = 'Unknown';
+        let category = 'tiles';
+        
+        const domain = url.toLowerCase();
+        if (domain.includes('msisurfaces')) brand = 'MSI';
+        else if (domain.includes('daltile')) brand = 'Daltile';
+        else if (domain.includes('arizonatile')) brand = 'Arizona Tile';
+        else if (domain.includes('floridatile')) brand = 'Florida Tile';
+        else if (domain.includes('marazzi')) brand = 'Marazzi';
+        else if (domain.includes('shaw')) brand = 'Shaw';
+        else if (domain.includes('mohawk')) brand = 'Mohawk';
+        else if (domain.includes('cambria')) brand = 'Cambria';
+        else if (domain.includes('flor')) brand = 'Flor';
+        else if (domain.includes('emser')) brand = 'Emser Tile';
+        else if (domain.includes('warmup')) brand = 'Warmup';
+        else if (domain.includes('coretec')) brand = 'COREtec';
+        else if (domain.includes('anderson')) brand = 'Anderson Tuftex';
+        
+        if (url.includes('slab') || url.includes('quartz') || url.includes('marble')) category = 'slabs';
+        else if (url.includes('lvt') || url.includes('vinyl')) category = 'lvt';
+        else if (url.includes('hardwood')) category = 'hardwood';
+        else if (url.includes('carpet')) category = 'carpet';
+        else if (url.includes('heat') || url.includes('thermostat')) category = 'heat';
+        
+        return {
+          name: `${brand} ${productName}`,
+          brand,
+          price: '0.00',
+          category,
+          description: `Product from ${brand} - Unable to access full details due to website protection`,
+          imageUrl: 'https://placehold.co/400x300/CCCCCC/FFFFFF?text=Protected+Site',
+          dimensions: '—',
+          specifications: {
+            'Product URL': url,
+            'Brand': brand,
+            'Category': category,
+            'Price per SF': '0.00',
+            'Note': 'Website blocking prevented full data extraction'
+          },
+          sourceUrl: url
+        };
+      }
+      
       return null;
     }
   }
