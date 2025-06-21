@@ -280,6 +280,16 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
 
   const headers = category === "tiles" 
     ? ["Product", "Brand", "Price/SF", "PEI Rating", "DCOF / Slip Rating", "Water Absorption", "Dimensions", "Actions"]
+    : category === "slabs" 
+    ? ["Product", "Brand", "Price/SF", "Thickness", "Warranty", "Edge Options", "Dimensions", "Actions"]
+    : category === "lvt" 
+    ? ["Product", "Brand", "Price/SF", "Wear Layer", "Core Type", "Waterproof", "Dimensions", "Actions"]
+    : category === "hardwood" 
+    ? ["Product", "Brand", "Price/SF", "Species", "Finish", "Width", "Dimensions", "Actions"]
+    : category === "heat" 
+    ? ["Product", "Brand", "Price/SF", "Voltage", "Coverage", "Features", "Power", "Dimensions", "Actions"]
+    : category === "carpet" 
+    ? ["Product", "Brand", "Price/SF", "Fiber", "Stain Resistance", "Pile Height", "Width", "Dimensions", "Actions"]
     : ["Product", "Brand", "Price/SF", "Dimensions", "Actions"];
 
   if (isLoading) {
@@ -450,9 +460,80 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                     </>
                   )}
                   
-                  {/* Only show additional columns for non-tiles categories */}
-                  {category !== "tiles" && (
-                    <td className="px-4 py-4 text-center">—</td>
+                  {category === "slabs" && (
+                    <>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Thickness'] || material.specifications?.thickness || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Warranty'] || material.specifications?.warranty || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Edge Options'] || material.specifications?.edgeOptions?.length + ' Options' || '—'}
+                      </td>
+                    </>
+                  )}
+                  
+                  {category === "lvt" && (
+                    <>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Wear Layer'] || material.specifications?.wearLayer || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Core Type'] || material.specifications?.coreType || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Waterproof'] || (material.specifications?.waterproof ? 'Yes' : 'No') || '—'}
+                      </td>
+                    </>
+                  )}
+                  
+                  {category === "hardwood" && (
+                    <>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Species'] || material.specifications?.species || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Finish'] || material.specifications?.finishType || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Width'] || material.specifications?.plankWidth || '—'}
+                      </td>
+                    </>
+                  )}
+                  
+                  {category === "heat" && (
+                    <>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Voltage'] || material.specifications?.voltage || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Coverage'] || material.specifications?.coverageArea || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Features'] || (Array.isArray(material.specifications?.features) ? material.specifications.features.join(', ') : material.specifications?.features) || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Power'] || material.specifications?.power || '—'}
+                      </td>
+                    </>
+                  )}
+                  
+                  {category === "carpet" && (
+                    <>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Fiber'] || material.specifications?.fiberType || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Stain Resistance'] || material.specifications?.stainResistance || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Pile Height'] || material.specifications?.pileHeight || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Width'] || material.specifications?.width || '—'}
+                      </td>
+                    </>
                   )}
                   
                   <td className="px-4 py-4 text-sm text-gray-900 text-center">
