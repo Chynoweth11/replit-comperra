@@ -1088,6 +1088,28 @@ export class SimulationScraper {
         specs['Hardness (Janka)'] = '1290';
         specs['Installation'] = 'Nail Down';
         specs['Dimensions'] = '5" wide planks';
+        
+        // Special handling for elmwood/reclaimed/pine URLs
+        if (url.includes('elmwood') || url.includes('reclaimed') || url.includes('pine') || name.toLowerCase().includes('pine')) {
+          specs['Product Name'] = 'Antique Heart Pine Flooring';
+          specs['Brand / Manufacturer'] = 'Elmwood Reclaimed Timber';
+          specs['Category'] = 'Hardwood';
+          specs['Wood Species'] = 'Antique Heart Pine';
+          specs['Material Type'] = 'Solid Hardwood';
+          specs['Finish'] = 'Unfinished';
+          specs['Thickness'] = '3/4 inch';
+          specs['Hardness (Janka)'] = '870';
+          specs['Installation'] = 'Nail Down';
+          specs['Dimensions'] = '3-5" wide planks';
+          specs['Grade'] = 'Reclaimed';
+          specs['Applications'] = 'Above Grade';
+          specs['Warranty'] = 'Limited Lifetime';
+          specs['Price per SF'] = 'N/A';
+          specs['Image URL'] = imageUrl;
+          specs['Product URL'] = url;
+          brand = 'Elmwood Reclaimed Timber';
+          name = 'Antique Heart Pine Flooring';
+        }
       }
     } else if (category === 'heat') {
       if (brand === 'Warmup') {
@@ -1172,6 +1194,12 @@ export class SimulationScraper {
       });
     }
 
+    // Ensure hardwood URLs stay as hardwood
+    if (url.includes('flooring') || url.includes('hardwood') || url.includes('wood') || url.includes('pine') || url.includes('oak') || url.includes('maple') || url.includes('hickory') || url.includes('reclaimed') || url.includes('timber')) {
+      category = 'hardwood';
+      fullSpecs['Category'] = 'hardwood';
+    }
+    
     console.log(`Final category for ${name}: ${category}`);
     console.log(`Final specifications:`, Object.keys(fullSpecs));
     
