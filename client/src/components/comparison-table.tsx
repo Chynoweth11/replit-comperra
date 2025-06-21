@@ -289,7 +289,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
     : category === "lvt" 
     ? ["Product", "Brand", "Price/SF", "Material Type", "Wear Layer", "Thickness", "Waterproof", "Installation", "Applications", "Warranty", "Actions"]
     : category === "hardwood" 
-    ? ["Product", "Brand", "Price/SF", "Species", "Finish", "Width", "Dimensions", "Actions"]
+    ? ["Product", "Brand", "Price/SF", "Species", "Construction", "Thickness", "Width", "Finish", "Janka Hardness", "Installation", "Actions"]
     : category === "heat" 
     ? ["Product", "Brand", "Price/SF", "Voltage", "Coverage", "Features", "Power", "Dimensions", "Actions"]
     : category === "carpet" 
