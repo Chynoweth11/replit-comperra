@@ -285,7 +285,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
   const headers = category === "tiles" 
     ? ["Product", "Brand", "Price/SF", "PEI Rating", "DCOF / Slip Rating", "Water Absorption", "Dimensions", "Actions"]
     : category === "slabs" 
-    ? ["Product", "Brand", "Price/SF", "Thickness", "Warranty", "Edge Options", "Dimensions", "Actions"]
+    ? ["Product", "Brand", "Price/SF", "Material Type", "Finish", "Color", "Thickness", "Water Absorption", "Applications", "Dimensions", "Scratch Resistance", "Actions"]
     : category === "lvt" 
     ? ["Product", "Brand", "Price/SF", "Wear Layer", "Core Type", "Waterproof", "Dimensions", "Actions"]
     : category === "hardwood" 
@@ -473,7 +473,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                         {material.specifications?.['Finish'] || material.specifications?.finish || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Color'] || material.specifications?.color || '—'}
+                        {material.specifications?.['Color / Pattern'] || material.specifications?.['Color'] || material.specifications?.color || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
                         {material.specifications?.['Thickness'] || material.specifications?.thickness || '—'}
@@ -485,10 +485,10 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                         {material.specifications?.['Applications'] || (Array.isArray(material.specifications?.applications) ? material.specifications.applications.join(', ') : material.specifications?.applications) || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Dimensions'] || material.specifications?.slabSize || material.specifications?.['Slab Dimensions'] || material.dimensions || '—'}
+                        {material.specifications?.['Slab Dimensions'] || material.specifications?.['Dimensions'] || material.specifications?.slabSize || material.dimensions || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Scratch Resistance'] || material.specifications?.scratchResistance || material.specifications?.['Scratch / Etch Resistance'] || '—'}
+                        {material.specifications?.['Scratch / Etch Resistance'] || material.specifications?.['Scratch Resistance'] || material.specifications?.scratchResistance || '—'}
                       </td>
                     </>
                   )}

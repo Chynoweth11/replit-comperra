@@ -943,38 +943,59 @@ export class SimulationScraper {
       }
     } else if (category === 'slabs') {
       if (brand === 'Cambria') {
+        specs['Product Name'] = name;
+        specs['Brand / Manufacturer'] = 'Cambria';
+        specs['Category'] = 'Slab';
         specs['Material Type'] = 'Engineered Quartz';
+        specs['Color / Pattern'] = 'White with Grey Veining';
         specs['Finish'] = 'Polished';
-        specs['Color'] = 'White with Grey Veining';
         specs['Thickness'] = '2cm, 3cm';
-        specs['Water Absorption'] = 'Non-Porous';
+        specs['Slab Dimensions'] = '132" x 65"';
+        specs['Edge Type'] = 'Straight, Eased, Beveled, Bullnose, Ogee';
         specs['Applications'] = 'Kitchen Countertops, Vanities, Commercial';
-        specs['Dimensions'] = '132" x 65"';
-        specs['Scratch Resistance'] = 'Excellent';
-        specs['Edge Options'] = 'Straight, Eased, Beveled, Bullnose, Ogee';
-        specs['Maintenance'] = 'No Sealing Required';
+        specs['Water Absorption'] = 'Non-Porous';
+        specs['Scratch / Etch Resistance'] = 'Excellent';
+        specs['Heat Resistance'] = 'Up to 400°F';
+        specs['Country of Origin'] = 'USA';
+        specs['Price per SF'] = '$0.00';
+        specs['Image URL'] = imageUrl;
+        specs['Product URL'] = url;
       } else if (brand === 'Arizona Tile') {
+        specs['Product Name'] = name;
+        specs['Brand / Manufacturer'] = 'Arizona Tile';
+        specs['Category'] = 'Stone';
         specs['Material Type'] = 'Natural Marble';
+        specs['Color / Pattern'] = 'White with Gray Veining';
         specs['Finish'] = 'Polished';
-        specs['Color'] = 'White with Gray Veining';
         specs['Thickness'] = '2cm, 3cm';
-        specs['Water Absorption'] = '< 0.5%';
+        specs['Slab Dimensions'] = '120" x 60"';
+        specs['Edge Type'] = 'Straight, Beveled, Bullnose';
         specs['Applications'] = 'Countertops, Vanities, Feature Walls';
-        specs['Dimensions'] = '120" x 60"';
-        specs['Scratch Resistance'] = 'Moderate';
-        specs['Edge Options'] = 'Straight, Beveled, Bullnose';
-        specs['Maintenance'] = 'Sealing Required';
-      } else {
-        specs['Material Type'] = 'Natural Stone';
-        specs['Finish'] = 'Honed';
-        specs['Color'] = 'Natural Patterns';
-        specs['Thickness'] = '2cm, 3cm';
         specs['Water Absorption'] = '< 0.5%';
+        specs['Scratch / Etch Resistance'] = 'Moderate';
+        specs['Heat Resistance'] = 'Moderate';
+        specs['Country of Origin'] = 'Italy';
+        specs['Price per SF'] = '$0.00';
+        specs['Image URL'] = imageUrl;
+        specs['Product URL'] = url;
+      } else {
+        specs['Product Name'] = name;
+        specs['Brand / Manufacturer'] = brand;
+        specs['Category'] = 'Stone';
+        specs['Material Type'] = 'Natural Stone';
+        specs['Color / Pattern'] = 'Natural Patterns';
+        specs['Finish'] = 'Honed';
+        specs['Thickness'] = '2cm, 3cm';
+        specs['Slab Dimensions'] = '120" x 60"';
+        specs['Edge Type'] = 'Straight, Beveled';
         specs['Applications'] = 'Countertops, Vanities';
-        specs['Dimensions'] = '120" x 60"';
-        specs['Scratch Resistance'] = 'Good';
-        specs['Edge Options'] = 'Straight, Beveled';
-        specs['Maintenance'] = 'Sealing Required';
+        specs['Water Absorption'] = '< 0.5%';
+        specs['Scratch / Etch Resistance'] = 'Good';
+        specs['Heat Resistance'] = 'Moderate';
+        specs['Country of Origin'] = 'Unknown';
+        specs['Price per SF'] = '$0.00';
+        specs['Image URL'] = imageUrl;
+        specs['Product URL'] = url;
       }
     } else if (category === 'lvt') {
       if (brand === 'COREtec') {
@@ -1099,18 +1120,23 @@ export class SimulationScraper {
     // Apply enhanced specifications based on detected category and brand
     if (category === 'slabs' && brand === 'Arizona Tile') {
       Object.assign(fullSpecs, {
+        'Product Name': name,
+        'Brand / Manufacturer': 'Arizona Tile',
+        'Category': 'Stone',
         'Material Type': 'Natural Marble',
+        'Color / Pattern': 'White with Gray Veining',
         'Finish': 'Polished',
-        'Color': 'White with Gray Veining',
         'Thickness': '2cm, 3cm',
-        'Water Absorption': '< 0.5%',
+        'Slab Dimensions': '120" x 60"',
+        'Edge Type': 'Straight, Beveled, Bullnose',
         'Applications': 'Countertops, Vanities, Feature Walls',
-        'Dimensions': '120" x 60"',
-        'Scratch Resistance': 'Moderate',
-        'Edge Options': 'Straight, Beveled, Bullnose',
-        'Maintenance': 'Sealing Required',
+        'Water Absorption': '< 0.5%',
+        'Scratch / Etch Resistance': 'Moderate',
         'Heat Resistance': 'Moderate',
-        'Country of Origin': 'Italy'
+        'Country of Origin': 'Italy',
+        'Price per SF': '$0.00',
+        'Image URL': imageUrl,
+        'Product URL': url
       });
     }
 

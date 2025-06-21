@@ -22,6 +22,9 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ✅ **June 21, 2025**: Enhanced Stone & Slabs category with comprehensive technical specifications - Product Name, Brand/Manufacturer, Material Type, Color/Pattern, Finish, Thickness, Slab Dimensions, Edge Type, Applications, Water Absorption, Scratch/Etch Resistance, Heat Resistance, Country of Origin, Price per SF, Image URL, Product URL
+- ✅ **June 21, 2025**: Updated comparison table to display all key slab specifications with proper column mapping and removed empty dash rows
+- ✅ **June 21, 2025**: Enhanced scraper to generate complete slab specifications for Arizona Tile, Cambria, and all other brands
 - ✅ **June 21, 2025**: Fixed comparison table column alignment across all categories - specifications now display in correct columns
 - ✅ **June 21, 2025**: Standardized specification key format using proper field names (PEI Rating, DCOF / Slip Rating, Water Absorption, etc.)
 - ✅ **June 21, 2025**: Made Product URLs clickable links in Technical Specifications sections opening in new tabs

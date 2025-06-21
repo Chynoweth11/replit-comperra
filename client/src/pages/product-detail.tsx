@@ -224,9 +224,8 @@ export default function ProductDetail() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {Object.entries(material.specifications as Record<string, any>)
                 .filter(([key, value]) => {
-                  // Filter out basic fields and empty values
-                  const basicFields = ['Brand', 'Category', 'Price per SF'];
-                  return !basicFields.includes(key) && value !== '—' && value !== '' && value != null && value !== undefined;
+                  // Only filter out completely empty values and dashes
+                  return value !== '—' && value !== '' && value != null && value !== undefined;
                 })
                 .map(([key, value]) => (
                 <div key={key} className="flex justify-between items-center py-3 border-b border-gray-200">
