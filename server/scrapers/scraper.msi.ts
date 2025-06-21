@@ -112,10 +112,28 @@ export async function scrapeMSIProduct(url: string, category: string) {
       specs['Applications'] = applications.join(', ');
     }
 
-    // Fallbacks for missing critical fields
+    // Fallbacks for missing critical fields with better dimension extraction
     if (!specs['Dimensions']) {
-      specs['Dimensions'] = $('.product-detail-sizes span').first().text().trim() || 
-                           $('div:contains("Size")').next().text().trim() || '—';
+      // Try multiple selectors for dimensions
+      let dimensions = $('.product-detail-sizes span').first().text().trim() ||
+                      $('.product-sizes span').first().text().trim() ||
+                      $('[data-size]').first().text().trim() ||
+                      $('.size-option').first().text().trim();
+      
+      // If still empty, try regex extraction from HTML
+      if (!dimensions) {
+        const sizeMatch = html.match(/(\d+["']?\s*[xX×]\s*\d+["']?)/);
+        if (sizeMatch) {
+          dimensions = sizeMatch[1];
+        }
+      }
+      
+      // Clean up dimension text
+      if (dimensions && dimensions.length < 50) {
+        specs['Dimensions'] = dimensions.replace(/\s+/g, ' ').trim();
+      } else {
+        specs['Dimensions'] = '—';
+      }
     }
     
     if (!specs['Coverage']) {
