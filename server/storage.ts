@@ -84,11 +84,12 @@ export class MemStorage implements IStorage {
         imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
         description: "Large Format Porcelain Tile",
         specifications: {
-          peiRating: 4,
-          slipRating: "COF 0.42",
-          waterAbsorption: "< 0.5%",
-          finish: "Matte",
-          materialType: "Porcelain"
+          'PEI Rating': '4',
+          'DCOF / Slip Rating': '0.42',
+          'Water Absorption': '< 0.5%',
+          'Finish': 'Matte',
+          'Material Type': 'Porcelain',
+          'Dimensions': '24x48'
         },
         dimensions: "24\"x48\"",
         inStock: true,
@@ -101,11 +102,12 @@ export class MemStorage implements IStorage {
         imageUrl: "https://images.unsplash.com/photo-1556912173-46c336c7fd55?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
         description: "Ceramic Wall Tile",
         specifications: {
-          peiRating: 2,
-          slipRating: "COF 0.38",
-          waterAbsorption: "3-7%",
-          finish: "Glossy",
-          materialType: "Ceramic"
+          'PEI Rating': '2',
+          'DCOF / Slip Rating': '0.38',
+          'Water Absorption': '3-7%',
+          'Finish': 'Glossy',
+          'Material Type': 'Ceramic',
+          'Dimensions': '3x6'
         },
         dimensions: "3\"x6\"",
         inStock: true,
@@ -118,11 +120,12 @@ export class MemStorage implements IStorage {
         imageUrl: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
         description: "Porcelain Floor Tile",
         specifications: {
-          peiRating: 5,
-          slipRating: "COF 0.52",
-          waterAbsorption: "< 0.5%",
-          finish: "Polished",
-          materialType: "Porcelain"
+          'PEI Rating': '5',
+          'DCOF / Slip Rating': '0.52',
+          'Water Absorption': '< 0.5%',
+          'Finish': 'Polished',
+          'Material Type': 'Porcelain',
+          'Dimensions': '12x24'
         },
         dimensions: "12\"x24\"",
         inStock: true,
@@ -238,11 +241,12 @@ export class MemStorage implements IStorage {
         imageUrl: "https://images.unsplash.com/photo-1556912173-46c336c7fd55?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
         description: "Classic Ceramic Wall Tile",
         specifications: {
-          peiRating: 1,
-          slipRating: "COF 0.35",
-          waterAbsorption: "7-10%",
-          finish: "Glossy",
-          materialType: "Ceramic"
+          'PEI Rating': '1',
+          'DCOF / Slip Rating': '0.35',
+          'Water Absorption': '7-10%',
+          'Finish': 'Glossy',
+          'Material Type': 'Ceramic',
+          'Dimensions': '3x6'
         },
         dimensions: "3\"x6\"",
         inStock: true,
