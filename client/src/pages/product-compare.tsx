@@ -11,7 +11,7 @@ import Footer from "@/components/footer";
 import { MATERIAL_SPECIFICATIONS } from "@shared/material-specifications";
 import { comparisonStore } from "@/lib/comparison-store";
 import type { Material } from "@shared/schema";
-import { ComparisonDebug } from "@/components/comparison-debug";
+
 
 export default function ProductCompare() {
   const [selectedMaterials, setSelectedMaterials] = useState<Material[]>([]);
@@ -103,11 +103,9 @@ export default function ProductCompare() {
     return String(value);
   };
 
-  // Enhanced specification fields based on category using centralized config
+  // Enhanced specification fields based on category using the exact keys from specifications object
   const getSpecFields = (category: string) => {
-    const specs = MATERIAL_SPECIFICATIONS[category] || [];
-    
-    // Always include base fields first with Product URL as the first field
+    // Define fields based on what's actually in the specifications object
     const baseFields = [
       { key: 'Product URL', label: 'Product URL' },
       { key: 'brand', label: 'Brand' },
@@ -115,10 +113,82 @@ export default function ProductCompare() {
       { key: 'price', label: 'Price per SF' }
     ];
 
-    // Add category-specific fields from centralized config
-    const categoryFields = specs
-      .filter(spec => !['name', 'brand', 'price', 'dimensions', 'Product URL', 'category'].includes(spec.key))
-      .map(spec => ({ key: spec.key, label: spec.label }));
+    let categoryFields: { key: string; label: string; }[] = [];
+    
+    if (category === 'tiles') {
+      categoryFields = [
+        { key: 'PEI Rating', label: 'PEI Rating' },
+        { key: 'DCOF / Slip Rating', label: 'DCOF / Slip Rating' },
+        { key: 'Water Absorption', label: 'Water Absorption' },
+        { key: 'Material Type', label: 'Material Type' },
+        { key: 'Finish', label: 'Finish' },
+        { key: 'Color', label: 'Color' },
+        { key: 'Edge Type', label: 'Edge Type' },
+        { key: 'Install Location', label: 'Install Location' },
+        { key: 'Dimensions', label: 'Dimensions' },
+        { key: 'Texture', label: 'Texture' }
+      ];
+    } else if (category === 'slabs') {
+      categoryFields = [
+        { key: 'Material Type', label: 'Material Type' },
+        { key: 'Finish', label: 'Finish' },
+        { key: 'Color', label: 'Color' },
+        { key: 'Thickness', label: 'Thickness' },
+        { key: 'Water Absorption', label: 'Water Absorption' },
+        { key: 'Applications', label: 'Applications' },
+        { key: 'Dimensions', label: 'Dimensions' },
+        { key: 'Scratch Resistance', label: 'Scratch Resistance' }
+      ];
+    } else if (category === 'lvt') {
+      categoryFields = [
+        { key: 'Material Type', label: 'Material Type' },
+        { key: 'Wear Layer', label: 'Wear Layer' },
+        { key: 'Thickness', label: 'Thickness' },
+        { key: 'Finish', label: 'Finish' },
+        { key: 'Waterproof', label: 'Waterproof' },
+        { key: 'Installation', label: 'Installation' },
+        { key: 'Applications', label: 'Applications' },
+        { key: 'Dimensions', label: 'Dimensions' },
+        { key: 'Warranty', label: 'Warranty' },
+        { key: 'Underlayment Included', label: 'Underlayment Included' }
+      ];
+    } else if (category === 'hardwood') {
+      categoryFields = [
+        { key: 'Wood Species', label: 'Wood Species' },
+        { key: 'Material Type', label: 'Material Type' },
+        { key: 'Finish', label: 'Finish' },
+        { key: 'Thickness', label: 'Thickness' },
+        { key: 'Hardness (Janka)', label: 'Hardness (Janka)' },
+        { key: 'Installation', label: 'Installation' },
+        { key: 'Dimensions', label: 'Dimensions' },
+        { key: 'Warranty', label: 'Warranty' },
+        { key: 'Moisture Resistance', label: 'Moisture Resistance' }
+      ];
+    } else if (category === 'heat') {
+      categoryFields = [
+        { key: 'Type', label: 'Type' },
+        { key: 'Voltage', label: 'Voltage' },
+        { key: 'Wattage', label: 'Wattage' },
+        { key: 'Coverage Area (SF)', label: 'Coverage Area (SF)' },
+        { key: 'Applications', label: 'Applications' },
+        { key: 'Warranty', label: 'Warranty' },
+        { key: 'Sensor Type', label: 'Sensor Type' },
+        { key: 'Installation', label: 'Installation' }
+      ];
+    } else if (category === 'carpet') {
+      categoryFields = [
+        { key: 'Fiber Type', label: 'Fiber Type' },
+        { key: 'Pile Style', label: 'Pile Style' },
+        { key: 'Material Type', label: 'Material Type' },
+        { key: 'Texture', label: 'Texture' },
+        { key: 'Applications', label: 'Applications' },
+        { key: 'Warranty', label: 'Warranty' },
+        { key: 'Stain Protection', label: 'Stain Protection' },
+        { key: 'Pile Height', label: 'Pile Height' },
+        { key: 'Face Weight', label: 'Face Weight' },
+        { key: 'Backing', label: 'Backing' }
+      ];
+    }
 
     return [...baseFields, ...categoryFields];
   };
@@ -227,12 +297,15 @@ export default function ProductCompare() {
                         </td>
                       );
                     } else {
+                      // Get value from specifications object using the field key
                       value = getSpecValue(material, field.key);
                     }
                     
                     return (
-                      <td key={material.id} className={`p-4 ${field.key === 'price' ? 'text-green-600 font-medium' : ''}`}>
-                        {value || '—'}
+                      <td key={material.id} className="p-4 border-l border-gray-200">
+                        <div className="break-words">
+                          {value || '—'}
+                        </div>
                       </td>
                     );
                   })}
