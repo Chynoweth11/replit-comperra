@@ -1,15 +1,61 @@
 // ==========================
-// scraper.msi.ts - Enhanced MSI Scraper
+// scraper.msi.ts (Fixed with visual key-value extraction)
 // ==========================
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
+function extractAlternatingSpecs($: cheerio.CheerioAPI, selector: string): Record<string, string> {
+  const results: Record<string, string> = {};
+  const items = $(selector);
+  for (let i = 0; i < items.length; i += 2) {
+    const key = $(items[i]).text().replace(/\s+/g, ' ').trim();
+    const value = $(items[i + 1])?.text().replace(/\s+/g, ' ').trim() || '—';
+    if (key && value && value !== 'Downloads' && value !== 'Real Projects' && value !== 'Check Inventory' && !results[key]) {
+      console.log(`MSI alternating extraction: ${key} = ${value}`);
+      results[key] = value;
+    }
+  }
+  return results;
+}
+
+function remapSpecs(rawSpecs: Record<string, string>): Record<string, string> {
+  const map: Record<string, string> = {
+    'P E I Rating': 'PEI Rating',
+    'PEI RATING': 'PEI Rating',
+    'D C O F / Slip Rating': 'DCOF / Slip Rating',
+    'DCOF': 'DCOF / Slip Rating',
+    'Water Absorption': 'Water Absorption',
+    'Material Type': 'Material Type',
+    'Finish': 'Finish',
+    'Tile Type': 'Finish',
+    'Color': 'Color',
+    'Primary Color(s)': 'Color',
+    'Edge Type': 'Edge Type',
+    'Install Location': 'Install Location',
+    'Dimensions': 'Dimensions',
+    'Size': 'Dimensions',
+    'Item Size': 'Dimensions',
+    'Texture': 'Texture',
+    'Applications': 'Applications',
+    'Coverage': 'Coverage',
+    'Shade Variations': 'Shade Variation',
+    'Shade Variation': 'Shade Variation'
+  };
+
+  const final: Record<string, string> = {};
+  for (const key in rawSpecs) {
+    const mapped = map[key] || key;
+    if (rawSpecs[key] && rawSpecs[key] !== '—') {
+      final[mapped] = rawSpecs[key];
+    }
+  }
+  return final;
+}
+
 export async function scrapeMSIProduct(url: string, category: string) {
   try {
-    const response = await axios.get(url, { 
-      headers: { 
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' 
-      },
+    const response = await axios.get(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' },
       timeout: 15000
     });
     
@@ -25,122 +71,38 @@ export async function scrapeMSIProduct(url: string, category: string) {
     if (imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
     if (imageUrl.startsWith('/')) imageUrl = 'https://www.msisurfaces.com' + imageUrl;
 
-    const description = $('.product-intro p, .product-description').first().text().trim().substring(0, 500) || '';
-
-    // Enhanced MSI specification extraction with direct HTML pattern matching
-    const specs: any = {
-      'Brand': 'MSI',
-      'Product URL': url,
-      'Category': category,
-      'Material Type': 'Porcelain'
-    };
-
     console.log('Extracting MSI product specifications...');
 
-    // Universal Key-Value Parser (like ChatGPT uses internally)
-    function extractStructuredSpecs(rawHtml: string): Record<string, string> {
-      const specs: Record<string, string> = {};
-      const lines = rawHtml
-        .replace(/<[^>]+>/g, '') // strip HTML tags
-        .replace(/\\n+/g, '\n')
-        .split('\n')
-        .map(line => line.trim())
-        .filter(Boolean);
+    // Extract using alternating key-value pairs
+    const rawSpecs = extractAlternatingSpecs($, '.product-detail-specs li');
+    const specs = remapSpecs(rawSpecs);
 
-      for (let i = 0; i < lines.length; i++) {
-        const label = lines[i].toLowerCase();
+    // Add core fields
+    specs['Product URL'] = url;
+    specs['Brand'] = 'MSI';
+    specs['Category'] = category;
+    specs['Price per SF'] = '0.00';
 
-        // Detect and pair lines
-        if (label.includes('pei') && !specs['PEI Rating']) {
-          const nextLine = lines[i + 1];
-          if (nextLine && /[0-5]/.test(nextLine)) {
-            specs['PEI Rating'] = nextLine.match(/([0-5])/)?.[1] || '—';
-          }
-        }
-        if ((label.includes('dcof') || label.includes('slip')) && !specs['DCOF / Slip Rating']) {
-          specs['DCOF / Slip Rating'] = lines[i + 1] || '—';
-        }
-        if (label.includes('absorption') && !specs['Water Absorption']) {
-          specs['Water Absorption'] = lines[i + 1] || '—';
-        }
-        if (label.includes('material') && !specs['Material Type']) {
-          specs['Material Type'] = lines[i + 1] || '—';
-        }
-        if (label.includes('finish') && !specs['Finish']) {
-          specs['Finish'] = lines[i + 1] || '—';
-        }
-        if ((label.includes('color') || label.includes('primary color')) && !specs['Color']) {
-          const nextLine = lines[i + 1];
-          if (nextLine && !nextLine.toLowerCase().includes('color') && nextLine !== '—') {
-            specs['Color'] = nextLine;
-          }
-        }
-        if (label.includes('edge') && !specs['Edge Type']) {
-          specs['Edge Type'] = lines[i + 1] || '—';
-        }
-        if (label.includes('install') && !specs['Install Location']) {
-          specs['Install Location'] = lines[i + 1] || '—';
-        }
-        if ((label.includes('dimension') || label.includes('size')) && !specs['Dimensions']) {
-          const nextLine = lines[i + 1];
-          if (nextLine && /\d+.*x.*\d+/.test(nextLine)) {
-            specs['Dimensions'] = nextLine;
-          }
-        }
-        if (label.includes('texture') && !specs['Texture']) {
-          specs['Texture'] = lines[i + 1] || '—';
-        }
-        if (label.includes('shade') && !specs['Shade Variation']) {
-          specs['Shade Variation'] = lines[i + 1] || '—';
-        }
-      }
-
-      return specs;
-    }
-
-    // Extract specifications using the universal parser
-    const universalSpecs = extractStructuredSpecs(html);
-    Object.assign(specs, universalSpecs);
-
-    console.log('Universal parser extracted:', universalSpecs);
-
-    // Direct HTML string extraction for MSI's exact structure
-    // PEI Rating extraction
+    // Enhanced direct HTML extraction for key MSI fields
     let peiMatch = html.match(/<div class='specs-heading'><span>PEI RATING<\/span><\/div><div class='specs-label'><span>([0-5])<\/span><\/div>/i);
-    if (peiMatch) {
+    if (peiMatch && !specs['PEI Rating']) {
       specs['PEI Rating'] = peiMatch[1];
       console.log(`Found PEI Rating: ${peiMatch[1]}`);
     }
 
-    // Primary Color extraction  
     let colorMatch = html.match(/<div class='specs-heading'><span>Primary Color\(s\)<\/span><\/div><div class='specs-label'><span>([^<]+)<\/span><\/div>/i);
-    if (colorMatch) {
+    if (colorMatch && !specs['Color']) {
       specs['Color'] = colorMatch[1];
       console.log(`Found Color: ${colorMatch[1]}`);
     }
 
-    // Tile Type (Finish) extraction
     let finishMatch = html.match(/<div class='specs-heading'><span>Tile Type<\/span><\/div><div class='specs-label'><span>([^<]+)<\/span><\/div>/i);
-    if (finishMatch) {
+    if (finishMatch && !specs['Finish']) {
       specs['Finish'] = finishMatch[1];
       console.log(`Found Finish: ${finishMatch[1]}`);
     }
 
-    // Shade Variation extraction
-    let shadeMatch = html.match(/<div class='specs-heading'><span>Shade Variations<\/span><\/div><div class='specs-label'><span>([^<]+)<\/span><\/div>/i);
-    if (shadeMatch) {
-      specs['Shade Variation'] = shadeMatch[1];
-      console.log(`Found Shade Variation: ${shadeMatch[1]}`);
-    }
-
-    // Size extraction from item details
-    let sizeMatch = html.match(/Item Size:<\/strong>\s*([^<]+)/i);
-    if (sizeMatch) {
-      specs['Dimensions'] = sizeMatch[1].trim();
-      console.log(`Found Size: ${sizeMatch[1].trim()}`);
-    }
-
-    // Applications extraction for install location
+    // Applications extraction
     const applications = [];
     if (/Flooring.*?Residential.*?Yes/i.test(html)) applications.push('Floor');
     if (/Wall.*?Residential.*?Yes/i.test(html)) applications.push('Wall'); 
@@ -148,101 +110,22 @@ export async function scrapeMSIProduct(url: string, category: string) {
     if (applications.length > 0) {
       specs['Install Location'] = applications.join(', ');
       specs['Applications'] = applications.join(', ');
-      console.log(`Found Applications: ${applications.join(', ')}`);
     }
 
-    // Alternating specs extraction for proper HTML structure parsing
-    function extractAlternatingSpecs($: cheerio.CheerioAPI, selector: string): Record<string, string> {
-      const results: Record<string, string> = {};
-      const items = $(selector);
-
-      for (let i = 0; i < items.length; i += 2) {
-        const key = $(items[i]).text().replace(/\s+/g, ' ').trim();
-        const value = $(items[i + 1])?.text().replace(/\s+/g, ' ').trim() || '—';
-
-        if (key && !results[key]) {
-          console.log(`Alternating extraction found: ${key} = ${value}`);
-          results[key] = value;
-        }
-      }
-
-      return results;
+    // Fallbacks for missing critical fields
+    if (!specs['Dimensions']) {
+      specs['Dimensions'] = $('.product-detail-sizes span').first().text().trim() || 
+                           $('div:contains("Size")').next().text().trim() || '—';
     }
-
-    // Enhanced extraction using alternating specs parsing
-    const smartSpecs = extractAlternatingSpecs($, '.product-detail-specs li, table td, .specifications div, .spec-item, ul.list-unstyled li, .tab-content li');
     
-    // Normalize and map extracted specs with enhanced key mapping
-    function remapSpecs(specs: Record<string, string>): Record<string, string> {
-      const map: Record<string, string> = {
-        'P E I Rating': 'PEI Rating',
-        'PEI RATING': 'PEI Rating',
-        'PEI Rating': 'PEI Rating',
-        'D C O F / Slip Rating': 'DCOF / Slip Rating',
-        'DCOF': 'DCOF / Slip Rating',
-        'COF': 'DCOF / Slip Rating',
-        'Water Absorption': 'Water Absorption',
-        'Absorption': 'Water Absorption',
-        'Finish': 'Finish',
-        'Tile Type': 'Finish',
-        'Surface Finish': 'Finish',
-        'Material Type': 'Material Type',
-        'Material': 'Material Type',
-        'Edge Type': 'Edge Type',
-        'Edge': 'Edge Type',
-        'Install Location': 'Install Location',
-        'Installation': 'Install Location',
-        'Applications': 'Install Location',
-        'Dimensions': 'Dimensions',
-        'Size': 'Dimensions',
-        'Item Size': 'Dimensions',
-        'Nominal Size': 'Dimensions',
-        'Color': 'Color',
-        'Primary Color(s)': 'Color',
-        'Primary Color': 'Color',
-        'Texture': 'Texture',
-        'Surface Texture': 'Texture',
-        'Shade Variations': 'Shade Variation',
-        'Shade Variation': 'Shade Variation',
-        'Variation': 'Shade Variation'
-      };
-
-      const normalized: Record<string, string> = {};
-      for (const key in specs) {
-        const cleanKey = key.replace(/\s+/g, ' ').trim();
-        const newKey = map[cleanKey] || cleanKey;
-        
-        // Only use valid values, not navigation text or empty values
-        const value = specs[key];
-        if (value && value !== '—' && value !== '' && 
-            !value.toLowerCase().includes('download') &&
-            !value.toLowerCase().includes('project') &&
-            !value.toLowerCase().includes('inventory') &&
-            !value.toLowerCase().includes('selector') &&
-            value.length < 50) {
-          if (!normalized[newKey]) {  // Don't overwrite existing values
-            normalized[newKey] = value;
-          }
-        }
-      }
-      return normalized;
+    if (!specs['Coverage']) {
+      specs['Coverage'] = $('div:contains("Coverage")').next().text().trim() || 
+                         $('div:contains("sq ft")').text().match(/[\d.]+\s*sq\s*ft/i)?.[0] || '—';
     }
 
-    const remappedSpecs = remapSpecs(smartSpecs);
-    Object.assign(specs, remappedSpecs);
-
-    // Price extraction
-    let price = '0.00';
-    const priceMatch = html.match(/\$\s?([\d,]+\.?\d*)\s?\/?\s?(?:SF|sq\.?\s?ft)/i);
-    if (priceMatch) {
-      price = priceMatch[1].replace(',', '');
-      specs['Price per SF'] = price;
+    if (!specs['Material Type']) {
+      specs['Material Type'] = 'Porcelain';
     }
-
-    // Add missing required fields
-    specs['Brand'] = 'MSI';
-    specs['Product URL'] = url;
-    if (!specs['Price per SF']) specs['Price per SF'] = price;
 
     console.log('Final MSI specifications:', {
       'PEI Rating': specs['PEI Rating'] || '—',
@@ -256,9 +139,9 @@ export async function scrapeMSIProduct(url: string, category: string) {
     return {
       name,
       brand: 'MSI',
-      price,
+      price: specs['Price per SF'] || '0.00',
       category,
-      description,
+      description: $('.product-intro p, .product-description').first().text().trim().substring(0, 500) || '',
       imageUrl,
       dimensions: specs['Dimensions'] || '—',
       specifications: specs,

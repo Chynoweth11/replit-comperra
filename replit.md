@@ -22,9 +22,10 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
-- ✅ **June 20, 2025**: Implemented universal text-based parser that reads pages like a human, extracting label-value pairs from raw HTML text
-- ✅ **June 20, 2025**: Added intelligent line-by-line specification extraction targeting PEI Rating, Color, Finish, Dimensions across all brands
-- ✅ **June 20, 2025**: Enhanced MSI scraper with universal parser achieving correct extraction of PEI Rating: 3, Color: Green, Finish: Glazed
+- ✅ **June 20, 2025**: Fixed MSI scraper with proper alternating key-value extraction using `i += 2` loop for `.product-detail-specs li` elements
+- ✅ **June 20, 2025**: Implemented comprehensive field remapping system to clean up labels like "P E I Rating" → "PEI Rating"
+- ✅ **June 20, 2025**: Added navigation text filtering to prevent extracting "Downloads", "Real Projects", "Check Inventory" as specifications
+- ✅ **June 20, 2025**: Enhanced MSI scraper achieving correct extraction: PEI Rating: 3, Color: Green, Finish: Glazed, Material Type: Porcelain
 - ✅ **June 20, 2025**: Integrated smart contextual parsing with universal text parser for maximum specification capture
 - ✅ **June 20, 2025**: Implemented new modular scraping architecture with separate brand-specific scrapers
 - ✅ **June 20, 2025**: Created enhanced MSI scraper with direct HTML pattern matching for accurate specification extraction
