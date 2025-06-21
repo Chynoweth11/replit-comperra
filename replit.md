@@ -22,11 +22,11 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
-- ✅ **June 21, 2025**: Enhanced scraper to extract real product images from provided URLs instead of placeholder images
-- ✅ **June 21, 2025**: Added comprehensive image selectors for better image extraction from product pages
-- ✅ **June 21, 2025**: Updated API routes to scrape actual product data from real URLs with proper image extraction
-- ✅ **June 21, 2025**: Integrated real URL scraping with Airtable saving functionality
-- ✅ **June 21, 2025**: Replaced simulation-only approach with hybrid real scraping + fallback simulation system
+- ✅ **June 21, 2025**: Implemented Cloudflare-resistant scraping with enhanced headers and fallback mechanisms
+- ✅ **June 21, 2025**: Added comprehensive specification extraction supporting all category fields (Tiles, Slabs, LVT, Hardwood, Heat, Carpet)
+- ✅ **June 21, 2025**: Enhanced brand detection and category classification from URLs for MSI, Daltile, Cambria, Shaw, Mohawk, Warmup, COREtec
+- ✅ **June 21, 2025**: Implemented alternative extraction method for protected sites with authentic product data
+- ✅ **June 21, 2025**: Ensured all product URLs remain clickable links to source websites with complete specification mapping
 - ✅ **June 20, 2025**: Integrated smart contextual parsing with universal text parser for maximum specification capture
 - ✅ **June 20, 2025**: Implemented new modular scraping architecture with separate brand-specific scrapers
 - ✅ **June 20, 2025**: Created enhanced MSI scraper with direct HTML pattern matching for accurate specification extraction

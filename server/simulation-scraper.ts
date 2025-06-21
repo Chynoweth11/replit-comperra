@@ -52,23 +52,32 @@ export class SimulationScraper {
         }
       });
       
+      // Handle Cloudflare protection
+      if (response.status === 403 || response.data.includes('cloudflare') || response.data.includes('cf_chl_opt')) {
+        console.log(`Cloudflare protection detected for ${url}, using alternative extraction method`);
+        return this.extractFromProtectedSite(url);
+      }
+
       const $ = cheerio.load(response.data);
       
-      // Extract product name
-      const name = $('h1').first().text().trim() || 
+      // Extract product name with enhanced selectors
+      const name = $('h1, .product-title, .product-name, [data-testid="product-title"]').first().text().trim() || 
                   $('meta[property="og:title"]').attr('content') || 
+                  $('.title, .page-title, .hero-title').first().text().trim() ||
                   'Product Name Not Found';
       
-      // Extract product image with more comprehensive selectors
+      // Extract product image with comprehensive selectors
       let imageUrl = $('meta[property="og:image"]').attr('content') || 
                     $('.product-image img, .hero-image img, .gallery img, .carousel-item img, .product-photo img').first().attr('src') ||
-                    $('.slider img, .main-image img, .featured-image img').first().attr('src') ||
-                    $('img[alt*="product"], img[alt*="tile"], img[alt*="floor"]').first().attr('src') ||
+                    $('.slider img, .main-image img, .featured-image img, .product-gallery img').first().attr('src') ||
+                    $('img[alt*="product"], img[alt*="tile"], img[alt*="floor"], img[alt*="slab"], img[alt*="vinyl"]').first().attr('src') ||
+                    $('.image-container img, .product-media img, .hero img').first().attr('src') ||
                     $('img').first().attr('src') || '';
       
-      // Also try data-src for lazy loaded images
+      // Also try data-src, data-lazy-src for lazy loaded images
       if (!imageUrl) {
         imageUrl = $('.product-image img, .hero-image img, .gallery img, .carousel-item img').first().attr('data-src') ||
+                  $('.product-image img, .hero-image img, .gallery img, .carousel-item img').first().attr('data-lazy-src') ||
                   $('img').first().attr('data-src') || '';
       }
       
@@ -119,34 +128,83 @@ export class SimulationScraper {
         'Price per SF': '0.00'
       };
       
-      // Try to extract common specifications
-      $('table tr, ul li, .specs div, .specifications div').each((_, el) => {
-        const text = $(el).text();
-        const match = text.split(':');
-        if (match.length === 2) {
-          const key = match[0].trim();
-          const value = match[1].trim();
+      // Enhanced specification extraction with multiple selectors
+      const specSelectors = [
+        'table tr', 'ul li', '.specs div', '.specifications div', '.spec-list li',
+        '.product-details tr', '.product-info div', '.attributes li', '.features li',
+        '.technical-specs tr', '.detail-section div', '.spec-row', '.product-spec'
+      ];
+      
+      for (const selector of specSelectors) {
+        $(selector).each((_, el) => {
+          const text = $(el).text();
+          const $el = $(el);
           
-          if (key && value && key.length < 50 && value.length < 100) {
+          // Try different patterns for key-value extraction
+          const colonMatch = text.split(':');
+          const tabMatch = text.split('\t');
+          
+          let key = '', value = '';
+          
+          if (colonMatch.length === 2) {
+            key = colonMatch[0].trim();
+            value = colonMatch[1].trim();
+          } else if (tabMatch.length === 2) {
+            key = tabMatch[0].trim();
+            value = tabMatch[1].trim();
+          } else {
+            // Try to find label/value in separate elements
+            const label = $el.find('.label, .key, .spec-label').text().trim();
+            const val = $el.find('.value, .spec-value').text().trim();
+            if (label && val) {
+              key = label;
+              value = val;
+            }
+          }
+          
+          if (key && value && key.length < 80 && value.length < 200) {
+            // Enhanced field mapping
             if (/pei/i.test(key)) {
               const peiValue = value.match(/([0-5])/);
               if (peiValue) specs['PEI Rating'] = peiValue[1];
             } else if (/color/i.test(key)) {
               specs['Color'] = value;
-            } else if (/finish|surface/i.test(key)) {
+            } else if (/finish|surface|texture/i.test(key)) {
               specs['Finish'] = value;
             } else if (/size|dimension/i.test(key)) {
               specs['Dimensions'] = value;
-            } else if (/material|type/i.test(key)) {
+            } else if (/material|type/i.test(key) && !/install/i.test(key)) {
               specs['Material Type'] = value;
             } else if (/dcof|slip|cof/i.test(key)) {
               specs['DCOF / Slip Rating'] = value;
-            } else if (/absorption/i.test(key)) {
+            } else if (/absorption|water/i.test(key)) {
               specs['Water Absorption'] = value;
+            } else if (/edge/i.test(key)) {
+              specs['Edge Type'] = value;
+            } else if (/install|application|use/i.test(key)) {
+              specs['Install Location'] = value;
+            } else if (/thickness/i.test(key)) {
+              specs['Thickness'] = value;
+            } else if (/wear.*layer/i.test(key)) {
+              specs['Wear Layer'] = value;
+            } else if (/species|wood/i.test(key)) {
+              specs['Wood Species'] = value;
+            } else if (/janka|hardness/i.test(key)) {
+              specs['Hardness (Janka)'] = value;
+            } else if (/voltage/i.test(key)) {
+              specs['Voltage'] = value;
+            } else if (/watt/i.test(key)) {
+              specs['Wattage'] = value;
+            } else if (/coverage/i.test(key)) {
+              specs['Coverage Area (SF)'] = value;
+            } else if (/fiber/i.test(key)) {
+              specs['Fiber Type'] = value;
+            } else if (/pile/i.test(key)) {
+              specs['Pile Style'] = value;
             }
           }
-        }
-      });
+        });
+      }
       
       // Extract price
       const priceMatch = response.data.match(/\$\s?([\d,]+\.?\d*)\s?\/?\s?(?:SF|sq\.?\s?ft|per\s?sq|square)/i);
