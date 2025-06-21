@@ -22,6 +22,141 @@ export class SimulationScraper {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
+  // Function to scrape real product data from provided URLs
+  async scrapeRealProductFromURL(url: string): Promise<SimulatedScrapedProduct | null> {
+    try {
+      console.log(`Scraping real product from: ${url}`);
+      
+      const axios = require('axios');
+      const cheerio = require('cheerio');
+      
+      const response = await axios.get(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        },
+        timeout: 15000
+      });
+      
+      const $ = cheerio.load(response.data);
+      
+      // Extract product name
+      const name = $('h1').first().text().trim() || 
+                  $('meta[property="og:title"]').attr('content') || 
+                  'Product Name Not Found';
+      
+      // Extract product image with more comprehensive selectors
+      let imageUrl = $('meta[property="og:image"]').attr('content') || 
+                    $('.product-image img, .hero-image img, .gallery img, .carousel-item img, .product-photo img').first().attr('src') ||
+                    $('.slider img, .main-image img, .featured-image img').first().attr('src') ||
+                    $('img[alt*="product"], img[alt*="tile"], img[alt*="floor"]').first().attr('src') ||
+                    $('img').first().attr('src') || '';
+      
+      // Also try data-src for lazy loaded images
+      if (!imageUrl) {
+        imageUrl = $('.product-image img, .hero-image img, .gallery img, .carousel-item img').first().attr('data-src') ||
+                  $('img').first().attr('data-src') || '';
+      }
+      
+      // Fix relative URLs
+      if (imageUrl && !imageUrl.startsWith('http')) {
+        if (imageUrl.startsWith('//')) {
+          imageUrl = 'https:' + imageUrl;
+        } else if (imageUrl.startsWith('/')) {
+          try {
+            const origin = new URL(url).origin;
+            imageUrl = origin + imageUrl;
+          } catch (e) {
+            imageUrl = '';
+          }
+        }
+      }
+      
+      // Determine brand and category from URL
+      let brand = 'Unknown';
+      let category = 'tiles';
+      
+      const domain = url.toLowerCase();
+      if (domain.includes('msisurfaces')) brand = 'MSI';
+      else if (domain.includes('daltile')) brand = 'Daltile';
+      else if (domain.includes('arizonatile')) brand = 'Arizona Tile';
+      else if (domain.includes('floridatile')) brand = 'Florida Tile';
+      else if (domain.includes('marazzi')) brand = 'Marazzi';
+      else if (domain.includes('shaw')) brand = 'Shaw';
+      else if (domain.includes('mohawk')) brand = 'Mohawk';
+      else if (domain.includes('cambria')) brand = 'Cambria';
+      else if (domain.includes('flor')) brand = 'Flor';
+      else if (domain.includes('emser')) brand = 'Emser Tile';
+      else if (domain.includes('warmup')) brand = 'Warmup';
+      else if (domain.includes('coretec')) brand = 'COREtec';
+      else if (domain.includes('anderson')) brand = 'Anderson Tuftex';
+      
+      if (url.includes('slab') || url.includes('quartz') || url.includes('marble')) category = 'slabs';
+      else if (url.includes('lvt') || url.includes('vinyl')) category = 'lvt';
+      else if (url.includes('hardwood')) category = 'hardwood';
+      else if (url.includes('carpet')) category = 'carpet';
+      else if (url.includes('heat') || url.includes('thermostat')) category = 'heat';
+      
+      // Extract basic specifications using cheerio
+      const specs: any = {
+        'Product URL': url,
+        'Brand': brand,
+        'Category': category,
+        'Price per SF': '0.00'
+      };
+      
+      // Try to extract common specifications
+      $('table tr, ul li, .specs div, .specifications div').each((_, el) => {
+        const text = $(el).text();
+        const match = text.split(':');
+        if (match.length === 2) {
+          const key = match[0].trim();
+          const value = match[1].trim();
+          
+          if (key && value && key.length < 50 && value.length < 100) {
+            if (/pei/i.test(key)) {
+              const peiValue = value.match(/([0-5])/);
+              if (peiValue) specs['PEI Rating'] = peiValue[1];
+            } else if (/color/i.test(key)) {
+              specs['Color'] = value;
+            } else if (/finish|surface/i.test(key)) {
+              specs['Finish'] = value;
+            } else if (/size|dimension/i.test(key)) {
+              specs['Dimensions'] = value;
+            } else if (/material|type/i.test(key)) {
+              specs['Material Type'] = value;
+            } else if (/dcof|slip|cof/i.test(key)) {
+              specs['DCOF / Slip Rating'] = value;
+            } else if (/absorption/i.test(key)) {
+              specs['Water Absorption'] = value;
+            }
+          }
+        }
+      });
+      
+      // Extract price
+      const priceMatch = response.data.match(/\$\s?([\d,]+\.?\d*)\s?\/?\s?(?:SF|sq\.?\s?ft|per\s?sq|square)/i);
+      if (priceMatch) {
+        specs['Price per SF'] = priceMatch[1].replace(',', '');
+      }
+      
+      return {
+        name,
+        brand,
+        price: specs['Price per SF'] || '0.00',
+        category,
+        description: $('.product-description, .description, .product-overview').first().text().trim().substring(0, 500) || '',
+        imageUrl: imageUrl || 'https://placehold.co/400x300/CCCCCC/FFFFFF?text=No+Image',
+        dimensions: specs['Dimensions'] || '—',
+        specifications: specs,
+        sourceUrl: url
+      };
+      
+    } catch (error) {
+      console.error(`Error scraping real product from ${url}:`, error);
+      return null;
+    }
+  }
+
   // Function to simulate a headless browser rendering and then calling the LLM
   async simulateScrapingFromHTML(): Promise<SimulatedScrapedProduct[]> {
     console.log('Starting simulation scraping...');
@@ -511,8 +646,25 @@ export class SimulationScraper {
     }
   }
 
-  async scrapeAndSaveAll(): Promise<SimulatedScrapedProduct[]> {
-    const scrapedProducts = await this.simulateScrapingFromHTML();
+  async scrapeAndSaveAll(urls?: string[]): Promise<SimulatedScrapedProduct[]> {
+    let scrapedProducts: SimulatedScrapedProduct[] = [];
+    
+    if (urls && urls.length > 0) {
+      // Scrape real products from provided URLs
+      console.log(`Scraping ${urls.length} real URLs...`);
+      
+      for (const url of urls) {
+        const product = await this.scrapeRealProductFromURL(url);
+        if (product) {
+          scrapedProducts.push(product);
+          console.log(`Successfully scraped: ${product.name}`);
+        }
+        await this.sleep(this.delay); // Rate limiting
+      }
+    } else {
+      // Fall back to simulation if no URLs provided
+      scrapedProducts = await this.simulateScrapingFromHTML();
+    }
     
     // Save each product to Airtable
     for (const product of scrapedProducts) {
@@ -521,6 +673,15 @@ export class SimulationScraper {
     }
     
     return scrapedProducts;
+  }
+
+  async scrapeAndSaveFromURL(url: string): Promise<SimulatedScrapedProduct | null> {
+    const product = await this.scrapeRealProductFromURL(url);
+    if (product) {
+      await this.saveToAirtable(product);
+      console.log(`Successfully scraped and saved: ${product.name}`);
+    }
+    return product;
   }
 }
 
