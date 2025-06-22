@@ -498,10 +498,13 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                   {category === "lvt" && (
                     <>
                       <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Material Type'] || material.specifications?.materialType || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
                         {material.specifications?.['Wear Layer'] || material.specifications?.wearLayer || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Core Type'] || material.specifications?.coreType || '—'}
+                        {material.specifications?.['Thickness'] || material.specifications?.thickness || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
                         {material.specifications?.['Waterproof'] || (material.specifications?.waterproof ? 'Yes' : 'No') || '—'}

@@ -242,12 +242,15 @@ export default function ProductDetail() {
                     }
                   }
                   
-                  // For LVT products, hide Applications, Warranty, and Actions fields
+                  // For LVT products, hide Applications, Warranty, Installation, and Actions fields
                   if (material.category === 'lvt') {
                     if (key.toLowerCase().includes('applications') || key.toLowerCase().includes('application')) {
                       return false;
                     }
                     if (key.toLowerCase().includes('warranty')) {
+                      return false;
+                    }
+                    if (key.toLowerCase().includes('installation')) {
                       return false;
                     }
                     if (key.toLowerCase().includes('actions')) {
@@ -270,6 +273,9 @@ export default function ProductDetail() {
                     if (key.toLowerCase().includes('actions')) {
                       return false;
                     }
+                    if (key.toLowerCase().includes('applications') || key.toLowerCase().includes('application')) {
+                      return false;
+                    }
                   }
                   
                   // For carpet products, hide unwanted fields for cleaner display
@@ -283,6 +289,9 @@ export default function ProductDetail() {
                     if (key.toLowerCase().includes('actions')) {
                       return false;
                     }
+                    if (key.toLowerCase().includes('installation')) {
+                      return false;
+                    }
                   }
                   
                   // For heating products, hide Actions field
@@ -290,10 +299,20 @@ export default function ProductDetail() {
                     if (key.toLowerCase().includes('actions')) {
                       return false;
                     }
+                    if (key.toLowerCase().includes('applications') || key.toLowerCase().includes('application')) {
+                      return false;
+                    }
                   }
                   
                   // For tiles, hide Actions field
                   if (material.category === 'tiles') {
+                    if (key.toLowerCase().includes('actions')) {
+                      return false;
+                    }
+                  }
+                  
+                  // For slabs, hide Actions field (already hiding Applications)
+                  if (material.category === 'slabs') {
                     if (key.toLowerCase().includes('actions')) {
                       return false;
                     }
