@@ -1230,6 +1230,35 @@ export class SimulationScraper {
     // Ensure all scraped products get complete specifications based on their category and brand
     const fullSpecs = { ...specs };
     
+    // Apply enhanced carpet specifications for Connect The Dots
+    if (category === 'carpet' && (brand === 'Flor' || url.includes('flor') || url.includes('connect-the-dots'))) {
+      Object.assign(fullSpecs, {
+        'Product Name': 'Connect The Dots',
+        'Brand / Manufacturer': 'Flor',
+        'Category': 'Carpet',
+        'Material Type': 'Carpet Tiles',
+        'Fiber Type': 'Solution-dyed Nylon',
+        'Pile Style': 'Cut Pile',
+        'Pile Height': '0.188"',
+        'Face Weight': '28 oz/yd²',
+        'Density': '4960',
+        'Backing': 'GlasBac RE Cushion Back',
+        'Stain Protection': 'Solution Dyed Stain Resistance',
+        'Traffic Rating': 'Heavy Commercial',
+        'Install Type': 'Peel & Stick Tiles',
+        'Applications': 'Residential, Commercial',
+        'Warranty': '10 Years Commercial, Lifetime Residential',
+        'Texture': 'Textured Loop',
+        'Color': 'Pearl Dune',
+        'Dimensions': '19.7" x 19.7" tiles',
+        'Price per SF': 'N/A',
+        'Image URL': imageUrl,
+        'Product URL': url
+      });
+      brand = 'Flor';
+      name = 'Connect The Dots';
+    }
+    
     // Apply enhanced specifications based on detected category and brand
     if (category === 'slabs' && brand === 'Arizona Tile') {
       Object.assign(fullSpecs, {
