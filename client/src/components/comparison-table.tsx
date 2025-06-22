@@ -185,7 +185,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
       case "tiles":
         return [...baseHeaders, "PEI Rating", "DCOF / Slip Rating", "Water Absorption", "Dimensions", "Actions"];
       case "slabs": 
-        return [...baseHeaders, "Material Type", "Finish", "Color/Pattern", "Thickness", "Water Absorption", "Slab Dimensions", "Scratch Resistance", "Actions"];
+        return [...baseHeaders, "Material Type", "Finish", "Thickness", "Dimensions", "Actions"];
       case "lvt":
         return [...baseHeaders, "Material Type", "Wear Layer", "Thickness", "Waterproof", "Dimensions", "Actions"];
       case "hardwood":
@@ -471,22 +471,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                         {material.specifications?.['Finish'] || material.specifications?.finish || 'N/A'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Color / Pattern'] || material.specifications?.['Color'] || material.specifications?.color || 'N/A'}
-                      </td>
-                      <td className="px-4 py-4 text-center">
                         {material.specifications?.['Thickness'] || material.specifications?.thickness || 'N/A'}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Water Absorption'] || material.specifications?.waterAbsorption || 'N/A'}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Applications'] || (Array.isArray(material.specifications?.applications) ? material.specifications.applications.join(', ') : material.specifications?.applications) || 'N/A'}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Slab Dimensions'] || material.specifications?.['Dimensions'] || material.specifications?.slabSize || material.dimensions || 'N/A'}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Scratch / Etch Resistance'] || material.specifications?.['Scratch Resistance'] || material.specifications?.scratchResistance || 'N/A'}
                       </td>
                     </>
                   )}
