@@ -290,19 +290,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
 
 
 
-  const headers = category === "tiles" 
-    ? ["Product", "Brand", "Price/SF", "PEI Rating", "DCOF / Slip Rating", "Water Absorption", "Dimensions", "Actions"]
-    : category === "slabs" 
-    ? ["Product", "Brand", "Price/SF", "Material Type", "Finish", "Color", "Thickness", "Water Absorption", "Applications", "Dimensions", "Scratch Resistance", "Actions"]
-    : category === "lvt" 
-    ? ["Product", "Brand", "Price/SF", "Material Type", "Wear Layer", "Thickness", "Waterproof", "Installation", "Applications", "Warranty", "Actions"]
-    : category === "hardwood" 
-    ? ["Product", "Brand", "Price/SF", "Species", "Construction", "Thickness", "Width", "Finish", "Janka Hardness", "Installation", "Actions"]
-    : category === "heat" 
-    ? ["Product", "Brand", "Price/SF", "Voltage", "Coverage", "Features", "Power", "Dimensions", "Actions"]
-    : category === "carpet" 
-    ? ["Product", "Brand", "Price/SF", "Fiber", "Stain Resistance", "Pile Height", "Width", "Dimensions", "Actions"]
-    : ["Product", "Brand", "Price/SF", "Dimensions", "Actions"];
+  const headers = getHeaders(category);
 
   if (isLoading) {
     return (
