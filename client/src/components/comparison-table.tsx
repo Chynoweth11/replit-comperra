@@ -496,13 +496,13 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                   {category === "hardwood" && (
                     <>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Species'] || material.specifications?.species || '—'}
+                        {material.specifications?.['Species'] || material.specifications?.['Wood Species'] || material.specifications?.species || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
                         {material.specifications?.['Finish'] || material.specifications?.finishType || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Width'] || material.specifications?.plankWidth || '—'}
+                        {material.specifications?.['Width'] || material.specifications?.plankWidth || material.specifications?.width || '—'}
                       </td>
                     </>
                   )}
