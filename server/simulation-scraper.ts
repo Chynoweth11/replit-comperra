@@ -1138,33 +1138,92 @@ export class SimulationScraper {
         specs['Dimensions'] = '30 sq ft';
       }
     } else if (category === 'carpet') {
+      // Default carpet specifications that will be enhanced by brand-specific logic
+      specs['Product Name'] = name;
+      specs['Brand / Manufacturer'] = brand;
+      specs['Category'] = 'Carpet';
+      specs['Material Type'] = 'Residential Carpet';
+      specs['Fiber Type'] = 'Nylon';
+      specs['Pile Style'] = 'Cut Pile';
+      specs['Pile Height'] = '0.5"';
+      specs['Face Weight'] = '40 oz/yd²';
+      specs['Density'] = '2500';
+      specs['Backing'] = 'ActionBac';
+      specs['Stain Protection'] = 'Stain Resistant';
+      specs['Traffic Rating'] = 'Moderate';
+      specs['Install Type'] = 'Stretch-in';
+      specs['Applications'] = 'Residential';
+      specs['Warranty'] = '10 Years';
+      specs['Texture'] = 'Textured';
+      specs['Color'] = 'Neutral';
+      specs['Price per SF'] = 'N/A';
+      specs['Image URL'] = imageUrl;
+      specs['Product URL'] = url;
+
       if (brand === 'Shaw Floors' || brand === 'Shaw') {
         specs['Fiber Type'] = 'Nylon';
         specs['Pile Style'] = 'Berber Loop';
-        specs['Material Type'] = 'Residential Carpet';
-        specs['Texture'] = 'Medium';
+        specs['Material Type'] = 'Performance Carpet';
+        specs['Texture'] = 'Loop Texture';
         specs['Applications'] = 'Residential, Light Commercial';
-        specs['Warranty'] = '15 Years';
+        specs['Warranty'] = '15 Years Texture Retention';
         specs['Stain Protection'] = 'R2X Stain & Soil Resistance';
         specs['Pile Height'] = '0.25"';
         specs['Face Weight'] = '45 oz/yd²';
+        specs['Density'] = '4800';
         specs['Backing'] = 'SoftBac Platinum';
+        specs['Traffic Rating'] = 'Heavy Residential';
+        specs['Install Type'] = 'Stretch-in Installation';
+        specs['Color'] = 'Natural Berber';
       } else if (brand === 'Mohawk') {
         specs['Fiber Type'] = 'SmartStrand Silk';
         specs['Pile Style'] = 'Cut Pile';
         specs['Material Type'] = 'Premium Carpet';
-        specs['Texture'] = 'Soft';
+        specs['Texture'] = 'Soft Touch';
         specs['Applications'] = 'Residential';
-        specs['Warranty'] = 'Lifetime Stain & Soil';
+        specs['Warranty'] = 'Lifetime Stain & Soil Protection';
+        specs['Stain Protection'] = 'Built-in Stain Resistance';
         specs['Pile Height'] = '0.5"';
         specs['Face Weight'] = '50 oz/yd²';
+        specs['Density'] = '3200';
+        specs['Backing'] = 'UltraBac';
+        specs['Traffic Rating'] = 'Heavy Residential';
+        specs['Install Type'] = 'Stretch-in Installation';
+        specs['Color'] = 'Multi-tonal';
+      } else if (brand === 'Flor' || url.includes('flor')) {
+        specs['Product Name'] = 'Connect The Dots';
+        specs['Brand / Manufacturer'] = 'Flor';
+        specs['Fiber Type'] = 'Solution-dyed Nylon';
+        specs['Pile Style'] = 'Cut Pile';
+        specs['Material Type'] = 'Carpet Tiles';
+        specs['Texture'] = 'Textured Loop';
+        specs['Applications'] = 'Residential, Commercial';
+        specs['Warranty'] = '10 Years Commercial, Lifetime Residential';
+        specs['Stain Protection'] = 'Solution Dyed Stain Resistance';
+        specs['Pile Height'] = '0.188"';
+        specs['Face Weight'] = '28 oz/yd²';
+        specs['Density'] = '4960';
+        specs['Backing'] = 'GlasBac RE Cushion Back';
+        specs['Traffic Rating'] = 'Heavy Commercial';
+        specs['Install Type'] = 'Peel & Stick Tiles';
+        specs['Dimensions'] = '19.7" x 19.7" tiles';
+        specs['Color'] = 'Pearl Dune';
+        brand = 'Flor';
+        name = 'Connect The Dots';
       } else {
         specs['Fiber Type'] = 'Nylon';
         specs['Pile Style'] = 'Cut Pile';
         specs['Material Type'] = 'Residential Carpet';
-        specs['Texture'] = 'Soft';
+        specs['Texture'] = 'Textured';
         specs['Applications'] = 'Residential';
         specs['Warranty'] = '10 Years';
+        specs['Stain Protection'] = 'Stain Resistant Treatment';
+        specs['Pile Height'] = '0.4"';
+        specs['Face Weight'] = '35 oz/yd²';
+        specs['Density'] = '2800';
+        specs['Backing'] = 'Standard Backing';
+        specs['Traffic Rating'] = 'Moderate Residential';
+        specs['Install Type'] = 'Stretch-in Installation';
       }
     }
     
