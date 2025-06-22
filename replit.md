@@ -22,6 +22,8 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ✅ **June 22, 2025**: Enhanced hardwood specification generation to ensure all required table headers are filled - Species, Finish, Width, Material Type, Thickness properly populated for all scraped hardwood products
+- ✅ **June 22, 2025**: Removed Width column from carpet table headers for cleaner display - now shows: Product, Brand, Price/SF, Fiber, Stain Resistance, Pile Height, Dimensions, Actions
 - ✅ **June 22, 2025**: Updated scraping system to ensure all table headers are properly filled when scraping URLs - enhanced specification generation to match clean table structure across all categories
 - ✅ **June 22, 2025**: Fixed LVT table headers to remove Warranty and Actions columns - now shows: Product, Brand, Price/SF, Material Type, Wear Layer, Thickness, Waterproof, Dimensions, Actions
 - ✅ **June 22, 2025**: Cleaned Stone & Slabs table headers to show: Product, Brand, Price/SF, Material Type, Finish, Thickness, Dimensions, Actions
