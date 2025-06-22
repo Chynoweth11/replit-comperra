@@ -1,0 +1,81 @@
+ere's an add-on code snippet (JavaScript/React or Node-style) to patch this issue:
+✅ 1. Category Detection & Assignment Logic
+Update your scraping handler to detect product category dynamically:
+
+js
+Copy
+Edit
+function detectCategory(url, content = '') {
+  const lowerUrl = url.toLowerCase();
+  const lowerContent = content.toLowerCase();
+
+  if (lowerUrl.includes('hardwood') || lowerContent.includes('hardwood')) {
+    return 'Hardwood';
+  }
+  if (lowerUrl.includes('lvt') || lowerContent.includes('vinyl') || lowerContent.includes('luxury vinyl')) {
+    return 'LVT / Vinyl';
+  }
+  if (lowerUrl.includes('slab') || lowerUrl.includes('stone')) {
+    return 'Stone & Slabs';
+  }
+  if (lowerUrl.includes('heat') || lowerContent.includes('heating')) {
+    return 'Heating';
+  }
+  if (lowerUrl.includes('carpet')) {
+    return 'Carpet';
+  }
+  // Default fallback
+  return 'Tiles';
+}
+Use this function right after scraping HTML:
+
+js
+Copy
+Edit
+const category = detectCategory(url, rawHtml); // where rawHtml is the full response text
+scrapedData.Category = category;
+✅ 2. Assign Category to React State or Airtable Schema
+Update the structure sent to your frontend or Airtable so it includes:
+
+js
+Copy
+Edit
+{
+  ...scrapedData,
+  Category: category, // "Hardwood", etc.
+}
+✅ 3. Frontend Tab Auto-Route Fix
+In your React app, update the logic to load the tab that matches the scraped category:
+
+js
+Copy
+Edit
+// Auto-switch to the matching tab when new data is added
+useEffect(() => {
+  if (scrapedData && scrapedData.Category) {
+    setSelectedCategory(scrapedData.Category); // will auto-switch tab
+  }
+}, [scrapedData]);
+✅ 4. Hardwood-Specific Field Mapping (when scraping)
+Make sure you’re filling out all these Hardwood specs:
+
+Field	Example Value
+Product Name	Natural Hickory 5" Plank
+Brand	Shaw
+Category	Hardwood
+Species	Hickory, Oak, Maple
+Finish	Matte, Satin
+Plank Width	5", 6.5", variable
+Thickness	3/8", 1/2", 3/4"
+Length	Random lengths or fixed
+Edge Type	Micro-beveled
+Surface Texture	Wire-brushed, Smooth
+Installation Method	Nail, Staple, Float, Glue
+Waterproof	Yes/No
+Warranty	Residential/Commercial
+Price per SF	$4.99
+Product URL	Original product page
+Image URL	Main product photo
+
+Update your scraper to detect and populate these fields if the product is categorized as Hardwood.
+

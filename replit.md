@@ -22,6 +22,9 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ✅ **June 22, 2025**: Fixed hardwood URL classification with enhanced category detection using URL and HTML content analysis - hardwood flooring products now correctly appear in hardwood category instead of tiles
+- ✅ **June 22, 2025**: Implemented user-provided category detection logic with comprehensive keyword matching for flooring, wood, pine, oak, maple, hickory, reclaimed, timber, elmwood
+- ✅ **June 22, 2025**: Enhanced brand detection to recognize Elmwood Reclaimed Timber and The Hermitage Collection for proper hardwood categorization
 - ✅ **June 21, 2025**: Enhanced Stone & Slabs category with comprehensive technical specifications - Product Name, Brand/Manufacturer, Material Type, Color/Pattern, Finish, Thickness, Slab Dimensions, Edge Type, Applications, Water Absorption, Scratch/Etch Resistance, Heat Resistance, Country of Origin, Price per SF, Image URL, Product URL
 - ✅ **June 21, 2025**: Updated comparison table to display all key slab specifications with proper column mapping and removed empty dash rows
 - ✅ **June 21, 2025**: Enhanced scraper to generate complete slab specifications for Arizona Tile, Cambria, and all other brands

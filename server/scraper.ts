@@ -96,6 +96,8 @@ export class ProductScraper {
     if (url.includes('cambriausa.com')) return 'Cambria';
     if (url.includes('caesarstoneus.com')) return 'Caesarstone';
     if (url.includes('silestone.com')) return 'Silestone';
+    if (url.includes('elmwood') || url.includes('timber')) return 'Elmwood Reclaimed Timber';
+    if (url.includes('hermitage')) return 'The Hermitage Collection';
     return 'Unknown';
   }
 
