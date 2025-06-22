@@ -179,16 +179,24 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
   });
 
   const getHeaders = (category: string) => {
-    const specs = MATERIAL_SPECIFICATIONS[category] || [];
     const baseHeaders = ["Product", "Brand", "Price/SF"];
     
-    // Get the most important specs for table headers (limit to avoid overcrowding)
-    const importantSpecs = specs
-      .filter(spec => spec.required && !['name', 'brand', 'price'].includes(spec.key))
-      .slice(0, 4) // Limit to 4 additional columns
-      .map(spec => spec.label);
-    
-    return [...baseHeaders, ...importantSpecs, "Dimensions", "Actions"];
+    switch (category) {
+      case "tiles":
+        return [...baseHeaders, "PEI Rating", "DCOF / Slip Rating", "Water Absorption", "Dimensions", "Actions"];
+      case "slabs": 
+        return [...baseHeaders, "Material Type", "Finish", "Color/Pattern", "Thickness", "Water Absorption", "Slab Dimensions", "Scratch Resistance", "Actions"];
+      case "lvt":
+        return [...baseHeaders, "Material Type", "Wear Layer", "Thickness", "Waterproof", "Dimensions", "Actions"];
+      case "hardwood":
+        return [...baseHeaders, "Species", "Finish", "Width", "Dimensions", "Actions"];
+      case "heat":
+        return [...baseHeaders, "Voltage", "Coverage", "Features", "Power", "Dimensions", "Actions"];
+      case "carpet":
+        return [...baseHeaders, "Fiber", "Stain Resistance", "Pile Height", "Width", "Dimensions", "Actions"];
+      default:
+        return [...baseHeaders, "Dimensions", "Actions"];
+    }
   };
 
   const getSpecBadge = (value: any, type: string) => {
