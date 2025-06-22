@@ -193,6 +193,39 @@ export default function ProductDetail() {
               </div>
             )}
 
+            {/* Key Specifications Badges - Clean display */}
+            {material.specifications && typeof material.specifications === 'object' && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {Object.entries(material.specifications as Record<string, any>)
+                  .filter(([key, value]) => {
+                    // Only show clean, useful specs as badges
+                    if (value === '—' || value === '' || value == null || value === undefined || value === '0.00') {
+                      return false;
+                    }
+                    
+                    // Hide unwanted fields from badges
+                    const lowercaseKey = key.toLowerCase();
+                    if (lowercaseKey.includes('applications') || lowercaseKey.includes('application') ||
+                        lowercaseKey.includes('warranty') || lowercaseKey.includes('actions') ||
+                        lowercaseKey.includes('janka') || lowercaseKey.includes('hardness') ||
+                        lowercaseKey.includes('installation') || lowercaseKey.includes('url') ||
+                        lowercaseKey.includes('image') || lowercaseKey.includes('product name') ||
+                        lowercaseKey.includes('brand') || lowercaseKey.includes('category') ||
+                        lowercaseKey.includes('price') || lowercaseKey.includes('dimensions')) {
+                      return false;
+                    }
+                    
+                    return true;
+                  })
+                  .slice(0, 4) // Limit to 4 key specs for clean display
+                  .map(([key, value]) => (
+                    <Badge key={key} variant="outline" className="text-xs">
+                      {formatSpecKey(key)}: {String(value)}
+                    </Badge>
+                  ))}
+              </div>
+            )}
+
             <div className="flex gap-4">
               <Button 
                 className="bg-green-600 text-white hover:bg-green-700"
