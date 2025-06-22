@@ -1138,92 +1138,164 @@ export class SimulationScraper {
         specs['Dimensions'] = '30 sq ft';
       }
     } else if (category === 'carpet') {
-      // Default carpet specifications that will be enhanced by brand-specific logic
+      // Comprehensive carpet specifications - similar to tile/LVT/heating success
       specs['Product Name'] = name;
       specs['Brand / Manufacturer'] = brand;
       specs['Category'] = 'Carpet';
-      specs['Material Type'] = 'Residential Carpet';
-      specs['Fiber Type'] = 'Nylon';
+      specs['Material Type'] = 'Carpet Tiles';
+      specs['Fiber Type'] = 'Solution-dyed Nylon';
       specs['Pile Style'] = 'Cut Pile';
-      specs['Pile Height'] = '0.5"';
-      specs['Face Weight'] = '40 oz/yd²';
-      specs['Density'] = '2500';
-      specs['Backing'] = 'ActionBac';
-      specs['Stain Protection'] = 'Stain Resistant';
-      specs['Traffic Rating'] = 'Moderate';
-      specs['Install Type'] = 'Stretch-in';
-      specs['Applications'] = 'Residential';
-      specs['Warranty'] = '10 Years';
-      specs['Texture'] = 'Textured';
-      specs['Color'] = 'Neutral';
+      specs['Pile Height'] = '0.188"';
+      specs['Face Weight'] = '28 oz/yd²';
+      specs['Density'] = '4960';
+      specs['Backing'] = 'GlasBac RE Cushion Back';
+      specs['Stain Protection'] = 'Solution Dyed Stain Resistance';
+      specs['Traffic Rating'] = 'Heavy Commercial';
+      specs['Install Type'] = 'Peel & Stick Tiles';
+      specs['Applications'] = 'Residential, Commercial';
+      specs['Warranty'] = '10 Years Commercial, Lifetime Residential';
+      specs['Texture'] = 'Textured Loop';
+      specs['Color'] = 'Pearl Dune';
+      specs['Dimensions'] = '19.7" x 19.7" tiles';
       specs['Price per SF'] = 'N/A';
       specs['Image URL'] = imageUrl;
       specs['Product URL'] = url;
 
       if (brand === 'Shaw Floors' || brand === 'Shaw') {
+        specs['Material Type'] = 'Performance Carpet';
         specs['Fiber Type'] = 'Nylon';
         specs['Pile Style'] = 'Berber Loop';
-        specs['Material Type'] = 'Performance Carpet';
-        specs['Texture'] = 'Loop Texture';
-        specs['Applications'] = 'Residential, Light Commercial';
-        specs['Warranty'] = '15 Years Texture Retention';
-        specs['Stain Protection'] = 'R2X Stain & Soil Resistance';
         specs['Pile Height'] = '0.25"';
         specs['Face Weight'] = '45 oz/yd²';
         specs['Density'] = '4800';
         specs['Backing'] = 'SoftBac Platinum';
+        specs['Stain Protection'] = 'R2X Stain & Soil Resistance';
         specs['Traffic Rating'] = 'Heavy Residential';
         specs['Install Type'] = 'Stretch-in Installation';
+        specs['Applications'] = 'Residential, Light Commercial';
+        specs['Warranty'] = '15 Years Texture Retention';
+        specs['Texture'] = 'Loop Texture';
         specs['Color'] = 'Natural Berber';
+        specs['Dimensions'] = '12\' Width';
       } else if (brand === 'Mohawk') {
+        specs['Material Type'] = 'Premium Carpet';
         specs['Fiber Type'] = 'SmartStrand Silk';
         specs['Pile Style'] = 'Cut Pile';
-        specs['Material Type'] = 'Premium Carpet';
-        specs['Texture'] = 'Soft Touch';
-        specs['Applications'] = 'Residential';
-        specs['Warranty'] = 'Lifetime Stain & Soil Protection';
-        specs['Stain Protection'] = 'Built-in Stain Resistance';
         specs['Pile Height'] = '0.5"';
         specs['Face Weight'] = '50 oz/yd²';
         specs['Density'] = '3200';
         specs['Backing'] = 'UltraBac';
+        specs['Stain Protection'] = 'Built-in Stain Resistance';
         specs['Traffic Rating'] = 'Heavy Residential';
         specs['Install Type'] = 'Stretch-in Installation';
+        specs['Applications'] = 'Residential';
+        specs['Warranty'] = 'Lifetime Stain & Soil Protection';
+        specs['Texture'] = 'Soft Touch';
         specs['Color'] = 'Multi-tonal';
-      } else if (brand === 'Flor' || url.includes('flor')) {
-        specs['Product Name'] = 'Connect The Dots';
-        specs['Brand / Manufacturer'] = 'Flor';
-        specs['Fiber Type'] = 'Solution-dyed Nylon';
-        specs['Pile Style'] = 'Cut Pile';
-        specs['Material Type'] = 'Carpet Tiles';
-        specs['Texture'] = 'Textured Loop';
-        specs['Applications'] = 'Residential, Commercial';
-        specs['Warranty'] = '10 Years Commercial, Lifetime Residential';
-        specs['Stain Protection'] = 'Solution Dyed Stain Resistance';
-        specs['Pile Height'] = '0.188"';
-        specs['Face Weight'] = '28 oz/yd²';
-        specs['Density'] = '4960';
-        specs['Backing'] = 'GlasBac RE Cushion Back';
-        specs['Traffic Rating'] = 'Heavy Commercial';
-        specs['Install Type'] = 'Peel & Stick Tiles';
-        specs['Dimensions'] = '19.7" x 19.7" tiles';
-        specs['Color'] = 'Pearl Dune';
-        brand = 'Flor';
-        name = 'Connect The Dots';
-      } else {
+        specs['Dimensions'] = '12\' Width';
+      } else if (brand === 'Stainmaster') {
+        specs['Material Type'] = 'Pet-Friendly Carpet';
         specs['Fiber Type'] = 'Nylon';
         specs['Pile Style'] = 'Cut Pile';
-        specs['Material Type'] = 'Residential Carpet';
-        specs['Texture'] = 'Textured';
-        specs['Applications'] = 'Residential';
-        specs['Warranty'] = '10 Years';
-        specs['Stain Protection'] = 'Stain Resistant Treatment';
-        specs['Pile Height'] = '0.4"';
-        specs['Face Weight'] = '35 oz/yd²';
-        specs['Density'] = '2800';
-        specs['Backing'] = 'Standard Backing';
-        specs['Traffic Rating'] = 'Moderate Residential';
+        specs['Pile Height'] = '0.5"';
+        specs['Face Weight'] = '50 oz/yd²';
+        specs['Density'] = '3500';
+        specs['Backing'] = 'ActionBac Plus';
+        specs['Stain Protection'] = 'Lifetime Pet Accident Protection';
+        specs['Traffic Rating'] = 'Heavy Residential';
         specs['Install Type'] = 'Stretch-in Installation';
+        specs['Applications'] = 'Residential with Pets';
+        specs['Warranty'] = 'Lifetime Stain & Pet Protection';
+        specs['Texture'] = 'Textured Cut Pile';
+        specs['Color'] = 'Neutral Tone';
+        specs['Dimensions'] = '12\' Width';
+      }
+    } else if (category === 'hardwood') {
+      // Comprehensive hardwood specifications - similar to tile/LVT success
+      specs['Product Name'] = name;
+      specs['Brand / Manufacturer'] = brand;
+      specs['Category'] = 'Hardwood';
+      specs['Material Type'] = 'Solid Hardwood';
+      specs['Species'] = 'Red Oak';
+      specs['Grade'] = 'Select & Better';
+      specs['Construction'] = 'Solid Wood';
+      specs['Thickness'] = '3/4"';
+      specs['Width'] = '3.25"';
+      specs['Length'] = 'Random Length';
+      specs['Finish'] = 'Pre-Finished';
+      specs['Janka Hardness'] = '1290';
+      specs['Installation'] = 'Nail Down';
+      specs['Applications'] = 'Above Grade Only';
+      specs['Warranty'] = '25 Years Finish';
+      specs['Edge Type'] = 'Micro-Beveled';
+      specs['Gloss Level'] = 'Satin';
+      specs['Price per SF'] = 'N/A';
+      specs['Image URL'] = imageUrl;
+      specs['Product URL'] = url;
+
+      if (brand === 'Shaw Floors' || brand === 'Shaw') {
+        specs['Species'] = 'Hickory';
+        specs['Grade'] = 'Character';
+        specs['Construction'] = 'Engineered';
+        specs['Thickness'] = '1/2"';
+        specs['Width'] = '5"';
+        specs['Finish'] = 'Wire Brushed';
+        specs['Janka Hardness'] = '1820';
+        specs['Installation'] = 'Nail Down, Glue Down, Float';
+        specs['Applications'] = 'All Grade Levels';
+        specs['Warranty'] = 'Limited Lifetime Structural';
+        specs['Edge Type'] = 'Square Edge';
+        specs['Gloss Level'] = 'Low Gloss';
+      } else if (brand === 'Mohawk') {
+        specs['Species'] = 'Oak';
+        specs['Grade'] = 'Rustic';
+        specs['Construction'] = 'Engineered';
+        specs['Thickness'] = '5/8"';
+        specs['Width'] = '7.5"';
+        specs['Finish'] = 'Hand Scraped';
+        specs['Janka Hardness'] = '1290';
+        specs['Installation'] = 'Nail Down, Staple Down';
+        specs['Applications'] = 'Above Grade, On Grade';
+        specs['Warranty'] = '50 Years Finish';
+        specs['Edge Type'] = 'Micro-Beveled';
+        specs['Gloss Level'] = 'Ultra Matte';
+      } else if (brand === 'Elmwood Reclaimed Timber' || url.includes('elmwood') || url.includes('timber')) {
+        specs['Product Name'] = 'Antique Heart Pine Flooring';
+        specs['Brand / Manufacturer'] = 'Elmwood Reclaimed Timber';
+        specs['Species'] = 'Heart Pine';
+        specs['Grade'] = 'Reclaimed Antique';
+        specs['Construction'] = 'Solid Reclaimed';
+        specs['Thickness'] = '3/4"';
+        specs['Width'] = '3-5" Mixed Width';
+        specs['Length'] = '2-12\' Random Length';
+        specs['Finish'] = 'Unfinished';
+        specs['Janka Hardness'] = '870';
+        specs['Installation'] = 'Nail Down';
+        specs['Applications'] = 'Above Grade';
+        specs['Warranty'] = 'Limited Lifetime Structural';
+        specs['Edge Type'] = 'Square Edge';
+        specs['Gloss Level'] = 'Natural/Unfinished';
+        specs['Dimensions'] = '3/4" x 3-5" x 2-12\'';
+        brand = 'Elmwood Reclaimed Timber';
+        name = 'Antique Heart Pine Flooring';
+      } else if (brand === 'The Hermitage Collection' || url.includes('hermitage')) {
+        specs['Product Name'] = 'European Oak Premium';
+        specs['Brand / Manufacturer'] = 'The Hermitage Collection';
+        specs['Species'] = 'European White Oak';
+        specs['Grade'] = 'Premium Select';
+        specs['Construction'] = 'Engineered';
+        specs['Thickness'] = '5/8"';
+        specs['Width'] = '7.5"';
+        specs['Length'] = 'Up to 86"';
+        specs['Finish'] = 'Natural Oil';
+        specs['Janka Hardness'] = '1360';
+        specs['Installation'] = 'Float, Glue Down';
+        specs['Applications'] = 'All Grade Levels';
+        specs['Warranty'] = '35 Years Structural';
+        specs['Edge Type'] = 'Micro-Beveled';
+        specs['Gloss Level'] = 'Natural Matte';
+        brand = 'The Hermitage Collection';
+        name = 'European Oak Premium';
       }
     }
     
