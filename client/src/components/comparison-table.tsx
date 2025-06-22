@@ -30,12 +30,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [pasteUrl, setPasteUrl] = useState("");
   const [location, setLocation] = useLocation();
-  const [visibleSpecs, setVisibleSpecs] = useState({
-    price: true,
-    brand: true,
-    dimensions: true,
-    specifications: true
-  });
+  const [visibleSpecs, setVisibleSpecs] = useState<Record<string, boolean>>({});
 
   // Subscribe to comparison store
   useEffect(() => {
@@ -345,23 +340,25 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
         </div>
       </div>
 
-      {/* Spec Toggle Controls */}
-      <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-        <div className="flex flex-wrap gap-4 items-center">
-          <span className="text-sm font-medium">Show/Hide Columns:</span>
-          {(Object.keys(visibleSpecs) as Array<keyof typeof visibleSpecs>).map((spec) => (
-            <label key={spec} className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={visibleSpecs[spec]}
-                onChange={() => toggleSpec(spec)}
-                className="rounded"
-              />
-              <span className="capitalize">{spec}</span>
-            </label>
-          ))}
+      {/* Spec Toggle Controls - Only show if there are filterable columns */}
+      {headers.length > 3 && (
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+          <div className="flex flex-wrap gap-4 items-center">
+            <span className="text-sm font-medium">Show/Hide Columns:</span>
+            {headers.filter(h => h !== 'Product' && h !== 'Actions').map((header) => (
+              <label key={header} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={visibleSpecs[header.toLowerCase()] !== false}
+                  onChange={() => toggleSpec(header.toLowerCase())}
+                  className="rounded"
+                />
+                <span>{header}</span>
+              </label>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Sort and View Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -408,7 +405,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
           <table className="w-full comparison-table min-w-full">
             <thead className="bg-gray-50">
               <tr>
-                {headers.map((header, index) => (
+                {filteredHeaders.map((header, index) => (
                   <th
                     key={header}
                     className={`px-4 py-4 text-left text-sm font-semibold text-gray-900 ${
@@ -423,33 +420,44 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
             <tbody className="bg-white divide-y divide-gray-200">
               {sortedMaterials.map((material) => (
                 <tr key={material.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 border-r">
-                    <div className="flex items-center">
-                      <Checkbox
-                        checked={comparisonStore.hasSelected(material.id)}
-                        onCheckedChange={(checked) => {
-                          console.log(`Material ${material.id} (${material.name}) ${checked ? 'selected' : 'deselected'}`);
-                          toggleMaterialSelection(material.id);
-                        }}
-                        className="mr-3"
-                      />
-                      {material.imageUrl && (
-                        <img 
-                          src={material.imageUrl} 
-                          alt={material.name}
-                          className="w-12 h-12 rounded-lg object-cover mr-3"
+                  {/* Product Column - Always Visible */}
+                  {filteredHeaders.includes('Product') && (
+                    <td className="px-6 py-4 border-r">
+                      <div className="flex items-center">
+                        <Checkbox
+                          checked={comparisonStore.hasSelected(material.id)}
+                          onCheckedChange={(checked) => {
+                            console.log(`Material ${material.id} (${material.name}) ${checked ? 'selected' : 'deselected'}`);
+                            toggleMaterialSelection(material.id);
+                          }}
+                          className="mr-3"
                         />
-                      )}
-                      <div>
-                        <div className="font-medium text-gray-900">{material.name}</div>
-                        <div className="text-sm text-gray-500">{material.description}</div>
+                        {material.imageUrl && (
+                          <img 
+                            src={material.imageUrl} 
+                            alt={material.name}
+                            className="w-12 h-12 rounded-lg object-cover mr-3"
+                          />
+                        )}
+                        <div>
+                          <div className="font-medium text-gray-900">{material.name}</div>
+                          <div className="text-sm text-gray-500">{material.description}</div>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 text-sm text-gray-900">{material.brand}</td>
-                  <td className="px-4 py-4 text-sm font-semibold text-gray-900">
-                    {material.price === 'N/A' || material.price === '0.00' ? 'N/A' : `$${material.price}`}
-                  </td>
+                    </td>
+                  )}
+                  
+                  {/* Brand Column */}
+                  {filteredHeaders.includes('Brand') && (
+                    <td className="px-4 py-4 text-sm text-gray-900">{material.brand}</td>
+                  )}
+                  
+                  {/* Price Column */}
+                  {filteredHeaders.includes('Price') && (
+                    <td className="px-4 py-4 text-sm font-semibold text-gray-900">
+                      {material.price === 'N/A' || material.price === '0.00' ? 'N/A' : `$${material.price}`}
+                    </td>
+                  )}
                   
                   {/* Category-specific specification columns */}
                   {category === "tiles" && (
