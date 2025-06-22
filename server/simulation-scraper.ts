@@ -217,13 +217,13 @@ export class SimulationScraper {
       const enhancedSpecs = this.enhanceSpecifications(specs, category, brand, name, url, imageUrl);
       
       return {
-        name,
-        brand,
+        name: enhancedSpecs['Product Name'] || name,
+        brand: enhancedSpecs['Brand / Manufacturer'] || brand,
         price: enhancedSpecs['Price per SF'] || '0.00',
         category,
         description: $('.product-description, .description, .product-overview').first().text().trim().substring(0, 500) || '',
         imageUrl: imageUrl || 'https://placehold.co/400x300/CCCCCC/FFFFFF?text=No+Image',
-        dimensions: enhancedSpecs['Dimensions'] || '—',
+        dimensions: enhancedSpecs['Dimensions'] || enhancedSpecs['Slab Dimensions'] || '—',
         specifications: enhancedSpecs,
         sourceUrl: url
       };

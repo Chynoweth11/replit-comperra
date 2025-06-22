@@ -270,6 +270,46 @@ export default function ProductDetail() {
                     if (key.toLowerCase().includes('actions')) {
                       return false;
                     }
+                  }
+                  
+                  // For carpet products, hide unwanted fields for cleaner display
+                  if (material.category === 'carpet') {
+                    if (key.toLowerCase().includes('applications') || key.toLowerCase().includes('application')) {
+                      return false;
+                    }
+                    if (key.toLowerCase().includes('warranty')) {
+                      return false;
+                    }
+                    if (key.toLowerCase().includes('actions')) {
+                      return false;
+                    }
+                  }
+                  
+                  // For heating products, hide Actions field
+                  if (material.category === 'heat') {
+                    if (key.toLowerCase().includes('actions')) {
+                      return false;
+                    }
+                  }
+                  
+                  // For tiles, hide Actions field
+                  if (material.category === 'tiles') {
+                    if (key.toLowerCase().includes('actions')) {
+                      return false;
+                    }
+                  }
+                  
+                  // For hardwood products, hide Janka Hardness, Installation, and Actions fields
+                  if (material.category === 'hardwood') {
+                    if (key.toLowerCase().includes('janka') || key.toLowerCase().includes('hardness')) {
+                      return false;
+                    }
+                    if (key.toLowerCase().includes('installation')) {
+                      return false;
+                    }
+                    if (key.toLowerCase().includes('actions')) {
+                      return false;
+                    }
                     // Hide dimensions in specs if already shown in product box
                     if ((key.toLowerCase().includes('dimensions') || key.toLowerCase().includes('dimension')) && material.dimensions && material.dimensions !== '—') {
                       return false;
