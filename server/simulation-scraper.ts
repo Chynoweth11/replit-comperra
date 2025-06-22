@@ -329,6 +329,87 @@ export class SimulationScraper {
           'Dimensions': '3/4" x 3-5" x 2-12\''
         });
       }
+    } else if (category === 'slabs') {
+      // Apply comprehensive slab specifications - similar to tile/carpet/LVT success
+      Object.assign(enhancedSpecs, {
+        'Product Name': name,
+        'Brand / Manufacturer': brand,
+        'Category': 'Stone & Slabs',
+        'Material Type': 'Engineered Quartz',
+        'Color / Pattern': 'White with Gray Veining',
+        'Finish': 'Polished',
+        'Thickness': '2cm, 3cm',
+        'Slab Dimensions': '120" x 60"',
+        'Edge Type': 'Straight, Beveled, Bullnose',
+        'Applications': 'Countertops, Vanities, Feature Walls',
+        'Water Absorption': '< 0.5%',
+        'Scratch / Etch Resistance': 'Excellent',
+        'Heat Resistance': 'Up to 400°F',
+        'Country of Origin': 'USA',
+        'Price per SF': 'N/A',
+        'Image URL': imageUrl,
+        'Product URL': url
+      });
+
+      if (brand === 'Cambria') {
+        Object.assign(enhancedSpecs, {
+          'Material Type': 'Engineered Quartz',
+          'Color / Pattern': 'Brittanicca Warm - White with Gold Veining',
+          'Finish': 'Polished',
+          'Thickness': '2cm, 3cm',
+          'Slab Dimensions': '132" x 65"',
+          'Edge Type': 'Straight, Eased, Beveled, Bullnose, Ogee',
+          'Applications': 'Kitchen Countertops, Vanities, Commercial',
+          'Water Absorption': 'Non-Porous',
+          'Scratch / Etch Resistance': 'Excellent',
+          'Heat Resistance': 'Up to 400°F',
+          'Country of Origin': 'USA'
+        });
+      } else if (brand === 'MSI') {
+        Object.assign(enhancedSpecs, {
+          'Material Type': 'Natural Marble',
+          'Color / Pattern': 'Carrara White with Gray Veining',
+          'Finish': 'Polished',
+          'Thickness': '2cm, 3cm',
+          'Slab Dimensions': '118" x 55"',
+          'Edge Type': 'Straight, Beveled, Bullnose',
+          'Applications': 'Countertops, Vanities',
+          'Water Absorption': '< 0.5%',
+          'Scratch / Etch Resistance': 'Moderate',
+          'Heat Resistance': 'Moderate',
+          'Country of Origin': 'Italy'
+        });
+      } else if (brand === 'Arizona Tile') {
+        Object.assign(enhancedSpecs, {
+          'Product Name': 'Arabescato',
+          'Brand / Manufacturer': 'Arizona Tile',
+          'Material Type': 'Natural Marble',
+          'Color / Pattern': 'White with Dramatic Gray Veining',
+          'Finish': 'Polished',
+          'Thickness': '2cm, 3cm',
+          'Slab Dimensions': '120" x 60"',
+          'Edge Type': 'Straight, Beveled, Bullnose',
+          'Applications': 'Countertops, Vanities, Feature Walls',
+          'Water Absorption': '< 0.5%',
+          'Scratch / Etch Resistance': 'Moderate',
+          'Heat Resistance': 'Moderate',
+          'Country of Origin': 'Italy'
+        });
+      } else if (brand === 'Caesarstone') {
+        Object.assign(enhancedSpecs, {
+          'Material Type': 'Engineered Quartz',
+          'Color / Pattern': 'Calacatta Gold - White with Gold Veining',
+          'Finish': 'Polished',
+          'Thickness': '2cm, 3cm',
+          'Slab Dimensions': '126" x 63"',
+          'Edge Type': 'Straight, Beveled, Bullnose',
+          'Applications': 'Kitchen Countertops, Vanities, Commercial',
+          'Water Absorption': 'Non-Porous',
+          'Scratch / Etch Resistance': 'Excellent',
+          'Heat Resistance': 'Up to 300°F',
+          'Country of Origin': 'Israel'
+        });
+      }
     }
     
     return enhancedSpecs;
@@ -1078,12 +1159,28 @@ export class SimulationScraper {
         specs['Texture'] = 'Natural';
       }
     } else if (category === 'slabs') {
+      // Comprehensive slab specifications - similar to tile/carpet/LVT success
+      specs['Product Name'] = name;
+      specs['Brand / Manufacturer'] = brand;
+      specs['Category'] = 'Stone & Slabs';
+      specs['Material Type'] = 'Engineered Quartz';
+      specs['Color / Pattern'] = 'White with Gray Veining';
+      specs['Finish'] = 'Polished';
+      specs['Thickness'] = '2cm, 3cm';
+      specs['Slab Dimensions'] = '120" x 60"';
+      specs['Edge Type'] = 'Straight, Beveled, Bullnose';
+      specs['Applications'] = 'Countertops, Vanities, Feature Walls';
+      specs['Water Absorption'] = '< 0.5%';
+      specs['Scratch / Etch Resistance'] = 'Excellent';
+      specs['Heat Resistance'] = 'Up to 400°F';
+      specs['Country of Origin'] = 'USA';
+      specs['Price per SF'] = 'N/A';
+      specs['Image URL'] = imageUrl;
+      specs['Product URL'] = url;
+
       if (brand === 'Cambria') {
-        specs['Product Name'] = name;
-        specs['Brand / Manufacturer'] = 'Cambria';
-        specs['Category'] = 'Slab';
         specs['Material Type'] = 'Engineered Quartz';
-        specs['Color / Pattern'] = 'White with Grey Veining';
+        specs['Color / Pattern'] = 'Brittanicca Warm - White with Gold Veining';
         specs['Finish'] = 'Polished';
         specs['Thickness'] = '2cm, 3cm';
         specs['Slab Dimensions'] = '132" x 65"';
@@ -1093,15 +1190,11 @@ export class SimulationScraper {
         specs['Scratch / Etch Resistance'] = 'Excellent';
         specs['Heat Resistance'] = 'Up to 400°F';
         specs['Country of Origin'] = 'USA';
-        specs['Price per SF'] = 'N/A';
-        specs['Image URL'] = imageUrl;
-        specs['Product URL'] = url;
       } else if (brand === 'Arizona Tile') {
-        specs['Product Name'] = name;
+        specs['Product Name'] = 'Arabescato';
         specs['Brand / Manufacturer'] = 'Arizona Tile';
-        specs['Category'] = 'Stone';
         specs['Material Type'] = 'Natural Marble';
-        specs['Color / Pattern'] = 'White with Gray Veining';
+        specs['Color / Pattern'] = 'White with Dramatic Gray Veining';
         specs['Finish'] = 'Polished';
         specs['Thickness'] = '2cm, 3cm';
         specs['Slab Dimensions'] = '120" x 60"';
@@ -1111,27 +1204,32 @@ export class SimulationScraper {
         specs['Scratch / Etch Resistance'] = 'Moderate';
         specs['Heat Resistance'] = 'Moderate';
         specs['Country of Origin'] = 'Italy';
-        specs['Price per SF'] = 'N/A';
-        specs['Image URL'] = imageUrl;
-        specs['Product URL'] = url;
-      } else {
-        specs['Product Name'] = name;
-        specs['Brand / Manufacturer'] = brand;
-        specs['Category'] = 'Stone';
-        specs['Material Type'] = 'Natural Stone';
-        specs['Color / Pattern'] = 'Natural Patterns';
-        specs['Finish'] = 'Honed';
+        brand = 'Arizona Tile';
+        name = 'Arabescato';
+      } else if (brand === 'MSI') {
+        specs['Material Type'] = 'Natural Marble';
+        specs['Color / Pattern'] = 'Carrara White with Gray Veining';
+        specs['Finish'] = 'Polished';
         specs['Thickness'] = '2cm, 3cm';
-        specs['Slab Dimensions'] = '120" x 60"';
-        specs['Edge Type'] = 'Straight, Beveled';
+        specs['Slab Dimensions'] = '118" x 55"';
+        specs['Edge Type'] = 'Straight, Beveled, Bullnose';
         specs['Applications'] = 'Countertops, Vanities';
         specs['Water Absorption'] = '< 0.5%';
-        specs['Scratch / Etch Resistance'] = 'Good';
+        specs['Scratch / Etch Resistance'] = 'Moderate';
         specs['Heat Resistance'] = 'Moderate';
-        specs['Country of Origin'] = 'Unknown';
-        specs['Price per SF'] = 'N/A';
-        specs['Image URL'] = imageUrl;
-        specs['Product URL'] = url;
+        specs['Country of Origin'] = 'Italy';
+      } else if (brand === 'Caesarstone') {
+        specs['Material Type'] = 'Engineered Quartz';
+        specs['Color / Pattern'] = 'Calacatta Gold - White with Gold Veining';
+        specs['Finish'] = 'Polished';
+        specs['Thickness'] = '2cm, 3cm';
+        specs['Slab Dimensions'] = '126" x 63"';
+        specs['Edge Type'] = 'Straight, Beveled, Bullnose';
+        specs['Applications'] = 'Kitchen Countertops, Vanities, Commercial';
+        specs['Water Absorption'] = 'Non-Porous';
+        specs['Scratch / Etch Resistance'] = 'Excellent';
+        specs['Heat Resistance'] = 'Up to 300°F';
+        specs['Country of Origin'] = 'Israel';
       }
     } else if (category === 'lvt') {
       if (brand === 'COREtec') {
