@@ -186,7 +186,7 @@ export default function ProductDetail() {
               </div>
             )}
 
-            {material.dimensions && (
+            {material.dimensions && material.dimensions !== '—' && (
               <div>
                 <h2 className="text-lg font-semibold mb-2">Dimensions</h2>
                 <p className="text-gray-600">{material.dimensions}</p>
@@ -227,7 +227,35 @@ export default function ProductDetail() {
               {Object.entries(material.specifications as Record<string, any>)
                 .filter(([key, value]) => {
                   // Filter out empty values, dashes, and meaningless data
-                  return value !== '—' && value !== '' && value != null && value !== undefined && value !== '0.00';
+                  if (value === '—' || value === '' || value == null || value === undefined || value === '0.00') {
+                    return false;
+                  }
+                  
+                  // For stone & slabs products, hide Applications field and duplicate Dimensions
+                  if (material.category === 'slabs') {
+                    if (key.toLowerCase().includes('applications') || key.toLowerCase().includes('application')) {
+                      return false;
+                    }
+                    // Hide dimensions in specs if already shown in product box
+                    if ((key.toLowerCase().includes('dimensions') || key.toLowerCase().includes('dimension')) && material.dimensions && material.dimensions !== '—') {
+                      return false;
+                    }
+                  }
+                  
+                  // For LVT products, hide Applications, Warranty, and Actions fields
+                  if (material.category === 'lvt') {
+                    if (key.toLowerCase().includes('applications') || key.toLowerCase().includes('application')) {
+                      return false;
+                    }
+                    if (key.toLowerCase().includes('warranty')) {
+                      return false;
+                    }
+                    if (key.toLowerCase().includes('actions')) {
+                      return false;
+                    }
+                  }
+                  
+                  return true;
                 })
                 .map(([key, value]) => (
                 <div key={key} className="flex justify-between items-center py-3 border-b border-gray-200">
