@@ -253,6 +253,27 @@ export default function ProductDetail() {
                     if (key.toLowerCase().includes('actions')) {
                       return false;
                     }
+                    // Hide dimensions in specs if already shown in product box
+                    if ((key.toLowerCase().includes('dimensions') || key.toLowerCase().includes('dimension')) && material.dimensions && material.dimensions !== '—') {
+                      return false;
+                    }
+                  }
+                  
+                  // For hardwood products, hide Janka Hardness, Installation, and Actions fields
+                  if (material.category === 'hardwood') {
+                    if (key.toLowerCase().includes('janka') || key.toLowerCase().includes('hardness')) {
+                      return false;
+                    }
+                    if (key.toLowerCase().includes('installation')) {
+                      return false;
+                    }
+                    if (key.toLowerCase().includes('actions')) {
+                      return false;
+                    }
+                    // Hide dimensions in specs if already shown in product box
+                    if ((key.toLowerCase().includes('dimensions') || key.toLowerCase().includes('dimension')) && material.dimensions && material.dimensions !== '—') {
+                      return false;
+                    }
                   }
                   
                   return true;
