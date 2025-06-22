@@ -193,7 +193,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
       case "heat":
         return [...baseHeaders, "Voltage", "Coverage", "Features", "Power", "Dimensions", "Actions"];
       case "carpet":
-        return [...baseHeaders, "Fiber", "Stain Resistance", "Pile Height", "Width", "Dimensions", "Actions"];
+        return [...baseHeaders, "Fiber", "Stain Resistance", "Pile Height", "Dimensions", "Actions"];
       default:
         return [...baseHeaders, "Dimensions", "Actions"];
     }
@@ -527,16 +527,13 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                   {category === "carpet" && (
                     <>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Fiber'] || material.specifications?.fiberType || '—'}
+                        {material.specifications?.['Fiber'] || material.specifications?.['Fiber Type'] || material.specifications?.fiberType || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Stain Resistance'] || material.specifications?.stainResistance || '—'}
+                        {material.specifications?.['Stain Resistance'] || material.specifications?.['Stain Protection'] || material.specifications?.stainResistance || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
                         {material.specifications?.['Pile Height'] || material.specifications?.pileHeight || '—'}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Width'] || material.specifications?.width || '—'}
                       </td>
                     </>
                   )}
