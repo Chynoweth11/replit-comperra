@@ -483,11 +483,9 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                       <td className="px-4 py-4 text-center">
                         {material.specifications?.['Water Absorption'] || material.specifications?.waterAbsorption || 'N/A'}
                       </td>
+
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Applications'] || (Array.isArray(material.specifications?.applications) ? material.specifications.applications.join(', ') : material.specifications?.applications) || 'N/A'}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Slab Dimensions'] || material.specifications?.['Dimensions'] || material.specifications?.slabSize || material.dimensions || 'N/A'}
+                        {material.specifications?.['Slab Dimensions'] || material.specifications?.slabSize || 'N/A'}
                       </td>
                       <td className="px-4 py-4 text-center">
                         {material.specifications?.['Scratch / Etch Resistance'] || material.specifications?.['Scratch Resistance'] || material.specifications?.scratchResistance || 'N/A'}
@@ -557,9 +555,11 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                     </>
                   )}
                   
-                  <td className="px-4 py-4 text-sm text-gray-900 text-center">
-                    {material.specifications?.['Dimensions'] || material.dimensions || '—'}
-                  </td>
+                  {visibleSpecs.dimensions && (
+                    <td className="px-4 py-4 text-sm text-gray-900 text-center">
+                      {material.specifications?.['Dimensions'] || material.dimensions || '—'}
+                    </td>
+                  )}
                   <td className="px-4 py-4">
                     <div className="flex gap-2">
                       <Button 

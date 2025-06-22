@@ -299,6 +299,11 @@ export default function ProductDetail() {
                     }
                   }
                   
+                  // Global cleanup - hide empty Price per SF that shows as 0.00
+                  if (key.toLowerCase().includes('price per sf') && (value === '0.00' || value === 0)) {
+                    return false;
+                  }
+                  
                   // For hardwood products, hide Janka Hardness, Installation, and Actions fields
                   if (material.category === 'hardwood') {
                     if (key.toLowerCase().includes('janka') || key.toLowerCase().includes('hardness')) {
