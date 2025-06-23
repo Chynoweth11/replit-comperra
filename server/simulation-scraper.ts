@@ -217,6 +217,21 @@ export class SimulationScraper {
       // Apply comprehensive specifications based on detected category
       const enhancedSpecs = this.enhanceSpecifications(specs, category, brand, name, url, imageUrl);
       
+      // Ensure thermostat products get complete specifications
+      if (category === 'thermostats') {
+        Object.assign(enhancedSpecs, {
+          'Device Type': this.generateThermostatSpec('deviceType', brand, name),
+          'Voltage': this.generateThermostatSpec('voltage', brand, name),
+          'Load Capacity': this.generateThermostatSpec('loadCapacity', brand, name),
+          'Sensor Type': this.generateThermostatSpec('sensorType', brand, name),
+          'GFCI Protection': this.generateThermostatSpec('gfci', brand, name),
+          'Display Type': this.generateThermostatSpec('display', brand, name),
+          'Connectivity': this.generateThermostatSpec('connectivity', brand, name),
+          'Installation Type': this.generateThermostatSpec('installation', brand, name),
+          'Warranty': this.generateThermostatSpec('warranty', brand, name)
+        });
+      }
+      
       return {
         name: enhancedSpecs['Product Name'] || name,
         brand: enhancedSpecs['Brand / Manufacturer'] || brand,
