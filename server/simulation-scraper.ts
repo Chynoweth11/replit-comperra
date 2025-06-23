@@ -452,28 +452,29 @@ export class SimulationScraper {
           'Warranty': '3-year'
         });
       }
-        'Voltage': this.generateThermostatSpec('voltage', brand, name),
-        'Load Capacity': this.generateThermostatSpec('loadCapacity', brand, name),
-        'Sensor Type': this.generateThermostatSpec('sensorType', brand, name),
-        'Sensor Cable Length': this.generateThermostatSpec('sensorLength', brand, name),
-        'GFCI / Protection': this.generateThermostatSpec('gfci', brand, name),
-        'Display Type': this.generateThermostatSpec('display', brand, name),
-        'Connectivity': this.generateThermostatSpec('connectivity', brand, name),
-        'Programmable?': this.generateThermostatSpec('programmable', brand, name),
-        'Geo-Learning / AI': this.generateThermostatSpec('geoLearning', brand, name),
-        'Installation Type': this.generateThermostatSpec('installation', brand, name),
-        'IP Rating': this.generateThermostatSpec('ipRating', brand, name),
-        'Color / Finish': this.generateThermostatSpec('color', brand, name),
-        'Warranty': this.generateThermostatSpec('warranty', brand, name),
-        'Certifications': this.generateThermostatSpec('certifications', brand, name),
-        'Compatible Heating': this.generateThermostatSpec('compatible', brand, name),
-        'User Interface Features': this.generateThermostatSpec('interface', brand, name),
-        'Manual Override': this.generateThermostatSpec('override', brand, name),
-        'Price per SF': 'N/A'
+    } else if (category === 'slabs') {
+      // Apply comprehensive slab specifications - similar to tile/carpet/LVT success
+      Object.assign(enhancedSpecs, {
+        'Product Name': name,
+        'Brand / Manufacturer': brand,
+        'Category': 'Stone & Slabs',
+        'Material Type': 'Engineered Quartz',
+        'Color / Pattern': 'White with Gray Veining',
+        'Finish': 'Polished',
+        'Thickness': '2cm, 3cm',
+        'Slab Dimensions': '120" x 60"',
+        'Edge Type': 'Straight, Beveled, Bullnose',
+        'Applications': 'Countertops, Vanities, Feature Walls',
+        'Water Absorption': '< 0.5%',
+        'Scratch / Etch Resistance': 'Excellent',
+        'Heat Resistance': 'Up to 400°F',
+        'Country of Origin': 'USA',
+        'Price per SF': 'N/A',
+        'Image URL': imageUrl,
+        'Product URL': url
       });
 
-      // Brand-specific thermostat specifications
-      if (brand === 'Warmup' || url.includes('warmup')) {
+      if (brand === 'Cambria') {
         Object.assign(enhancedSpecs, {
           'Product Name': '6iE Smart WiFi Thermostat',
           'Brand / Manufacturer': 'Warmup',
