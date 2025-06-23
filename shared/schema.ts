@@ -109,3 +109,4 @@ export type LVTSpecs = z.infer<typeof lvtSpecsSchema>;
 export type HardwoodSpecs = z.infer<typeof hardwoodSpecsSchema>;
 export type HeatingSpecs = z.infer<typeof heatingSpecsSchema>;
 export type CarpetSpecs = z.infer<typeof carpetSpecsSchema>;
+export type ThermostatSpecs = z.infer<typeof thermostatSpecsSchema>;

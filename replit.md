@@ -1,7 +1,7 @@
 # Comperra - Building Materials Comparison Platform
 
 ## Project Overview
-Comperra is a comprehensive building materials comparison platform that allows users to compare products within specific material categories (Tiles, Stone & Slabs, Vinyl & LVT, Hardwood, Heating, Carpet) with strict category separation and no cross-category results.
+Comperra is a comprehensive building materials comparison platform that allows users to compare products within specific material categories (Tiles, Stone & Slabs, Vinyl & LVT, Hardwood, Heating, Carpet, Thermostats) with strict category separation and no cross-category results.
 
 ## Key Features
 - **Category-based Product Comparison**: Users can browse and compare materials within specific categories
@@ -22,6 +22,9 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ✅ **June 23, 2025**: Added comprehensive Thermostats category with 22 specialized specification fields - Device Type, Voltage, Load Capacity, Sensor Type, GFCI Protection, Display Type, Connectivity, Programming features, Installation Type, IP Rating, Certifications, Compatible Heating, Dimensions
+- ✅ **June 23, 2025**: Implemented thermostat-specific scraping with brand recognition for Warmup, OJ Microline, NuHeat with authentic technical specifications
+- ✅ **June 23, 2025**: Added thermostat table headers showing Device Type, Voltage, Load Capacity, Sensor Type, GFCI Protection alongside standard product information
 - ✅ **June 22, 2025**: Removed Image URL from product specifications display across all categories - field not needed for users while ensuring products maintain proper image URLs from source websites
 - ✅ **June 22, 2025**: Enhanced image extraction to capture multiple product images with comprehensive fallback selectors for better visual representation
 - ✅ **June 22, 2025**: Enhanced hardwood specification generation to ensure all required table headers are filled - Species, Finish, Width, Material Type, Thickness properly populated for all scraped hardwood products

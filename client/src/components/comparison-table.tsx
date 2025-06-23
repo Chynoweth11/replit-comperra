@@ -194,6 +194,8 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
         return [...baseHeaders, "Voltage", "Coverage", "Features", "Power", "Dimensions", "Actions"];
       case "carpet":
         return [...baseHeaders, "Fiber", "Stain Resistance", "Pile Height", "Dimensions", "Actions"];
+      case "thermostats":
+        return [...baseHeaders, "Device Type", "Voltage", "Load Capacity", "Sensor Type", "GFCI Protection", "Dimensions", "Actions"];
       default:
         return [...baseHeaders, "Dimensions", "Actions"];
     }
@@ -534,6 +536,26 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                       </td>
                       <td className="px-4 py-4 text-center">
                         {material.specifications?.['Pile Height'] || material.specifications?.pileHeight || '—'}
+                      </td>
+                    </>
+                  )}
+                  
+                  {category === "thermostats" && (
+                    <>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Device Type'] || material.specifications?.deviceType || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Voltage'] || material.specifications?.voltage || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Load Capacity'] || material.specifications?.loadCapacity || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['Sensor Type'] || material.specifications?.sensorType || '—'}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {material.specifications?.['GFCI Protection'] || material.specifications?.['GFCI / Protection'] || material.specifications?.gfciProtection || '—'}
                       </td>
                     </>
                   )}
