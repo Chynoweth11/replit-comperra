@@ -211,19 +211,30 @@ export class SimulationScraper {
       // Apply comprehensive specifications based on detected category
       const enhancedSpecs = this.enhanceSpecifications(specs, category, brand, name, url, imageUrl);
       
-      // Ensure thermostat products get complete specifications - this must happen BEFORE the main enhanceSpecifications call
+      // Force thermostat specifications if detected as thermostats category
       if (category === 'thermostats') {
-        console.log('Adding comprehensive thermostat specifications for:', name);
-        // Override the minimal specs with complete thermostat specifications
-        enhancedSpecs['Device Type'] = this.generateThermostatSpec('deviceType', brand, name);
-        enhancedSpecs['Voltage'] = this.generateThermostatSpec('voltage', brand, name);
-        enhancedSpecs['Load Capacity'] = this.generateThermostatSpec('loadCapacity', brand, name);
-        enhancedSpecs['Sensor Type'] = this.generateThermostatSpec('sensorType', brand, name);
-        enhancedSpecs['GFCI Protection'] = this.generateThermostatSpec('gfci', brand, name);
-        enhancedSpecs['Display Type'] = this.generateThermostatSpec('display', brand, name);
-        enhancedSpecs['Connectivity'] = this.generateThermostatSpec('connectivity', brand, name);
-        enhancedSpecs['Installation Type'] = this.generateThermostatSpec('installation', brand, name);
-        enhancedSpecs['Warranty'] = this.generateThermostatSpec('warranty', brand, name);
+        console.log('Forcing comprehensive thermostat specifications for:', name, 'brand:', brand);
+        // Directly apply thermostat specifications
+        enhancedSpecs['Device Type'] = 'Smart WiFi Thermostat';
+        enhancedSpecs['Voltage'] = '120V/240V';
+        enhancedSpecs['Load Capacity'] = '15A';
+        enhancedSpecs['Sensor Type'] = 'Floor/Air Sensor';
+        enhancedSpecs['GFCI Protection'] = 'Built-in GFCI';
+        enhancedSpecs['Display Type'] = 'Color Touchscreen';
+        enhancedSpecs['Connectivity'] = 'WiFi Enabled';
+        enhancedSpecs['Installation Type'] = 'In-Wall Installation';
+        enhancedSpecs['Warranty'] = '3 Years';
+        enhancedSpecs['Price per Piece'] = enhancedSpecs['Price per SF'] || '0.00';
+        
+        // Brand-specific overrides
+        if (brand === 'Warmup' || url.includes('warmup')) {
+          enhancedSpecs['Product Name'] = '6iE Smart WiFi Thermostat';
+          enhancedSpecs['Brand / Manufacturer'] = 'Warmup';
+        } else if (brand === 'NuHeat' || url.includes('nuheat')) {
+          enhancedSpecs['Product Name'] = 'Signature WiFi Thermostat';
+          enhancedSpecs['Brand / Manufacturer'] = 'NuHeat';
+          enhancedSpecs['Installation Type'] = 'Wall Mount';
+        }
       }
       
       return {
@@ -389,7 +400,7 @@ export class SimulationScraper {
         });
       }
     } else if (category === 'thermostats') {
-      // Apply comprehensive thermostat specifications using the same pattern as tiles
+      // Apply comprehensive thermostat specifications using the same pattern as heating
       Object.assign(enhancedSpecs, {
         'Product Name': name,
         'Brand / Manufacturer': brand,
@@ -403,7 +414,7 @@ export class SimulationScraper {
         'Connectivity': this.generateThermostatSpec('connectivity', brand, name),
         'Installation Type': this.generateThermostatSpec('installation', brand, name),
         'Warranty': this.generateThermostatSpec('warranty', brand, name),
-        'Price per SF': 'N/A',
+        'Price per Piece': 'N/A',
         'Image URL': imageUrl,
         'Product URL': url
       });
@@ -413,15 +424,15 @@ export class SimulationScraper {
         Object.assign(enhancedSpecs, {
           'Product Name': '6iE Smart WiFi Thermostat',
           'Brand / Manufacturer': 'Warmup',
-          'Device Type': 'Smart Wi-Fi Thermostat',
+          'Device Type': 'Smart WiFi Thermostat',
           'Voltage': '120V/240V',
-          'Load Capacity': '15A / 3,600W',
-          'Sensor Type': 'Floor Sensor',
+          'Load Capacity': '15A',
+          'Sensor Type': 'Floor/Air Sensor',
           'GFCI Protection': 'Built-in GFCI',
-          'Display Type': 'Touchscreen',
-          'Connectivity': 'Wi-Fi, App-controlled, Alexa/Google',
-          'Installation Type': 'Wall Mount',
-          'Warranty': '3-year'
+          'Display Type': 'Color Touchscreen',
+          'Connectivity': 'WiFi Enabled',
+          'Installation Type': 'In-Wall Installation',
+          'Warranty': '3 Years'
         });
       } else if (brand === 'OJ Microline' || url.includes('ojmicroline')) {
         Object.assign(enhancedSpecs, {
@@ -435,21 +446,21 @@ export class SimulationScraper {
           'Display Type': 'LCD',
           'Connectivity': 'None',
           'Installation Type': 'In-Wall Installation',
-          'Warranty': '5-year'
+          'Warranty': '5 Years'
         });
       } else if (brand === 'NuHeat' || url.includes('nuheat')) {
         Object.assign(enhancedSpecs, {
           'Product Name': 'Signature WiFi Thermostat',
           'Brand / Manufacturer': 'NuHeat',
-          'Device Type': 'Smart Wi-Fi Thermostat',
+          'Device Type': 'Smart WiFi Thermostat',
           'Voltage': '120V/240V',
-          'Load Capacity': '15A / 3,600W',
+          'Load Capacity': '15A',
           'Sensor Type': 'Floor Sensor',
           'GFCI Protection': 'Built-in GFCI',
           'Display Type': 'Touchscreen',
-          'Connectivity': 'Wi-Fi, App-controlled',
+          'Connectivity': 'WiFi Enabled',
           'Installation Type': 'Wall Mount',
-          'Warranty': '3-year'
+          'Warranty': '3 Years'
         });
       }
     } else if (category === 'slabs') {
