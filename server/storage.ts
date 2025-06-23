@@ -439,6 +439,29 @@ export class MemStorage implements IStorage {
       },
     ];
 
+    // Add thermostat seed data
+    materialsData.push({
+      name: "6iE Smart WiFi Thermostat",
+      category: "thermostats",
+      brand: "Warmup",
+      price: "249.99",
+      imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
+      description: "Advanced smart thermostat with WiFi connectivity and energy monitoring",
+      specifications: {
+        'Device Type': 'Smart WiFi Thermostat',
+        'Voltage': '120V/240V',
+        'Load Capacity': '15A',
+        'Sensor Type': 'Floor/Air Sensor',
+        'GFCI Protection': 'GFCI Protected',
+        'Display Type': 'Color Touchscreen',
+        'Connectivity': 'WiFi Enabled',
+        'Installation Type': 'In-Wall Installation',
+        'Warranty': '3 Years'
+      },
+      dimensions: "3.5\"x5.5\"",
+      inStock: true,
+    });
+
     materialsData.forEach(material => {
       const newMaterial: Material = { 
         ...material, 
