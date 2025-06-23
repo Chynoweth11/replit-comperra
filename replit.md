@@ -22,6 +22,7 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ✅ **June 23, 2025**: Fixed thermostat URL detection to properly categorize thermostat products into thermostats category instead of heat category - prioritized thermostat detection before heating detection
 - ✅ **June 23, 2025**: Added comprehensive Thermostats category with 22 specialized specification fields - Device Type, Voltage, Load Capacity, Sensor Type, GFCI Protection, Display Type, Connectivity, Programming features, Installation Type, IP Rating, Certifications, Compatible Heating, Dimensions
 - ✅ **June 23, 2025**: Implemented thermostat-specific scraping with brand recognition for Warmup, OJ Microline, NuHeat with authentic technical specifications
 - ✅ **June 23, 2025**: Added thermostat table headers showing Device Type, Voltage, Load Capacity, Sensor Type, GFCI Protection alongside standard product information

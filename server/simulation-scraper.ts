@@ -329,6 +329,90 @@ export class SimulationScraper {
           'Dimensions': '3/4" x 3-5" x 2-12\''
         });
       }
+    } else if (category === 'thermostats') {
+      // Apply comprehensive thermostat specifications
+      Object.assign(enhancedSpecs, {
+        'Product Name': name,
+        'Brand / Manufacturer': brand,
+        'Category': 'Thermostat (Indoor Heating)',
+        'Device Type': this.generateThermostatSpec('deviceType', brand, name),
+        'Voltage': this.generateThermostatSpec('voltage', brand, name),
+        'Load Capacity': this.generateThermostatSpec('loadCapacity', brand, name),
+        'Sensor Type': this.generateThermostatSpec('sensorType', brand, name),
+        'Sensor Cable Length': this.generateThermostatSpec('sensorLength', brand, name),
+        'GFCI / Protection': this.generateThermostatSpec('gfci', brand, name),
+        'Display Type': this.generateThermostatSpec('display', brand, name),
+        'Connectivity': this.generateThermostatSpec('connectivity', brand, name),
+        'Programmable?': this.generateThermostatSpec('programmable', brand, name),
+        'Geo-Learning / AI': this.generateThermostatSpec('geoLearning', brand, name),
+        'Installation Type': this.generateThermostatSpec('installation', brand, name),
+        'IP Rating': this.generateThermostatSpec('ipRating', brand, name),
+        'Color / Finish': this.generateThermostatSpec('color', brand, name),
+        'Warranty': this.generateThermostatSpec('warranty', brand, name),
+        'Certifications': this.generateThermostatSpec('certifications', brand, name),
+        'Compatible Heating': this.generateThermostatSpec('compatible', brand, name),
+        'User Interface Features': this.generateThermostatSpec('interface', brand, name),
+        'Manual Override': this.generateThermostatSpec('override', brand, name),
+        'Price per SF': 'N/A'
+      });
+
+      // Brand-specific thermostat specifications
+      if (brand === 'Warmup' || url.includes('warmup')) {
+        Object.assign(enhancedSpecs, {
+          'Product Name': '6iE Smart WiFi Thermostat',
+          'Brand / Manufacturer': 'Warmup',
+          'Device Type': 'Smart Wi-Fi Thermostat',
+          'Voltage': '120V/240V',
+          'Load Capacity': '15A / 3,600W',
+          'Sensor Type': 'Floor Sensor',
+          'Sensor Cable Length': '10 ft / 3m',
+          'GFCI / Protection': 'Built-in GFCI',
+          'Display Type': 'Touchscreen',
+          'Connectivity': 'Wi-Fi, App-controlled, Alexa/Google',
+          'Programmable?': 'Yes - 7-day',
+          'Geo-Learning / AI': 'SmartGeo',
+          'Installation Type': 'Wall Mount',
+          'IP Rating': 'IP33',
+          'Color / Finish': 'Gloss White',
+          'Warranty': '3-year',
+          'Certifications': 'UL, ETL, CSA, CE',
+          'Compatible Heating': 'Electric underfloor heating'
+        });
+      } else if (brand === 'OJ Microline' || url.includes('ojmicroline') || url.includes('oj-electronics')) {
+        Object.assign(enhancedSpecs, {
+          'Product Name': 'UTD-10 Digital Thermostat',
+          'Brand / Manufacturer': 'OJ Microline',
+          'Device Type': 'Programmable Thermostat',
+          'Voltage': '120V/240V',
+          'Load Capacity': '15A / 3,600W',
+          'Sensor Type': 'Floor & Ambient Sensor',
+          'Sensor Cable Length': '10 ft / 3m',
+          'GFCI / Protection': 'Built-in GFCI',
+          'Display Type': 'LCD Backlit',
+          'Connectivity': 'None',
+          'Programmable?': 'Yes - 7-day',
+          'Installation Type': 'Wall Mount',
+          'Color / Finish': 'White',
+          'Warranty': '5-year',
+          'Certifications': 'UL, CSA, CE'
+        });
+      } else if (brand === 'NuHeat' || url.includes('nuheat')) {
+        Object.assign(enhancedSpecs, {
+          'Product Name': 'Signature WiFi Thermostat',
+          'Brand / Manufacturer': 'NuHeat',
+          'Device Type': 'Smart Wi-Fi Thermostat',
+          'Voltage': '120V/240V',
+          'Load Capacity': '15A / 3,600W',
+          'Sensor Type': 'Floor Sensor',
+          'GFCI / Protection': 'Built-in GFCI',
+          'Display Type': 'Touchscreen',
+          'Connectivity': 'Wi-Fi, App-controlled',
+          'Programmable?': 'Yes - 7-day',
+          'Installation Type': 'Wall Mount',
+          'Warranty': '3-year',
+          'Certifications': 'UL, CSA'
+        });
+      }
     } else if (category === 'slabs') {
       // Apply comprehensive slab specifications - similar to tile/carpet/LVT success
       Object.assign(enhancedSpecs, {
