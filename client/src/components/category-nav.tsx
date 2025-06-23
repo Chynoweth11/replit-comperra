@@ -9,7 +9,8 @@ export default function CategoryNav() {
     { id: "lvt", name: "Vinyl & LVT", path: "/comparison/lvt" },
     { id: "hardwood", name: "Hardwood", path: "/comparison/hardwood" },
     { id: "heat", name: "Heating", path: "/comparison/heat" },
-    { id: "carpet", name: "Carpet", path: "/comparison/carpet" }
+    { id: "carpet", name: "Carpet", path: "/comparison/carpet" },
+    { id: "thermostats", name: "Thermostats", path: "/comparison/thermostats" }
   ];
 
   return (

@@ -55,12 +55,19 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
       description: "Evaluate carpet options by fiber composition, stain resistance technology, pile height, and traffic rating performance.",
       specs: ["Fiber Type", "Stain Resist", "Pile Height"],
     },
+    {
+      id: "thermostats",
+      name: "Thermostats",
+      icon: "fas fa-temperature-low",
+      description: "Compare smart and programmable thermostats by voltage, load capacity, sensor types, connectivity, and control features.",
+      specs: ["Device Type", "Voltage", "Load Capacity"],
+    },
   ];
 
   return (
     <section id="categories" className="max-w-7xl mx-auto px-4 py-16">
       <h2 className="text-3xl font-bold text-center mb-12">Compare by Category</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {categories.map((category) => (
           <div
             key={category.id}
@@ -74,6 +81,7 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
                      category.id === 'lvt' ? lvtImage : 
                      category.id === 'hardwood' ? hardwoodImage : 
                      category.id === 'heat' ? heatImage : 
+                     category.id === 'thermostats' ? heatImage :
                      carpetImage} 
                 alt={category.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -88,14 +96,16 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
                                category.id === 'slabs' ? 'from-gray-400 to-gray-600' : 
                                category.id === 'lvt' ? 'from-green-400 to-green-600' : 
                                category.id === 'hardwood' ? 'from-amber-500 to-amber-700' : 
-                               category.id === 'heat' ? 'from-red-400 to-red-600' : 'from-purple-400 to-purple-600'} 
+                               category.id === 'heat' ? 'from-red-400 to-red-600' : 
+                               category.id === 'thermostats' ? 'from-orange-400 to-orange-600' : 'from-purple-400 to-purple-600'} 
                                hidden items-center justify-center text-white text-7xl absolute top-0 left-0`}>
                 <div>
                   {category.id === 'tiles' ? '🏛️' : 
                    category.id === 'slabs' ? '🗿' : 
                    category.id === 'lvt' ? '📱' : 
                    category.id === 'hardwood' ? '🌲' : 
-                   category.id === 'heat' ? '🔥' : '🧶'}
+                   category.id === 'heat' ? '🔥' : 
+                   category.id === 'thermostats' ? '🌡️' : '🧶'}
                 </div>
               </div>
             </div>

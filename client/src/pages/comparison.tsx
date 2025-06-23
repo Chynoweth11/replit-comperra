@@ -24,6 +24,7 @@ export default function Comparison() {
     { id: "hardwood", name: "Hardwood", icon: "fas fa-tree" },
     { id: "heat", name: "Heating", icon: "fas fa-thermometer-half" },
     { id: "carpet", name: "Carpet", icon: "fas fa-grip-lines" },
+    { id: "thermostats", name: "Thermostats", icon: "fas fa-temperature-low" },
   ];
 
   // Load the comparison enhancement script
