@@ -253,6 +253,55 @@ export class SimulationScraper {
   }
 
   // Method to enhance specifications based on category
+  private generateThermostatSpec(fieldType: string, brand: string, name: string): string {
+    const brandLower = brand.toLowerCase();
+    const nameLower = name.toLowerCase();
+    
+    switch (fieldType) {
+      case 'deviceType':
+        if (nameLower.includes('smart') || nameLower.includes('wifi')) return 'Smart WiFi Thermostat';
+        if (nameLower.includes('programmable')) return 'Programmable Thermostat';
+        return 'Digital Thermostat';
+      
+      case 'voltage':
+        if (brandLower.includes('warmup')) return '120V/240V';
+        if (brandLower.includes('nuheat')) return '120V/240V';
+        return '120V/240V';
+      
+      case 'loadCapacity':
+        if (brandLower.includes('warmup')) return '15A';
+        if (brandLower.includes('nuheat')) return '15A';
+        return '15A';
+      
+      case 'sensorType':
+        if (nameLower.includes('dual')) return 'Dual Floor/Air Sensor';
+        if (nameLower.includes('floor')) return 'Floor Sensor';
+        return 'Floor/Air Sensor';
+      
+      case 'gfci':
+        return 'GFCI Protected';
+      
+      case 'display':
+        if (nameLower.includes('touchscreen')) return 'Color Touchscreen';
+        if (nameLower.includes('smart')) return 'LCD Display';
+        return 'Digital Display';
+      
+      case 'connectivity':
+        if (nameLower.includes('wifi') || nameLower.includes('smart')) return 'WiFi Enabled';
+        return 'Hardwired';
+      
+      case 'installation':
+        return 'In-Wall Installation';
+      
+      case 'warranty':
+        if (brandLower.includes('warmup')) return '3 Years';
+        return '2 Years';
+      
+      default:
+        return 'N/A';
+    }
+  }
+
   private enhanceSpecifications(specs: any, category: string, brand: string, name: string, url: string, imageUrl: string): any {
     const enhancedSpecs = { ...specs };
     
