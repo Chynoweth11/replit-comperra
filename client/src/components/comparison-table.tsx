@@ -399,16 +399,16 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
       </div>
 
       {/* Comparison Table */}
-      <div className="bg-white border rounded-lg shadow-sm">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
         <div className="w-full">
           <table className="w-full comparison-table min-w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
                 {headers.map((header, index) => (
                   <th
                     key={header}
-                    className={`px-4 py-4 text-left text-sm font-semibold text-gray-900 ${
-                      index === 0 ? "border-r min-w-64" : "min-w-32"
+                    className={`px-6 py-5 text-left text-sm font-bold text-gray-800 ${
+                      index === 0 ? "border-r border-gray-300 min-w-64" : "min-w-32"
                     }`}
                   >
                     {header}
@@ -416,10 +416,10 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                 ))}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gray-100">
               {sortedMaterials.map((material) => (
-                <tr key={material.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 border-r">
+                <tr key={material.id} className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200">
+                  <td className="px-6 py-6 border-r border-gray-200">
                     <div className="flex items-center">
                       <Checkbox
                         checked={comparisonStore.hasSelected(material.id)}
