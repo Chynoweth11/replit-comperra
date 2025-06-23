@@ -219,6 +219,7 @@ export class SimulationScraper {
       
       // Ensure thermostat products get complete specifications
       if (category === 'thermostats') {
+        console.log('Adding comprehensive thermostat specifications for:', name);
         Object.assign(enhancedSpecs, {
           'Device Type': this.generateThermostatSpec('deviceType', brand, name),
           'Voltage': this.generateThermostatSpec('voltage', brand, name),
