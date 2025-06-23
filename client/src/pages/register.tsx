@@ -53,14 +53,19 @@ export default function RegisterPage() {
 
       navigate('/dashboard');
     } catch (err: any) {
+      console.error('Registration error:', err);
       if (err.code === 'auth/email-already-in-use') {
         setError('An account with this email already exists.');
       } else if (err.code === 'auth/invalid-email') {
         setError('Please enter a valid email address.');
       } else if (err.code === 'auth/weak-password') {
         setError('Password is too weak. Please choose a stronger password.');
+      } else if (err.code === 'auth/operation-not-allowed') {
+        setError('Email/password registration is not enabled. Please contact support.');
+      } else if (err.code === 'auth/invalid-api-key') {
+        setError('Authentication service configuration error. Please contact support.');
       } else {
-        setError('Registration failed. Please try again.');
+        setError(`Registration failed: ${err.message || 'Please try again.'}`);
       }
     } finally {
       setLoading(false);

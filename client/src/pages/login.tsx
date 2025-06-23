@@ -25,12 +25,17 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       navigate('/dashboard');
     } catch (err: any) {
+      console.error('Login error:', err);
       if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
         setError('Invalid email or password.');
       } else if (err.code === 'auth/invalid-email') {
         setError('Please enter a valid email address.');
+      } else if (err.code === 'auth/operation-not-allowed') {
+        setError('Email/password login is not enabled. Please contact support.');
+      } else if (err.code === 'auth/invalid-api-key') {
+        setError('Authentication service configuration error. Please contact support.');
       } else {
-        setError('Login failed. Please try again.');
+        setError(`Login failed: ${err.message || 'Please try again.'}`);
       }
     } finally {
       setLoading(false);
