@@ -39,7 +39,7 @@ export class SimulationScraper {
         
         const rawName = url.split('/').pop() || '';
         const productName = rawName
-          .replace(/\.[hH][tT][mM][lL]?$/g, '')  // Remove all HTML extensions (.html, .Html, .htm, .Htm)
+          .split('.')[0]                         // Remove everything after the first dot (removes all extensions)
           .replace(/-/g, ' ')                    // Replace hyphens with spaces
           .replace(/\b\w/g, l => l.toUpperCase()) // Capitalize each word
           .replace(/\s+/g, ' ')                  // Clean up multiple spaces
