@@ -226,8 +226,8 @@ export default function Header() {
           </div>
 
           <nav className="space-x-4 text-sm font-medium hidden md:flex items-center">
-            <a href="#" className="hover:text-royal transition-colors">About</a>
-            <a href="#" className="hover:text-royal transition-colors">Help</a>
+            <Link href="/about" className="hover:text-royal transition-colors">About</Link>
+            <Link href="/contact" className="hover:text-royal transition-colors">Help</Link>
             <a href="#" className="hover:text-royal transition-colors">Sign In</a>
             <Button className="bg-royal text-white hover:bg-royal-dark">
               Join Free
@@ -255,8 +255,8 @@ export default function Header() {
                 className="w-full"
               />
               <div className="space-y-2">
-                <a href="#" className="block py-2 hover:text-royal">About</a>
-                <a href="#" className="block py-2 hover:text-royal">Help</a>
+                <Link href="/about" className="block py-2 hover:text-royal">About</Link>
+                <Link href="/contact" className="block py-2 hover:text-royal">Help</Link>
                 <a href="#" className="block py-2 hover:text-royal">Sign In</a>
                 <Button className="w-full bg-royal text-white hover:bg-royal-dark">
                   Join Free
