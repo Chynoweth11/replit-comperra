@@ -14,9 +14,10 @@ interface FilterPanelProps {
     search: string;
   };
   onFiltersChange: (filters: any) => void;
+  category?: string;
 }
 
-export default function FilterPanel({ filters, onFiltersChange }: FilterPanelProps) {
+export default function FilterPanel({ filters, onFiltersChange, category }: FilterPanelProps) {
   const { data: brands = [] } = useQuery<Brand[]>({
     queryKey: ["/api/brands"],
   });
@@ -92,6 +93,30 @@ export default function FilterPanel({ filters, onFiltersChange }: FilterPanelPro
             </SelectContent>
           </Select>
         </div>
+
+        {/* Category-specific filters */}
+        {category && (
+          <div className="mb-6">
+            <Label className="block text-sm font-medium mb-2">{category.charAt(0).toUpperCase() + category.slice(1)} Filters</Label>
+            <div className="space-y-2">
+              {[
+                ...(category === "tiles" ? ["PEI Rating", "DCOF / Slip Rating", "Water Absorption", "Material Type", "Finish"] :
+                   category === "slabs" ? ["Material Type", "Finish", "Thickness", "Edge Type"] :
+                   category === "lvt" ? ["Material Type", "Wear Layer", "Thickness", "Waterproof"] :
+                   category === "hardwood" ? ["Species", "Finish", "Width", "Material Type", "Thickness"] :
+                   category === "heat" ? ["Voltage", "Coverage", "Wattage"] :
+                   category === "carpet" ? ["Fiber Type", "Pile Style", "Stain Protection", "Traffic Rating"] :
+                   category === "thermostats" ? ["Device Type", "Voltage", "Load Capacity", "Sensor Type", "GFCI Protection"] :
+                   [])
+              ].map((filter) => (
+                <div key={filter} className="flex items-center space-x-2">
+                  <Checkbox id={filter} />
+                  <Label htmlFor={filter} className="text-sm">{filter}</Label>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Material Type Filter */}
         <div className="mb-6">

@@ -113,10 +113,8 @@ export class SimulationScraper {
       else if (domain.includes('coretec')) brand = 'COREtec';
       else if (domain.includes('anderson')) brand = 'Anderson Tuftex';
       
-      // Enhanced category detection - check specific keywords first, prioritize thermostats before heat
-      if (url.includes('thermostat') || url.includes('heating-control') || url.includes('control') && url.includes('heat') || name.toLowerCase().includes('thermostat')) category = 'thermostats';
-      else if (url.includes('flooring') || url.includes('hardwood') || url.includes('wood') || url.includes('pine') || url.includes('oak') || url.includes('maple') || url.includes('hickory') || url.includes('reclaimed') || url.includes('timber')) category = 'hardwood';
-      else if (url.includes('carpet') || url.includes('rug') || url.includes('flor')) category = 'carpet';
+      // Enhanced category detection using the improved detectCategory method
+      category = this.detectCategory(url, html);
       else if (url.includes('slab') || url.includes('quartz') || url.includes('marble') || url.includes('granite')) category = 'slabs';
       else if (url.includes('lvt') || url.includes('vinyl') || url.includes('luxury')) category = 'lvt';
       else if (url.includes('heat') || url.includes('radiant') || url.includes('warm') || url.includes('mat')) category = 'heat';
