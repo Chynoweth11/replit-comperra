@@ -620,6 +620,75 @@ Top Picks:
         publishedAt: "Jan 4, 2025",
         slug: "best-hardwood-flooring-modern-homes",
       },
+      {
+        title: "Best Thermostats for Radiant Floor and Outdoor Heating",
+        description: "Complete guide to programmable and smart thermostats for in-floor heating and snow-melt systems.",
+        content: `# Best Thermostats for Radiant Floor and Outdoor Heating
+
+Thermostats used in radiant floor heating and snow-melt systems do far more than regulate temperature — they serve as the control center for comfort, safety, and energy efficiency. Whether installed in bathrooms, kitchens, basements, or even outdoor driveways and walkways, the thermostat must be properly matched to the system to ensure optimal performance.
+
+This guide focuses on programmable and smart thermostats designed for in-floor heating systems (tile, stone, LVT, hardwood) and exterior snow melting applications. We evaluated key features such as voltage compatibility, sensor type, programming flexibility, protection ratings, and installation requirements.
+
+For interior floor heating, thermostats should offer floor and air sensors, GFCI protection, and user-friendly scheduling. For outdoor systems, thermostats or controllers must handle higher loads and detect both temperature and moisture to operate snow-melt systems only when necessary, minimizing energy waste.
+
+## Evaluation Criteria
+
+**Voltage Compatibility:** Supports 120V, 208V, or 240V depending on the heating system size
+
+**Load Capacity:** Typically ranges from 15 amps (interior) to 30+ amps (outdoor)
+
+**Sensor Types:** Floor sensor, air sensor, or moisture detection (for outdoor)
+
+**Programmability:** 7-day schedules, vacation modes, and override functions
+
+**Display Interface:** Digital or touchscreen interfaces with temperature readout
+
+**Smart Features:** Optional Wi-Fi, mobile app control, geo-learning, or remote access
+
+**Safety & Protection:** Built-in GFCI or GFEP required by code for interior use
+
+**Weather Protection:** Outdoor-rated enclosures (e.g., IP65 or NEMA 3R) for driveway controllers
+
+**Installation Type:** Wall-mounted (interior) or surface-mounted (exterior enclosures)
+
+**Energy Optimization:** Adaptive start, learning behavior, or weather-based automation
+
+**Warranty:** Commonly ranges from 3 to 12 years depending on application and manufacturer
+
+## Recommended Use Scenarios
+
+**Bathrooms & Kitchens**
+Use dual-sensor thermostats (air + floor) with programmable schedules to maintain comfort and reduce energy waste.
+
+**Basements & Living Areas**
+Prioritize models with learning algorithms, multi-zone control, or smart device compatibility for whole-home integration.
+
+**Outdoor Driveways & Walkways**
+Use moisture + temperature sensing units with weatherproof enclosures. These detect snow/ice and trigger heating only when needed, reducing runtime and electrical load.
+
+**Multi-Zone Systems**
+Use thermostats with relay support or zone controllers when managing multiple rooms or large slab areas.
+
+## What to Avoid
+
+**Basic HVAC Thermostats**
+These often lack floor sensors and can't control heating mats or cables. Always use thermostats rated for radiant floor heating.
+
+**No-GFCI Models for Interior Use**
+For safety and code compliance, only use thermostats with built-in GFCI or ensure the circuit is protected by an external GFEP.
+
+**Non-rated Enclosures for Outdoor Use**
+For snow-melt systems, always choose thermostats/controllers with appropriate weatherproof ratings (IP65 or NEMA 3R minimum).
+
+## Final Thoughts
+
+Choosing the right thermostat ensures your heating system performs safely, efficiently, and comfortably over the long term. Whether you're heating a bathroom floor or keeping a driveway ice-free in winter, focus on specs like voltage, sensor types, load capacity, and protection level. A properly matched thermostat not only improves energy use but also extends the life of your system.`,
+        imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+        category: "thermostats",
+        readTime: 12,
+        publishedAt: "Jan 8, 2025",
+        slug: "best-thermostats-radiant-floor-outdoor-heating",
+      },
     ];
 
     articlesData.forEach(article => {

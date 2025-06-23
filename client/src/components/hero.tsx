@@ -47,7 +47,7 @@ export default function Hero({ onBrowseClick, onStartComparing }: HeroProps) {
             <div className="text-sm text-gray-600">Brands</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600">6</div>
+            <div className="text-3xl font-bold text-blue-600">7</div>
             <div className="text-sm text-gray-600">Categories</div>
           </div>
         </div>
