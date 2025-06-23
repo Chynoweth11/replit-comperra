@@ -297,10 +297,6 @@ export class SimulationScraper {
         if (brandLower.includes('warmup')) return '3 Years';
         return '2 Years';
       
-      case 'dimensions':
-        if (brandLower.includes('warmup')) return '3.5" x 5.5"';
-        return '3.5" x 5.5"';
-      
       default:
         return 'N/A';
     }
@@ -400,13 +396,13 @@ export class SimulationScraper {
         });
       }
     } else if (category === 'thermostats') {
-      // Apply comprehensive thermostat specifications using same pattern as heating category
+      // Apply comprehensive thermostat specifications using the same pattern as tiles
       Object.assign(enhancedSpecs, {
         'Product Name': name,
         'Brand / Manufacturer': brand,
         'Category': 'Thermostats',
         'Device Type': this.generateThermostatSpec('deviceType', brand, name),
-        'Voltage': this.generateThermostatSpec('voltage', brand, name),  
+        'Voltage': this.generateThermostatSpec('voltage', brand, name),
         'Load Capacity': this.generateThermostatSpec('loadCapacity', brand, name),
         'Sensor Type': this.generateThermostatSpec('sensorType', brand, name),
         'GFCI Protection': this.generateThermostatSpec('gfci', brand, name),
@@ -416,25 +412,11 @@ export class SimulationScraper {
         'Warranty': this.generateThermostatSpec('warranty', brand, name),
         'Price per SF': specs['Price per SF'] || '0.00',
         'Image URL': imageUrl,
-        'Product URL': url,
-        'Dimensions': this.generateThermostatSpec('dimensions', brand, name)
+        'Product URL': url
       });
-
-      // Warmup specific thermostat specifications
-      if (brand === 'Warmup' || url.includes('warmup')) {
-        Object.assign(enhancedSpecs, {
-          'Device Type': 'Smart WiFi Thermostat',
-          'Voltage': '120V/240V',
-          'Load Capacity': '15A',
-          'Sensor Type': 'Floor/Air Sensor',
-          'GFCI Protection': 'GFCI Protected',
-          'Display Type': 'Color Touchscreen',
-          'Connectivity': 'WiFi Enabled',
-          'Installation Type': 'In-Wall Installation',
-          'Warranty': '3 Years',
-          'Dimensions': '3.5" x 5.5"'
-        });
-      }
+      Object.assign(enhancedSpecs, {
+        'Product Name': name,
+        'Brand / Manufacturer': brand,
         'Category': 'Thermostat (Indoor Heating)',
         'Device Type': this.generateThermostatSpec('deviceType', brand, name),
         'Voltage': this.generateThermostatSpec('voltage', brand, name),

@@ -543,19 +543,19 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                   {category === "thermostats" && (
                     <>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Device Type'] || material.specifications?.deviceType || 'N/A'}
+                        {material.specifications?.['Device Type'] || material.specifications?.deviceType || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Voltage'] || material.specifications?.voltage || 'N/A'}
+                        {material.specifications?.['Voltage'] || material.specifications?.voltage || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Load Capacity'] || material.specifications?.loadCapacity || 'N/A'}
+                        {material.specifications?.['Load Capacity'] || material.specifications?.loadCapacity || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['Sensor Type'] || material.specifications?.sensorType || 'N/A'}
+                        {material.specifications?.['Sensor Type'] || material.specifications?.sensorType || '—'}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {material.specifications?.['GFCI Protection'] || material.specifications?.gfciProtection || 'N/A'}
+                        {material.specifications?.['GFCI Protection'] || material.specifications?.['GFCI / Protection'] || material.specifications?.gfciProtection || '—'}
                       </td>
                     </>
                   )}
