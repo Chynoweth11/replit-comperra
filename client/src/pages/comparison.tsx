@@ -69,15 +69,15 @@ export default function Comparison() {
       <section className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4">
           {/* Section Header */}
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-6 text-gray-900">Professional Material Comparison</h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-6 leading-relaxed">
-              Compare detailed specifications and find the perfect materials for your project with our comprehensive comparison tool
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Material Comparison Tool</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto mb-4">
+              Select a category to view detailed specifications and compare materials side-by-side
             </p>
-            <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl shadow-sm">
-              <i className="fas fa-filter text-blue-600 mr-3"></i>
-              <span className="text-sm font-semibold text-blue-700">
-                Viewing {categories.find(cat => cat.id === selectedCategory)?.name} Materials
+            <div className="inline-flex items-center px-4 py-2 bg-royal-light border border-royal rounded-lg">
+              <i className="fas fa-filter text-royal mr-2"></i>
+              <span className="text-sm font-medium text-royal">
+                Showing only {categories.find(cat => cat.id === selectedCategory)?.name} materials
               </span>
             </div>
           </div>
