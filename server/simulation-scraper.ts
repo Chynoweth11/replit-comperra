@@ -875,7 +875,7 @@ export class SimulationScraper {
         specifications: {
           'Product URL': 'https://www.warmup.com/products/stickymat',
           'Brand': 'Warmup',
-          'Category': 'heat',
+          'Category': 'thermostats',
           'Material Type': 'Heating Mat (Adhesive Backed)',
           'Voltage': '120V',
           'Coverage Area (SF)': '10 SF to 150 SF kits',
@@ -1099,7 +1099,8 @@ export class SimulationScraper {
     else if (url.includes('slab') || url.includes('quartz') || url.includes('marble') || url.includes('granite')) category = 'slabs';
     else if (url.includes('lvt') || url.includes('vinyl') || url.includes('luxury')) category = 'lvt';
     else if (url.includes('carpet') || url.includes('rug')) category = 'carpet';
-    else if (url.includes('heat') || url.includes('thermostat') || url.includes('warm')) category = 'heat';
+    else if (url.includes('thermostat') || url.includes('heating-control') || url.includes('control') && url.includes('heating')) category = 'thermostats';
+    else if (url.includes('heat') || url.includes('radiant') || url.includes('warm') || url.includes('mat')) category = 'heat';
     else if (url.includes('tile') || url.includes('porcelain') || url.includes('ceramic')) category = 'tiles';
     
     // Extract product name from URL path if possible
