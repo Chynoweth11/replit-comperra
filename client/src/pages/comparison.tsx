@@ -82,11 +82,11 @@ export default function Comparison() {
             </div>
           </div>
 
-          <div className="flex lg:space-x-8">
-            <FilterPanel
-              filters={filters}
-              onFiltersChange={setFilters}
+          <div className="space-y-6">
+            <CategoryFilterPanel 
               category={selectedCategory}
+              filters={filters} 
+              onFiltersChange={setFilters} 
             />
             
             <ComparisonTable 
