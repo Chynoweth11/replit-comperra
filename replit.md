@@ -22,10 +22,12 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ⚠️ **June 23, 2025**: CRITICAL ISSUE - Thermostat scraping only generates basic specifications (Product URL, Brand, Category, Price per SF) instead of comprehensive thermostat fields like Device Type, Voltage, Load Capacity, Sensor Type, GFCI Protection, Display Type, Connectivity, Installation Type, Warranty
+- ✅ **June 23, 2025**: Fixed syntax errors in simulation-scraper.ts that broke all scraping functionality - restored general scraping capability
+- ✅ **June 23, 2025**: Changed thermostats table header from "Price/SF" to "Price/Piece" as requested
 - ✅ **June 23, 2025**: Fixed thermostat URL detection to properly categorize thermostat products into thermostats category instead of heat category - prioritized thermostat detection before heating detection
 - ✅ **June 23, 2025**: Added comprehensive Thermostats category with 22 specialized specification fields - Device Type, Voltage, Load Capacity, Sensor Type, GFCI Protection, Display Type, Connectivity, Programming features, Installation Type, IP Rating, Certifications, Compatible Heating, Dimensions
-- ✅ **June 23, 2025**: Implemented thermostat-specific scraping with brand recognition for Warmup, OJ Microline, NuHeat with authentic technical specifications
-- ✅ **June 23, 2025**: Added thermostat table headers showing Device Type, Voltage, Load Capacity, Sensor Type, GFCI Protection alongside standard product information
+- ⚠️ **June 23, 2025**: Thermostat specification enhancement not working during scraping - multiple fix attempts unsuccessful, core issue remains unresolved
 - ✅ **June 22, 2025**: Removed Image URL from product specifications display across all categories - field not needed for users while ensuring products maintain proper image URLs from source websites
 - ✅ **June 22, 2025**: Enhanced image extraction to capture multiple product images with comprehensive fallback selectors for better visual representation
 - ✅ **June 22, 2025**: Enhanced hardwood specification generation to ensure all required table headers are filled - Species, Finish, Width, Material Type, Thickness properly populated for all scraped hardwood products
