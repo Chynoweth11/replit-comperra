@@ -1641,8 +1641,11 @@ export class SimulationScraper {
       });
     }
 
-    // Ensure hardwood URLs stay as hardwood
-    if (url.includes('flooring') || url.includes('hardwood') || url.includes('wood') || url.includes('pine') || url.includes('oak') || url.includes('maple') || url.includes('hickory') || url.includes('reclaimed') || url.includes('timber')) {
+    // Ensure category URLs stay in their correct categories - prioritize thermostats first
+    if (url.includes('thermostat') || url.includes('heating-control') || url.includes('control') && url.includes('heating') || name.toLowerCase().includes('thermostat')) {
+      category = 'thermostats';
+      fullSpecs['Category'] = 'thermostats';
+    } else if (url.includes('flooring') || url.includes('hardwood') || url.includes('wood') || url.includes('pine') || url.includes('oak') || url.includes('maple') || url.includes('hickory') || url.includes('reclaimed') || url.includes('timber')) {
       category = 'hardwood';
       fullSpecs['Category'] = 'hardwood';
     }
