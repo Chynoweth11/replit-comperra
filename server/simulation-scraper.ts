@@ -37,7 +37,13 @@ export class SimulationScraper {
                      url.includes('nuheat') ? 'NuHeat' : 
                      url.includes('ojmicroline') ? 'OJ Microline' : 'Unknown';
         
-        const productName = url.split('/').pop()?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || `${brand} Smart Thermostat`;
+        const rawName = url.split('/').pop() || '';
+        const productName = rawName
+          .replace(/\.[hH][tT][mM][lL]?$/g, '')  // Remove all HTML extensions (.html, .Html, .htm, .Htm)
+          .replace(/-/g, ' ')                    // Replace hyphens with spaces
+          .replace(/\b\w/g, l => l.toUpperCase()) // Capitalize each word
+          .replace(/\s+/g, ' ')                  // Clean up multiple spaces
+          .trim() || `${brand} Smart Thermostat`;
         
         const thermostatProduct = {
           name: productName,
