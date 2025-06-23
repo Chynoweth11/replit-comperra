@@ -2,12 +2,13 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.appspot.com`,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: "AIzaSyCPpLCOqHk1RYeP8ihWx-IBRigHaLAcfPQ",
+  authDomain: "comperra-7201f.firebaseapp.com",
+  projectId: "comperra-7201f",
+  storageBucket: "comperra-7201f.firebasestorage.app",
+  messagingSenderId: "183865914210",
+  appId: "1:183865914210:web:859865a18cfe89ee76b23b",
+  measurementId: "G-WN90R8THKT"
 };
 
 const app = initializeApp(firebaseConfig);
