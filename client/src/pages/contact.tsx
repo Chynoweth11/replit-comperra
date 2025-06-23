@@ -17,14 +17,6 @@ export default function Contact() {
                 <h3 className="font-semibold text-gray-900">General Inquiries</h3>
                 <p className="text-gray-600">support@comperra.com</p>
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Vendor Submissions</h3>
-                <p className="text-gray-600">data@comperra.com</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Media & Partnerships</h3>
-                <p className="text-gray-600">press@comperra.com</p>
-              </div>
             </div>
             <p className="text-sm text-gray-500 mt-6">Response time is typically within 1–2 business days.</p>
           </div>

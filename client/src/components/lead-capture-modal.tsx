@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
 interface LeadCaptureModalProps {
@@ -16,7 +17,8 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
     name: "",
     email: "",
     zip: "",
-    product: productName || ""
+    product: productName || "",
+    customerType: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -51,7 +53,7 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
           title: "Thank you!",
           description: "We'll be in touch with pricing and availability information soon.",
         });
-        setFormData({ name: "", email: "", zip: "", product: productName || "" });
+        setFormData({ name: "", email: "", zip: "", product: productName || "", customerType: "" });
         onClose();
       } else {
         throw new Error(result.error || 'Failed to save lead');
@@ -132,6 +134,22 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
               onChange={(e) => handleInputChange("product", e.target.value)}
               placeholder="Specific product or category"
             />
+          </div>
+          
+          <div>
+            <Label htmlFor="customerType">I am a</Label>
+            <Select value={formData.customerType} onValueChange={(value) => handleInputChange("customerType", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select your role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="homeowner">Homeowner</SelectItem>
+                <SelectItem value="designer">Designer</SelectItem>
+                <SelectItem value="architect">Architect</SelectItem>
+                <SelectItem value="trade">Trade Professional</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex gap-3 pt-4">

@@ -200,13 +200,15 @@ export default function ProductDetail() {
               >
                 Get Pricing
               </Button>
-              <Button 
-                variant="outline"
-                className="border-green-600 text-green-600 hover:bg-green-50"
-                onClick={() => handleRequestSamples(material.name)}
-              >
-                Request Samples
-              </Button>
+              {material.category !== 'heat' && material.category !== 'thermostats' && (
+                <Button 
+                  variant="outline"
+                  className="border-green-600 text-green-600 hover:bg-green-50"
+                  onClick={() => handleRequestSamples(material.name)}
+                >
+                  Request Samples
+                </Button>
+              )}
               <Button 
                 variant={isInComparison ? "default" : "outline"}
                 className={isInComparison ? "bg-blue-600 text-white hover:bg-blue-700" : ""}

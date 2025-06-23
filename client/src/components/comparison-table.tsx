@@ -579,14 +579,16 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                         >
                           Get Pricing
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          className="border-green-600 text-green-600 hover:bg-green-50 flex-1"
-                          onClick={() => handleRequestSamples(material.name)}
-                        >
-                          Request Samples
-                        </Button>
+                        {category !== 'heat' && category !== 'thermostats' && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="border-green-600 text-green-600 hover:bg-green-50 flex-1"
+                            onClick={() => handleRequestSamples(material.name)}
+                          >
+                            Request Samples
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </td>
