@@ -5,6 +5,7 @@ import { auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
@@ -14,6 +15,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [customerType, setCustomerType] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [, navigate] = useLocation();
@@ -29,6 +31,11 @@ export default function RegisterPage() {
 
     if (password.length < 6) {
       setError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    if (!customerType) {
+      setError('Please select your role.');
       return;
     }
 
@@ -117,6 +124,22 @@ export default function RegisterPage() {
                   placeholder="Confirm your password"
                   required
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="customerType">I am a</Label>
+                <Select value={customerType} onValueChange={setCustomerType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="homeowner">Homeowner</SelectItem>
+                    <SelectItem value="designer">Designer</SelectItem>
+                    <SelectItem value="architect">Architect</SelectItem>
+                    <SelectItem value="trade">Trade Professional</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {error && (
