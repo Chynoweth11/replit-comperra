@@ -115,10 +115,6 @@ export class SimulationScraper {
       
       // Enhanced category detection using the improved detectCategory method
       category = this.detectCategory(url, html);
-      else if (url.includes('slab') || url.includes('quartz') || url.includes('marble') || url.includes('granite')) category = 'slabs';
-      else if (url.includes('lvt') || url.includes('vinyl') || url.includes('luxury')) category = 'lvt';
-      else if (url.includes('heat') || url.includes('radiant') || url.includes('warm') || url.includes('mat')) category = 'heat';
-      else if (url.includes('tile') || url.includes('porcelain') || url.includes('ceramic')) category = 'tiles';
       
       // Extract basic specifications using cheerio
       const specs: any = {

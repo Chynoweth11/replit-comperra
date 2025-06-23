@@ -1,0 +1,440 @@
+import requests
+from bs4 import BeautifulSoup
+import json
+import re # For more advanced text parsing if needed
+
+class ThermostatScraper:
+    """
+    A class to scrape and filter thermostat data from a given URL.
+    This class is designed to be adapted to specific website structures.
+    """
+
+    def __init__(self, base_url: str):
+        """
+        Initializes the scraper with a base URL.
+        Args:
+            base_url (str): The base URL of the website to scrape.
+        """
+        self.base_url = base_url
+        self.scraped_data = [] # To store all scraped thermostat data
+
+    def _fetch_html(self, url: str) -> BeautifulSoup | None:
+        """
+        Fetches the HTML content from a given URL and returns a BeautifulSoup object.
+        Args:
+            url (str): The URL to fetch.
+        Returns:
+            BeautifulSoup: Parsed HTML content, or None if an error occurs.
+        """
+        try:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+            response = requests.get(url, headers=headers, timeout=10)
+            response.raise_for_status() # Raise an HTTPError for bad responses (4xx or 5xx)
+            return BeautifulSoup(response.text, 'html.parser')
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching URL {url}: {e}")
+            return None
+
+    def _parse_thermostat_details(self, product_page_url: str) -> dict | None:
+        """
+        Parses a single thermostat product page to extract its specifications.
+        *** IMPORTANT: You NEED to modify the 'TODO' sections based on the actual HTML
+        structure of the website you are scraping. This is a placeholder for your
+        specific parsing logic. ***
+
+        Args:
+            product_page_url (str): The URL of the specific thermostat's product page.
+        Returns:
+            dict: A dictionary of thermostat specifications, or None if parsing fails.
+        """
+        soup = self._fetch_html(product_page_url)
+        if not soup:
+            return None
+
+        thermostat_specs = {
+            "category": "Thermostat", # Explicitly register this category
+            "product_url": product_page_url, # Link to manufacturer or retailer page
+            "product_name": None,      # Full thermostat name/model (e.g., Warmup 6iE)
+            "brand_manufacturer": None,# Warmup, OJ Microline, NuHeat, etc.
+            "device_type": None,       # Smart Wi-Fi Thermostat, Programmable Thermostat, Sensor/Controller
+            "voltage": None,           # 110V, 120V, 208V, 240V (input voltage supported)
+            "load_capacity": None,     # Max Amperage / Wattage (e.g., 15A, 3,600W)
+            "sensor_type": [],         # Floor Sensor, Ambient/Air Sensor, Moisture Sensor, or combo
+            "sensor_cable_length": None, # Standard: 10 ft / 3m (extendable or not)
+            "gfci_protection": None,   # Built-in GFCI, Class A 5mA, GFEP compliant
+            "display_type": None,      # Touchscreen, LED, LCD, Backlit, etc.
+            "connectivity": [],        # Wi-Fi, App-controlled, Alexa/Google support, IFTTT
+            "programmable": None,      # Yes/No (5-2 day, 7-day schedule, etc.)
+            "geo_learning_ai": None,   # SmartGeo, auto-schedule based on behavior or presence
+            "installation_type": None, # Wall mount, recessed, or surface mount
+            "ip_rating": None,         # IP33, IP65, NEMA 3R, etc. (especially for outdoor use)
+            "color_finish": None,      # (e.g., Gloss White, Black, Stainless)
+            "warranty": None,          # 3-year, 12-year, or product-lifetime
+            "certifications": [],      # UL, ETL, CSA, CE, FCC, RoHS
+            "compatible_heating": [],  # Electric underfloor heating, snow melt cables, hydronic, etc.
+            "dimensions": None,        # Physical size (HxWxD in inches/mm)
+            "user_interface_features": [], # Touchscreen, remote override, app alerts, QR setup
+            "manual_override": None,   # Yes/No (important for emergencies or outages)
+            "price": None,             # Assuming you still want price
+            "description": None        # General description
+        }
+
+        try:
+            # --- IMPORTANT: Start adding your specific scraping logic here ---
+            # You will need to inspect the HTML source of your target website's product pages
+            # and use BeautifulSoup methods like .find(), .find_all(), .select(), .get_text(), etc.
+
+            # Example Placeholder (adjust selectors to your actual website)
+            # Product Name and Brand/Manufacturer (often from title or prominent heading)
+            title_element = soup.find('h1', class_='product-name') # Or 'product-title'
+            if title_element:
+                full_title = title_element.get_text(strip=True)
+                thermostat_specs["product_name"] = full_title
+                # Attempt to extract brand if not separate (e.g., "Brand Model Name")
+                # This is highly heuristic and may need regex for robustness
+                # For example, if brand is consistently the first word
+                first_word = full_title.split(' ', 1)[0]
+                # You'd need a list of known brands to check against or a more reliable selector
+                thermostat_specs["brand_manufacturer"] = first_word # Placeholder
+
+            brand_element = soup.find('span', class_='brand-name') # Or specific div for brand
+            if brand_element:
+                thermostat_specs["brand_manufacturer"] = brand_element.get_text(strip=True)
+
+            # Price (assuming it's still needed, often distinct from other specs)
+            price_element = soup.find('span', class_='price-value') or soup.find('div', class_='product-price')
+            if price_element:
+                price_text = price_element.get_text(strip=True)
+                thermostat_specs["price"] = float(re.sub(r'[^\d.]', '', price_text)) if re.sub(r'[^\d.]', '', price_text) else None
+
+            # General Description
+            description_element = soup.find('div', class_='product-description')
+            if description_element:
+                thermostat_specs["description"] = description_element.get_text(strip=True)
+
+            # --- Generic approach for specs often found in a table or list ---
+            # Look for common spec areas (e.g., a section with class 'specifications', 'features', etc.)
+            spec_area = soup.find('div', class_='product-details-specs') or soup.find('table', class_='spec-table')
+            if spec_area:
+                # Iterate through potential rows (for tables) or list items (for features)
+                for item in spec_area.find_all(['li', 'tr', 'p', 'div']): # Be broad, then refine
+                    item_text = item.get_text(strip=True).lower()
+
+                    # Device Type
+                    if "smart wi-fi" in item_text:
+                        thermostat_specs["device_type"] = "Smart Wi-Fi Thermostat"
+                    elif "programmable thermostat" in item_text or "programmable" in item_text:
+                        thermostat_specs["device_type"] = "Programmable Thermostat"
+                    elif "sensor/controller" in item_text:
+                        thermostat_specs["device_type"] = "Sensor/Controller"
+                    elif "snow melt controller" in item_text:
+                        thermostat_specs["category"] = "Snow Melt Controller" # Category refinement
+
+                    # Voltage
+                    if re.search(r'\d{3}v', item_text):
+                        voltages = re.findall(r'(\d{3}v)', item_text)
+                        if voltages: thermostat_specs["voltage"] = "/".join(sorted(list(set(voltages))))
+
+                    # Load Capacity (Amperage/Wattage)
+                    if re.search(r'\d+a', item_text) or re.search(r'\d+w', item_text):
+                        amps = re.findall(r'(\d+)a', item_text)
+                        watts = re.findall(r'(\d+)w', item_text)
+                        capacity_str = ""
+                        if amps: capacity_str += f"{amps[0]}A"
+                        if watts: capacity_str += f"{watts[0]}W"
+                        thermostat_specs["load_capacity"] = capacity_str.strip()
+
+                    # Sensor Type
+                    if "floor sensor" in item_text and "Floor Sensor" not in thermostat_specs["sensor_type"]:
+                        thermostat_specs["sensor_type"].append("Floor Sensor")
+                    if "ambient sensor" in item_text or "air sensor" in item_text and "Ambient/Air Sensor" not in thermostat_specs["sensor_type"]:
+                        thermostat_specs["sensor_type"].append("Ambient/Air Sensor")
+                    if "moisture sensor" in item_text and "Moisture Sensor" not in thermostat_specs["sensor_type"]:
+                        thermostat_specs["sensor_type"].append("Moisture Sensor")
+
+                    # Sensor Cable Length
+                    if "cable length" in item_text or "sensor length" in item_text:
+                        length_match = re.search(r'(\d+(\.\d+)?)\s*(ft|m)', item_text)
+                        if length_match:
+                            thermostat_specs["sensor_cable_length"] = length_match.group(0)
+
+                    # GFCI / Protection
+                    if "gfci" in item_text or "gfep" in item_text:
+                        thermostat_specs["gfci_protection"] = "Built-in GFCI" if "built-in gfci" in item_text else item_text # Refine based on actual text
+
+                    # Display Type
+                    if "touchscreen" in item_text: thermostat_specs["display_type"] = "Touchscreen"
+                    elif "led" in item_text: thermostat_specs["display_type"] = "LED"
+                    elif "lcd" in item_text: thermostat_specs["display_type"] = "LCD"
+                    elif "backlit" in item_text: thermostat_specs["display_type"] = "Backlit"
+
+                    # Connectivity
+                    if "wi-fi" in item_text and "Wi-Fi" not in thermostat_specs["connectivity"]:
+                        thermostat_specs["connectivity"].append("Wi-Fi")
+                    if "app-controlled" in item_text and "App-controlled" not in thermostat_specs["connectivity"]:
+                        thermostat_specs["connectivity"].append("App-controlled")
+                    if "alexa" in item_text and "Alexa support" not in thermostat_specs["connectivity"]:
+                        thermostat_specs["connectivity"].append("Alexa support")
+                    if "google home" in item_text and "Google support" not in thermostat_specs["connectivity"]:
+                        thermostat_specs["connectivity"].append("Google support")
+                    if "ifttt" in item_text and "IFTTT" not in thermostat_specs["connectivity"]:
+                        thermostat_specs["connectivity"].append("IFTTT")
+
+                    # Programmable?
+                    if "programmable" in item_text:
+                        thermostat_specs["programmable"] = "Yes"
+                        if "7-day" in item_text: thermostat_specs["programmable"] = "Yes (7-day schedule)"
+                        elif "5-2 day" in item_text: thermostat_specs["programmable"] = "Yes (5-2 day schedule)"
+                    elif "non-programmable" in item_text:
+                        thermostat_specs["programmable"] = "No"
+
+                    # Geo-Learning / AI
+                    if "geo-learning" in item_text or "smartgeo" in item_text or "auto-schedule" in item_text or "learning capabilities" in item_text:
+                        thermostat_specs["geo_learning_ai"] = "Yes" # Refine based on specific terms like "SmartGeo"
+
+                    # Installation Type
+                    if "wall mount" in item_text: thermostat_specs["installation_type"] = "Wall mount"
+                    elif "recessed" in item_text: thermostat_specs["installation_type"] = "Recessed"
+                    elif "surface mount" in item_text: thermostat_specs["installation_type"] = "Surface mount"
+
+                    # IP Rating
+                    ip_match = re.search(r'ip\d{2}', item_text)
+                    if ip_match: thermostat_specs["ip_rating"] = ip_match.group(0).upper()
+                    nema_match = re.search(r'nema\s*\d+[r]?\d*', item_text)
+                    if nema_match: thermostat_specs["ip_rating"] = nema_match.group(0).upper()
+
+                    # Color / Finish
+                    # This is tricky as colors can be anywhere. Look for specific keywords.
+                    colors = ["white", "black", "silver", "gray", "stainless", "bronze"]
+                    for color in colors:
+                        if color in item_text:
+                            thermostat_specs["color_finish"] = color.capitalize()
+                            break
+
+                    # Warranty
+                    warranty_match = re.search(r'(\d+)\s*(year|yr|years|yrs|product-lifetime)', item_text)
+                    if warranty_match:
+                        thermostat_specs["warranty"] = warranty_match.group(0)
+
+                    # Certifications (common patterns for lists)
+                    certs = ["ul", "etl", "csa", "ce", "fcc", "rohs"]
+                    for cert in certs:
+                        if cert in item_text and cert.upper() not in thermostat_specs["certifications"]:
+                            thermostat_specs["certifications"].append(cert.upper())
+
+                    # Compatible Heating
+                    if "electric underfloor heating" in item_text and "Electric underfloor heating" not in thermostat_specs["compatible_heating"]:
+                        thermostat_specs["compatible_heating"].append("Electric underfloor heating")
+                    if "snow melt cables" in item_text and "Snow melt cables" not in thermostat_specs["compatible_heating"]:
+                        thermostat_specs["compatible_heating"].append("Snow melt cables")
+                    if "hydronic" in item_text and "Hydronic" not in thermostat_specs["compatible_heating"]:
+                        thermostat_specs["compatible_heating"].append("Hydronic")
+                    # Add more specific heating types here
+
+                    # Dimensions (HxWxD or similar patterns)
+                    dim_match = re.search(r'(\d+(\.\d+)?\s*(x|\*)\s*\d+(\.\d+)?\s*(x|\*)\s*\d+(\.\d+)?)\s*(inch|mm|in|cm)', item_text)
+                    if dim_match:
+                        thermostat_specs["dimensions"] = dim_match.group(0)
+
+                    # User Interface Features
+                    if "touchscreen" in item_text and "Touchscreen" not in thermostat_specs["user_interface_features"]:
+                        thermostat_specs["user_interface_features"].append("Touchscreen")
+                    if "remote override" in item_text and "Remote override" not in thermostat_specs["user_interface_features"]:
+                        thermostat_specs["user_interface_features"].append("Remote override")
+                    if "app alerts" in item_text and "App alerts" not in thermostat_specs["user_interface_features"]:
+                        thermostat_specs["user_interface_features"].append("App alerts")
+                    if "qr setup" in item_text and "QR setup" not in thermostat_specs["user_interface_features"]:
+                        thermostat_specs["user_interface_features"].append("QR setup")
+
+                    # Manual Override
+                    if "manual override" in item_text and ("yes" in item_text or "enabled" in item_text):
+                        thermostat_specs["manual_override"] = "Yes"
+                    elif "no manual override" in item_text or "not overrideable" in item_text:
+                        thermostat_specs["manual_override"] = "No"
+
+
+            # --- End of custom scraping logic (you fill this in) ---
+
+        except Exception as e:
+            print(f"Error parsing details for {product_page_url}: {e}")
+            return None
+
+        return thermostat_specs
+
+    def scrape_thermostats(self, product_list_url: str):
+        """
+        Main method to initiate scraping. It assumes product_list_url leads
+        to a page listing thermostats, and then attempts to visit each
+        product's individual page.
+
+        Args:
+            product_list_url (str): The URL of the page listing thermostats.
+        """
+        print(f"Starting scraping for Thermostats from: {product_list_url}")
+        list_soup = self._fetch_html(product_list_url)
+        if not list_soup:
+            print("Could not fetch the product list page.")
+            return
+
+        # Find links to individual product pages. This selector is a placeholder.
+        # You'll need to inspect the HTML of your product listing page.
+        # Example: looking for <a href="..." class="product-card"> or similar
+        product_links = list_soup.find_all('a', href=True, class_=re.compile(r'(product|item|thermostat)-link')) # More flexible regex
+
+        if not product_links:
+            print("No product links found. Check your CSS selector for product links on the listing page.")
+            print("Attempting to parse current page as a single product, if applicable.")
+            # If the listing page itself *is* a product page (unlikely for a list),
+            # or if you want to try to parse what's available on the list directly.
+            details = self._parse_thermostat_details(product_list_url)
+            if details:
+                self.scraped_data.append(details)
+            return
+
+        for link in product_links:
+            href = link.get('href')
+            if href and href.startswith(('http', '/')): # Ensure it's a valid link
+                product_url = requests.compat.urljoin(self.base_url, href)
+                print(f"Scraping details for: {product_url}")
+                details = self._parse_thermostat_details(product_url)
+                if details:
+                    self.scraped_data.append(details)
+                    print(f"Scraped: {details.get('product_name')}")
+
+        print(f"Finished scraping. Total thermostats scraped: {len(self.scraped_data)}")
+        # For demonstration, print the first few scraped items
+        # print(json.dumps(self.scraped_data[:2], indent=4))
+
+    def filter_thermostats(self, criteria: dict) -> list:
+        """
+        Filters the scraped thermostat data based on provided criteria.
+        This mimics the filtering code you have for other categories.
+
+        Args:
+            criteria (dict): A dictionary where keys are spec names (e.g., 'brand_manufacturer',
+                             'connectivity') and values are the desired filter values.
+                             For list-based fields (e.g., 'connectivity', 'certifications'),
+                             the value can be a single item to check for presence, or a list
+                             of items to match all.
+                             For boolean fields, use True/False.
+                             For numeric, match exactly (or implement range logic if needed).
+        Returns:
+            list: A list of thermostat dictionaries that match the criteria.
+        """
+        if not self.scraped_data:
+            print("No data to filter. Please run scrape_thermostats first.")
+            return []
+
+        filtered_results = []
+        for thermostat in self.scraped_data:
+            match = True
+            for key, value in criteria.items():
+                if key not in thermostat or thermostat[key] is None:
+                    match = False
+                    break
+                
+                thermostat_value = thermostat[key]
+
+                if isinstance(thermostat_value, list):
+                    # For list-based specs (e.g., 'connectivity', 'sensor_type', 'certifications')
+                    # If 'value' is a list, all items must be present in thermostat_value.
+                    # If 'value' is a single item, at least one item must be present.
+                    if isinstance(value, list):
+                        if not all(item.lower() in [tv.lower() for tv in thermostat_value] for item in value):
+                            match = False
+                            break
+                    else: # Single item to check for presence
+                        if not any(item.lower() == str(value).lower() for item in thermostat_value):
+                            match = False
+                            break
+                elif isinstance(thermostat_value, bool):
+                    # For boolean specs ('programmable', 'geo_learning_ai', 'manual_override')
+                    # Convert criteria value to boolean for comparison
+                    if thermostat_value != bool(value):
+                        match = False
+                        break
+                elif isinstance(thermostat_value, (int, float)):
+                    # For numeric specs (e.g., 'price', voltage, load_capacity - though these can be strings)
+                    # Exact match for now. For ranges, you'd need more complex logic.
+                    if thermostat_value != value:
+                        match = False
+                        break
+                else:
+                    # For string specs (case-insensitive partial match for robust filtering)
+                    # Ensure both are strings before comparison
+                    if value is not None and str(value).lower() not in str(thermostat_value).lower():
+                        match = False
+                        break
+            if match:
+                filtered_results.append(thermostat)
+        return filtered_results
+
+# --- Example Usage ---
+if __name__ == "__main__":
+    # --- IMPORTANT ---
+    # Replace 'https://example.com/thermostats' with the actual URL
+    # of the page listing thermostats on the website you are scraping.
+    # Also, adjust CSS selectors in _parse_thermostat_details and scrape_thermostats
+    # according to the target website's HTML structure.
+    
+    # This URL is just a placeholder.
+    thermostat_listing_page_url = "https://www.homedepot.com/b/Heating-Venting-Cooling-Thermostats/N-5yc1vZc4lu"
+
+    # Initialize the scraper
+    scraper = ThermostatScraper(base_url="https://www.homedepot.com") # Use the base domain of your target website
+
+    # Perform the scraping operation
+    scraper.scrape_thermostats(thermostat_listing_page_url)
+
+    print("\n--- Scraped Thermostat Data (first 2 items) ---")
+    if scraper.scraped_data:
+        # Using a default for sensitive fields like 'price' or 'product_name'
+        print(json.dumps(scraper.scraped_data[:2], indent=4))
+    else:
+        print("No data scraped. Please check the URL and selectors in your code.")
+
+
+    # Example of filtering: Find all Smart Wi-Fi Thermostats with "Floor Sensor" connectivity
+    print("\n--- Filtering: Smart Wi-Fi Thermostats with Floor Sensor capability ---")
+    smart_floor_sensor_thermostats = scraper.filter_thermostats({
+        "device_type": "Smart Wi-Fi Thermostat",
+        "sensor_type": "Floor Sensor", # Checks if "Floor Sensor" is in the list
+    })
+
+    if smart_floor_sensor_thermostats:
+        print(f"Found {len(smart_floor_sensor_thermostats)} thermostats matching criteria:")
+        for tstat in smart_floor_sensor_thermostats:
+            print(f"- {tstat.get('product_name')} (Device Type: {tstat.get('device_type')}, Sensor: {', '.join(tstat.get('sensor_type', []))})")
+    else:
+        print("No thermostats found matching this filtering criteria.")
+
+    # Another example: Find thermostats by Brand and if they are App-controlled
+    print("\n--- Filtering: Warmup thermostats that are App-controlled ---")
+    warmup_app_controlled = scraper.filter_thermostats({
+        "brand_manufacturer": "Warmup",
+        "connectivity": "App-controlled" # Checks for "App-controlled" in the connectivity list
+    })
+
+    if warmup_app_controlled:
+        print(f"Found {len(warmup_app_controlled)} Warmup thermostats that are App-controlled:")
+        for tstat in warmup_app_controlled:
+            print(f"- {tstat.get('product_name')} (Connectivity: {', '.join(tstat.get('connectivity', []))})")
+    else:
+        print("No Warmup thermostats found matching this filtering criteria.")
+
+    # Example of filtering: Find 240V thermostats with a 3-year warranty
+    print("\n--- Filtering: 240V Thermostats with a 3-year Warranty ---")
+    specific_voltage_warranty = scraper.filter_thermostats({
+        "voltage": "240V",
+        "warranty": "3-year"
+    })
+
+    if specific_voltage_warranty:
+        print(f"Found {len(specific_voltage_warranty)} thermostats matching criteria:")
+        for tstat in specific_voltage_warranty:
+            print(f"- {tstat.get('product_name')} (Voltage: {tstat.get('voltage')}, Warranty: {tstat.get('warranty')})")
+    else:
+        print("No thermostats found matching this filtering criteria.")
+
