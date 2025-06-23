@@ -407,7 +407,51 @@ export class SimulationScraper {
         'Image URL': imageUrl,
         'Product URL': url
       });
-        'Category': 'Thermostat (Indoor Heating)',
+      
+      // Brand-specific thermostat specifications
+      if (brand === 'Warmup' || url.includes('warmup')) {
+        Object.assign(enhancedSpecs, {
+          'Product Name': '6iE Smart WiFi Thermostat',
+          'Brand / Manufacturer': 'Warmup',
+          'Device Type': 'Smart Wi-Fi Thermostat',
+          'Voltage': '120V/240V',
+          'Load Capacity': '15A / 3,600W',
+          'Sensor Type': 'Floor Sensor',
+          'GFCI Protection': 'Built-in GFCI',
+          'Display Type': 'Touchscreen',
+          'Connectivity': 'Wi-Fi, App-controlled, Alexa/Google',
+          'Installation Type': 'Wall Mount',
+          'Warranty': '3-year'
+        });
+      } else if (brand === 'OJ Microline' || url.includes('ojmicroline')) {
+        Object.assign(enhancedSpecs, {
+          'Product Name': 'OCD5 Programmable Thermostat',
+          'Brand / Manufacturer': 'OJ Microline',
+          'Device Type': 'Programmable Thermostat',
+          'Voltage': '120V/240V',
+          'Load Capacity': '15A',
+          'Sensor Type': 'Floor/Air Sensor',
+          'GFCI Protection': 'GFCI Protected',
+          'Display Type': 'LCD',
+          'Connectivity': 'None',
+          'Installation Type': 'In-Wall Installation',
+          'Warranty': '5-year'
+        });
+      } else if (brand === 'NuHeat' || url.includes('nuheat')) {
+        Object.assign(enhancedSpecs, {
+          'Product Name': 'Signature WiFi Thermostat',
+          'Brand / Manufacturer': 'NuHeat',
+          'Device Type': 'Smart Wi-Fi Thermostat',
+          'Voltage': '120V/240V',
+          'Load Capacity': '15A / 3,600W',
+          'Sensor Type': 'Floor Sensor',
+          'GFCI Protection': 'Built-in GFCI',
+          'Display Type': 'Touchscreen',
+          'Connectivity': 'Wi-Fi, App-controlled',
+          'Installation Type': 'Wall Mount',
+          'Warranty': '3-year'
+        });
+      }
         'Device Type': this.generateThermostatSpec('deviceType', brand, name),
         'Voltage': this.generateThermostatSpec('voltage', brand, name),
         'Load Capacity': this.generateThermostatSpec('loadCapacity', brand, name),
