@@ -86,7 +86,20 @@ export default function CategoryFilterPanel({ category, filters, onFiltersChange
       "Carpet Style": ["Cut Pile", "Loop Pile", "Cut & Loop", "Berber"],
       "Backing": ["Action Bac", "Soft Bac", "Attached Pad", "Modular"],
       "Carpet Install Method": ["Stretch-in", "Glue-down", "Double Stick", "Modular"],
-      "IAQ Certification": ["Green Label Plus", "CRI Certified", "Standard"]
+      "IAQ Certification": ["Green Label Plus", "CRI Certified", "Standard"],
+      
+      // Thermostats
+      "Device Type": ["Smart Wi-Fi", "Programmable", "Manual", "Snow Sensor/Controller"],
+      "Voltage": ["110V", "120V", "208V", "240V", "Dual Voltage"],
+      "Load Capacity": ["Up to 15A", "Up to 30A", "Up to 50A"],
+      "Sensor Type": ["Air", "Floor", "Dual", "Moisture", "None"],
+      "Wi-Fi / Smart Features": ["Yes", "No", "Alexa/Google Support"],
+      "Programmable": ["Yes", "No", "7-Day", "5-2 Day", "Auto-Learning"],
+      "Display Type": ["Touchscreen", "LCD", "LED", "Digital"],
+      "Installation Type": ["Surface Mount", "In-Wall", "Recessed"],
+      "IP / NEMA Rating": ["IP33", "IP65", "NEMA 3R"],
+      "Color": ["White", "Black", "Silver"],
+      "Warranty": ["3 years", "5 years", "12 years", "Lifetime"]
     };
 
     return filterOptionsMap[filterName] || [];
