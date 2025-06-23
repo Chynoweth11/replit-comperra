@@ -141,6 +141,28 @@ export const CATEGORY_SCHEMAS: Record<string, CategorySchema> = {
       "installLocation"
     ]
   },
+  thermostats: {
+    displayName: "Thermostats",
+    description: "Smart and programmable thermostats for radiant heating control",
+    filters: [
+      "Device Type", "Voltage", "Load Capacity", "Thermostat Sensor Type", 
+      "Wi-Fi / Smart Features", "Programmable", "Display Type", 
+      "Installation Type", "IP / NEMA Rating", "Color", "Warranty"
+    ],
+    specs: [
+      "deviceType",
+      "voltage",
+      "loadCapacity",
+      "sensorType",
+      "smartFeatures",
+      "programmable",
+      "displayType",
+      "installationType",
+      "ipRating",
+      "color",
+      "warranty"
+    ]
+  },
   carpet: {
     displayName: "Carpet",
     description: "Broadloom and modular carpet tiles in various fibers and constructions",

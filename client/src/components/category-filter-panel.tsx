@@ -92,7 +92,7 @@ export default function CategoryFilterPanel({ category, filters, onFiltersChange
       "Device Type": ["Smart Wi-Fi", "Programmable", "Manual", "Snow Sensor/Controller"],
       "Voltage": ["110V", "120V", "208V", "240V", "Dual Voltage"],
       "Load Capacity": ["Up to 15A", "Up to 30A", "Up to 50A"],
-      "Sensor Type": ["Air", "Floor", "Dual", "Moisture", "None"],
+      "Thermostat Sensor Type": ["Air", "Floor", "Dual", "Moisture", "None"],
       "Wi-Fi / Smart Features": ["Yes", "No", "Alexa/Google Support"],
       "Programmable": ["Yes", "No", "7-Day", "5-2 Day", "Auto-Learning"],
       "Display Type": ["Touchscreen", "LCD", "LED", "Digital"],
