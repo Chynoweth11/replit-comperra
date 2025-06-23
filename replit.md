@@ -22,6 +22,9 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ✅ **June 23, 2025**: COMPLETED - Removed "Request Samples" buttons for heating and thermostats categories as requested
+- ✅ **June 23, 2025**: COMPLETED - Added customer type selection (homeowner, designer, architect, trade, other) to all pricing request forms
+- ✅ **June 23, 2025**: COMPLETED - Updated contact information to use only support@comperra.com and fixed navigation links (About → /about, Help → /contact)
 - ✅ **June 23, 2025**: COMPLETED - Enhanced price scraping with comprehensive extraction patterns including regex fallbacks for better price detection from manufacturer websites
 - ✅ **June 23, 2025**: COMPLETED - Added thermostats category to "All Categories" page and updated category count from 6 to 7 categories throughout the platform
 - ✅ **June 23, 2025**: COMPLETED - Created comprehensive "Best Thermostats for Radiant Floor and Outdoor Heating" buying guide with detailed evaluation criteria and use scenarios
