@@ -396,7 +396,24 @@ export class SimulationScraper {
         });
       }
     } else if (category === 'thermostats') {
-      // Apply comprehensive thermostat specifications
+      // Apply comprehensive thermostat specifications using the same pattern as tiles
+      Object.assign(enhancedSpecs, {
+        'Product Name': name,
+        'Brand / Manufacturer': brand,
+        'Category': 'Thermostats',
+        'Device Type': this.generateThermostatSpec('deviceType', brand, name),
+        'Voltage': this.generateThermostatSpec('voltage', brand, name),
+        'Load Capacity': this.generateThermostatSpec('loadCapacity', brand, name),
+        'Sensor Type': this.generateThermostatSpec('sensorType', brand, name),
+        'GFCI Protection': this.generateThermostatSpec('gfci', brand, name),
+        'Display Type': this.generateThermostatSpec('display', brand, name),
+        'Connectivity': this.generateThermostatSpec('connectivity', brand, name),
+        'Installation Type': this.generateThermostatSpec('installation', brand, name),
+        'Warranty': this.generateThermostatSpec('warranty', brand, name),
+        'Price per SF': specs['Price per SF'] || '0.00',
+        'Image URL': imageUrl,
+        'Product URL': url
+      });
       Object.assign(enhancedSpecs, {
         'Product Name': name,
         'Brand / Manufacturer': brand,
