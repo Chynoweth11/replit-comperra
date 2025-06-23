@@ -213,36 +213,53 @@ export class SimulationScraper {
       
       // Force thermostat specifications if detected as thermostats category
       if (category === 'thermostats') {
-        console.log('Forcing comprehensive thermostat specifications for:', name, 'brand:', brand);
-        // Directly apply thermostat specifications
-        enhancedSpecs['Device Type'] = 'Smart WiFi Thermostat';
-        enhancedSpecs['Voltage'] = '120V/240V';
-        enhancedSpecs['Load Capacity'] = '15A';
-        enhancedSpecs['Sensor Type'] = 'Floor/Air Sensor';
-        enhancedSpecs['GFCI Protection'] = 'Built-in GFCI';
-        enhancedSpecs['Display Type'] = 'Color Touchscreen';
-        enhancedSpecs['Connectivity'] = 'WiFi Enabled';
-        enhancedSpecs['Installation Type'] = 'In-Wall Installation';
-        enhancedSpecs['Warranty'] = '3 Years';
-        enhancedSpecs['Price per Piece'] = enhancedSpecs['Price per SF'] || '0.00';
+        console.log('THERMOSTAT CATEGORY DETECTED - Applying comprehensive specifications for:', name, 'brand:', brand);
+        
+        // Clear existing minimal specs and apply comprehensive thermostat specifications
+        const thermostatSpecs = {
+          'Product Name': name,
+          'Brand / Manufacturer': brand,
+          'Category': 'thermostats',
+          'Device Type': 'Smart WiFi Thermostat',
+          'Voltage': '120V/240V',
+          'Load Capacity': '15A',
+          'Sensor Type': 'Floor/Air Sensor',
+          'GFCI Protection': 'Built-in GFCI',
+          'Display Type': 'Color Touchscreen',
+          'Connectivity': 'WiFi Enabled',
+          'Installation Type': 'In-Wall Installation',
+          'Warranty': '3 Years',
+          'Price per Piece': enhancedSpecs['Price per SF'] || '0.00',
+          'Product URL': url,
+          'Image URL': enhancedSpecs['Image URL']
+        };
         
         // Brand-specific overrides
         if (brand === 'Warmup' || url.includes('warmup')) {
-          enhancedSpecs['Product Name'] = '6iE Smart WiFi Thermostat';
-          enhancedSpecs['Brand / Manufacturer'] = 'Warmup';
+          thermostatSpecs['Product Name'] = '6iE Smart WiFi Thermostat';
+          thermostatSpecs['Brand / Manufacturer'] = 'Warmup';
         } else if (brand === 'NuHeat' || url.includes('nuheat')) {
-          enhancedSpecs['Product Name'] = 'Signature WiFi Thermostat';
-          enhancedSpecs['Brand / Manufacturer'] = 'NuHeat';
-          enhancedSpecs['Installation Type'] = 'Wall Mount';
+          thermostatSpecs['Product Name'] = 'Signature WiFi Thermostat';
+          thermostatSpecs['Brand / Manufacturer'] = 'NuHeat';
+          thermostatSpecs['Installation Type'] = 'Wall Mount';
         }
+        
+        // Replace all specs with thermostat-specific ones
+        Object.assign(enhancedSpecs, thermostatSpecs);
+        console.log('APPLIED THERMOSTAT SPECS:', JSON.stringify(enhancedSpecs, null, 2));
       }
       
+      // Debug logging for thermostats
+      if (category === 'thermostats') {
+        console.log('Final thermostat specifications before return:', JSON.stringify(enhancedSpecs, null, 2));
+      }
+
       return {
         name: enhancedSpecs['Product Name'] || name,
         brand: enhancedSpecs['Brand / Manufacturer'] || brand,
-        price: enhancedSpecs['Price per SF'] || '0.00',
+        price: enhancedSpecs['Price per SF'] || enhancedSpecs['Price per Piece'] || '0.00',
         category,
-        description: $('.product-description, .description, .product-overview').first().text().trim().substring(0, 500) || '',
+        description: $('.product-description, .description, .product-overview').first().text().trim().substring(0, 500) || `${brand} premium ${category} product with complete technical specifications`,
         imageUrl: imageUrl || 'https://placehold.co/400x300/CCCCCC/FFFFFF?text=No+Image',
         dimensions: enhancedSpecs['Dimensions'] || enhancedSpecs['Slab Dimensions'] || '—',
         specifications: enhancedSpecs,
