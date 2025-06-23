@@ -211,20 +211,19 @@ export class SimulationScraper {
       // Apply comprehensive specifications based on detected category
       const enhancedSpecs = this.enhanceSpecifications(specs, category, brand, name, url, imageUrl);
       
-      // Ensure thermostat products get complete specifications
+      // Ensure thermostat products get complete specifications - this must happen BEFORE the main enhanceSpecifications call
       if (category === 'thermostats') {
         console.log('Adding comprehensive thermostat specifications for:', name);
-        Object.assign(enhancedSpecs, {
-          'Device Type': this.generateThermostatSpec('deviceType', brand, name),
-          'Voltage': this.generateThermostatSpec('voltage', brand, name),
-          'Load Capacity': this.generateThermostatSpec('loadCapacity', brand, name),
-          'Sensor Type': this.generateThermostatSpec('sensorType', brand, name),
-          'GFCI Protection': this.generateThermostatSpec('gfci', brand, name),
-          'Display Type': this.generateThermostatSpec('display', brand, name),
-          'Connectivity': this.generateThermostatSpec('connectivity', brand, name),
-          'Installation Type': this.generateThermostatSpec('installation', brand, name),
-          'Warranty': this.generateThermostatSpec('warranty', brand, name)
-        });
+        // Override the minimal specs with complete thermostat specifications
+        enhancedSpecs['Device Type'] = this.generateThermostatSpec('deviceType', brand, name);
+        enhancedSpecs['Voltage'] = this.generateThermostatSpec('voltage', brand, name);
+        enhancedSpecs['Load Capacity'] = this.generateThermostatSpec('loadCapacity', brand, name);
+        enhancedSpecs['Sensor Type'] = this.generateThermostatSpec('sensorType', brand, name);
+        enhancedSpecs['GFCI Protection'] = this.generateThermostatSpec('gfci', brand, name);
+        enhancedSpecs['Display Type'] = this.generateThermostatSpec('display', brand, name);
+        enhancedSpecs['Connectivity'] = this.generateThermostatSpec('connectivity', brand, name);
+        enhancedSpecs['Installation Type'] = this.generateThermostatSpec('installation', brand, name);
+        enhancedSpecs['Warranty'] = this.generateThermostatSpec('warranty', brand, name);
       }
       
       return {
@@ -404,13 +403,10 @@ export class SimulationScraper {
         'Connectivity': this.generateThermostatSpec('connectivity', brand, name),
         'Installation Type': this.generateThermostatSpec('installation', brand, name),
         'Warranty': this.generateThermostatSpec('warranty', brand, name),
-        'Price per SF': specs['Price per SF'] || '0.00',
+        'Price per SF': 'N/A',
         'Image URL': imageUrl,
         'Product URL': url
       });
-      Object.assign(enhancedSpecs, {
-        'Product Name': name,
-        'Brand / Manufacturer': brand,
         'Category': 'Thermostat (Indoor Heating)',
         'Device Type': this.generateThermostatSpec('deviceType', brand, name),
         'Voltage': this.generateThermostatSpec('voltage', brand, name),
