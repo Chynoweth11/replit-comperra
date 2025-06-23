@@ -1202,6 +1202,20 @@ export class ProductScraper {
   }
 
   // Enhanced Airtable integration for scraped products
+  async saveToFirebase(scrapedProduct: ScrapedProduct): Promise<boolean> {
+    try {
+      const material = this.convertToMaterial(scrapedProduct);
+      const { sourceUrl, ...insertMaterial } = material;
+      
+      await storage.createMaterial(insertMaterial);
+      console.log(`Saved product to Firebase: ${scrapedProduct.name}`);
+      return true;
+    } catch (error) {
+      console.error('Error saving to Firebase:', error);
+      return false;
+    }
+  }
+
   async saveToAirtable(scrapedProduct: ScrapedProduct): Promise<boolean> {
     if (!airtableBase) {
       console.log('Airtable not configured, skipping Airtable save');
@@ -1236,6 +1250,7 @@ export class ProductScraper {
     
     if (scrapedProduct) {
       // Try to save to Airtable if available
+      await this.saveToFirebase(scrapedProduct);
       await this.saveToAirtable(scrapedProduct);
       console.log('Scraped Product:', {
         name: scrapedProduct.name,

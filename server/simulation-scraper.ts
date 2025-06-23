@@ -2,6 +2,7 @@
 // simulation-scraper.ts - New Simulation-Based Scraper with Airtable Integration
 // ==========================
 import { InsertMaterial } from '../shared/schema';
+import { storage } from './storage';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
@@ -1161,6 +1162,20 @@ export class SimulationScraper {
       inStock: true,
       sourceUrl: scrapedProduct.sourceUrl
     };
+  }
+
+  async saveToFirebase(scrapedProduct: SimulatedScrapedProduct): Promise<boolean> {
+    try {
+      const material = this.convertToMaterial(scrapedProduct);
+      const { sourceUrl, ...insertMaterial } = material;
+      
+      await storage.createMaterial(insertMaterial);
+      console.log(`Saved product to Firebase: ${scrapedProduct.name}`);
+      return true;
+    } catch (error) {
+      console.error('Error saving to Firebase:', error);
+      return false;
+    }
   }
 
   async saveToAirtable(scrapedProduct: SimulatedScrapedProduct): Promise<boolean> {

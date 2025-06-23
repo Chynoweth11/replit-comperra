@@ -821,4 +821,13 @@ Choosing the right thermostat ensures your heating system performs safely, effic
   }
 }
 
-export const storage = new MemStorage();
+// Initialize storage - use Firebase in production, Memory for development
+const useFirebase = process.env.NODE_ENV === 'production' || process.env.USE_FIREBASE === 'true';
+
+export const storage: IStorage = useFirebase ? new FirebaseStorage() : new MemStorage();
+
+// Optional: Migrate data from memory to Firebase
+if (useFirebase && process.env.MIGRATE_DATA === 'true') {
+  const memStorage = new MemStorage();
+  (storage as FirebaseStorage).migrateFromMemStorage(memStorage).catch(console.error);
+}
