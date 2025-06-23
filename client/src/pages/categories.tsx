@@ -22,6 +22,7 @@ export default function Categories() {
             <li><strong>Stone & Slabs:</strong> Natural and engineered surfaces typically used for countertops, wall cladding, and flooring. May include granite, marble, travertine, and quartz-based products.</li>
             <li><strong>Vinyl & LVT:</strong> Engineered resilient flooring made for durability and water resistance. Available in multiple construction types like SPC (stone polymer core) and WPC (wood polymer core).</li>
             <li><strong>Hardwood Flooring:</strong> Ranges from solid to engineered boards. Known for its aesthetic warmth and long-term maintenance considerations.</li>
+            <li><strong>Thermostats:</strong> Smart and programmable thermostats for radiant heating control, featuring Wi-Fi connectivity, sensor types, and energy optimization.</li>
             <li><strong>Carpet:</strong> Textured textile flooring, available in broadloom and modular tile forms. Differentiated by fiber type, pile height, and usage suitability.</li>
             <li><strong>Heating Systems:</strong> Underlayment heating systems, such as electric heat mats and programmable thermostats, often used in tile-based installations for added comfort.</li>
           </ul>
@@ -53,6 +54,11 @@ export default function Categories() {
             <h3 className="text-xl font-semibold mb-3 text-blue-600">Heating Systems</h3>
             <p className="text-gray-600 mb-4">Electric radiant heating mats and systems for comfort flooring</p>
             <a href="/comparison/heat" className="text-blue-600 hover:underline">Browse Heating →</a>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+            <h3 className="text-xl font-semibold mb-3 text-blue-600">Thermostats</h3>
+            <p className="text-gray-600 mb-4">Smart and programmable thermostats for radiant heating control</p>
+            <a href="/comparison/thermostats" className="text-blue-600 hover:underline">Browse Thermostats →</a>
           </div>
           <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
             <h3 className="text-xl font-semibold mb-3 text-blue-600">Carpet</h3>
