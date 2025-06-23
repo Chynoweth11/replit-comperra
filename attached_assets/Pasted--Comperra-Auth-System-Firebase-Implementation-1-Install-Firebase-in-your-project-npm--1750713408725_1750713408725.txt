@@ -1,0 +1,114 @@
+// ✅ Comperra Auth System - Firebase Implementation
+
+// 1. Install Firebase in your project:
+// npm install firebase
+
+// 2. firebase.js - Firebase config and initialization
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+
+const firebaseConfig = {
+  apiKey: 'YOUR_API_KEY',
+  authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
+  projectId: 'YOUR_PROJECT_ID',
+  storageBucket: 'YOUR_PROJECT_ID.appspot.com',
+  messagingSenderId: 'YOUR_SENDER_ID',
+  appId: 'YOUR_APP_ID',
+};
+
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+
+// 3. Header.js - Sign In / Join Free UI
+export default function Header() {
+  return (
+    <div className="flex justify-end gap-4 p-4">
+      <a href="/login" className="text-sm font-medium text-gray-700 hover:underline">Sign In</a>
+      <a href="/register" className="bg-black text-white px-4 py-2 text-sm font-semibold rounded hover:bg-gray-800">
+        Join Free
+      </a>
+    </div>
+  );
+}
+
+// 4. LoginPage.js
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useState } from 'react';
+import { auth } from './firebase';
+
+export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      window.location.href = '/dashboard';
+    } catch (error) {
+      alert('Login failed');
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-md mx-auto">
+      <h2 className="text-xl font-bold mb-4">Sign In</h2>
+      <input type="email" placeholder="Email" onChange={(e) => setEmail(e.target.value)} className="block w-full mb-2 p-2 border" />
+      <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} className="block w-full mb-4 p-2 border" />
+      <button onClick={handleLogin} className="bg-black text-white px-4 py-2 rounded">Login</button>
+    </div>
+  );
+}
+
+// 5. RegisterPage.js
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { useState } from 'react';
+import { auth } from './firebase';
+
+export default function RegisterPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleRegister = async () => {
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      window.location.href = '/dashboard';
+    } catch (error) {
+      alert('Registration failed');
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-md mx-auto">
+      <h2 className="text-xl font-bold mb-4">Join Free</h2>
+      <input type="email" placeholder="Email" onChange={(e) => setEmail(e.target.value)} className="block w-full mb-2 p-2 border" />
+      <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} className="block w-full mb-4 p-2 border" />
+      <button onClick={handleRegister} className="bg-black text-white px-4 py-2 rounded">Register</button>
+    </div>
+  );
+}
+
+// 6. Dashboard.js
+import { useEffect, useState } from 'react';
+import { auth } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+
+export default function Dashboard() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) setUser(currentUser);
+      else window.location.href = '/login';
+    });
+    return () => unsubscribe();
+  }, []);
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Welcome to your Dashboard</h1>
+      <p className="mt-2">Saved comparisons, quotes, and recent activity will appear here.</p>
+    </div>
+  );
+}
+
+// Optional: use context or hooks to check login before comparing products and prompt sign-up if not logged in.

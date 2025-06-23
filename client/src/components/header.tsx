@@ -1,11 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { signOut } from "firebase/auth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X } from "lucide-react";
+import { Search, X, User } from "lucide-react";
 import Fuse from 'fuse.js';
 import { useMaterials } from "@/hooks/use-materials";
+import { useAuth } from "@/contexts/AuthContext";
+import { auth } from "@/lib/firebase";
 
 interface SearchSuggestion {
   id: number;
@@ -22,9 +25,19 @@ export default function Header() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const [location, navigate] = useLocation();
+  const { user } = useAuth();
   
   // Get all materials for fuzzy search
   const { data: allMaterials = [] } = useMaterials();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   useEffect(() => {
     const generateSuggestions = () => {
@@ -228,10 +241,26 @@ export default function Header() {
           <nav className="space-x-4 text-sm font-medium hidden md:flex items-center">
             <Link href="/about" className="hover:text-royal transition-colors">About</Link>
             <Link href="/contact" className="hover:text-royal transition-colors">Help</Link>
-            <a href="#" className="hover:text-royal transition-colors">Sign In</a>
-            <Button className="bg-royal text-white hover:bg-royal-dark">
-              Join Free
-            </Button>
+            {user ? (
+              <>
+                <Link href="/dashboard" className="hover:text-royal transition-colors flex items-center gap-1">
+                  <User className="h-4 w-4" />
+                  {user.displayName || 'Dashboard'}
+                </Link>
+                <Button variant="outline" size="sm" onClick={handleSignOut}>
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="hover:text-royal transition-colors">Sign In</Link>
+                <Link href="/register">
+                  <Button className="bg-royal text-white hover:bg-royal-dark">
+                    Join Free
+                  </Button>
+                </Link>
+              </>
+            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -257,10 +286,23 @@ export default function Header() {
               <div className="space-y-2">
                 <Link href="/about" className="block py-2 hover:text-royal">About</Link>
                 <Link href="/contact" className="block py-2 hover:text-royal">Help</Link>
-                <a href="#" className="block py-2 hover:text-royal">Sign In</a>
-                <Button className="w-full bg-royal text-white hover:bg-royal-dark">
-                  Join Free
-                </Button>
+                {user ? (
+                  <>
+                    <Link href="/dashboard" className="block py-2 hover:text-royal">Dashboard</Link>
+                    <Button variant="outline" className="w-full" onClick={handleSignOut}>
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/login" className="block py-2 hover:text-royal">Sign In</Link>
+                    <Link href="/register">
+                      <Button className="w-full bg-royal text-white hover:bg-royal-dark">
+                        Join Free
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
