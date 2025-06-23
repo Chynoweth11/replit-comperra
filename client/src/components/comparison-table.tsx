@@ -179,25 +179,23 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
   });
 
   const getHeaders = (category: string) => {
-    const baseHeaders = ["Product", "Brand", "Price/SF"];
-    
     switch (category) {
       case "tiles":
-        return [...baseHeaders, "PEI Rating", "DCOF / Slip Rating", "Water Absorption", "Dimensions", "Actions"];
+        return ["Product", "Brand", "Price/SF", "PEI Rating", "DCOF / Slip Rating", "Water Absorption", "Dimensions", "Actions"];
       case "slabs": 
-        return [...baseHeaders, "Material Type", "Finish", "Thickness", "Dimensions", "Actions"];
+        return ["Product", "Brand", "Price/SF", "Material Type", "Finish", "Thickness", "Dimensions", "Actions"];
       case "lvt":
-        return [...baseHeaders, "Material Type", "Wear Layer", "Thickness", "Waterproof", "Dimensions", "Actions"];
+        return ["Product", "Brand", "Price/SF", "Material Type", "Wear Layer", "Thickness", "Waterproof", "Dimensions", "Actions"];
       case "hardwood":
-        return [...baseHeaders, "Species", "Finish", "Width", "Dimensions", "Actions"];
+        return ["Product", "Brand", "Price/SF", "Species", "Finish", "Width", "Dimensions", "Actions"];
       case "heat":
-        return [...baseHeaders, "Voltage", "Coverage", "Features", "Power", "Dimensions", "Actions"];
+        return ["Product", "Brand", "Price/SF", "Voltage", "Coverage", "Features", "Power", "Dimensions", "Actions"];
       case "carpet":
-        return [...baseHeaders, "Fiber", "Stain Resistance", "Pile Height", "Dimensions", "Actions"];
+        return ["Product", "Brand", "Price/SF", "Fiber", "Stain Resistance", "Pile Height", "Dimensions", "Actions"];
       case "thermostats":
-        return [...baseHeaders, "Device Type", "Voltage", "Load Capacity", "Sensor Type", "GFCI Protection", "Dimensions", "Actions"];
+        return ["Product", "Brand", "Price/Piece", "Device Type", "Voltage", "Load Capacity", "Sensor Type", "GFCI Protection", "Dimensions", "Actions"];
       default:
-        return [...baseHeaders, "Dimensions", "Actions"];
+        return ["Product", "Brand", "Price", "Dimensions", "Actions"];
     }
   };
 

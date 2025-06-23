@@ -452,7 +452,6 @@ export class SimulationScraper {
           'Warranty': '3-year'
         });
       }
-        'Device Type': this.generateThermostatSpec('deviceType', brand, name),
         'Voltage': this.generateThermostatSpec('voltage', brand, name),
         'Load Capacity': this.generateThermostatSpec('loadCapacity', brand, name),
         'Sensor Type': this.generateThermostatSpec('sensorType', brand, name),
