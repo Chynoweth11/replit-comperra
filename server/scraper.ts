@@ -886,6 +886,73 @@ export class ProductScraper {
     }
   }
 
+  async scrapeBedrosiansProduct(url: string, category: string): Promise<ScrapedProduct | null> {
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        },
+        timeout: 30000
+      });
+
+      const $ = cheerio.load(response.data);
+      const html = response.data;
+      
+      // Extract product name from title or h1
+      let productName = $('title').text().trim().split('|')[0].trim() ||
+                       $('h1').first().text().trim() ||
+                       $('meta[property="og:title"]').attr('content') ||
+                       'Bedrosians Product';
+
+      // Clean product name
+      productName = productName
+        .replace(/\s*\|\s*Bedrosians.*$/i, '') // Remove Bedrosians branding
+        .replace(/\?.*$/, '') // Remove URL parameters
+        .replace(/itemNo.*$/i, '') // Remove item number
+        .replace(/\s+/g, ' ') // Normalize whitespace
+        .trim();
+
+      if (!productName || productName.length < 3) {
+        productName = 'Bedrosians Tile Product';
+      }
+
+      // Extract price
+      let price = this.textMatch(html, /\$\d+(?:\.\d{2})?/g) || '$0.00';
+
+      // Extract specifications
+      const specifications: any = {};
+      
+      // Extract dimensions
+      const dimensions = this.textMatch(html, /\d+["\s]*[x×]\s*\d+["\s]*/i) || 'Standard';
+
+      // Extract image
+      let imageUrl = $('meta[property="og:image"]').attr('content') ||
+                    $('img[src*="product"]').first().attr('src') ||
+                    $('img').first().attr('src') ||
+                    '';
+
+      if (imageUrl && imageUrl.startsWith('/')) {
+        const urlObj = new URL(url);
+        imageUrl = `${urlObj.protocol}//${urlObj.host}${imageUrl}`;
+      }
+
+      return {
+        name: productName,
+        brand: 'Bedrosians',
+        price,
+        category,
+        description: $('meta[name="description"]').attr('content') || '',
+        imageUrl,
+        dimensions,
+        specifications,
+        sourceUrl: url
+      };
+    } catch (error) {
+      console.error('Error scraping Bedrosians product:', error);
+      return null;
+    }
+  }
+
   async scrapeGenericProduct(url: string, category: string): Promise<ScrapedProduct | null> {
     try {
       const response = await axios.get(url, {
