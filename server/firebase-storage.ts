@@ -15,9 +15,9 @@ if (!getApps().length) {
 const db = getFirestore();
 
 export class FirebaseStorage implements IStorage {
-  private materialsCollection = db.collection('materials');
-  private articlesCollection = db.collection('articles');
-  private brandsCollection = db.collection('brands');
+  private materialsCollection = db.collection('comperra-products');
+  private articlesCollection = db.collection('comperra-articles');
+  private brandsCollection = db.collection('comperra-brands');
 
   async getMaterials(filters?: {
     category?: string;
@@ -107,9 +107,10 @@ export class FirebaseStorage implements IStorage {
       };
 
       await docRef.set(newMaterial);
+      console.log(`✅ Saved product to comperra-products collection: ${newMaterial.name}`);
       return newMaterial;
     } catch (error) {
-      console.error('Error creating material in Firebase:', error);
+      console.error('Error creating material in Firebase comperra-products:', error);
       throw error;
     }
   }
