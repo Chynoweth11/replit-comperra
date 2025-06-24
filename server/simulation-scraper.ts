@@ -1323,11 +1323,11 @@ export class SimulationScraper {
       imageUrl = 'https://www.daltile.com/images/metro-white-subway.jpg';
     } else if (domain.includes('bedrosians')) {
       brand = 'Bedrosians';
-      name = 'Bedrosians Porcelain Tile';
+      name = 'Bedrosians Premium Tile Collection';
       category = 'tiles';
-      imageUrl = 'https://www.bedrosians.com/images/porcelain-tile.jpg';
+      imageUrl = 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=300&fit=crop';
       if (url.includes('porcelain')) {
-        name = 'Bedrosians Porcelain Collection';
+        name = 'Bedrosians Porcelain Tile';
       }
     } else if (domain.includes('arizonatile')) {
       brand = 'Arizona Tile';

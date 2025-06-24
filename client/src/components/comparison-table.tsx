@@ -447,13 +447,15 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
                         }}
                         className="mr-3"
                       />
-                      {material.imageUrl && (
-                        <img 
-                          src={material.imageUrl} 
-                          alt={material.name}
-                          className="w-12 h-12 rounded-lg object-cover mr-3"
-                        />
-                      )}
+                      <img 
+                        src={material.imageUrl || getDefaultImage(category, material.brand)} 
+                        alt={material.name}
+                        className="w-12 h-12 rounded-lg object-cover mr-3"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = getDefaultImage(category, material.brand);
+                        }}
+                      />
                       <div>
                         <div className="font-medium text-gray-900">{material.name}</div>
                         <div className="text-sm text-gray-500">{material.description}</div>

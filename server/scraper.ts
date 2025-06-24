@@ -939,9 +939,34 @@ export class ProductScraper {
         imageUrl = `${urlObj.protocol}//${urlObj.host}${imageUrl}`;
       }
 
-      // Generate branded placeholder if no image found
+      // Enhanced image search for Bedrosians specifically
+      if (!imageUrl && url.includes('bedrosians.com')) {
+        // Try Bedrosians-specific selectors
+        imageUrl = $('img[src*="image"], img[src*="product"], img[src*="tile"]').first().attr('src') ||
+                  $('picture img, .image-container img, .product-gallery img').first().attr('src') ||
+                  $('img').filter((_, img) => {
+                    const src = $(img).attr('src') || '';
+                    return src.includes('bedrosians') || src.includes('tile') || src.includes('product');
+                  }).first().attr('src');
+        
+        // Make relative URLs absolute for Bedrosians
+        if (imageUrl && imageUrl.startsWith('/')) {
+          imageUrl = `https://www.bedrosians.com${imageUrl}`;
+        }
+      }
+
+      // Generate high-quality fallback if still no image found
       if (!imageUrl) {
-        imageUrl = `https://placehold.co/400x300/E3F2FD/1976D2?text=Bedrosians+${encodeURIComponent(category.charAt(0).toUpperCase() + category.slice(1))}`;
+        const categoryImages = {
+          tiles: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=300&fit=crop',
+          slabs: 'https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=400&h=300&fit=crop',
+          lvt: 'https://images.unsplash.com/photo-1586105251261-72a756497a11?w=400&h=300&fit=crop',
+          hardwood: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=400&h=300&fit=crop',
+          heat: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop',
+          carpet: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=400&h=300&fit=crop',
+          thermostats: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=300&fit=crop'
+        };
+        imageUrl = categoryImages[category as keyof typeof categoryImages] || categoryImages.tiles;
       }
 
       return {
