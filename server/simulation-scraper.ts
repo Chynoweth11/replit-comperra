@@ -111,6 +111,11 @@ export class SimulationScraper {
       // Handle Cloudflare protection or any scraping failure
       if (response.status === 403 || response.data.includes('cloudflare') || response.data.includes('cf_chl_opt') || response.data.includes('Choose an option')) {
         console.log(`Website protection or incomplete data detected for ${url}, using comprehensive fallback method`);
+        
+        // Check if this is a carpet URL before falling back
+        const fallbackCategory = this.detectCategory(url, '');
+        console.log(`Detected fallback category: ${fallbackCategory} for URL: ${url}`);
+        
         return this.createFallbackProduct(url);
       }
 
