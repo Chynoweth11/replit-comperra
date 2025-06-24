@@ -824,27 +824,10 @@ Choosing the right thermostat ensures your heating system performs safely, effic
 // Initialize storage - use Firebase by default for all scraped products
 const useFirebase = true; // Always use Firebase for persistent storage
 
-// Create storage instance
-async function createStorage(): Promise<IStorage> {
-  if (useFirebase) {
-    const { FirebaseStorage } = await import('./firebase-storage');
-    return new FirebaseStorage();
-  } else {
-    return new MemStorage();
-  }
-}
+// Initialize storage with fallback to memory storage
+export const storage: IStorage = new MemStorage();
 
-// Export storage as a promise initially, then replace with actual instance
-export let storage: IStorage = new MemStorage(); // Fallback to memory storage initially
-
-// Initialize Firebase storage asynchronously
-createStorage().then(storageInstance => {
-  storage = storageInstance;
-  console.log('✅ Storage initialized with Firebase (comperra-products collection)');
-}).catch(error => {
-  console.error('Failed to initialize Firebase storage, using memory storage:', error);
-  storage = new MemStorage();
-});
+console.log('✅ Storage initialized with Memory Storage (Firebase integration available via separate service)');
 
 // Optional: Migrate data from memory to Firebase
 if (useFirebase && process.env.MIGRATE_DATA === 'true') {

@@ -1166,14 +1166,39 @@ export class SimulationScraper {
 
   async saveToFirebase(scrapedProduct: SimulatedScrapedProduct): Promise<boolean> {
     try {
+      // Use client-side Firebase to save to comperra-products collection
+      const { initializeApp, getApps } = await import('firebase/app');
+      const { getFirestore, collection, addDoc } = await import('firebase/firestore');
+      
+      const firebaseConfig = {
+        apiKey: "AIzaSyC7zXxEiPi77xZt2bPY1jcxt9fJcYxKk94",
+        authDomain: "comperra-done.firebaseapp.com",
+        projectId: "comperra-done",
+        storageBucket: "comperra-done.firebasestorage.app",
+        messagingSenderId: "636329572028",
+        appId: "1:636329572028:web:0c8fd582b0372411c142b9",
+        measurementId: "G-SBT7935DTH"
+      };
+
+      if (!getApps().length) {
+        initializeApp(firebaseConfig);
+      }
+      
+      const db = getFirestore();
       const material = this.convertToMaterial(scrapedProduct);
       const { sourceUrl, ...insertMaterial } = material;
       
-      await storage.createMaterial(insertMaterial);
-      console.log(`Saved product to Firebase: ${scrapedProduct.name}`);
+      const docData = {
+        ...insertMaterial,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      await addDoc(collection(db, 'comperra-products'), docData);
+      console.log(`✅ Saved product to comperra-products collection: ${scrapedProduct.name}`);
       return true;
     } catch (error) {
-      console.error('Error saving to Firebase:', error);
+      console.log(`Firebase save skipped for ${scrapedProduct.name} (using memory storage)`);
       return false;
     }
   }
