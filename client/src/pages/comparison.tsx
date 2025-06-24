@@ -1,4 +1,4 @@
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import Header from "@/components/header";
 import ComparisonTable from "@/components/comparison-table";
