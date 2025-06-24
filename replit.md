@@ -22,6 +22,8 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ✅ **June 23, 2025**: COMPLETED - Enhanced user dashboard with functional saved comparisons, quote tracking, and recent activity timeline with visual status indicators
+- ✅ **June 23, 2025**: COMPLETED - Added phone number field to Join Free registration form with validation
 - ✅ **June 23, 2025**: COMPLETED - Implemented Firebase Firestore integration for persistent product storage - all scraped products now saved to Firebase database instead of memory storage
 - ✅ **June 23, 2025**: COMPLETED - Enhanced scraping system to save products to both Firebase and Airtable for data redundancy and persistence
 - ✅ **June 23, 2025**: COMPLETED - Added customer type selection to registration form (homeowner, designer, architect, trade professional, other)
