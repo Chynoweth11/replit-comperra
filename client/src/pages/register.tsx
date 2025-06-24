@@ -13,6 +13,7 @@ import Footer from '@/components/footer';
 export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [customerType, setCustomerType] = useState('');
@@ -36,6 +37,11 @@ export default function RegisterPage() {
 
     if (!customerType) {
       setError('Please select your role.');
+      return;
+    }
+
+    if (!phone) {
+      setError('Please enter your phone number.');
       return;
     }
 
@@ -103,6 +109,18 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Enter your phone number"
                   required
                 />
               </div>
