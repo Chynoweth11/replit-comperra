@@ -15,6 +15,7 @@ export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const [leadModalOpen, setLeadModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<string>("");
+  const [requestType, setRequestType] = useState<'pricing' | 'sample'>('pricing');
   const [isInComparison, setIsInComparison] = useState(false);
   
   const { data: material, isLoading } = useQuery<Material>({
@@ -38,11 +39,13 @@ export default function ProductDetail() {
 
   const handleGetPricing = (productName: string) => {
     setSelectedProduct(productName);
+    setRequestType('pricing');
     setLeadModalOpen(true);
   };
 
   const handleRequestSamples = (productName: string) => {
-    setSelectedProduct(`Sample Request: ${productName}`);
+    setSelectedProduct(productName);
+    setRequestType('sample');
     setLeadModalOpen(true);
   };
 

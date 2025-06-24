@@ -1,0 +1,411 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { initializeApp } from 'firebase/app';
+import { 
+    getAuth, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    onAuthStateChanged, 
+    signOut 
+} from 'firebase/auth';
+import { 
+    getFirestore, 
+    doc, 
+    setDoc, 
+    getDoc, 
+    collection, 
+    onSnapshot 
+} from 'firebase/firestore';
+
+// --- IMPORTANT ---
+// This configuration is a placeholder. In a real environment, 
+// you would get this from your Firebase project settings.
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// --- Static Data ---
+// Define categories for the app. Using lowercase for collection names.
+const PRODUCT_CATEGORIES = ["tiles", "slabs", "mosaics", "vanities", "countertops", "flooring"];
+
+// --- Helper Functions ---
+
+/**
+ * Creates a Firestore-safe document ID from a URL.
+ * Replaces invalid characters with underscores.
+ * This is crucial for preventing duplicate entries within a collection.
+ * @param {string} url The product URL.
+ * @returns {string} A safe string to be used as a document ID.
+ */
+const createIdFromUrl = (url) => {
+    try {
+        const urlObject = new URL(url);
+        const cleanPath = (urlObject.hostname + urlObject.pathname)
+            .replace(/[./#$[\]]/g, '_');
+        return cleanPath;
+    } catch (error) {
+        return url.replace(/[./#$[\]]/g, '_');
+    }
+};
+
+/**
+ * Mock scraping function. In a real application, you would replace this
+ * with a call to a server-side function (e.g., a Cloud Function)
+ * that performs the actual web scraping.
+ * @param {string} url The URL to "scrape".
+ * @param {string} category The category of the product.
+ * @returns {object} Mocked product data.
+ */
+const mockScrapeProduct = (url, category) => {
+    const colors = ["White", "Black", "Grey", "Beige", "Blue"];
+    const brands = ["Arizona Tile", "MSI", "Daltile", "Emser Tile", "Bedrosians"];
+    
+    return {
+        productName: `Product from ${new URL(url).hostname}`,
+        category: category, // The category is now passed in
+        pricePerSF: (Math.random() * 50 + 5).toFixed(2),
+        color: colors[Math.floor(Math.random() * colors.length)],
+        brand: brands[Math.floor(Math.random() * brands.length)],
+        productUrl: url,
+        scrapedAt: new Date()
+    };
+};
+
+
+// --- React Components ---
+
+const AuthComponent = ({ auth, db }) => {
+    const [isLogin, setIsLogin] = useState(true);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [fullName, setFullName] = useState('');
+    const [userType, setUserType] = useState('homeowner');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleAuthAction = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+
+        try {
+            if (isLogin) {
+                await signInWithEmailAndPassword(auth, email, password);
+            } else {
+                if (!fullName) {
+                    setError("Full Name is required for sign up.");
+                    setLoading(false);
+                    return;
+                }
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                await setDoc(doc(db, "users", user.uid), {
+                    fullName: fullName,
+                    email: email,
+                    userType: userType
+                });
+            }
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4">
+            <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+                <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
+                    {isLogin ? 'Welcome Back' : 'Create Account'}
+                </h2>
+                <p className="text-center text-gray-500 mb-8">
+                    {isLogin ? 'Sign in to continue' : 'Join our platform as a Homeowner or Designer'}
+                </p>
+
+                {error && <p className="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-sm">{error}</p>}
+
+                <form onSubmit={handleAuthAction} className="space-y-6">
+                    {!isLogin && (
+                        <>
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">Full Name</label>
+                                <input
+                                    type="text"
+                                    value={fullName}
+                                    onChange={(e) => setFullName(e.target.value)}
+                                    className="w-full mt-1 px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="John Doe"
+                                    required
+                                />
+                            </div>
+                            <div>
+                               <label className="text-sm font-medium text-gray-600">I am a...</label>
+                                <select 
+                                    value={userType} 
+                                    onChange={(e) => setUserType(e.target.value)}
+                                    className="w-full mt-1 px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="homeowner">Homeowner</option>
+                                    <option value="designer">Designer</option>
+                                </select>
+                            </div>
+                        </>
+                    )}
+                    <div>
+                        <label className="text-sm font-medium text-gray-600">Email Address</label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full mt-1 px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="you@example.com"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium text-gray-600">Password</label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full mt-1 px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="••••••••"
+                            required
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition duration-300 disabled:bg-blue-300"
+                    >
+                        {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}
+                    </button>
+                </form>
+
+                <p className="text-center text-sm text-gray-500 mt-8">
+                    {isLogin ? "Don't have an account?" : "Already have an account?"}
+                    <button onClick={() => setIsLogin(!isLogin)} className="font-semibold text-blue-600 hover:underline ml-1">
+                        {isLogin ? 'Sign Up' : 'Sign In'}
+                    </button>
+                </p>
+            </div>
+        </div>
+    );
+};
+
+const ProductCard = ({ product }) => (
+    <div className="bg-white rounded-xl shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
+        <div className="p-6">
+            <div className="uppercase tracking-wide text-sm text-blue-500 font-semibold">{product.category}</div>
+            <a href={product.productUrl} target="_blank" rel="noopener noreferrer" className="block mt-1 text-lg leading-tight font-bold text-black hover:underline">{product.productName}</a>
+            <p className="mt-2 text-gray-500">by {product.brand}</p>
+            <div className="mt-4 flex justify-between items-center">
+                <p className="text-gray-700"><span className="font-medium">Color:</span> {product.color}</p>
+                <p className="text-2xl font-bold text-gray-900">${product.pricePerSF}<span className="text-sm font-normal text-gray-500">/SF</span></p>
+            </div>
+        </div>
+    </div>
+);
+
+const Dashboard = ({ auth, db, user }) => {
+    const [url, setUrl] = useState('');
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState({ type: '', text: '' });
+    const [userInfo, setUserInfo] = useState(null);
+    // State for the selected category in the form. Default to the first category.
+    const [selectedCategory, setSelectedCategory] = useState(PRODUCT_CATEGORIES[0]);
+
+    // Fetch user profile data
+    useEffect(() => {
+        if (user) {
+            const userDocRef = doc(db, 'users', user.uid);
+            getDoc(userDocRef).then(docSnap => {
+                if (docSnap.exists()) {
+                    setUserInfo(docSnap.data());
+                }
+            });
+        }
+    }, [user, db]);
+
+    // Listen for real-time updates from ALL product category collections
+    useEffect(() => {
+        // Set up a listener for each category and store the unsubscribe functions
+        const unsubscribers = PRODUCT_CATEGORIES.map(category => {
+            const productsCollectionRef = collection(db, category);
+            return onSnapshot(productsCollectionRef, (snapshot) => {
+                const productList = snapshot.docs.map(doc => ({ 
+                    id: doc.id,
+                    ...doc.data(),
+                    // Store the category from the collection name to help with state updates
+                    dbCategory: category 
+                }));
+                
+                // Update the main products state
+                setProducts(prevProducts => {
+                    // Remove old products from the current category to prevent duplicates
+                    const otherCategoriesProducts = prevProducts.filter(p => p.dbCategory !== category);
+                    // Combine the products from other categories with the updated list from this category
+                    return [...otherCategoriesProducts, ...productList];
+                });
+            });
+        });
+
+        // Cleanup: call all unsubscribe functions when the component unmounts
+        return () => unsubscribers.forEach(unsub => unsub());
+    }, [db]);
+
+    const handleScrape = async (e) => {
+        e.preventDefault();
+        if (!url) {
+            setMessage({ type: 'error', text: 'Please enter a URL.' });
+            return;
+        }
+        setLoading(true);
+        setMessage({ type: '', text: '' });
+
+        // The product ID is based on the URL to prevent duplicates within the SAME category
+        const productId = createIdFromUrl(url);
+        // The document reference now uses the user-selected category for the collection name
+        const productDocRef = doc(db, selectedCategory, productId);
+
+        try {
+            const docSnap = await getDoc(productDocRef);
+
+            if (docSnap.exists()) {
+                setMessage({ type: 'info', text: `This product is already in the '${selectedCategory}' category.` });
+            } else {
+                setMessage({ type: 'success', text: `New product found! Adding to '${selectedCategory}'...` });
+                const scrapedProduct = mockScrapeProduct(url, selectedCategory);
+                await setDoc(productDocRef, scrapedProduct);
+                setMessage({ type: 'success', text: 'Product successfully added!' });
+            }
+        } catch (error) {
+            console.error("Error processing product:", error);
+            setMessage({ type: 'error', text: `Failed to process product: ${error.message}` });
+        } finally {
+            setLoading(false);
+            setUrl('');
+            setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+        }
+    };
+
+    const MessageBanner = ({ type, text }) => {
+        if (!text) return null;
+        const baseClasses = "p-3 rounded-lg mb-6 text-sm text-center";
+        const typeClasses = {
+            error: "bg-red-100 text-red-700",
+            success: "bg-green-100 text-green-700",
+            info: "bg-blue-100 text-blue-700"
+        };
+        return <div className={`${baseClasses} ${typeClasses[type]}`}>{text}</div>;
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-100">
+            <header className="bg-white shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">Product Dashboard</h1>
+                         {userInfo && <p className="text-gray-500">Welcome, {userInfo.fullName} ({userInfo.userType})</p>}
+                    </div>
+                    <button
+                        onClick={() => signOut(auth)}
+                        className="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition"
+                    >
+                        Sign Out
+                    </button>
+                </div>
+            </header>
+
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="bg-white p-6 rounded-xl shadow-md mb-8">
+                    <h2 className="text-xl font-semibold text-gray-800 mb-4">Add a New Product</h2>
+                    <form onSubmit={handleScrape} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <input
+                            type="url"
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            placeholder="https://example.com/product/carrara-marble"
+                            className="sm:col-span-2 px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required
+                        />
+                        <select
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            className="px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            {PRODUCT_CATEGORIES.map(cat => (
+                                <option key={cat} value={cat} className="capitalize">{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                            ))}
+                        </select>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="sm:col-span-3 w-full px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition disabled:bg-blue-300"
+                        >
+                            {loading ? 'Processing...' : 'Add Product'}
+                        </button>
+                    </form>
+                </div>
+                
+                <MessageBanner type={message.type} text={message.text} />
+
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6">All Scraped Products</h2>
+                    {products.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {products.map(product => <ProductCard key={`${product.dbCategory}-${product.id}`} product={product} />)}
+                        </div>
+                    ) : (
+                        <div className="text-center py-12 bg-white rounded-xl shadow-md">
+                            <h3 className="text-lg font-medium text-gray-700">No products yet!</h3>
+                            <p className="text-gray-500 mt-1">Add a product URL above to get started.</p>
+                        </div>
+                    )}
+                </div>
+            </main>
+        </div>
+    );
+};
+
+export default function App() {
+    const { app, auth, db } = useMemo(() => {
+        let app;
+        try {
+            app = initializeApp(firebaseConfig, 'my-product-app');
+        } catch(e) {
+            console.warn("Firebase app 'my-product-app' already initialized.");
+            app = initializeApp(firebaseConfig);
+        }
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        return { app, auth, db };
+    }, []);
+
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+            setLoading(false);
+        });
+        return () => unsubscribe();
+    }, [auth]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <p className="text-lg text-gray-500">Loading Application...</p>
+            </div>
+        );
+    }
+
+    return user ? <Dashboard auth={auth} db={db} user={user} /> : <AuthComponent auth={auth} db={db} />;
+}

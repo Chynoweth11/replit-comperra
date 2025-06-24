@@ -28,6 +28,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
   const [selectedMaterials, setSelectedMaterials] = useState<number[]>([]);
   const [leadModalOpen, setLeadModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<string>("");
+  const [requestType, setRequestType] = useState<'pricing' | 'sample'>('pricing');
   const [pasteUrl, setPasteUrl] = useState("");
   const [location, setLocation] = useLocation();
   const [visibleSpecs, setVisibleSpecs] = useState({
@@ -49,8 +50,9 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
     return unsubscribe;
   }, []);
 
-  const handleGetPricing = (productName: string) => {
+  const handleGetPricing = (productName: string, type: 'pricing' | 'sample' = 'pricing') => {
     setSelectedProduct(productName);
+    setRequestType(type);
     setLeadModalOpen(true);
   };
 

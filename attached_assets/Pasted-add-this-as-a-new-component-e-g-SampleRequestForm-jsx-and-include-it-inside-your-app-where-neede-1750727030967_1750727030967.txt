@@ -1,0 +1,151 @@
+add this as a new component (e.g., SampleRequestForm.jsx) and include it inside your app where needed.
+
+jsx
+Copy
+Edit
+// SampleRequestForm.jsx
+import React, { useState } from 'react';
+import { doc, setDoc, getFirestore } from 'firebase/firestore';
+
+const SampleRequestForm = ({ db }) => {
+  const [formData, setFormData] = useState({
+    product: 'Maple Select',
+    fullName: '',
+    email: '',
+    zipCode: '',
+    interest: '',
+    role: 'homeowner',
+  });
+
+  const [status, setStatus] = useState('');
+
+  const handleChange = (e) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus('Submitting...');
+
+    try {
+      const id = `${formData.email}_${Date.now()}`;
+      await setDoc(doc(db, "sampleRequests", id), {
+        ...formData,
+        submittedAt: new Date().toISOString(),
+      });
+      setStatus('Request submitted successfully!');
+      setFormData({
+        product: 'Maple Select',
+        fullName: '',
+        email: '',
+        zipCode: '',
+        interest: '',
+        role: 'homeowner',
+      });
+    } catch (error) {
+      console.error("Error saving request:", error);
+      setStatus('Error submitting request.');
+    }
+  };
+
+  return (
+    <div className="bg-white p-6 rounded-xl shadow-md max-w-xl mx-auto mt-8">
+      <h2 className="text-2xl font-bold mb-4">Request a Sample</h2>
+      {status && <p className="mb-4 text-sm text-blue-600">{status}</p>}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="text-sm font-medium text-gray-600">Product</label>
+          <input
+            name="product"
+            value={formData.product}
+            onChange={handleChange}
+            className="w-full mt-1 px-4 py-2 border rounded-lg bg-gray-100"
+            readOnly
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-600">Full Name</label>
+          <input
+            name="fullName"
+            value={formData.fullName}
+            onChange={handleChange}
+            className="w-full mt-1 px-4 py-2 border rounded-lg bg-gray-100"
+            required
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-600">Email Address</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className="w-full mt-1 px-4 py-2 border rounded-lg bg-gray-100"
+            required
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-600">ZIP Code</label>
+          <input
+            name="zipCode"
+            value={formData.zipCode}
+            onChange={handleChange}
+            className="w-full mt-1 px-4 py-2 border rounded-lg bg-gray-100"
+            required
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-600">Product Interest</label>
+          <input
+            name="interest"
+            value={formData.interest}
+            onChange={handleChange}
+            className="w-full mt-1 px-4 py-2 border rounded-lg bg-gray-100"
+            placeholder="E.g., kitchen flooring, bathroom tile"
+            required
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-600">I am a...</label>
+          <select
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            className="w-full mt-1 px-4 py-2 border rounded-lg bg-gray-100"
+          >
+            <option value="homeowner">Homeowner</option>
+            <option value="designer">Designer</option>
+            <option value="contractor">Contractor</option>
+            <option value="builder">Builder</option>
+            <option value="vendor">Vendor</option>
+          </select>
+        </div>
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700"
+        >
+          Submit Request
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default SampleRequestForm;
+✅ How to Use It in Your Main App
+In your main App or Dashboard component, import and add this:
+
+jsx
+Copy
+Edit
+import SampleRequestForm from './SampleRequestForm';
+
+// Inside JSX:
+<SampleRequestForm db={db} />
+🔐 Where the data goes in Firestore:
+This code saves to a new Firestore collection called:
+
+nginx
+Copy
+Edit
+sampleRequests
