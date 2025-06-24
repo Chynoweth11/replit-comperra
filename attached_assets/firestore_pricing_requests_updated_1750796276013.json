@@ -1,0 +1,12 @@
+[
+  {
+    "product": "Carrara White Marble",
+    "email": "contractor@example.com",
+    "quantityNeeded": "200 sq ft",
+    "role": "contractor",
+    "projectLocation": "Phoenix, AZ",
+    "requestedAt": "2025-06-24T03:43:56.435499",
+    "phoneNumber": "+1-555-222-3333",
+    "projectAddress": "123 Buildway St, Phoenix, AZ"
+  }
+]

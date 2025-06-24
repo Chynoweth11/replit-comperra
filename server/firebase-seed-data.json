@@ -1,0 +1,171 @@
+{
+  "products": [
+    {
+      "category": "tiles",
+      "productName": "Metro White Subway",
+      "brand": "Daltile",
+      "productUrl": "https://example.com/tiles/metro-white-subway",
+      "pricePerSF": 1.89,
+      "materialType": "Ceramic",
+      "peiRating": "1",
+      "dcof": "0.35",
+      "waterAbsorption": "7-10%",
+      "finish": "Glossy",
+      "color": "White",
+      "dimensions": "3x6",
+      "edgeType": "Pressed",
+      "installLocation": "Wall",
+      "texture": "Smooth",
+      "scrapedAt": "2025-06-24T20:12:52.116956"
+    },
+    {
+      "category": "stone_slabs",
+      "productName": "Brittanicca",
+      "brand": "Cambria",
+      "productUrl": "https://www.cambriausa.com/designs/brittanicca",
+      "pricePerSF": 89.99,
+      "materialType": "Quartz",
+      "finish": "Polished",
+      "color": "White with Gray Veins",
+      "thickness": "3cm",
+      "waterAbsorption": "Non-Porous",
+      "applications": "Countertops, Backsplashes, Vanities",
+      "scratchResistance": "High",
+      "scrapedAt": "2025-06-24T20:12:52.116956"
+    },
+    {
+      "category": "vinyl_lvt",
+      "productName": "Heritage Oak",
+      "brand": "Mohawk",
+      "productUrl": "https://example.com/lvt/heritage-oak",
+      "pricePerSF": 4.49,
+      "materialType": "Vinyl",
+      "wearLayer": "20 mil",
+      "thickness": "5mm",
+      "finish": "Textured",
+      "waterproof": true,
+      "installation": "Click Lock",
+      "applications": "Residential, Commercial",
+      "dimensions": "7x48",
+      "underlaymentIncluded": true,
+      "warranty": "25-Year Limited",
+      "scrapedAt": "2025-06-24T20:12:52.116956"
+    },
+    {
+      "category": "hardwood",
+      "productName": "Maple Select",
+      "brand": "Bruce",
+      "productUrl": "https://example.com/hardwood/maple-select",
+      "pricePerSF": 8.99,
+      "woodSpecies": "Maple",
+      "materialType": "Engineered Hardwood",
+      "finish": "Urethane",
+      "thickness": "1/2 in",
+      "hardnessJanka": "1450",
+      "installation": "Glue Down or Nail",
+      "dimensions": "5x48",
+      "warranty": "Lifetime Residential",
+      "moistureResistance": "Moderate",
+      "scrapedAt": "2025-06-24T20:12:52.116956"
+    },
+    {
+      "category": "heating",
+      "productName": "SunTouch Floor Warming",
+      "brand": "Warmly Yours",
+      "productUrl": "https://example.com/heating/suntouch-mat",
+      "pricePerSF": 12.99,
+      "type": "Electric Radiant Mat",
+      "voltage": "240V",
+      "applications": "Tile, Stone, Engineered Wood",
+      "wattage": "15W per sq ft",
+      "coverageArea": "15 sq ft",
+      "sensorType": "Floor",
+      "installation": "Professional Recommended",
+      "warranty": "15 Years",
+      "scrapedAt": "2025-06-24T20:12:52.116956"
+    },
+    {
+      "category": "carpet",
+      "productName": "Berber Twist",
+      "brand": "Shaw",
+      "productUrl": "https://example.com/carpet/berber-twist",
+      "pricePerSF": 3.89,
+      "fiberType": "Nylon",
+      "pileStyle": "Twist",
+      "materialType": "Synthetic",
+      "texture": "Soft",
+      "applications": "Bedroom, Living Room",
+      "warranty": "10-Year Stain Resistance",
+      "stainProtection": "R2X",
+      "pileHeight": "0.5 in",
+      "faceWeight": "50 oz/yd²",
+      "backing": "ActionBac",
+      "installMethod": "Stretch In",
+      "scrapedAt": "2025-06-24T20:12:52.116956"
+    },
+    {
+      "category": "thermostats",
+      "productName": "6iE Smart WiFi Thermostat",
+      "brand": "Warmup",
+      "productUrl": "https://www.warmup.com/thermostats/6ie-smart-wifi-thermostat",
+      "voltage": "120V/240V",
+      "loadCapacity": "15A / 3,600W",
+      "sensorType": "Floor + Ambient",
+      "sensorCableLength": "10 ft / 3m",
+      "gfciProtection": "Built-in GFCI, Class A 5mA",
+      "displayType": "Color Touchscreen",
+      "connectivity": "Wi-Fi, Alexa, Google Assistant",
+      "programmable": true,
+      "geoLearningAI": "SmartGeo, auto-scheduling",
+      "installationType": "Wall mount",
+      "ipRating": "IP33",
+      "colorFinish": "Gloss White",
+      "warranty": "3-year manufacturer warranty",
+      "certifications": "UL, ETL, CSA, CE, FCC, RoHS",
+      "compatibleHeating": "Electric underfloor heating",
+      "userInterfaceFeatures": "Touchscreen, app alerts, QR setup",
+      "manualOverride": true,
+      "scrapedAt": "2025-06-24T20:12:52.116956"
+    }
+  ],
+  "pricing_requests": [
+    {
+      "product": "Carrara White Marble",
+      "email": "contractor@example.com",
+      "quantityNeeded": "200 sq ft",
+      "role": "contractor",
+      "projectLocation": "Phoenix, AZ",
+      "requestedAt": "2025-06-24T03:43:56.435499",
+      "phoneNumber": "+1-555-222-3333",
+      "projectAddress": "123 Buildway St, Phoenix, AZ"
+    }
+  ],
+  "users": [
+    {
+      "fullName": "John Doe",
+      "email": "john.doe@example.com",
+      "userType": "homeowner",
+      "createdAt": "2025-06-24T03:43:56.435499",
+      "phoneNumber": "+1-555-000-1111",
+      "zipCode": "85001"
+    }
+  ],
+  "sample_requests": [
+    {
+      "product": "Maple Select",
+      "fullName": "Jane Smith",
+      "email": "jane.smith@example.com",
+      "zipCode": "90210",
+      "interest": "Kitchen remodel",
+      "role": "designer",
+      "phoneNumber": "+1-555-123-4567",
+      "sampleAddress": "456 Remodel Ln, Scottsdale, AZ",
+      "location": {
+        "city": "Scottsdale",
+        "state": "AZ",
+        "country": "USA"
+      },
+      "submittedAt": "2025-06-24T20:17:49.376429"
+    }
+  ]
+}

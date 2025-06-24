@@ -1,0 +1,18 @@
+[
+  {
+    "product": "Maple Select",
+    "fullName": "Jane Smith",
+    "email": "jane.smith@example.com",
+    "zipCode": "90210",
+    "interest": "Kitchen remodel",
+    "role": "designer",
+    "phoneNumber": "+1-555-123-4567",
+    "sampleAddress": "456 Remodel Ln, Scottsdale, AZ",
+    "location": {
+      "city": "Scottsdale",
+      "state": "AZ",
+      "country": "USA"
+    },
+    "submittedAt": "2025-06-24T20:17:49.376429"
+  }
+]

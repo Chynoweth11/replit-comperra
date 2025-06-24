@@ -1,0 +1,10 @@
+[
+  {
+    "fullName": "John Doe",
+    "email": "john.doe@example.com",
+    "userType": "homeowner",
+    "createdAt": "2025-06-24T03:43:56.435499",
+    "phoneNumber": "+1-555-000-1111",
+    "zipCode": "85001"
+  }
+]
