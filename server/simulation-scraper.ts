@@ -417,6 +417,9 @@ export class SimulationScraper {
       case 'Commercial Warranty':
         return ['5-year light commercial', '10-year heavy commercial', '15-year heavy commercial'][Math.floor(Math.random() * 3)];
       
+      case 'Installation Warranty':
+        return ['1-year', '2-year', '5-year'][Math.floor(Math.random() * 3)];
+      
       case 'Slip Resistance':
         return ['R10 wet barefoot', 'R11 wet barefoot', 'R12 wet/dry'][Math.floor(Math.random() * 3)];
       
