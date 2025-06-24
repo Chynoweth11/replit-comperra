@@ -86,6 +86,7 @@ export class ProductScraper {
   extractBrandFromURL(url: string): string {
     if (url.includes('daltile.com')) return 'Daltile';
     if (url.includes('msisurfaces.com')) return 'MSI';
+    if (url.includes('bedrosians.com')) return 'Bedrosians';
     if (url.includes('marazzi.com')) return 'Marazzi';
     if (url.includes('arizonatile.com')) return 'Arizona Tile';
     if (url.includes('floridatile.com')) return 'Florida Tile';
@@ -444,7 +445,6 @@ export class ProductScraper {
       const price = extractPrice($) || '0.00';
 
       // Add required template fields
-      specs['Brand'] = 'MSI';
       specs['Price per SF'] = price;
       specs['Product URL'] = url;
 
@@ -715,7 +715,7 @@ export class ProductScraper {
       if (!specs['Brand']) {
         // Domain-based detection
         const domainBrands = {
-          'daltile': 'Daltile', 'msi': 'MSI', 'cambria': 'Cambria', 'marazzi': 'Marazzi',
+          'daltile': 'Daltile', 'msi': 'MSI', 'bedrosians': 'Bedrosians', 'cambria': 'Cambria', 'marazzi': 'Marazzi',
           'shaw': 'Shaw', 'mohawk': 'Mohawk', 'flor': 'FLOR', 'armstrong': 'Armstrong',
           'mannington': 'Mannington', 'tarkett': 'Tarkett', 'karndean': 'Karndean'
         };
@@ -738,10 +738,34 @@ export class ProductScraper {
       }
 
       // Enhanced product name extraction
-      const productName = $('h1.product-title, h1.product-name, h1').first().text().trim() ||
-                         $('meta[property="og:title"]').attr('content') ||
-                         $('title').text().split('|')[0].trim() ||
-                         'Product Name Not Found';
+      let productName = $('h1.product-title, h1.product-name, h1').first().text().trim() ||
+                       $('meta[property="og:title"]').attr('content') ||
+                       $('title').text().split('|')[0].trim() ||
+                       'Product Name Not Found';
+
+      // Clean up product name - remove URL parameters and brand duplicates
+      productName = productName
+        .replace(/\?.*$/, '') // Remove URL parameters
+        .replace(/itemNo.*$/i, '') // Remove item number params
+        .replace(/\s+/g, ' ') // Normalize whitespace
+        .trim();
+
+      // Remove brand name if it's at the start
+      const brand = specs['Brand'] || this.extractBrandFromURL(url);
+      if (brand !== 'Unknown' && productName.toLowerCase().startsWith(brand.toLowerCase())) {
+        productName = productName.substring(brand.length).trim();
+      }
+
+      // Remove common noise
+      productName = productName
+        .replace(/^[|\-–—]\s*/, '') // Remove leading separators
+        .replace(/\s*[|\-–—]\s*$/, '') // Remove trailing separators
+        .trim();
+
+      // Fallback if name is empty or just noise
+      if (!productName || productName === 'Product Name Not Found' || productName.length < 3) {
+        productName = `${brand} ${category === 'tiles' ? 'Tile' : 'Product'}`;
+      }
 
       // Enhanced image extraction with multiple fallbacks
       let imageUrl = $('meta[property="og:image"]').attr('content') ||

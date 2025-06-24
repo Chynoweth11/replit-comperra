@@ -1308,6 +1308,14 @@ export class SimulationScraper {
       brand = 'Daltile';
       name = 'Daltile Metro White Subway Tile';
       imageUrl = 'https://www.daltile.com/images/metro-white-subway.jpg';
+    } else if (domain.includes('bedrosians')) {
+      brand = 'Bedrosians';
+      name = 'Bedrosians Porcelain Tile';
+      category = 'tiles';
+      imageUrl = 'https://www.bedrosians.com/images/porcelain-tile.jpg';
+      if (url.includes('porcelain')) {
+        name = 'Bedrosians Porcelain Collection';
+      }
     } else if (domain.includes('arizonatile')) {
       brand = 'Arizona Tile';
       if (url.includes('arabescato')) {
