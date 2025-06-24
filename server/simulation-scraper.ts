@@ -28,13 +28,21 @@ export class SimulationScraper {
   private detectCategory(url: string, html: string): string {
     const urlLower = url.toLowerCase();
     const htmlLower = html.toLowerCase();
+    const fullText = (urlLower + ' ' + htmlLower).toLowerCase();
     
-    // HIGHEST PRIORITY: Carpet detection FIRST - carpet tile is ALWAYS carpet
-    if (urlLower.includes('carpet') || htmlLower.includes('carpet')) {
+    console.log(`Detecting category for URL: ${url}`);
+    console.log(`Full text contains: carpet=${fullText.includes('carpet')}, tile=${fullText.includes('tile')}`);
+    
+    // HIGHEST PRIORITY: Carpet detection FIRST - "carpet tile", "carpet", "rug" are ALWAYS carpet
+    // Check for compound terms like "carpet tile" first
+    if (fullText.includes('carpet tile') || fullText.includes('carpet tiles') ||
+        urlLower.includes('carpet') || htmlLower.includes('carpet') ||
+        urlLower.includes('rug') || htmlLower.includes('rug')) {
+      console.log(`CARPET CATEGORY DETECTED for: ${url}`);
       return 'carpet';
     }
     
-    // Priority order for other categories
+    // Priority order for other categories (only after carpet is ruled out)
     if (urlLower.includes('thermostat') || htmlLower.includes('thermostat')) {
       return 'thermostats';
     }
@@ -57,6 +65,11 @@ export class SimulationScraper {
     if (urlLower.includes('slab') || urlLower.includes('quartz') || 
         htmlLower.includes('countertop') || htmlLower.includes('slab')) {
       return 'slabs';
+    }
+    
+    // Only check for standalone "tile" if no carpet keywords found
+    if (urlLower.includes('tile') || htmlLower.includes('tile')) {
+      return 'tiles';
     }
     
     // Default to tiles
@@ -214,13 +227,7 @@ export class SimulationScraper {
       else if (domain.includes('anderson')) brand = 'Anderson Tuftex';
       
       // Enhanced category detection using the improved detectCategory method  
-      // CRITICAL: Check for carpet FIRST before anything else
-      if (url.toLowerCase().includes('carpet') || html.toLowerCase().includes('carpet')) {
-        category = 'carpet';
-        console.log(`CARPET DETECTED in URL or HTML for: ${url}`);
-      } else {
-        category = this.detectCategory(url, html);
-      }
+      category = this.detectCategory(url, html);
       
       // Extract basic specifications using cheerio
       const specs: any = {

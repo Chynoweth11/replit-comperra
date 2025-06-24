@@ -75,14 +75,22 @@ export class ProductScraper {
   assignCategoryFromURL(url: string): string {
     const urlLower = url.toLowerCase();
     
-    // HIGHEST PRIORITY: Carpet detection FIRST - carpet tile is ALWAYS carpet
-    if (urlLower.includes('carpet') || urlLower.includes('rug')) return 'carpet';
+    console.log(`assignCategoryFromURL: Checking URL: ${url}`);
+    
+    // HIGHEST PRIORITY: Carpet detection FIRST - "carpet tile", "carpet", "rug" are ALWAYS carpet
+    if (urlLower.includes('carpet tile') || urlLower.includes('carpet tiles') ||
+        urlLower.includes('carpet') || urlLower.includes('rug')) {
+      console.log(`CARPET CATEGORY assigned for URL: ${url}`);
+      return 'carpet';
+    }
     
     if (urlLower.includes('thermostat')) return 'thermostats';
     if (urlLower.includes('heating') || urlLower.includes('radiant')) return 'heat';
     if (urlLower.includes('hardwood') || urlLower.includes('wood-flooring') || urlLower.includes('engineered')) return 'hardwood';
     if (urlLower.includes('lvt') || urlLower.includes('vinyl') || urlLower.includes('luxury-vinyl')) return 'lvt';
     if (urlLower.includes('slab') || urlLower.includes('quartz') || urlLower.includes('marble') || urlLower.includes('granite')) return 'slabs';
+    
+    // Only check for standalone "tile" if no carpet keywords found
     if (urlLower.includes('tile') || urlLower.includes('ceramic') || urlLower.includes('porcelain')) return 'tiles';
     
     return 'tiles'; // default
