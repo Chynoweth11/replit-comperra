@@ -74,12 +74,17 @@ export class ProductScraper {
 
   assignCategoryFromURL(url: string): string {
     const urlLower = url.toLowerCase();
-    if (urlLower.includes('tile') || urlLower.includes('ceramic') || urlLower.includes('porcelain')) return 'tiles';
-    if (urlLower.includes('slab') || urlLower.includes('quartz') || urlLower.includes('marble') || urlLower.includes('granite')) return 'slabs';
-    if (urlLower.includes('lvt') || urlLower.includes('vinyl') || urlLower.includes('luxury-vinyl')) return 'lvt';
-    if (urlLower.includes('hardwood') || urlLower.includes('wood-flooring') || urlLower.includes('engineered')) return 'hardwood';
-    if (urlLower.includes('heating') || urlLower.includes('radiant') || urlLower.includes('thermostat')) return 'heat';
+    
+    // HIGHEST PRIORITY: Carpet detection FIRST - carpet tile is ALWAYS carpet
     if (urlLower.includes('carpet') || urlLower.includes('rug')) return 'carpet';
+    
+    if (urlLower.includes('thermostat')) return 'thermostats';
+    if (urlLower.includes('heating') || urlLower.includes('radiant')) return 'heat';
+    if (urlLower.includes('hardwood') || urlLower.includes('wood-flooring') || urlLower.includes('engineered')) return 'hardwood';
+    if (urlLower.includes('lvt') || urlLower.includes('vinyl') || urlLower.includes('luxury-vinyl')) return 'lvt';
+    if (urlLower.includes('slab') || urlLower.includes('quartz') || urlLower.includes('marble') || urlLower.includes('granite')) return 'slabs';
+    if (urlLower.includes('tile') || urlLower.includes('ceramic') || urlLower.includes('porcelain')) return 'tiles';
+    
     return 'tiles'; // default
   }
 
