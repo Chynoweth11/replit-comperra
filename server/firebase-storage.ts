@@ -1,23 +1,29 @@
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { initializeApp, getApps } from 'firebase/app';
+import { getFirestore, collection, doc, setDoc, getDocs, getDoc, addDoc, query, where, orderBy } from 'firebase/firestore';
 import { Material, InsertMaterial, Article, InsertArticle, Brand, InsertBrand } from '../shared/schema';
 import { IStorage } from './storage';
 
-// Initialize Firebase Admin (server-side)
+// Initialize Firebase Client SDK (works in Replit)
+const firebaseConfig = {
+  apiKey: "AIzaSyC7zXxEiPi77xZt2bPY1jcxt9fJcYxKk94",
+  authDomain: "comperra-done.firebaseapp.com",
+  projectId: "comperra-done",
+  storageBucket: "comperra-done.firebasestorage.app",
+  messagingSenderId: "636329572028",
+  appId: "1:636329572028:web:0c8fd582b0372411c142b9",
+  measurementId: "G-SBT7935DTH"
+};
+
 if (!getApps().length) {
-  // For production, you would use a service account key
-  // For now, we'll use the default initialization
-  initializeApp({
-    projectId: 'comperra-done'
-  });
+  initializeApp(firebaseConfig);
 }
 
 const db = getFirestore();
 
 export class FirebaseStorage implements IStorage {
-  private materialsCollection = db.collection('comperra-products');
-  private articlesCollection = db.collection('comperra-articles');
-  private brandsCollection = db.collection('comperra-brands');
+  private materialsCollection = 'comperra-products';
+  private articlesCollection = 'comperra-articles';
+  private brandsCollection = 'comperra-brands';
 
   async getMaterials(filters?: {
     category?: string;
@@ -27,19 +33,20 @@ export class FirebaseStorage implements IStorage {
     search?: string;
   }): Promise<Material[]> {
     try {
-      let query = this.materialsCollection.orderBy('name');
+      const materialsRef = collection(db, this.materialsCollection);
+      let q = query(materialsRef, orderBy('name'));
 
       // Apply category filter
       if (filters?.category && filters.category !== 'all') {
-        query = query.where('category', '==', filters.category);
+        q = query(materialsRef, where('category', '==', filters.category), orderBy('name'));
       }
 
       // Apply brand filter
       if (filters?.brand && filters.brand !== 'all') {
-        query = query.where('brand', '==', filters.brand);
+        q = query(materialsRef, where('brand', '==', filters.brand), orderBy('name'));
       }
 
-      const snapshot = await query.get();
+      const snapshot = await getDocs(q);
       let materials = snapshot.docs.map(doc => ({
         id: parseInt(doc.id),
         ...doc.data()
@@ -79,11 +86,12 @@ export class FirebaseStorage implements IStorage {
 
   async getMaterial(id: number): Promise<Material | undefined> {
     try {
-      const doc = await this.materialsCollection.doc(id.toString()).get();
-      if (doc.exists) {
+      const docRef = doc(db, this.materialsCollection, id.toString());
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
         return {
           id,
-          ...doc.data()
+          ...docSnap.data()
         } as Material;
       }
       return undefined;
@@ -96,8 +104,7 @@ export class FirebaseStorage implements IStorage {
   async createMaterial(material: InsertMaterial): Promise<Material> {
     try {
       // Generate a unique ID
-      const docRef = this.materialsCollection.doc();
-      const id = parseInt(docRef.id.slice(-8), 16); // Convert part of doc ID to number
+      const id = Date.now(); // Use timestamp as ID
       
       const newMaterial: Material = {
         id,
@@ -106,7 +113,8 @@ export class FirebaseStorage implements IStorage {
         updatedAt: new Date().toISOString()
       };
 
-      await docRef.set(newMaterial);
+      const docRef = doc(db, this.materialsCollection, id.toString());
+      await setDoc(docRef, newMaterial);
       console.log(`✅ Saved product to comperra-products collection: ${newMaterial.name}`);
       return newMaterial;
     } catch (error) {
@@ -117,7 +125,9 @@ export class FirebaseStorage implements IStorage {
 
   async getArticles(): Promise<Article[]> {
     try {
-      const snapshot = await this.articlesCollection.orderBy('title').get();
+      const articlesRef = collection(db, this.articlesCollection);
+      const q = query(articlesRef, orderBy('title'));
+      const snapshot = await getDocs(q);
       return snapshot.docs.map(doc => ({
         id: parseInt(doc.id),
         ...doc.data()
@@ -130,11 +140,12 @@ export class FirebaseStorage implements IStorage {
 
   async getArticle(id: number): Promise<Article | undefined> {
     try {
-      const doc = await this.articlesCollection.doc(id.toString()).get();
-      if (doc.exists) {
+      const docRef = doc(db, this.articlesCollection, id.toString());
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
         return {
           id,
-          ...doc.data()
+          ...docSnap.data()
         } as Article;
       }
       return undefined;
@@ -146,8 +157,7 @@ export class FirebaseStorage implements IStorage {
 
   async createArticle(article: InsertArticle): Promise<Article> {
     try {
-      const docRef = this.articlesCollection.doc();
-      const id = parseInt(docRef.id.slice(-8), 16);
+      const id = Date.now();
       
       const newArticle: Article = {
         id,
@@ -156,7 +166,8 @@ export class FirebaseStorage implements IStorage {
         updatedAt: new Date().toISOString()
       };
 
-      await docRef.set(newArticle);
+      const docRef = doc(db, this.articlesCollection, id.toString());
+      await setDoc(docRef, newArticle);
       return newArticle;
     } catch (error) {
       console.error('Error creating article in Firebase:', error);
@@ -166,7 +177,9 @@ export class FirebaseStorage implements IStorage {
 
   async getBrands(): Promise<Brand[]> {
     try {
-      const snapshot = await this.brandsCollection.orderBy('name').get();
+      const brandsRef = collection(db, this.brandsCollection);
+      const q = query(brandsRef, orderBy('name'));
+      const snapshot = await getDocs(q);
       return snapshot.docs.map(doc => ({
         id: parseInt(doc.id),
         ...doc.data()
@@ -179,11 +192,12 @@ export class FirebaseStorage implements IStorage {
 
   async getBrand(id: number): Promise<Brand | undefined> {
     try {
-      const doc = await this.brandsCollection.doc(id.toString()).get();
-      if (doc.exists) {
+      const docRef = doc(db, this.brandsCollection, id.toString());
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
         return {
           id,
-          ...doc.data()
+          ...docSnap.data()
         } as Brand;
       }
       return undefined;
@@ -195,8 +209,7 @@ export class FirebaseStorage implements IStorage {
 
   async createBrand(brand: InsertBrand): Promise<Brand> {
     try {
-      const docRef = this.brandsCollection.doc();
-      const id = parseInt(docRef.id.slice(-8), 16);
+      const id = Date.now();
       
       const newBrand: Brand = {
         id,
@@ -205,7 +218,8 @@ export class FirebaseStorage implements IStorage {
         updatedAt: new Date().toISOString()
       };
 
-      await docRef.set(newBrand);
+      const docRef = doc(db, this.brandsCollection, id.toString());
+      await setDoc(docRef, newBrand);
       return newBrand;
     } catch (error) {
       console.error('Error creating brand in Firebase:', error);
