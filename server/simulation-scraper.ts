@@ -25,6 +25,44 @@ export class SimulationScraper {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
+  private detectCategory(url: string, html: string): string {
+    const urlLower = url.toLowerCase();
+    const htmlLower = html.toLowerCase();
+    
+    // HIGHEST PRIORITY: Carpet detection FIRST - carpet tile is ALWAYS carpet
+    if (urlLower.includes('carpet') || htmlLower.includes('carpet')) {
+      return 'carpet';
+    }
+    
+    // Priority order for other categories
+    if (urlLower.includes('thermostat') || htmlLower.includes('thermostat')) {
+      return 'thermostats';
+    }
+    
+    if (urlLower.includes('heating') || urlLower.includes('radiant') || 
+        htmlLower.includes('heating') || htmlLower.includes('radiant')) {
+      return 'heat';
+    }
+    
+    if (urlLower.includes('hardwood') || urlLower.includes('wood') || 
+        htmlLower.includes('hardwood') || htmlLower.includes('wood flooring')) {
+      return 'hardwood';
+    }
+    
+    if (urlLower.includes('lvt') || urlLower.includes('vinyl') || 
+        htmlLower.includes('luxury vinyl') || htmlLower.includes('lvt')) {
+      return 'lvt';
+    }
+    
+    if (urlLower.includes('slab') || urlLower.includes('quartz') || 
+        htmlLower.includes('countertop') || htmlLower.includes('slab')) {
+      return 'slabs';
+    }
+    
+    // Default to tiles
+    return 'tiles';
+  }
+
   // Function to scrape real product data from provided URLs
   async scrapeRealProductFromURL(url: string): Promise<SimulatedScrapedProduct | null> {
     try {
@@ -175,8 +213,14 @@ export class SimulationScraper {
       else if (domain.includes('coretec')) brand = 'COREtec';
       else if (domain.includes('anderson')) brand = 'Anderson Tuftex';
       
-      // Enhanced category detection using the improved detectCategory method
-      category = this.detectCategory(url, html);
+      // Enhanced category detection using the improved detectCategory method  
+      // CRITICAL: Check for carpet FIRST before anything else
+      if (url.toLowerCase().includes('carpet') || html.toLowerCase().includes('carpet')) {
+        category = 'carpet';
+        console.log(`CARPET DETECTED in URL or HTML for: ${url}`);
+      } else {
+        category = this.detectCategory(url, html);
+      }
       
       // Extract basic specifications using cheerio
       const specs: any = {
@@ -1451,9 +1495,15 @@ export class SimulationScraper {
   private createFallbackProduct(url: string): SimulatedScrapedProduct {
     console.log(`Creating fallback product for: ${url}`);
     
-    // Determine brand and category from URL
+    // Determine brand and category from URL with CARPET PRIORITY
     let brand = 'Unknown';
     let category = 'tiles';
+    
+    // CARPET DETECTION FIRST
+    if (url.toLowerCase().includes('carpet')) {
+      category = 'carpet';
+      console.log(`FALLBACK: Carpet detected in URL: ${url}`);
+    }
     let name = 'Product';
     let imageUrl = '';
     
