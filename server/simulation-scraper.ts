@@ -31,48 +31,59 @@ export class SimulationScraper {
     const fullText = (urlLower + ' ' + htmlLower).toLowerCase();
     
     console.log(`Detecting category for URL: ${url}`);
-    console.log(`Full text contains: carpet=${fullText.includes('carpet')}, tile=${fullText.includes('tile')}`);
+    console.log(`Full text for analysis: ${fullText.substring(0, 200)}...`);
     
-    // HIGHEST PRIORITY: Carpet detection FIRST - "carpet tile", "carpet", "rug" are ALWAYS carpet
-    // Check for compound terms like "carpet tile" first
-    if (fullText.includes('carpet tile') || fullText.includes('carpet tiles') ||
-        urlLower.includes('carpet') || htmlLower.includes('carpet') ||
-        urlLower.includes('rug') || htmlLower.includes('rug')) {
-      console.log(`CARPET CATEGORY DETECTED for: ${url}`);
+    // COMPOUND KEYWORD RULES FIRST (ordered by priority)
+    const compoundCategoryMap = {
+      "carpet tile": "carpet",
+      "carpet tiles": "carpet", 
+      "vinyl plank": "lvt",
+      "luxury vinyl tile": "lvt",
+      "luxury vinyl": "lvt",
+      "engineered hardwood": "hardwood",
+      "wood flooring": "hardwood",
+      "floor heating mat": "heat",
+      "radiant heating": "heat",
+      "radiant floor": "heat",
+      "thermostat": "thermostats"
+    };
+
+    for (const [keyword, category] of Object.entries(compoundCategoryMap)) {
+      if (fullText.includes(keyword)) {
+        console.log(`COMPOUND KEYWORD MATCH: "${keyword}" -> ${category} for URL: ${url}`);
+        return category;
+      }
+    }
+
+    // FALLBACK SIMPLE KEYWORD RULES (only if no compound matches found)
+    if (fullText.includes("carpet") || fullText.includes("rug")) {
+      console.log(`SIMPLE CARPET KEYWORD DETECTED for: ${url}`);
       return 'carpet';
     }
     
-    // Priority order for other categories (only after carpet is ruled out)
-    if (urlLower.includes('thermostat') || htmlLower.includes('thermostat')) {
-      return 'thermostats';
-    }
-    
-    if (urlLower.includes('heating') || urlLower.includes('radiant') || 
-        htmlLower.includes('heating') || htmlLower.includes('radiant')) {
-      return 'heat';
-    }
-    
-    if (urlLower.includes('hardwood') || urlLower.includes('wood') || 
-        htmlLower.includes('hardwood') || htmlLower.includes('wood flooring')) {
+    if (fullText.includes("hardwood") || fullText.includes("wood")) {
       return 'hardwood';
     }
     
-    if (urlLower.includes('lvt') || urlLower.includes('vinyl') || 
-        htmlLower.includes('luxury vinyl') || htmlLower.includes('lvt')) {
+    if (fullText.includes("vinyl") || fullText.includes("lvt")) {
       return 'lvt';
     }
     
-    if (urlLower.includes('slab') || urlLower.includes('quartz') || 
-        htmlLower.includes('countertop') || htmlLower.includes('slab')) {
+    if (fullText.includes("slab") || fullText.includes("quartz") || fullText.includes("marble") || fullText.includes("granite")) {
       return 'slabs';
     }
     
-    // Only check for standalone "tile" if no carpet keywords found
-    if (urlLower.includes('tile') || htmlLower.includes('tile')) {
+    if (fullText.includes("heating") || fullText.includes("radiant")) {
+      return 'heat';
+    }
+    
+    // Check for standalone "tile" only after all other categories ruled out
+    if (fullText.includes("tile")) {
+      console.log(`FALLBACK TILE KEYWORD for: ${url}`);
       return 'tiles';
     }
     
-    // Default to tiles
+    // Default fallback
     return 'tiles';
   }
 

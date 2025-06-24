@@ -77,20 +77,39 @@ export class ProductScraper {
     
     console.log(`assignCategoryFromURL: Checking URL: ${url}`);
     
-    // HIGHEST PRIORITY: Carpet detection FIRST - "carpet tile", "carpet", "rug" are ALWAYS carpet
-    if (urlLower.includes('carpet tile') || urlLower.includes('carpet tiles') ||
-        urlLower.includes('carpet') || urlLower.includes('rug')) {
-      console.log(`CARPET CATEGORY assigned for URL: ${url}`);
+    // COMPOUND KEYWORD RULES FIRST (ordered by priority)
+    const compoundCategoryMap = {
+      "carpet tile": "carpet",
+      "carpet tiles": "carpet",
+      "vinyl plank": "lvt", 
+      "luxury vinyl tile": "lvt",
+      "luxury vinyl": "lvt",
+      "engineered hardwood": "hardwood",
+      "wood flooring": "hardwood",
+      "floor heating": "heat",
+      "radiant heating": "heat",
+      "thermostat": "thermostats"
+    };
+
+    for (const [keyword, category] of Object.entries(compoundCategoryMap)) {
+      if (urlLower.includes(keyword)) {
+        console.log(`COMPOUND KEYWORD MATCH: "${keyword}" -> ${category} for URL: ${url}`);
+        return category;
+      }
+    }
+
+    // FALLBACK SIMPLE KEYWORD RULES
+    if (urlLower.includes('carpet') || urlLower.includes('rug')) {
+      console.log(`SIMPLE CARPET KEYWORD for URL: ${url}`);
       return 'carpet';
     }
     
-    if (urlLower.includes('thermostat')) return 'thermostats';
-    if (urlLower.includes('heating') || urlLower.includes('radiant')) return 'heat';
-    if (urlLower.includes('hardwood') || urlLower.includes('wood-flooring') || urlLower.includes('engineered')) return 'hardwood';
-    if (urlLower.includes('lvt') || urlLower.includes('vinyl') || urlLower.includes('luxury-vinyl')) return 'lvt';
+    if (urlLower.includes('hardwood') || urlLower.includes('engineered')) return 'hardwood';
+    if (urlLower.includes('vinyl') || urlLower.includes('lvt')) return 'lvt';
     if (urlLower.includes('slab') || urlLower.includes('quartz') || urlLower.includes('marble') || urlLower.includes('granite')) return 'slabs';
+    if (urlLower.includes('heating') || urlLower.includes('radiant')) return 'heat';
     
-    // Only check for standalone "tile" if no carpet keywords found
+    // Check for standalone "tile" only after all other categories ruled out
     if (urlLower.includes('tile') || urlLower.includes('ceramic') || urlLower.includes('porcelain')) return 'tiles';
     
     return 'tiles'; // default
