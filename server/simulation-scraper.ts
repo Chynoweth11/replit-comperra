@@ -1,10 +1,11 @@
 // ==========================
-// simulation-scraper.ts - New Simulation-Based Scraper with Airtable Integration
+// simulation-scraper.ts - Enhanced Scraper with Puppeteer Integration
 // ==========================
 import { InsertMaterial } from '../shared/schema';
 import { storage } from './storage';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import { puppeteerScraper, PuppeteerScrapedProduct } from './puppeteer-scraper.js';
 
 export interface SimulatedScrapedProduct {
   name: string;
@@ -87,9 +88,41 @@ export class SimulationScraper {
     return 'tiles';
   }
 
-  // Function to scrape real product data from provided URLs
+  // Enhanced function to scrape real product data with Puppeteer support
   async scrapeRealProductFromURL(url: string): Promise<SimulatedScrapedProduct | null> {
     try {
+      console.log(`Starting enhanced scrape with Puppeteer for: ${url}`);
+      
+      // Try Puppeteer first for better image and content extraction
+      try {
+        const puppeteerResult = await puppeteerScraper.scrapeProductWithImages(url);
+        
+        if (puppeteerResult && !puppeteerResult.error && puppeteerResult.images.length > 0) {
+          console.log(`Puppeteer successful - found ${puppeteerResult.images.length} images`);
+          
+          // Convert Puppeteer result to our format
+          const simulatedProduct: SimulatedScrapedProduct = {
+            name: puppeteerResult.productName,
+            brand: this.extractBrandFromURL(url),
+            price: 'N/A',
+            category: puppeteerResult.category || this.detectCategory(url, ''),
+            description: puppeteerResult.description || 'Premium product with complete technical specifications',
+            imageUrl: puppeteerResult.images[0] || 'https://placehold.co/400x300/CCCCCC/FFFFFF?text=Product+Image',
+            dimensions: '12x22',
+            specifications: this.enhanceSpecifications({
+              'Product URL': url,
+              'Images Available': puppeteerResult.images.length.toString(),
+              'All Images': puppeteerResult.images.slice(0, 3) // Store first 3 image URLs
+            }, puppeteerResult.category || this.detectCategory(url, ''), this.extractBrandFromURL(url), puppeteerResult.productName, url, puppeteerResult.images[0] || ''),
+            sourceUrl: url
+          };
+          
+          return simulatedProduct;
+        }
+      } catch (puppeteerError) {
+        console.log(`Puppeteer failed, falling back to traditional scraping: ${puppeteerError.message}`);
+      }
+      
       console.log(`Scraping real product from: ${url}`);
       
       // IMMEDIATE THERMOSTAT DETECTION AND HANDLING

@@ -22,6 +22,7 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ✅ **June 24, 2025**: COMPLETED - Enhanced scraping system with Puppeteer integration for JavaScript-loaded image extraction and improved content capture from dynamic websites
 - ✅ **June 24, 2025**: COMPLETED - Fixed critical carpet categorization bug where "carpet tile" products were incorrectly categorized as tiles instead of carpet - added compound term detection and proper priority ordering
 - ✅ **June 24, 2025**: COMPLETED - Enhanced category detection with comprehensive logging and "carpet tile" compound term recognition to ensure all carpet products go to carpet category
 - ✅ **June 24, 2025**: COMPLETED - Enhanced LVT/Vinyl and Hardwood categories with comprehensive technical specifications (20+ fields each) for complete product comparison

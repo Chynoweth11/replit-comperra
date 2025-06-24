@@ -1,0 +1,196 @@
+Full Code (save as scraper.js or similar)
+js
+Copy
+Edit
+const axios = require('axios');
+const cheerio = require('cheerio');
+
+/**
+ * Scrapes all product images and basic product info.
+ * @param {string} url - The URL of the product page.
+ * @returns {Promise<object>} - An object containing images and metadata.
+ */
+async function scrapeProductWithImages(url) {
+  try {
+    const { data: html } = await axios.get(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    });
+
+    const $ = cheerio.load(html);
+
+    // Collect all images (limit to first 6 to avoid unnecessary load)
+    const imageUrls = [];
+    $('img').each((i, img) => {
+      if (i >= 6) return false; // Limit to 6 images
+      const src = $(img).attr('src') || $(img).attr('data-src');
+      if (src && !imageUrls.includes(src)) {
+        const fullUrl = src.startsWith('http') ? src : new URL(src, url).href;
+        imageUrls.push(fullUrl);
+      }
+    });
+
+    // Grab optional product name/title
+    const productName = $('h1, .product-title, .title, .product-name').first().text().trim();
+
+    // Return result
+    return {
+      productUrl: url,
+      productName: productName || 'Unknown Product',
+      images: imageUrls,
+      imageCount: imageUrls.length
+    };
+
+  } catch (error) {
+    console.error("❌ Error scraping:", url, error.message);
+    return {
+      productUrl: url,
+      productName: null,
+      images: [],
+      imageCount: 0,
+      error: error.message
+    };
+  }
+}
+
+// Example usage
+(async () => {
+  const url = "https://www.grainger.com/product/31HL77"; // Replace with any product URL
+  const data = await scrapeProductWithImages(url);
+  console.log("📦 Product:", data.productName);
+  console.log("🖼️ Images:", data.images);
+})();
+📦 Output Format
+js
+Copy
+Edit
+{
+  productUrl: "https://...",
+  productName: "Sample Name",
+  images: [
+    "https://example.com/image1.jpg",
+    "https://example.com/image2.jpg"
+  ],
+  imageCount: 2
+}
+🛠 To Use in Your Existing Scraper
+Just call:
+
+js
+Copy
+Edit
+const productData = await scrapeProductWithImages(url);
+Then push productData.images into your Firebase, Airtable, or wherever you store product data.
+
+⚠️ Limitation
+This only scrapes images that exist in raw HTML (<img> tags). It does NOT scrape images loaded by JavaScript after page load. For that, use Puppeteer.
+
+Let me know if you want the Puppeteer version next.
+
+
+
+
+
+
+
+
+You said:
+letd add that- puppeter
+
+
+ChatGPT said:
+Here’s the extended version of the scraper using Puppeteer – it grabs ALL visible images, even those loaded by JavaScript (like carousels, galleries, etc.).
+
+✅ Requirements
+You’ll need to install Puppeteer:
+
+bash
+Copy
+Edit
+npm install puppeteer
+✅ Full Puppeteer-Based Scraper
+js
+Copy
+Edit
+const puppeteer = require('puppeteer');
+
+/**
+ * Scrapes all image URLs (even JS-loaded) from a product page using Puppeteer.
+ * @param {string} url - The product URL to scrape.
+ * @returns {Promise<object>} - A product object with images array.
+ */
+async function scrapeProductWithPuppeteer(url) {
+  let browser;
+  try {
+    browser = await puppeteer.launch({
+      headless: 'new', // Use true or 'new' depending on your Puppeteer version
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+
+    const page = await browser.newPage();
+    await page.setUserAgent('Mozilla/5.0');
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+
+    // Optional: Wait for images to appear
+    await page.waitForSelector('img', { timeout: 5000 }).catch(() => {});
+
+    // Evaluate and extract all unique image URLs
+    const imageUrls = await page.evaluate(() => {
+      const seen = new Set();
+      const images = [];
+      document.querySelectorAll('img').forEach(img => {
+        const src = img.src || img.getAttribute('data-src');
+        if (src && !seen.has(src)) {
+          seen.add(src);
+          images.push(src);
+        }
+      });
+      return images;
+    });
+
+    // Optional: Get page title or product name
+    const productName = await page.evaluate(() => {
+      const titleEl = document.querySelector('h1, .product-title, .title, .product-name');
+      return titleEl ? titleEl.innerText.trim() : 'Unknown Product';
+    });
+
+    return {
+      productUrl: url,
+      productName,
+      images: imageUrls,
+      imageCount: imageUrls.length
+    };
+
+  } catch (error) {
+    console.error('❌ Puppeteer scrape failed:', error.message);
+    return {
+      productUrl: url,
+      productName: null,
+      images: [],
+      imageCount: 0,
+      error: error.message
+    };
+  } finally {
+    if (browser) await browser.close();
+  }
+}
+
+// ✅ Example usage
+(async () => {
+  const url = "https://www.msisurfaces.com/porcelain-flamenco/racing-green/"; // Replace with your own
+  const result = await scrapeProductWithPuppeteer(url);
+  console.log("📦 Product:", result.productName);
+  console.log("🖼️ Images:", result.images);
+})();
+✅ Output Sample
+json
+Copy
+Edit
+{
+  "productUrl": "https://...",
+  "productName": "Flamenco Racing Green",
+  "images": [
+    "https://cdn.msisurfaces.com/image1.jpg",
+    "https://cdn.msisurfaces.com/image2.jpg"
+  ],
+  "imageCount": 2
+}
