@@ -359,6 +359,148 @@ export class SimulationScraper {
   }
 
   // Method to enhance specifications based on category
+  private generateLVTSpec(fieldType: string, brand: string, name: string): string {
+    switch (fieldType) {
+      case 'Material Type':
+        if (name.toLowerCase().includes('tile') || name.toLowerCase().includes('slate') || name.toLowerCase().includes('stone')) {
+          return 'Luxury Vinyl Tile (LVT)';
+        }
+        return 'Luxury Vinyl Plank (LVP)';
+      
+      case 'Wear Layer':
+        return ['12 mil', '20 mil', '22 mil', '28 mil', '40 mil'][Math.floor(Math.random() * 5)];
+      
+      case 'Core Type':
+        return ['SPC (Stone Plastic Composite)', 'WPC (Wood Plastic Composite)', 'Rigid Core', 'WPC Plus'][Math.floor(Math.random() * 4)];
+      
+      case 'Thickness':
+        return ['4mm', '5mm', '5.5mm', '6mm', '6.5mm', '7mm', '8mm'][Math.floor(Math.random() * 7)];
+      
+      case 'Width':
+        if (name.toLowerCase().includes('tile')) return ['12"', '16"', '18"'][Math.floor(Math.random() * 3)];
+        return ['6"', '7"', '9"'][Math.floor(Math.random() * 3)];
+      
+      case 'Length':
+        if (name.toLowerCase().includes('tile')) return ['12"', '16"', '18"', '24"'][Math.floor(Math.random() * 4)];
+        return ['48"', '60"', '72"'][Math.floor(Math.random() * 3)];
+      
+      case 'Installation Method':
+        return ['Floating, Click-Lock', 'Floating, Click-Lock, Glue-Down', 'Glue-Down Only'][Math.floor(Math.random() * 3)];
+      
+      case 'Texture':
+        if (name.toLowerCase().includes('oak') || name.toLowerCase().includes('wood')) {
+          return ['Embossed Wood Grain', 'Hand-Scraped Wood Grain', 'Wire-Brushed Texture'][Math.floor(Math.random() * 3)];
+        }
+        return ['Natural Stone Texture', 'Matte Stone Finish', 'Textured Surface'][Math.floor(Math.random() * 3)];
+      
+      case 'Finish':
+        return ['Low-Gloss Urethane', 'Aluminum Oxide Enhanced', 'Matte Protective Coating', 'UV Cured Finish'][Math.floor(Math.random() * 4)];
+      
+      case 'Edge Type':
+        return ['Micro-Beveled', 'Painted Bevel', 'Straight Edge', 'Square Edge'][Math.floor(Math.random() * 4)];
+      
+      case 'Underlayment':
+        return ['Attached Cork Backing', 'Integrated IXPE Foam', 'Attached Cork + Foam', 'No Underlayment Required'][Math.floor(Math.random() * 4)];
+      
+      case 'Sound Rating':
+        return ['IIC 51, STC 52', 'IIC 56, STC 60', 'IIC 67, STC 64', 'IIC 72, STC 66'][Math.floor(Math.random() * 4)];
+      
+      case 'Indentation Rating':
+        return ['0.05mm (Class 33)', '0.03mm (Class 33/42)', '0.02mm (Class 33/42/43)'][Math.floor(Math.random() * 3)];
+      
+      case 'Commercial Rating':
+        return ['Light Commercial', 'Heavy Commercial', 'Heavy Commercial + Light Industrial'][Math.floor(Math.random() * 3)];
+      
+      case 'Residential Warranty':
+        return ['15-year wear warranty', '20-year wear warranty', '25-year wear warranty', 'Lifetime residential warranty'][Math.floor(Math.random() * 4)];
+      
+      case 'Commercial Warranty':
+        return ['5-year light commercial', '10-year heavy commercial', '15-year heavy commercial'][Math.floor(Math.random() * 3)];
+      
+      case 'Slip Resistance':
+        return ['R10 wet barefoot', 'R11 wet barefoot', 'R12 wet/dry'][Math.floor(Math.random() * 3)];
+      
+      case 'Country of Origin':
+        return brand === 'Shaw' || brand === 'Mohawk' || brand === 'COREtec' ? 'USA' : ['USA', 'Belgium', 'Germany'][Math.floor(Math.random() * 3)];
+      
+      case 'Environmental':
+        return ['FloorScore Certified, Low VOC', 'GreenGuard Gold, FloorScore', 'GreenGuard Gold, Cradle to Cradle'][Math.floor(Math.random() * 3)];
+      
+      default:
+        return 'N/A';
+    }
+  }
+
+  private generateHardwoodSpec(fieldType: string, brand: string, name: string): string {
+    switch (fieldType) {
+      case 'Species':
+        if (name.toLowerCase().includes('oak')) return 'Red Oak (Quercus rubra)';
+        if (name.toLowerCase().includes('maple')) return 'Hard Maple (Acer saccharum)';
+        if (name.toLowerCase().includes('hickory')) return 'Hickory (Carya ovata)';
+        if (name.toLowerCase().includes('cherry')) return 'American Cherry (Prunus serotina)';
+        if (name.toLowerCase().includes('walnut')) return 'American Walnut (Juglans nigra)';
+        return 'Red Oak (Quercus rubra)';
+      
+      case 'Grade':
+        return ['Select & Better', 'Character Grade', 'Rustic Grade', 'Prime Grade'][Math.floor(Math.random() * 4)];
+      
+      case 'Construction':
+        if (name.toLowerCase().includes('engineered')) return 'Engineered (5-Ply)';
+        return 'Solid Wood';
+      
+      case 'Finish':
+        return ['Pre-Finished Polyurethane', 'Pre-Finished UV Polyurethane', 'Oil-Based Finish', 'Water-Based Finish'][Math.floor(Math.random() * 4)];
+      
+      case 'Width':
+        return ['2.25"', '3.25"', '5"', '6"', '7.5"'][Math.floor(Math.random() * 5)];
+      
+      case 'Thickness':
+        if (name.toLowerCase().includes('engineered')) return ['3/8"', '1/2"', '5/8"'][Math.floor(Math.random() * 3)];
+        return ['3/4"', '5/8"'][Math.floor(Math.random() * 2)];
+      
+      case 'Length':
+        return 'Random Length 12" - 84"';
+      
+      case 'Wear Layer':
+        if (name.toLowerCase().includes('engineered')) return ['2mm', '3mm', '4mm'][Math.floor(Math.random() * 3)] + ' Hardwood Veneer';
+        return 'N/A (Solid Wood)';
+      
+      case 'Edge Profile':
+        return ['Square Edge', 'Micro-Beveled', 'Hand-Scraped', 'Wire-Brushed'][Math.floor(Math.random() * 4)];
+      
+      case 'Installation':
+        if (name.toLowerCase().includes('engineered')) return 'Floating, Nail Down, Glue Down';
+        return 'Nail Down, Glue Down';
+      
+      case 'Janka Hardness':
+        if (name.toLowerCase().includes('hickory')) return '1,820 lbf';
+        if (name.toLowerCase().includes('maple')) return '1,450 lbf';
+        if (name.toLowerCase().includes('oak')) return '1,290 lbf';
+        if (name.toLowerCase().includes('cherry')) return '995 lbf';
+        if (name.toLowerCase().includes('walnut')) return '1,010 lbf';
+        return '1,290 lbf';
+      
+      case 'Moisture Content':
+        return '6-8%';
+      
+      case 'Gloss Level':
+        return ['Matte (5-15 sheen)', 'Low Gloss (10-25 sheen)', 'Semi-Gloss (25-35 sheen)', 'Gloss (70-85 sheen)'][Math.floor(Math.random() * 4)];
+      
+      case 'Warranty':
+        if (name.toLowerCase().includes('engineered')) return '50-year residential warranty';
+        return '25-year residential finish warranty';
+      
+      case 'Country of Origin':
+        return brand === 'Shaw' ? 'USA' : ['USA', 'Canada'][Math.floor(Math.random() * 2)];
+      
+      case 'Applications':
+        return 'Residential, Light Commercial';
+      
+      default:
+        return 'N/A';
+    }
+  }
+
   private generateThermostatSpec(fieldType: string, brand: string, name: string): string {
     const brandLower = brand.toLowerCase();
     const nameLower = name.toLowerCase();

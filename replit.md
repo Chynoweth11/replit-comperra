@@ -22,6 +22,7 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ✅ **June 24, 2025**: COMPLETED - Enhanced LVT/Vinyl and Hardwood categories with comprehensive technical specifications (20+ fields each) for complete product comparison
 - ✅ **June 24, 2025**: COMPLETED - Fixed thermostat specifications display to show all required fields in comparison tables and technical specifications sections
 - ✅ **June 24, 2025**: COMPLETED - Enhanced image handling across all categories with high-quality fallbacks and proper error recovery
 - ✅ **June 24, 2025**: COMPLETED - Added sample request functionality with dedicated Firebase collection for sample requests and enhanced lead capture modal
