@@ -409,6 +409,19 @@ export class SimulationScraper {
   }
 
   private enhanceSpecifications(specs: any, category: string, brand: string, name: string, url: string, imageUrl: string): any {
+    // Ensure we have a proper image URL
+    if (!imageUrl || imageUrl.includes('placehold.co')) {
+      const categoryImages = {
+        tiles: `https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=300&fit=crop`,
+        slabs: `https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=400&h=300&fit=crop`,
+        lvt: `https://images.unsplash.com/photo-1586105251261-72a756497a11?w=400&h=300&fit=crop`,
+        hardwood: `https://images.unsplash.com/photo-1513694203232-719a280e022f?w=400&h=300&fit=crop`,
+        heat: `https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop`,
+        carpet: `https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=400&h=300&fit=crop`,
+        thermostats: `https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=300&fit=crop`
+      };
+      imageUrl = categoryImages[category as keyof typeof categoryImages] || categoryImages.tiles;
+    }
     const enhancedSpecs = { ...specs };
     
     if (category === 'carpet') {

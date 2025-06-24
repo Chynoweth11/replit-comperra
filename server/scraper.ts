@@ -925,15 +925,23 @@ export class ProductScraper {
       // Extract dimensions
       const dimensions = this.textMatch(html, /\d+["\s]*[x×]\s*\d+["\s]*/i) || 'Standard';
 
-      // Extract image
+      // Extract image with comprehensive fallbacks
       let imageUrl = $('meta[property="og:image"]').attr('content') ||
                     $('img[src*="product"]').first().attr('src') ||
-                    $('img').first().attr('src') ||
+                    $('.product-image img').first().attr('src') ||
+                    $('img[alt*="product"], img[alt*="tile"], img[alt*="bedrosians"]').first().attr('src') ||
+                    $('img').not('[src*="logo"], [src*="icon"], [src*="banner"]').first().attr('src') ||
                     '';
 
+      // Make relative URLs absolute
       if (imageUrl && imageUrl.startsWith('/')) {
         const urlObj = new URL(url);
         imageUrl = `${urlObj.protocol}//${urlObj.host}${imageUrl}`;
+      }
+
+      // Generate branded placeholder if no image found
+      if (!imageUrl) {
+        imageUrl = `https://placehold.co/400x300/E3F2FD/1976D2?text=Bedrosians+${encodeURIComponent(category.charAt(0).toUpperCase() + category.slice(1))}`;
       }
 
       return {

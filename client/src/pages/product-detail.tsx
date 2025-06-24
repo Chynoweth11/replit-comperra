@@ -11,6 +11,22 @@ import LeadCaptureModal from "@/components/lead-capture-modal";
 import { comparisonStore } from "@/lib/comparison-store";
 import type { Material } from "@shared/schema";
 
+// Helper function to get category-specific images
+const getProductImage = (category: string, brand?: string) => {
+  const categoryImages = {
+    tiles: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500&h=500&fit=crop',
+    slabs: 'https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=500&h=500&fit=crop',
+    lvt: 'https://images.unsplash.com/photo-1586105251261-72a756497a11?w=500&h=500&fit=crop',
+    hardwood: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=500&h=500&fit=crop',
+    heat: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=500&h=500&fit=crop',
+    carpet: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500&h=500&fit=crop',
+    thermostats: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500&h=500&fit=crop'
+  };
+  
+  return categoryImages[category as keyof typeof categoryImages] || 
+         `https://placehold.co/500x500/E3F2FD/1976D2?text=${encodeURIComponent(brand || 'Product')}`;
+};
+
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const [leadModalOpen, setLeadModalOpen] = useState(false);
