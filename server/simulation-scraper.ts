@@ -112,7 +112,8 @@ export class SimulationScraper {
             specifications: this.enhanceSpecifications({
               'Product URL': url,
               'Images Available': puppeteerResult.images.length.toString(),
-              'All Images': puppeteerResult.images.slice(0, 3) // Store first 3 image URLs
+              'All Images': puppeteerResult.images.slice(0, 5), // Store first 5 image URLs
+              'Image Gallery': puppeteerResult.images.length > 1 ? 'Multiple Images' : 'Single Image'
             }, puppeteerResult.category || this.detectCategory(url, ''), this.extractBrandFromURL(url), puppeteerResult.productName, url, puppeteerResult.images[0] || ''),
             sourceUrl: url
           };
