@@ -126,6 +126,9 @@ function Register({ setView }) {
             </div>
             <Button type="submit" disabled={loading}><UserPlus size={20}/> {loading ? 'Registering...' : 'Register'}</Button>
             <p className="text-center text-sm text-slate-500">Already have an account? <button type="button" onClick={() => setView('login')} className="font-semibold text-blue-600 hover:underline">Log In</button></p>
+            <p className="text-center text-sm text-slate-500 mt-2">
+                <button type="button" onClick={() => setView('professional-auth')} className="font-semibold text-green-600 hover:underline">Create as a Pro or Supplier</button>
+            </p>
         </form></Card>
         </>
     );
