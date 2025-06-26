@@ -65,7 +65,7 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
   ];
 
   return (
-    <section id="categories" className="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 py-20 border-8 border-red-500">
+    <section id="categories" className="bg-gradient-to-br from-slate-50 via-white to-blue-50 py-20">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-16">
           <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 rounded-full text-sm font-medium mb-6">
