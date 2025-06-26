@@ -1,13 +1,13 @@
 import React, { useState, useContext, createContext } from 'react';
 
-const ToastContext = createContext<any>(null);
+const ToastContext = createContext();
 
 let toastId = 0;
 
-export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
-    const [toasts, setToasts] = useState<any[]>([]);
+export const ToastProvider = ({ children }) => {
+    const [toasts, setToasts] = useState([]);
 
-    const addToast = (message: string, type = 'success') => {
+    const addToast = (message, type = 'success') => {
         const id = toastId++;
         setToasts(prev => [...prev, { id, message, type }]);
         setTimeout(() => {
@@ -15,33 +15,33 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
         }, 5000);
     };
 
-    const removeToast = (id: number) => {
+    const removeToast = (id) => {
         setToasts(prev => prev.filter(t => t.id !== id));
     };
 
     const toast = {
-        success: (message: string) => addToast(message, 'success'),
-        error: (message: string) => addToast(message, 'error'),
-        info: (message: string) => addToast(message, 'info'),
-        loading: (message: string) => {
+        success: (message) => addToast(message, 'success'),
+        error: (message) => addToast(message, 'error'),
+        info: (message) => addToast(message, 'info'),
+        loading: (message) => {
             const id = toastId++;
             addToast(message, 'loading');
             return id;
         },
-        dismiss: (id: number) => removeToast(id)
+        dismiss: (id) => removeToast(id)
     };
     
     const ToastContainer = () => (
         <div className="fixed top-5 right-5 z-50 space-y-3">
             {toasts.map(t => {
-                const colors: Record<string, string> = {
+                const colors = {
                     success: 'bg-green-100 border-green-500 text-green-800',
                     error: 'bg-red-100 border-red-500 text-red-800',
                     info: 'bg-blue-100 border-blue-500 text-blue-800',
                     loading: 'bg-slate-100 border-slate-500 text-slate-800 animate-pulse'
                 };
                 return (
-                    <div key={t.id} className={`p-4 rounded-lg border-l-4 shadow-xl flex justify-between items-center ${colors[t.type] || colors.info}`} role="alert">
+                    <div key={t.id} className={`p-4 rounded-lg border-l-4 shadow-xl flex justify-between items-center ${colors[t.type]}`} role="alert">
                         <p className="font-semibold mr-4">{t.message}</p>
                         <button onClick={() => removeToast(t.id)} className="text-2xl font-semibold leading-none">&times;</button>
                     </div>
