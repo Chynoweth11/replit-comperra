@@ -313,7 +313,7 @@ function LandingPage() {
                     <h3 className="mt-4 text-xl font-bold text-slate-900">Find a Pro or Supplier</h3>
                     <p className="mt-2 text-slate-600">Get quotes from verified installers and vendors for your project.</p>
                 </div>
-                 <div onClick={() => setView('pro')} className="p-8 border border-slate-200 rounded-xl hover:shadow-2xl hover:border-blue-500 hover:-translate-y-2 transition-all duration-300 cursor-pointer">
+                 <div onClick={() => setView('professional-auth')} className="p-8 border border-slate-200 rounded-xl hover:shadow-2xl hover:border-blue-500 hover:-translate-y-2 transition-all duration-300 cursor-pointer">
                     <Briefcase className="h-12 w-12 mx-auto text-blue-600" />
                     <h3 className="mt-4 text-xl font-bold text-slate-900">Join as a Pro or Supplier</h3>
                     <p className="mt-2 text-slate-600">Access qualified local leads and grow your business.</p>
