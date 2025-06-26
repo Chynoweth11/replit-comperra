@@ -31,6 +31,8 @@ import Vendors from "@/pages/vendors";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 import Dashboard from "@/pages/dashboard";
+import { ProfessionalNetwork } from "@/components/ProfessionalNetwork";
+import { ToastProvider } from "@/context/ToastContext";
 
 function Router() {
   return (
@@ -46,6 +48,7 @@ function Router() {
         <Route path="/categories" component={Categories} />
         <Route path="/brands" component={Brands} />
         <Route path="/vendors" component={Vendors} />
+        <Route path="/professionals" component={ProfessionalNetwork} />
         <Route path="/specs" component={Specs} />
         <Route path="/pricing" component={Pricing} />
         <Route path="/buying-guides" component={BuyingGuides} />
@@ -77,10 +80,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <ToastProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </ToastProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

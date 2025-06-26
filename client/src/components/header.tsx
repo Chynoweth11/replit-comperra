@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { signOut } from "firebase/auth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X, User } from "lucide-react";
+import { Search, X, User, Users } from "lucide-react";
 import Fuse from 'fuse.js';
 import { useMaterials } from "@/hooks/use-materials";
 import { useAuth } from "@/contexts/AuthContext";
@@ -239,6 +239,10 @@ export default function Header() {
           </div>
 
           <nav className="space-x-4 text-sm font-medium hidden md:flex items-center">
+            <Link href="/professionals" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium shadow-lg">
+              <Users size={18} />
+              Pros & Suppliers Near You
+            </Link>
             <Link href="/about" className="hover:text-royal transition-colors">About</Link>
             <Link href="/contact" className="hover:text-royal transition-colors">Help</Link>
             {user ? (

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { ShieldCheck, UserPlus, FilePlus, XCircle, MapPin, Star, Phone, Mail, Users, Briefcase, Search } from 'lucide-react';
+import { ShieldCheck, UserPlus, FilePlus, XCircle, MapPin, Star, Phone, Mail, Users, Briefcase, Search, UserCheck } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import { firebaseNetworkService } from '@/services/firebase-network';
+import Header from '@/components/header';
+import Footer from '@/components/footer';
 
 // Common UI Components
 const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
@@ -292,8 +294,10 @@ export const ProfessionalNetwork = () => {
   const [showSuccess, setShowSuccess] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100">
-      <div className="max-w-4xl mx-auto px-4 py-16">
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100">
+        <div className="max-w-4xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-slate-900 mb-4">
             Connect with Building Material Professionals
@@ -367,9 +371,12 @@ export const ProfessionalNetwork = () => {
         }} />
       )}
       
-      {showSuccess && (
-        <SuccessMessage onClose={() => setShowSuccess(false)} />
-      )}
+        {showSuccess && (
+          <SuccessMessage onClose={() => setShowSuccess(false)} />
+        )}
+        </div>
+      </div>
+      <Footer />
     </div>
   );
 };
