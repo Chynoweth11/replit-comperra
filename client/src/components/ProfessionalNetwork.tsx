@@ -298,83 +298,82 @@ export const ProfessionalNetwork = () => {
       <Header />
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100">
         <div className="max-w-4xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-slate-900 mb-4">
-            Connect with Building Material Professionals
-          </h1>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-            Find trusted contractors, installers, and suppliers in your area. Get quotes, compare services, and hire with confidence.
-          </p>
-        </div>
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-slate-900 mb-4">
+              Connect with Building Material Professionals
+            </h1>
+            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+              Find trusted contractors, installers, and suppliers in your area. Get quotes, compare services, and hire with confidence.
+            </p>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          <Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <Card>
+              <div className="text-center">
+                <UserPlus className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">For Customers</h3>
+                <p className="text-slate-600 mb-6">
+                  Submit your project details and get connected with qualified professionals in your area
+                </p>
+                <Button onClick={() => setShowLeadForm(true)}>
+                  <FilePlus size={20} />
+                  Find Professionals
+                </Button>
+              </div>
+            </Card>
+
+            <Card>
+              <div className="text-center">
+                <Briefcase className="h-12 w-12 text-green-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">For Professionals</h3>
+                <p className="text-slate-600 mb-6">
+                  Join our network to receive qualified leads and grow your business
+                </p>
+                <Button variant="success">
+                  <UserCheck size={20} />
+                  Join Network
+                </Button>
+              </div>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
-              <UserPlus className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-slate-900 mb-2">For Customers</h3>
-              <p className="text-slate-600 mb-6">
-                Submit your project details and get connected with qualified professionals in your area
-              </p>
-              <Button onClick={() => setShowLeadForm(true)}>
-                <FilePlus size={20} />
-                Find Professionals
-              </Button>
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="font-semibold text-slate-900 mb-2">Find Qualified Pros</h3>
+              <p className="text-slate-600 text-sm">Connect with vetted professionals in your area</p>
             </div>
-          </Card>
 
-          <Card>
             <div className="text-center">
-              <Briefcase className="h-12 w-12 text-green-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-slate-900 mb-2">For Professionals</h3>
-              <p className="text-slate-600 mb-6">
-                Join our network to receive qualified leads and grow your business
-              </p>
-              <Button variant="success">
-                <UserCheck size={20} />
-                Join Network
-              </Button>
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Star className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="font-semibold text-slate-900 mb-2">Compare & Choose</h3>
+              <p className="text-slate-600 text-sm">Review profiles and get multiple quotes</p>
             </div>
-          </Card>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="h-8 w-8 text-blue-600" />
+            <div className="text-center">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <ShieldCheck className="h-8 w-8 text-purple-600" />
+              </div>
+              <h3 className="font-semibold text-slate-900 mb-2">Hire with Confidence</h3>
+              <p className="text-slate-600 text-sm">Work with trusted, verified professionals</p>
             </div>
-            <h3 className="font-semibold text-slate-900 mb-2">Find Qualified Pros</h3>
-            <p className="text-slate-600 text-sm">Connect with vetted professionals in your area</p>
-          </div>
-
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Star className="h-8 w-8 text-green-600" />
-            </div>
-            <h3 className="font-semibold text-slate-900 mb-2">Compare & Choose</h3>
-            <p className="text-slate-600 text-sm">Review profiles and get multiple quotes</p>
-          </div>
-
-          <div className="text-center">
-            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <ShieldCheck className="h-8 w-8 text-purple-600" />
-            </div>
-            <h3 className="font-semibold text-slate-900 mb-2">Hire with Confidence</h3>
-            <p className="text-slate-600 text-sm">Work with trusted, verified professionals</p>
           </div>
         </div>
-      </div>
 
-      {showLeadForm && (
-        <LeadSubmissionForm onClose={() => {
-          setShowLeadForm(false);
-          setShowSuccess(true);
-        }} />
-      )}
-      
+        {showLeadForm && (
+          <LeadSubmissionForm onClose={() => {
+            setShowLeadForm(false);
+            setShowSuccess(true);
+          }} />
+        )}
+        
         {showSuccess && (
           <SuccessMessage onClose={() => setShowSuccess(false)} />
         )}
-        </div>
       </div>
       <Footer />
     </div>
