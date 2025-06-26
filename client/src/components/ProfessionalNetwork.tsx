@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { ShieldCheck, UserPlus, FilePlus, LogIn, LogOut, Search, Gem, Bell, BarChart, XCircle, CreditCard, HelpCircle, Lock, Award, Briefcase, UserCheck, ArrowLeft, MapPin, Star, Phone, Mail } from 'lucide-react';
+import React, { useState } from 'react';
+import { ShieldCheck, UserPlus, FilePlus, XCircle, MapPin, Star, Phone, Mail, Users, Briefcase } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
-import { useAuthNetwork } from '../context/AuthNetworkContext';
-import { firebaseNetworkService, Lead } from '../services/firebase-network';
+import { firebaseNetworkService } from '../services/firebase-network';
 
 // Common UI Components
 const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
@@ -164,7 +163,7 @@ const LeadSubmissionForm = ({ onClose }: { onClose: () => void }) => {
     try {
       await firebaseNetworkService.submitLead(formData);
       toast.success('Lead submitted successfully! Professionals will be notified.');
-      onClose();
+      setTimeout(() => onClose(), 500);
     } catch (error: any) {
       toast.error(error.message || 'Failed to submit lead');
     } finally {
@@ -267,177 +266,30 @@ const LeadSubmissionForm = ({ onClose }: { onClose: () => void }) => {
   );
 };
 
-// Professional Network Dashboard
-const ProfessionalNetworkDashboard = () => {
-  const { user, logout } = useAuthNetwork();
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(true);
-  const toast = useToast();
-
-  useEffect(() => {
-    if (user && !user.isAdmin) {
-      loadLeads();
-    }
-  }, [user]);
-
-  const loadLeads = async () => {
-    if (!user) return;
-    
-    try {
-      const matchedLeads = await firebaseNetworkService.getMatchedLeads(user);
-      setLeads(matchedLeads);
-    } catch (error) {
-      toast.error('Failed to load leads');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const claimLead = async (leadId: string) => {
-    if (!user) return;
-    
-    try {
-      await firebaseNetworkService.claimLead(user.uid, leadId);
-      toast.success('Lead claimed successfully!');
-      loadLeads(); // Refresh leads
-    } catch (error) {
-      toast.error('Failed to claim lead');
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading your dashboard...</p>
+// Simplified success message component
+const SuccessMessage = ({ onClose }: { onClose: () => void }) => (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <Card className="max-w-md w-full text-center">
+      <div className="text-center mb-6">
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <ShieldCheck className="h-8 w-8 text-green-600" />
         </div>
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">Request Submitted!</h2>
+        <p className="text-slate-600">
+          We'll connect you with qualified professionals in your area within 24 hours.
+        </p>
       </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">Professional Dashboard</h1>
-              <p className="text-slate-600">Welcome back, {user?.name}</p>
-            </div>
-            <Button onClick={logout} variant="secondary" className="w-auto">
-              <LogOut size={20} />
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Bell className="h-8 w-8 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-slate-600">Available Leads</p>
-                <p className="text-2xl font-bold text-slate-900">{leads.length}</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Award className="h-8 w-8 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-slate-600">Claimed Leads</p>
-                <p className="text-2xl font-bold text-slate-900">{user?.claimedLeads?.length || 0}</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Gem className="h-8 w-8 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-slate-600">Plan</p>
-                <p className="text-2xl font-bold text-slate-900 capitalize">{user?.subscription}</p>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        <Card>
-          <h2 className="text-xl font-bold text-slate-900 mb-6">Available Leads</h2>
-          {leads.length === 0 ? (
-            <div className="text-center py-8">
-              <Search className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-              <p className="text-slate-600">No leads available in your area</p>
-              <p className="text-sm text-slate-500 mt-2">New leads will appear here when customers request your services</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {leads.map((lead) => (
-                <div key={lead.id} className="border border-slate-200 rounded-lg p-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-slate-900">{lead.serviceType}</h3>
-                      <p className="text-slate-600 mt-1">{lead.description}</p>
-                      <div className="flex items-center gap-4 mt-3 text-sm text-slate-500">
-                        <div className="flex items-center gap-1">
-                          <MapPin size={16} />
-                          {lead.zipCode} ({lead.distance?.toFixed(1)} miles away)
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Mail size={16} />
-                          {lead.email}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Phone size={16} />
-                          {lead.phone}
-                        </div>
-                      </div>
-                    </div>
-                    <Button 
-                      onClick={() => claimLead(lead.id)}
-                      className="w-auto ml-4"
-                      variant="success"
-                    >
-                      <UserCheck size={20} />
-                      Claim Lead
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-      </div>
-    </div>
-  );
-};
+      <Button onClick={onClose}>
+        Continue Browsing
+      </Button>
+    </Card>
+  </div>
+);
 
 // Main Professional Network Component
 export const ProfessionalNetwork = () => {
-  const { user, loading } = useAuthNetwork();
   const [showLeadForm, setShowLeadForm] = useState(false);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (user) {
-    return <ProfessionalNetworkDashboard />;
-  }
+  const [showSuccess, setShowSuccess] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100">
@@ -509,7 +361,14 @@ export const ProfessionalNetwork = () => {
       </div>
 
       {showLeadForm && (
-        <LeadSubmissionForm onClose={() => setShowLeadForm(false)} />
+        <LeadSubmissionForm onClose={() => {
+          setShowLeadForm(false);
+          setShowSuccess(true);
+        }} />
+      )}
+      
+      {showSuccess && (
+        <SuccessMessage onClose={() => setShowSuccess(false)} />
       )}
     </div>
   );
