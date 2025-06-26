@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { ShieldCheck, UserPlus, FilePlus, XCircle, MapPin, Star, Phone, Mail, Users, Briefcase } from 'lucide-react';
-import { useToast } from '../context/ToastContext';
-import { firebaseNetworkService } from '../services/firebase-network';
+import { ShieldCheck, UserPlus, FilePlus, XCircle, MapPin, Star, Phone, Mail, Users, Briefcase, Search } from 'lucide-react';
+import { useToast } from '@/context/ToastContext';
+import { firebaseNetworkService } from '@/services/firebase-network';
 
 // Common UI Components
 const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
