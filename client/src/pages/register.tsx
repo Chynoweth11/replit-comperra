@@ -187,6 +187,11 @@ export default function RegisterPage() {
                   Sign In
                 </Link>
               </p>
+              <p className="text-sm text-gray-600 mt-2">
+                <Link href="/professionals" className="text-green-600 hover:underline font-medium">
+                  Create as a Pro or Supplier
+                </Link>
+              </p>
             </div>
           </CardContent>
         </Card>
