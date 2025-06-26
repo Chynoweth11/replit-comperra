@@ -75,7 +75,7 @@ export default function CategoryFilterPanel({ category, filters, onFiltersChange
       
       // Heating
       "Type": ["Electric Mat", "Loose Cable", "In-slab Cable", "Hydronic"],
-      "Voltage": ["120V", "240V", "208V"],
+      "Heating Voltage": ["120V", "240V", "208V"],
       "Programmable Features": ["Basic", "WiFi", "Smart Home", "App Control"],
       "Sensor Type": ["Floor", "Air", "Dual"],
       "Thermostat Included?": ["Yes", "No", "Optional"],

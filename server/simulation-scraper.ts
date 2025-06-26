@@ -26,6 +26,25 @@ export class SimulationScraper {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
+  extractBrandFromURL(url: string): string {
+    if (url.includes('daltile.com')) return 'Daltile';
+    if (url.includes('msisurfaces.com')) return 'MSI';
+    if (url.includes('bedrosians.com')) return 'Bedrosians';
+    if (url.includes('marazzi.com')) return 'Marazzi';
+    if (url.includes('arizonatile.com')) return 'Arizona Tile';
+    if (url.includes('floridatile.com')) return 'Florida Tile';
+    if (url.includes('akdo.com')) return 'AKDO';
+    if (url.includes('shawfloors.com')) return 'Shaw';
+    if (url.includes('mohawkflooring.com')) return 'Mohawk';
+    if (url.includes('flor.com')) return 'Flor';
+    if (url.includes('cambriausa.com')) return 'Cambria';
+    if (url.includes('caesarstoneus.com')) return 'Caesarstone';
+    if (url.includes('silestone.com')) return 'Silestone';
+    if (url.includes('elmwood') || url.includes('timber')) return 'Elmwood Reclaimed Timber';
+    if (url.includes('hermitage')) return 'The Hermitage Collection';
+    return 'Unknown';
+  }
+
   private detectCategory(url: string, html: string): string {
     const urlLower = url.toLowerCase();
     const htmlLower = html.toLowerCase();
@@ -373,7 +392,7 @@ export class SimulationScraper {
       }
       
       // Apply comprehensive specifications based on detected category
-      const enhancedSpecs = this.enhanceSpecifications(specs, category, brand, name, url, imageUrl);
+      let enhancedSpecs = this.enhanceSpecifications(specs, category, brand, name, url, imageUrl);
       
       // Force thermostat specifications if detected as thermostats category
       if (category === 'thermostats') {
@@ -674,7 +693,7 @@ export class SimulationScraper {
       };
       imageUrl = categoryImages[category as keyof typeof categoryImages] || categoryImages.tiles;
     }
-    const enhancedSpecs = { ...specs };
+    let enhancedSpecs = { ...specs };
     
     if (category === 'carpet') {
       // Apply comprehensive carpet specifications
