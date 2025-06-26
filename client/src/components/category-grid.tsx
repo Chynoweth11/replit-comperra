@@ -65,28 +65,16 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
   ];
 
   return (
-    <section id="categories" className="bg-gradient-to-br from-slate-50 via-white to-blue-50 py-20">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 rounded-full text-sm font-medium mb-6">
-            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-            Building Material Categories
-          </div>
-          <h2 className="text-4xl font-bold text-slate-900 mb-6">Compare by Category</h2>
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-            Explore our comprehensive collection of building materials, each with detailed specifications and expert comparisons to help you make informed decisions.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+    <section id="categories" className="max-w-7xl mx-auto px-4 py-16">
+      <h2 className="text-3xl font-bold text-center mb-12">Compare by Category</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {categories.map((category) => (
           <div
             key={category.id}
             onClick={() => onCategorySelect(category.id)}
-            className="group bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden cursor-pointer hover:shadow-2xl hover:border-blue-300 hover:-translate-y-3 transition-all duration-500 h-full flex flex-col"
+            className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow group h-full flex flex-col"
           >
-            <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 relative overflow-hidden">
+            <div className="h-40 bg-gray-100 relative overflow-hidden">
               <img 
                 src={category.id === 'tiles' ? tilesImage : 
                      category.id === 'slabs' ? slabsImage : 
@@ -96,7 +84,7 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
                      category.id === 'thermostats' ? heatImage :
                      carpetImage} 
                 alt={category.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
@@ -120,30 +108,25 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
                    category.id === 'thermostats' ? '🌡️' : '🧶'}
                 </div>
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
-                <h4 className="text-lg font-bold mb-1">{category.name}</h4>
-                <p className="text-sm opacity-90">Click to explore products</p>
-              </div>
             </div>
             
-            <div className="p-8 flex flex-col flex-grow">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-2xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors duration-300">
+            <div className="p-6 flex flex-col flex-grow">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
                   {category.name}
                 </h3>
-                <div className="text-blue-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-300">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                <div className="text-gray-400 group-hover:text-gray-600 transition-colors">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
               </div>
-              <p className="text-slate-600 text-base leading-relaxed mb-6 flex-grow">
+              <p className="text-gray-600 text-sm leading-relaxed mb-4 flex-grow">
                 {category.description}
               </p>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2">
                 {category.specs.map((spec) => (
-                  <span key={spec} className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border border-blue-200 group-hover:from-blue-200 group-hover:to-indigo-200 group-hover:border-blue-300 transition-all duration-300">
+                  <span key={spec} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                     {spec}
                   </span>
                 ))}
@@ -151,7 +134,6 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
             </div>
           </div>
         ))}
-        </div>
       </div>
     </section>
   );
