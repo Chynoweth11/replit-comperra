@@ -128,22 +128,22 @@ export default function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
             </div>
             
             <div className="p-8 flex flex-col flex-grow">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-2xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors duration-300">
                   {category.name}
                 </h3>
-                <div className="text-gray-400 group-hover:text-gray-600 transition-colors">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <div className="text-blue-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-300">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </div>
               </div>
-              <p className="text-gray-600 text-sm leading-relaxed mb-4 flex-grow">
+              <p className="text-slate-600 text-base leading-relaxed mb-6 flex-grow">
                 {category.description}
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 {category.specs.map((spec) => (
-                  <span key={spec} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  <span key={spec} className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border border-blue-200 group-hover:from-blue-200 group-hover:to-indigo-200 group-hover:border-blue-300 transition-all duration-300">
                     {spec}
                   </span>
                 ))}
