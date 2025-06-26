@@ -10,7 +10,7 @@ const firebaseService = (() => {
         "80202": { lat: 39.7547, lon: -105.0178 }, "02108": { lat: 42.3751, lon: -71.0603 }
     };
     const subscriptionTiers = {
-        basic: { name: 'Basic', radius: 10, cost: '$0/mo', description: 'Perfect for getting started. Claim up to 4 leads per month.' },
+        basic: { name: 'Basic', radius: 10, cost: '$0/mo', description: '🔒 Claim up to 2 leads per month\n📍 Matching radius: 10 miles\n⚠️ Limited support or visibility' },
         pro: { name: 'Pro', radius: 50, cost: '$49/mo', description: 'The best value for established businesses, with unlimited lead claims.' },
         credit: { name: 'Pay-as-you-go', radius: 50, cost: '$15/lead', description: 'A flexible option with no subscription. Simply buy credits to claim the leads you want.' }
     };
@@ -60,7 +60,7 @@ const firebaseService = (() => {
             if (!member || member.isAdmin) { resolve([]); return; }
             const searchRadius = subscriptionTiers[member.subscription].radius;
             let leadLimit = Infinity;
-            if (member.subscription === 'basic') { leadLimit = 4 - (member.claimedLeads?.length || 0); }
+            if (member.subscription === 'basic') { leadLimit = 2 - (member.claimedLeads?.length || 0); }
 
             const matches = MOCK_LEADS
                 .filter(lead => {

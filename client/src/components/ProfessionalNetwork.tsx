@@ -48,8 +48,22 @@ function SubscriptionInfoModal({ onClose }) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
                     {Object.values(tiers).map(tier => (
                         <div key={tier.name} className="border border-slate-200 rounded-lg p-6 flex flex-col">
-                            <h3 className="text-xl font-bold text-blue-600">{tier.name}</h3><p className="text-3xl font-bold my-4 text-slate-900">{tier.cost}</p>
-                            <p className="text-slate-600 flex-grow">{tier.description}</p><p className="mt-4 font-semibold text-slate-800">Matching Radius: <span className="font-bold">{tier.radius} miles</span></p>
+                            <h3 className="text-xl font-bold text-blue-600">{tier.name}</h3>
+                            <p className="text-3xl font-bold my-4 text-slate-900">{tier.cost}</p>
+                            <div className="text-slate-600 flex-grow">
+                                {tier.description.includes('🔒') ? (
+                                    <div className="space-y-2 text-left">
+                                        {tier.description.split('\n').map((line, index) => (
+                                            <p key={index} className="text-sm">{line}</p>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p>{tier.description}</p>
+                                )}
+                            </div>
+                            {!tier.description.includes('📍') && (
+                                <p className="mt-4 font-semibold text-slate-800">Matching Radius: <span className="font-bold">{tier.radius} miles</span></p>
+                            )}
                         </div>
                     ))}
                 </div>
@@ -168,7 +182,7 @@ function Dashboard() {
                 </div>
                 <div className="flex items-center gap-4">
                     {user.subscription === 'credit' && <div className="flex items-center gap-2 bg-amber-100 text-amber-800 font-bold py-2 px-4 rounded-lg"><Gem className="text-amber-500" size={20}/> {user.credits} Credits</div>}
-                    {user.subscription === 'basic' && <div className="flex items-center gap-2 bg-slate-200 text-slate-800 font-bold py-2 px-4 rounded-lg">{claimedLeadCount} / 4 leads claimed this month</div>}
+                    {user.subscription === 'basic' && <div className="flex items-center gap-2 bg-slate-200 text-slate-800 font-bold py-2 px-4 rounded-lg">{claimedLeadCount} / 2 leads claimed this month</div>}
                     <Button onClick={logout} variant="secondary" className="!w-auto"><LogOut size={16}/> Logout</Button>
                 </div>
             </div>
