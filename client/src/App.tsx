@@ -31,6 +31,8 @@ import Vendors from "@/pages/vendors";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 import Dashboard from "@/pages/dashboard";
+import QuotesPage from "@/pages/quotes";
+import ProfilePage from "@/pages/profile";
 import { ProfessionalNetwork } from "@/components/ProfessionalNetwork";
 import { ToastProvider } from "@/context/ToastContext";
 import { AuthProvider as NetworkAuthProvider } from "@/context/AuthNetworkContext";
@@ -68,6 +70,20 @@ function Router() {
           {() => (
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/quotes">
+          {() => (
+            <ProtectedRoute>
+              <QuotesPage />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/profile">
+          {() => (
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           )}
         </Route>
