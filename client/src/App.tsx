@@ -33,7 +33,7 @@ import RegisterPage from "@/pages/register";
 import Dashboard from "@/pages/dashboard";
 import { ProfessionalNetwork } from "@/components/ProfessionalNetwork";
 import { ToastProvider } from "@/context/ToastContext";
-import { AuthProvider } from "@/context/AuthNetworkContext";
+import { AuthProvider as NetworkAuthProvider } from "@/context/AuthNetworkContext";
 
 function Router() {
   return (
@@ -81,14 +81,14 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
-        <NetworkAuthProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <NetworkAuthProvider>
             <TooltipProvider>
               <Toaster />
               <Router />
             </TooltipProvider>
-          </AuthProvider>
-        </NetworkAuthProvider>
+          </NetworkAuthProvider>
+        </AuthProvider>
       </ToastProvider>
     </QueryClientProvider>
   );
