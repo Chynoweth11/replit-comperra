@@ -436,8 +436,8 @@ export class SimulationScraper {
       if (category === 'thermostats') {
         console.log('FINAL THERMOSTAT OVERRIDE - Creating comprehensive specifications');
         
-        // Replace enhancedSpecs completely with comprehensive thermostat fields
-        enhancedSpecs = {
+        // Replace enhancedSpecs completely with comprehensive thermostat fields using Object.assign
+        Object.assign(enhancedSpecs, {
           'Device Type': 'Smart WiFi Thermostat',
           'Voltage': '120V/240V',
           'Load Capacity': '15A',
@@ -447,7 +447,7 @@ export class SimulationScraper {
           'Connectivity': 'WiFi Enabled',
           'Installation Type': 'In-Wall Installation',
           'Warranty': '3 Years'
-        };
+        });
         
         // Brand-specific thermostat specifications
         if (brand === 'Warmup' || url.includes('warmup')) {

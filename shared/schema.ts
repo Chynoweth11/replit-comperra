@@ -84,6 +84,20 @@ export const carpetSpecsSchema = z.object({
   trafficRating: z.string(),
 });
 
+export const thermostatSpecsSchema = z.object({
+  deviceType: z.string(), // "Smart WiFi Thermostat"
+  voltage: z.string(), // "120V/240V"
+  loadCapacity: z.string(), // "15A"
+  sensorType: z.string(), // "Floor/Air Sensor"
+  smartFeatures: z.string(), // "WiFi Enabled"
+  programmable: z.string(), // "Yes"
+  displayType: z.string(), // "Color Touchscreen"
+  installationType: z.string(), // "In-Wall Installation"
+  ipRating: z.string(), // "IP65"
+  color: z.string(), // "White"
+  warranty: z.string(), // "3 Years"
+});
+
 export const insertMaterialSchema = createInsertSchema(materials).omit({
   id: true,
 });
