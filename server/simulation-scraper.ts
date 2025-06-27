@@ -297,7 +297,7 @@ export class SimulationScraper {
       else if (domain.includes('anderson')) brand = 'Anderson Tuftex';
       
       // Enhanced category detection using the improved detectCategory method  
-      category = this.detectCategory(url, html);
+      category = this.detectCategory(url, response.data);
       
       // Extract basic specifications using cheerio
       const specs: any = {
