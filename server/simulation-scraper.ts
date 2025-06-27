@@ -140,7 +140,7 @@ export class SimulationScraper {
           return simulatedProduct;
         }
       } catch (puppeteerError) {
-        console.log(`Puppeteer failed, falling back to traditional scraping: ${puppeteerError.message}`);
+        console.log(`Puppeteer failed, falling back to traditional scraping: ${puppeteerError instanceof Error ? puppeteerError.message : String(puppeteerError)}`);
       }
       
       console.log(`Scraping real product from: ${url}`);
