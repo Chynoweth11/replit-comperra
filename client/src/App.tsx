@@ -33,6 +33,7 @@ import RegisterPage from "@/pages/register";
 import Dashboard from "@/pages/dashboard";
 import QuotesPage from "@/pages/quotes";
 import ProfilePage from "@/pages/profile";
+import FirebaseDemo from "@/pages/FirebaseDemo";
 import { ProfessionalNetwork } from "@/components/ProfessionalNetwork";
 import { ToastProvider } from "@/context/ToastContext";
 import { AuthProvider as NetworkAuthProvider } from "@/context/AuthNetworkContext";
@@ -52,6 +53,7 @@ function Router() {
         <Route path="/brands" component={Brands} />
         <Route path="/vendors" component={Vendors} />
         <Route path="/professionals" component={ProfessionalNetwork} />
+        <Route path="/firebase-demo" component={FirebaseDemo} />
         <Route path="/specs" component={Specs} />
         <Route path="/pricing" component={Pricing} />
         <Route path="/buying-guides" component={BuyingGuides} />
