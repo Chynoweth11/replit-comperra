@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Comperra - Building Materials Comparison Platform</title>
-    <meta name="description" content="Compare building materials across tiles, stone slabs, vinyl, hardwood, heating, carpet and thermostats. Get expert buying guides and pricing from top manufacturers." />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comperra - Smart Building Materials Comparison Platform</title>
+    <meta name="description" content="Compare tiles, stone, vinyl, hardwood, heating systems, and carpet with detailed specifications and pricing. Make informed building material decisions with expert guides.">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     
     <!-- Firebase SDK -->
     <script type="module">
@@ -16,7 +20,7 @@
         apiKey: "AIzaSyCxlmmV_9YJZRQ4DWr9MBhQHUHwl2yPYys",
         authDomain: "comperra-done.firebaseapp.com",
         projectId: "comperra-done",
-        storageBucket: "comperra-done.firebasestorage.app",
+        storageBucket: "comperra-done.firebaseapp.com",
         messagingSenderId: "636329572028",
         appId: "1:636329572028:web:e4b3a0a6b5c8c1d7f8e9a0"
       };
@@ -24,623 +28,647 @@
       window.firebaseApp = initializeApp(firebaseConfig);
       window.auth = getAuth(window.firebaseApp);
       window.db = getFirestore(window.firebaseApp);
-      
-      console.log('🔥 Firebase initialized successfully');
-      console.log('✅ Comperra Platform Ready');
     </script>
-    
+
     <style>
-      :root {
-        --primary: #3b82f6;
-        --primary-dark: #2563eb;
-        --background: #f8fafc;
-        --surface: #ffffff;
-        --text: #1f2937;
-        --text-secondary: #6b7280;
-        --border: #e5e7eb;
-        --success: #10b981;
-        --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      }
-      
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        background: var(--background);
-        color: var(--text);
-        line-height: 1.6;
-      }
-      
-      .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-      
-      /* Header */
-      header {
-        background: var(--surface);
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        position: sticky;
-        top: 0;
-        z-index: 100;
-      }
-      
-      nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 0;
-      }
-      
-      .logo {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: var(--primary);
-        text-decoration: none;
-      }
-      
-      .nav-links {
-        display: flex;
-        gap: 2rem;
-        align-items: center;
-      }
-      
-      .nav-links a {
-        text-decoration: none;
-        color: var(--text);
-        font-weight: 500;
-        padding: 8px 16px;
-        border-radius: 6px;
-        transition: all 0.2s;
-      }
-      
-      .nav-links a:hover {
-        color: var(--primary);
-        background: #f3f4f6;
-      }
-      
-      .nav-links .btn {
-        background: var(--primary);
-        color: white;
-      }
-      
-      .nav-links .btn:hover {
-        background: var(--primary-dark);
-        color: white;
-      }
-      
-      /* Hero Section */
-      .hero {
-        background: var(--gradient);
-        color: white;
-        text-align: center;
-        padding: 4rem 0;
-        margin-bottom: 3rem;
-      }
-      
-      .hero h1 {
-        font-size: clamp(2rem, 5vw, 3rem);
-        margin-bottom: 1rem;
-        font-weight: 700;
-      }
-      
-      .hero p {
-        font-size: 1.2rem;
-        opacity: 0.9;
-        margin-bottom: 2rem;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-      }
-      
-      .hero-buttons {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
-      }
-      
-      .hero-btn {
-        padding: 12px 24px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.2s;
-        border: none;
-        cursor: pointer;
-      }
-      
-      .hero-btn.primary {
-        background: white;
-        color: var(--primary);
-      }
-      
-      .hero-btn.secondary {
-        background: rgba(255,255,255,0.2);
-        color: white;
-        border: 2px solid white;
-      }
-      
-      .hero-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      }
-      
-      /* Status Banner */
-      .status-banner {
-        background: var(--success);
-        color: white;
-        text-align: center;
-        padding: 12px;
-        font-weight: 600;
-        font-size: 0.9rem;
-      }
-      
-      /* Categories Grid */
-      .categories {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 2rem;
-        margin-bottom: 3rem;
-      }
-      
-      .category-card {
-        background: var(--surface);
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        transition: all 0.3s;
-        cursor: pointer;
-        border: 2px solid transparent;
-      }
-      
-      .category-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        border-color: var(--primary);
-      }
-      
-      .category-card h3 {
-        color: var(--text);
-        margin-bottom: 1rem;
-        font-size: 1.3rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-      
-      .category-card p {
-        color: var(--text-secondary);
-        margin-bottom: 1.5rem;
-        line-height: 1.5;
-      }
-      
-      .card-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      
-      .product-count {
-        color: var(--success);
-        font-weight: 600;
-        font-size: 0.9rem;
-      }
-      
-      .btn {
-        display: inline-block;
-        padding: 10px 20px;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        color: white;
-        text-decoration: none;
-        border-radius: 8px;
-        font-weight: 500;
-        transition: all 0.2s;
-        border: none;
-        cursor: pointer;
-      }
-      
-      .btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-      }
-      
-      /* Features Section */
-      .features {
-        background: var(--surface);
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        margin-bottom: 3rem;
-      }
-      
-      .features h2 {
-        text-align: center;
-        margin-bottom: 2rem;
-        color: var(--text);
-        font-size: 2rem;
-      }
-      
-      .feature-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 2rem;
-      }
-      
-      .feature {
-        text-align: center;
-        padding: 1rem;
-      }
-      
-      .feature-icon {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        display: block;
-      }
-      
-      .feature h4 {
-        color: var(--text);
-        margin-bottom: 0.5rem;
-        font-size: 1.1rem;
-      }
-      
-      .feature p {
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-        line-height: 1.4;
-      }
-      
-      /* Footer */
-      footer {
-        background: var(--text);
-        color: white;
-        padding: 2rem 0;
-        margin-top: 3rem;
-      }
-      
-      .footer-content {
-        text-align: center;
-      }
-      
-      .footer-links {
-        display: flex;
-        justify-content: center;
-        gap: 2rem;
-        margin-bottom: 1rem;
-        flex-wrap: wrap;
-      }
-      
-      .footer-links a {
-        color: #d1d5db;
-        text-decoration: none;
-        transition: color 0.2s;
-      }
-      
-      .footer-links a:hover {
-        color: white;
-      }
-      
-      /* Responsive Design */
-      @media (max-width: 768px) {
-        .nav-links {
-          gap: 1rem;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            padding: 0;
         }
         
-        .nav-links a {
-          padding: 6px 12px;
-          font-size: 0.9rem;
-        }
-        
-        .hero {
-          padding: 2rem 0;
-        }
-        
-        .categories {
-          grid-template-columns: 1fr;
-          gap: 1.5rem;
+        /* Custom styles for Comperra */
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         
         .category-card {
-          padding: 1.5rem;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
         }
         
-        .footer-links {
-          flex-direction: column;
-          gap: 1rem;
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+            border-color: #3b82f6;
         }
-      }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .search-bar {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s;
+        }
+        
+        .search-bar:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .comparison-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .filter-panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .product-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
     </style>
-  </head>
-  <body>
-    <div class="status-banner">
-      ✅ Firebase Hosting Active • Comperra Platform Deployed • All Features Operational
-    </div>
+</head>
+<body>
+    <div id="root"></div>
 
-    <header>
-      <nav class="container">
-        <a href="/" class="logo">Comperra</a>
-        <div class="nav-links">
-          <a href="#categories">Categories</a>
-          <a href="javascript:loadFirebaseDemo()">Firebase Demo</a>
-          <a href="javascript:loadProfessionalNetwork()">Pro Network</a>
-          <a href="javascript:loadGuides()">Guides</a>
-          <a href="javascript:signIn()" class="btn">Sign In</a>
-        </div>
-      </nav>
-    </header>
-
-    <div class="hero">
-      <div class="container">
-        <h1>Building Materials Comparison Platform</h1>
-        <p>Compare products, get expert insights, and connect with professionals across 7 material categories with comprehensive specifications and real-time pricing</p>
-        <div class="hero-buttons">
-          <button onclick="startComparison()" class="hero-btn primary">Start Comparing Materials</button>
-          <button onclick="viewDemo()" class="hero-btn secondary">View Platform Demo</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="container">
-      <section id="categories" class="categories">
-        <div class="category-card" onclick="loadCategory('tiles')">
-          <h3>🏠 Tiles</h3>
-          <p>Compare porcelain, ceramic, and natural stone tiles with detailed specifications including PEI rating, DCOF slip resistance, water absorption, and durability testing results from major manufacturers</p>
-          <div class="card-footer">
-            <span class="product-count">19+ Products Available</span>
-            <button class="btn">Browse Tiles Collection</button>
-          </div>
-        </div>
+    <script type="text/babel">
+        const { useState, useEffect, createContext, useContext } = React;
         
-        <div class="category-card" onclick="loadCategory('slabs')">
-          <h3>🏔️ Stone & Slabs</h3>
-          <p>Granite, quartz, and marble slabs for countertops with comprehensive material properties, edge options, installation specifications, and maintenance requirements</p>
-          <div class="card-footer">
-            <span class="product-count">Premium Selection</span>
-            <button class="btn">Explore Stone Slabs</button>
-          </div>
-        </div>
+        // App State Management
+        const AppContext = createContext();
         
-        <div class="category-card" onclick="loadCategory('lvt')">
-          <h3>🏠 Vinyl & LVT</h3>
-          <p>Luxury vinyl tiles and planks with waterproof construction, wear layer thickness specifications, advanced click-lock systems, and commercial-grade options</p>
-          <div class="card-footer">
-            <span class="product-count">Waterproof Options</span>
-            <button class="btn">View Vinyl Products</button>
-          </div>
-        </div>
-        
-        <div class="category-card" onclick="loadCategory('hardwood')">
-          <h3>🌳 Hardwood Flooring</h3>
-          <p>Solid and engineered hardwood flooring with detailed species information, grade specifications, finish options, construction details, and environmental ratings</p>
-          <div class="card-footer">
-            <span class="product-count">All Wood Species</span>
-            <button class="btn">Browse Hardwood</button>
-          </div>
-        </div>
-        
-        <div class="category-card" onclick="loadCategory('heat')">
-          <h3>🔥 Heating Systems</h3>
-          <p>Radiant floor heating systems with precise coverage calculations, smart thermostat compatibility, energy efficiency ratings, and installation specifications</p>
-          <div class="card-footer">
-            <span class="product-count">Smart Compatible</span>
-            <button class="btn">View Heating Systems</button>
-          </div>
-        </div>
-        
-        <div class="category-card" onclick="loadCategory('carpet')">
-          <h3>🏠 Carpet Solutions</h3>
-          <p>Residential and commercial carpet with stain resistance ratings, fiber construction details, pile height specifications, and durability testing results</p>
-          <div class="card-footer">
-            <span class="product-count">Stain Resistant</span>
-            <button class="btn">Browse Carpet Options</button>
-          </div>
-        </div>
-        
-        <div class="category-card" onclick="loadCategory('thermostats')">
-          <h3>🌡️ Smart Thermostats</h3>
-          <p>Programmable and smart thermostats with WiFi connectivity, advanced scheduling, geofencing capabilities, and comprehensive energy monitoring features</p>
-          <div class="card-footer">
-            <span class="product-count">WiFi Enabled</span>
-            <button class="btn">Smart Controls</button>
-          </div>
-        </div>
-      </section>
-
-      <section id="features" class="features">
-        <h2>Complete Platform Capabilities</h2>
-        <div class="feature-grid">
-          <div class="feature">
-            <span class="feature-icon">🔍</span>
-            <h4>Advanced Product Comparison</h4>
-            <p>Side-by-side comparison with 20+ specification fields per category, detailed technical analysis, and expert recommendations</p>
-          </div>
-          <div class="feature">
-            <span class="feature-icon">📚</span>
-            <h4>Expert Buying Guides</h4>
-            <p>6 comprehensive professional guides covering all material categories with industry insights and best practices</p>
-          </div>
-          <div class="feature">
-            <span class="feature-icon">🔐</span>
-            <h4>Firebase Authentication</h4>
-            <p>Secure user registration, login system, personalized dashboards with saved comparisons and quote tracking</p>
-          </div>
-          <div class="feature">
-            <span class="feature-icon">📋</span>
-            <h4>Lead Capture System</h4>
-            <p>Integrated Airtable system for pricing requests, sample orders, and direct supplier connections</p>
-          </div>
-          <div class="feature">
-            <span class="feature-icon">🏗️</span>
-            <h4>Professional Network</h4>
-            <p>Connect with contractors, designers, and suppliers with location-based matching and project collaboration</p>
-          </div>
-          <div class="feature">
-            <span class="feature-icon">🤖</span>
-            <h4>Web Scraping Engine</h4>
-            <p>Puppeteer-powered scraping from MSI, Daltile, Shaw, Mohawk, and other major manufacturers for real-time data</p>
-          </div>
-          <div class="feature">
-            <span class="feature-icon">🔤</span>
-            <h4>Fuzzy Search Technology</h4>
-            <p>Advanced search with typo tolerance, brand matching, and intelligent product discovery across all categories</p>
-          </div>
-          <div class="feature">
-            <span class="feature-icon">⚙️</span>
-            <h4>Smart Filtering System</h4>
-            <p>Category-specific filter panels with price ranges, technical specifications, and advanced brand selection</p>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <footer>
-      <div class="footer-content container">
-        <div class="footer-links">
-          <a href="javascript:loadPage('about')">About Comperra</a>
-          <a href="javascript:loadPage('contact')">Contact Support</a>
-          <a href="javascript:loadPage('privacy')">Privacy Policy</a>
-          <a href="javascript:loadPage('terms')">Terms of Service</a>
-          <a href="https://console.firebase.google.com/project/comperra-done" target="_blank">Firebase Console</a>
-        </div>
-        <p>&copy; 2025 Comperra. Professional Building Materials Comparison Platform.</p>
-      </div>
-    </footer>
-
-    <script>
-      // Platform navigation and demonstration functions
-      function loadCategory(category) {
-        console.log('Loading category:', category);
-        
-        const categoryInfo = {
-          tiles: {
-            name: 'Tiles',
-            products: '19+ porcelain, ceramic, and natural stone products',
-            features: 'PEI rating, DCOF slip resistance, water absorption, durability testing'
-          },
-          slabs: {
-            name: 'Stone & Slabs', 
-            products: 'Granite, quartz, and marble countertop slabs',
-            features: 'Material properties, edge options, installation specs, maintenance'
-          },
-          lvt: {
-            name: 'Vinyl & LVT',
-            products: 'Luxury vinyl tiles and planks with waterproof construction',
-            features: 'Wear layer thickness, click-lock systems, commercial-grade options'
-          },
-          hardwood: {
-            name: 'Hardwood Flooring',
-            products: 'Solid and engineered hardwood flooring options',
-            features: 'Species info, grade specs, finish options, environmental ratings'
-          },
-          heat: {
-            name: 'Heating Systems',
-            products: 'Radiant floor heating systems and heat mats',
-            features: 'Coverage calculations, smart compatibility, energy efficiency'
-          },
-          carpet: {
-            name: 'Carpet Solutions',
-            products: 'Residential and commercial carpet options',
-            features: 'Stain resistance, fiber construction, pile height, durability'
-          },
-          thermostats: {
-            name: 'Smart Thermostats',
-            products: 'Programmable and smart thermostat controls',
-            features: 'WiFi connectivity, scheduling, geofencing, energy monitoring'
-          }
+        const useAppState = () => {
+            const [currentPage, setCurrentPage] = useState('home');
+            const [selectedCategory, setSelectedCategory] = useState('');
+            const [searchQuery, setSearchQuery] = useState('');
+            const [comparedProducts, setComparedProducts] = useState([]);
+            const [filters, setFilters] = useState({});
+            const [user, setUser] = useState(null);
+            
+            const navigateTo = (page, category = '') => {
+                setCurrentPage(page);
+                if (category) setSelectedCategory(category);
+            };
+            
+            return {
+                currentPage,
+                selectedCategory,
+                searchQuery,
+                comparedProducts,
+                filters,
+                user,
+                setCurrentPage,
+                setSelectedCategory,
+                setSearchQuery,
+                setComparedProducts,
+                setFilters,
+                setUser,
+                navigateTo
+            };
         };
         
-        const info = categoryInfo[category];
-        alert('Loading ' + info.name + ' Category\n\n' +
-              'Products: ' + info.products + '\n\n' +
-              'Key Features: ' + info.features + '\n\n' +
-              'This demonstrates your complete Comperra platform with real product data, advanced filtering, and comparison capabilities.');
-      }
-
-      function startComparison() {
-        alert('🔍 Advanced Product Comparison System\n\n' +
-              '• Multi-product side-by-side comparison\n' +
-              '• 20+ specification fields per category\n' +
-              '• Export and sharing capabilities\n' +
-              '• Save comparisons to user accounts\n' +
-              '• Professional recommendations\n' +
-              '• Real-time pricing and availability\n\n' +
-              'Your complete Comperra platform includes all these features with authentic product data.');
-      }
-
-      function viewDemo() {
-        alert('🎯 Comperra Platform Demo Highlights\n\n' +
-              '• 7 complete material categories\n' +
-              '• 19+ product database with real specifications\n' +
-              '• Firebase authentication and user management\n' +
-              '• Airtable-integrated lead capture workflows\n' +
-              '• Professional network with location matching\n' +
-              '• 6 expert buying guides with industry insights\n' +
-              '• Web scraping engine for real-time data\n\n' +
-              'All systems operational and ready for users.');
-      }
-
-      function loadFirebaseDemo() {
-        alert('🔥 Firebase Integration Features\n\n' +
-              '• Secure user authentication and registration\n' +
-              '• Real-time Firestore database operations\n' +
-              '• User dashboards with saved preferences\n' +
-              '• Lead and sample request management\n' +
-              '• Professional account features\n' +
-              '• Data security and privacy compliance\n\n' +
-              'Access the Firebase demo at /firebase-demo');
-      }
-
-      function loadProfessionalNetwork() {
-        alert('🏗️ Professional Network Features\n\n' +
-              '• Contractor and supplier directory\n' +
-              '• Location-based professional matching\n' +
-              '• Lead distribution and management\n' +
-              '• Professional registration and verification\n' +
-              '• Project collaboration tools\n' +
-              '• Quote and proposal management\n\n' +
-              'Connect with building material professionals nationwide.');
-      }
-
-      function loadGuides() {
-        alert('📚 Expert Buying Guides\n\n' +
-              '• Best practices for each material category\n' +
-              '• Installation considerations and tips\n' +
-              '• Cost analysis and budget planning\n' +
-              '• Maintenance and care instructions\n' +
-              '• Industry trends and recommendations\n' +
-              '• Professional vs DIY guidance\n\n' +
-              '6 comprehensive guides covering all material types.');
-      }
-
-      function signIn() {
-        alert('🔐 User Authentication System\n\n' +
-              '• Secure Firebase-powered registration\n' +
-              '• Personal dashboard with saved comparisons\n' +
-              '• Quote and sample request tracking\n' +
-              '• Professional account features\n' +
-              '• Personalized recommendations\n' +
-              '• Project management tools\n\n' +
-              'Create your account to access all platform features.');
-      }
-
-      function loadPage(page) {
-        const pageInfo = {
-          about: 'Learn about Comperra\'s mission to simplify building material selection',
-          contact: 'Get support and contact our team at support@comperra.com',
-          privacy: 'Review our comprehensive privacy policy and data protection',
-          terms: 'Read the terms of service for platform usage'
+        // Header Component
+        const Header = () => {
+            const { navigateTo, user } = useContext(AppContext);
+            
+            return (
+                <header className="bg-white shadow-sm sticky top-0 z-50">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between items-center h-16">
+                            <div className="flex items-center">
+                                <button 
+                                    onClick={() => navigateTo('home')}
+                                    className="text-2xl font-bold text-blue-600 hover:text-blue-700"
+                                >
+                                    Comperra
+                                </button>
+                            </div>
+                            
+                            <nav className="hidden md:flex space-x-8">
+                                <button onClick={() => navigateTo('categories')} className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">
+                                    Categories
+                                </button>
+                                <button onClick={() => navigateTo('guides')} className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">
+                                    Guides
+                                </button>
+                                <button onClick={() => navigateTo('professionals')} className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">
+                                    Pros & Suppliers
+                                </button>
+                                <button onClick={() => navigateTo('about')} className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">
+                                    About
+                                </button>
+                                <button onClick={() => navigateTo('contact')} className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">
+                                    Help
+                                </button>
+                            </nav>
+                            
+                            <div className="flex items-center space-x-4">
+                                {user ? (
+                                    <div className="flex items-center space-x-3">
+                                        <button onClick={() => navigateTo('dashboard')} className="text-gray-700 hover:text-blue-600">
+                                            Dashboard
+                                        </button>
+                                        <button className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 text-sm">
+                                            Sign Out
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center space-x-3">
+                                        <button onClick={() => navigateTo('login')} className="text-gray-700 hover:text-blue-600">
+                                            Sign In
+                                        </button>
+                                        <button onClick={() => navigateTo('register')} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm btn-primary">
+                                            Join Free
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </header>
+            );
         };
         
-        alert('📄 ' + page.charAt(0).toUpperCase() + page.slice(1) + ' Page\n\n' + pageInfo[page]);
-      }
-
-      // Initialize platform status
-      console.log('🚀 Comperra Platform Loaded Successfully');
-      console.log('🔥 Firebase Configuration Active');
-      console.log('✅ All Systems Operational');
-      console.log('📊 7 Categories • 19+ Products • Full Features');
-      
-      // Display welcome message
-      setTimeout(() => {
-        console.log('💡 Welcome to Comperra - Your complete building materials comparison platform is live!');
-      }, 1000);
+        // Hero Component
+        const Hero = () => {
+            const { navigateTo } = useContext(AppContext);
+            
+            return (
+                <section className="hero-gradient text-white py-20">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                        <h1 className="text-4xl md:text-6xl font-bold mb-6">
+                            Smart Building Materials
+                            <br />
+                            <span className="text-yellow-300">Comparison Platform</span>
+                        </h1>
+                        <p className="text-xl md:text-2xl mb-8 opacity-90 max-w-3xl mx-auto">
+                            Compare products, get expert insights, and connect with professionals across 7 material categories with comprehensive specifications and real-time pricing
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button 
+                                onClick={() => navigateTo('comparison', 'tiles')}
+                                className="bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-all transform hover:-translate-y-1"
+                            >
+                                Start Comparing Materials
+                            </button>
+                            <button 
+                                onClick={() => navigateTo('categories')}
+                                className="border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white hover:text-blue-600 transition-all transform hover:-translate-y-1"
+                            >
+                                Browse All Categories
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+        
+        // Category Grid Component
+        const CategoryGrid = () => {
+            const { navigateTo } = useContext(AppContext);
+            
+            const categories = [
+                {
+                    id: 'tiles',
+                    name: 'Tiles',
+                    icon: '🏠',
+                    description: 'Compare porcelain, ceramic, and natural stone tiles with detailed specifications including PEI rating, DCOF slip resistance, water absorption, and durability testing results from major manufacturers',
+                    productCount: '19+ Products Available',
+                    buttonText: 'Browse Tiles Collection'
+                },
+                {
+                    id: 'slabs',
+                    name: 'Stone & Slabs',
+                    icon: '🏔️',
+                    description: 'Granite, quartz, and marble slabs for countertops with comprehensive material properties, edge options, installation specifications, and maintenance requirements',
+                    productCount: 'Premium Selection',
+                    buttonText: 'Explore Stone Slabs'
+                },
+                {
+                    id: 'lvt',
+                    name: 'Vinyl & LVT',
+                    icon: '🏠',
+                    description: 'Luxury vinyl tiles and planks with waterproof construction, wear layer thickness specifications, advanced click-lock systems, and commercial-grade options',
+                    productCount: 'Waterproof Options',
+                    buttonText: 'View Vinyl Products'
+                },
+                {
+                    id: 'hardwood',
+                    name: 'Hardwood Flooring',
+                    icon: '🌳',
+                    description: 'Solid and engineered hardwood flooring with detailed species information, grade specifications, finish options, construction details, and environmental ratings',
+                    productCount: 'All Wood Species',
+                    buttonText: 'Browse Hardwood'
+                },
+                {
+                    id: 'heat',
+                    name: 'Heating Systems',
+                    icon: '🔥',
+                    description: 'Radiant floor heating systems with precise coverage calculations, smart thermostat compatibility, energy efficiency ratings, and installation specifications',
+                    productCount: 'Smart Compatible',
+                    buttonText: 'View Heating Systems'
+                },
+                {
+                    id: 'carpet',
+                    name: 'Carpet Solutions',
+                    icon: '🏠',
+                    description: 'Residential and commercial carpet with stain resistance ratings, fiber construction details, pile height specifications, and durability testing results',
+                    productCount: 'Stain Resistant',
+                    buttonText: 'Browse Carpet Options'
+                },
+                {
+                    id: 'thermostats',
+                    name: 'Smart Thermostats',
+                    icon: '🌡️',
+                    description: 'Programmable and smart thermostats with WiFi connectivity, advanced scheduling, geofencing capabilities, and comprehensive energy monitoring features',
+                    productCount: 'WiFi Enabled',
+                    buttonText: 'Smart Controls'
+                }
+            ];
+            
+            return (
+                <section className="py-20 bg-gray-50">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                                7 Complete Material Categories
+                            </h2>
+                            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                                Comprehensive comparison tools with detailed specifications, expert guides, and professional connections for every building material category
+                            </p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {categories.map((category) => (
+                                <div key={category.id} className="category-card bg-white rounded-xl p-6 cursor-pointer">
+                                    <div className="flex items-center mb-4">
+                                        <span className="text-3xl mr-3">{category.icon}</span>
+                                        <h3 className="text-xl font-semibold text-gray-900">{category.name}</h3>
+                                    </div>
+                                    <p className="text-gray-600 mb-6 line-clamp-4">{category.description}</p>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-green-600 font-semibold text-sm">{category.productCount}</span>
+                                        <button 
+                                            onClick={() => navigateTo('comparison', category.id)}
+                                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors btn-primary text-sm"
+                                        >
+                                            {category.buttonText}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+        
+        // Comparison Page Component
+        const ComparisonPage = () => {
+            const { selectedCategory, searchQuery, setSearchQuery, filters, setFilters } = useContext(AppContext);
+            const [products, setProducts] = useState([]);
+            const [loading, setLoading] = useState(true);
+            
+            useEffect(() => {
+                // Simulate loading products for the selected category
+                setLoading(true);
+                setTimeout(() => {
+                    const mockProducts = generateMockProducts(selectedCategory);
+                    setProducts(mockProducts);
+                    setLoading(false);
+                }, 1000);
+            }, [selectedCategory]);
+            
+            const generateMockProducts = (category) => {
+                const productsByCategory = {
+                    tiles: [
+                        { id: 1, name: 'Daltile Ceramic Tile 12x24', brand: 'Daltile', price: '$3.99', material: 'Ceramic', finish: 'Matte', pei: '4', dcof: '0.42' },
+                        { id: 2, name: 'MSI Porcelain Collection', brand: 'MSI', price: '$5.49', material: 'Porcelain', finish: 'Polished', pei: '5', dcof: '0.38' },
+                        { id: 3, name: 'Arizona Tile Natural Stone', brand: 'Arizona Tile', price: '$7.99', material: 'Natural Stone', finish: 'Honed', pei: '3', dcof: '0.45' }
+                    ],
+                    slabs: [
+                        { id: 4, name: 'Cambria Quartz Slab', brand: 'Cambria', price: '$65/sf', material: 'Quartz', finish: 'Polished', thickness: '3cm', edge: 'Straight' },
+                        { id: 5, name: 'Granite Fabricators Premium', brand: 'Granite Fab', price: '$45/sf', material: 'Granite', finish: 'Polished', thickness: '2cm', edge: 'Beveled' }
+                    ],
+                    lvt: [
+                        { id: 6, name: 'Shaw Luxury Vinyl Plank', brand: 'Shaw', price: '$4.99', type: 'LVP', wearLayer: '12mil', waterproof: 'Yes', thickness: '6mm' },
+                        { id: 7, name: 'COREtec Plus Enhanced', brand: 'COREtec', price: '$6.49', type: 'LVP', wearLayer: '20mil', waterproof: 'Yes', thickness: '8mm' }
+                    ],
+                    hardwood: [
+                        { id: 8, name: 'Red Oak Solid Hardwood', brand: 'Bruce', price: '$6.99', species: 'Red Oak', grade: 'Select', finish: 'Satin', width: '3.25"' },
+                        { id: 9, name: 'Engineered Maple Flooring', brand: 'Mohawk', price: '$8.49', species: 'Maple', grade: 'Clear', finish: 'Gloss', width: '5"' }
+                    ],
+                    heat: [
+                        { id: 10, name: 'Warmup Electric Floor Heating', brand: 'Warmup', price: '$12.50/sf', type: 'Electric Mat', coverage: '150 SF', warranty: '25 Year' },
+                        { id: 11, name: 'Nuheat Floor Heating System', brand: 'Nuheat', price: '$15.99/sf', type: 'Cable System', coverage: '200 SF', warranty: 'Lifetime' }
+                    ],
+                    carpet: [
+                        { id: 12, name: 'Shaw Residential Carpet', brand: 'Shaw', price: '$3.99/sf', fiber: 'Nylon', stainResistant: 'Yes', pileHeight: '0.5"' },
+                        { id: 13, name: 'Mohawk SmartStrand', brand: 'Mohawk', price: '$4.49/sf', fiber: 'Triexta', stainResistant: 'Yes', pileHeight: '0.75"' }
+                    ],
+                    thermostats: [
+                        { id: 14, name: 'Nest Learning Thermostat', brand: 'Google Nest', price: '$249', type: 'Smart', wifi: 'Yes', programmable: 'Yes', display: 'Color LCD' },
+                        { id: 15, name: 'Honeywell T6 Pro', brand: 'Honeywell', price: '$179', type: 'Programmable', wifi: 'Yes', programmable: 'Yes', display: 'LCD' }
+                    ]
+                };
+                return productsByCategory[category] || [];
+            };
+            
+            const categoryNames = {
+                tiles: 'Tiles',
+                slabs: 'Stone & Slabs',
+                lvt: 'Vinyl & LVT',
+                hardwood: 'Hardwood Flooring',
+                heat: 'Heating Systems',
+                carpet: 'Carpet Solutions',
+                thermostats: 'Smart Thermostats'
+            };
+            
+            if (loading) {
+                return (
+                    <div className="min-h-screen bg-gray-50">
+                        <Header />
+                        <div className="max-w-7xl mx-auto px-4 py-20">
+                            <div className="text-center">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                <p className="text-lg text-gray-600">Loading {categoryNames[selectedCategory]} products...</p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+            
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    <Header />
+                    <div className="max-w-7xl mx-auto px-4 py-8">
+                        <div className="mb-8">
+                            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                                {categoryNames[selectedCategory]} Comparison
+                            </h1>
+                            <p className="text-lg text-gray-600">
+                                Compare products with detailed specifications and expert insights
+                            </p>
+                        </div>
+                        
+                        {/* Search Bar */}
+                        <div className="mb-8">
+                            <div className="search-bar max-w-md mx-auto">
+                                <input
+                                    type="text"
+                                    placeholder="Search products..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full px-4 py-3 rounded-lg focus:outline-none"
+                                />
+                            </div>
+                        </div>
+                        
+                        {/* Products Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {products.map((product) => (
+                                <div key={product.id} className="product-card p-6">
+                                    <div className="mb-4">
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
+                                        <p className="text-blue-600 font-medium">{product.brand}</p>
+                                        <p className="text-green-600 font-bold text-xl">{product.price}</p>
+                                    </div>
+                                    
+                                    <div className="space-y-2 mb-6">
+                                        {Object.entries(product).filter(([key]) => !['id', 'name', 'brand', 'price'].includes(key)).map(([key, value]) => (
+                                            <div key={key} className="flex justify-between">
+                                                <span className="text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span>
+                                                <span className="font-medium">{value}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    
+                                    <div className="flex space-x-2">
+                                        <button className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 btn-primary">
+                                            View Details
+                                        </button>
+                                        <button className="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300">
+                                            Compare
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        
+                        {products.length === 0 && (
+                            <div className="text-center py-20">
+                                <p className="text-lg text-gray-600">No products found for this category.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+        
+        // Other Pages Components (simplified)
+        const SimplePage = ({ title, children }) => (
+            <div className="min-h-screen bg-gray-50">
+                <Header />
+                <div className="max-w-7xl mx-auto px-4 py-20">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-8">{title}</h1>
+                    {children}
+                </div>
+            </div>
+        );
+        
+        // Main App Component
+        const App = () => {
+            const appState = useAppState();
+            
+            const renderPage = () => {
+                switch (appState.currentPage) {
+                    case 'home':
+                        return (
+                            <div className="min-h-screen bg-gray-50">
+                                <Header />
+                                <Hero />
+                                <CategoryGrid />
+                                
+                                {/* Features Section */}
+                                <section className="py-20 bg-white">
+                                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                        <div className="text-center mb-16">
+                                            <h2 className="text-3xl font-bold text-gray-900 mb-4">Complete Platform Capabilities</h2>
+                                            <p className="text-xl text-gray-600">All the tools you need for informed building material decisions</p>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                                            <div className="text-center">
+                                                <div className="text-4xl mb-4">🔍</div>
+                                                <h3 className="text-lg font-semibold mb-2">Advanced Comparison</h3>
+                                                <p className="text-gray-600">Side-by-side comparison with 20+ specification fields per category</p>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="text-4xl mb-4">📚</div>
+                                                <h3 className="text-lg font-semibold mb-2">Expert Guides</h3>
+                                                <p className="text-gray-600">6 comprehensive professional guides with industry insights</p>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="text-4xl mb-4">🔐</div>
+                                                <h3 className="text-lg font-semibold mb-2">Firebase Auth</h3>
+                                                <p className="text-gray-600">Secure user registration and personalized dashboards</p>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="text-4xl mb-4">🏗️</div>
+                                                <h3 className="text-lg font-semibold mb-2">Pro Network</h3>
+                                                <p className="text-gray-600">Connect with contractors and suppliers nationwide</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                                
+                                {/* Footer */}
+                                <footer className="bg-gray-900 text-white py-12">
+                                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                        <div className="text-center">
+                                            <div className="flex justify-center space-x-8 mb-8">
+                                                <button onClick={() => appState.navigateTo('about')} className="hover:text-blue-400">About</button>
+                                                <button onClick={() => appState.navigateTo('contact')} className="hover:text-blue-400">Contact</button>
+                                                <button onClick={() => appState.navigateTo('privacy')} className="hover:text-blue-400">Privacy</button>
+                                                <button onClick={() => appState.navigateTo('terms')} className="hover:text-blue-400">Terms</button>
+                                            </div>
+                                            <p>&copy; 2025 Comperra. Professional Building Materials Comparison Platform.</p>
+                                        </div>
+                                    </div>
+                                </footer>
+                            </div>
+                        );
+                    
+                    case 'comparison':
+                        return <ComparisonPage />;
+                    
+                    case 'categories':
+                        return (
+                            <SimplePage title="All Categories">
+                                <CategoryGrid />
+                            </SimplePage>
+                        );
+                    
+                    case 'guides':
+                        return (
+                            <SimplePage title="Expert Buying Guides">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="bg-white p-6 rounded-lg shadow">
+                                        <h3 className="text-xl font-semibold mb-4">Tile Selection Guide</h3>
+                                        <p className="text-gray-600 mb-4">Complete guide to choosing the right tiles for your project, including PEI ratings, slip resistance, and maintenance requirements.</p>
+                                        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Read Guide</button>
+                                    </div>
+                                    <div className="bg-white p-6 rounded-lg shadow">
+                                        <h3 className="text-xl font-semibold mb-4">Hardwood Flooring Guide</h3>
+                                        <p className="text-gray-600 mb-4">Everything you need to know about selecting hardwood flooring, from species selection to installation considerations.</p>
+                                        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Read Guide</button>
+                                    </div>
+                                </div>
+                            </SimplePage>
+                        );
+                    
+                    case 'professionals':
+                        return (
+                            <SimplePage title="Professional Network">
+                                <div className="text-center mb-12">
+                                    <p className="text-xl text-gray-600 mb-8">Connect with qualified contractors, installers, and suppliers in your area.</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                                        <div className="bg-white p-8 rounded-xl shadow">
+                                            <h3 className="text-xl font-semibold mb-4">For Homeowners & Professionals</h3>
+                                            <p className="text-gray-600 mb-6">Find qualified professionals for your projects</p>
+                                            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">Find Professionals</button>
+                                        </div>
+                                        <div className="bg-white p-8 rounded-xl shadow">
+                                            <h3 className="text-xl font-semibold mb-4">For Contractors & Suppliers</h3>
+                                            <p className="text-gray-600 mb-6">Join our network to receive qualified leads</p>
+                                            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">Join Network</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </SimplePage>
+                        );
+                    
+                    case 'login':
+                        return (
+                            <SimplePage title="Sign In">
+                                <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow">
+                                    <form className="space-y-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Email</label>
+                                            <input type="email" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Password</label>
+                                            <input type="password" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
+                                        </div>
+                                        <button type="submit" className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
+                                            Sign In
+                                        </button>
+                                    </form>
+                                </div>
+                            </SimplePage>
+                        );
+                    
+                    case 'register':
+                        return (
+                            <SimplePage title="Join Free">
+                                <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow">
+                                    <form className="space-y-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                                            <input type="text" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Email</label>
+                                            <input type="email" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Password</label>
+                                            <input type="password" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
+                                        </div>
+                                        <button type="submit" className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
+                                            Create Account
+                                        </button>
+                                    </form>
+                                </div>
+                            </SimplePage>
+                        );
+                    
+                    default:
+                        return (
+                            <SimplePage title={appState.currentPage.charAt(0).toUpperCase() + appState.currentPage.slice(1)}>
+                                <p className="text-gray-600">This is the {appState.currentPage} page content.</p>
+                            </SimplePage>
+                        );
+                }
+            };
+            
+            return (
+                <AppContext.Provider value={appState}>
+                    {renderPage()}
+                </AppContext.Provider>
+            );
+        };
+        
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
     </script>
-  </body>
+    
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</body>
 </html>
