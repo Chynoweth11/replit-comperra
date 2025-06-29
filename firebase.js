@@ -1,9 +1,15 @@
 // firebase.js
-import { initializeApp, getApps } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
 
-// Your Firebase configuration
+// Core Firebase SDKs
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+
+// Add-on SDKs for the services you're using
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+
+// Your Firebase config (with corrected storage bucket)
 const firebaseConfig = {
   apiKey: "AIzaSyC7zXxEiPi77xZt2bPY1jcxt9fJcYxKk94",
   authDomain: "comperra-done.firebaseapp.com",
@@ -14,10 +20,17 @@ const firebaseConfig = {
   measurementId: "G-SBT7935DTH"
 };
 
-// Initialize Firebase (only if no app exists)
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+// Initialize Firebase app
+const app = initializeApp(firebaseConfig);
 
-// Export Firebase services
-export const db = getFirestore(app);
-export const auth = getAuth(app);
-export default app;
+// Init analytics (only works in browser)
+const analytics = typeof window !== "undefined" ? getAnalytics(app) : null;
+
+// Init services
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// Export for use throughout your app
+export { auth, provider, db, storage, analytics };
