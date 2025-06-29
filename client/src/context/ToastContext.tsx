@@ -1,13 +1,31 @@
-import React, { useState, useContext, createContext } from 'react';
+import { useState, useContext, createContext, ReactNode } from 'react';
 
-const ToastContext = createContext();
+interface Toast {
+  id: number;
+  message: string;
+  type: 'success' | 'error' | 'info' | 'loading';
+}
+
+interface ToastContextType {
+  success: (message: string) => void;
+  error: (message: string) => void;
+  info: (message: string) => void;
+  loading: (message: string) => number;
+  dismiss: (id: number) => void;
+}
+
+const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 let toastId = 0;
 
-export const ToastProvider = ({ children }) => {
-    const [toasts, setToasts] = useState([]);
+interface ToastProviderProps {
+  children: ReactNode;
+}
 
-    const addToast = (message, type = 'success') => {
+export const ToastProvider = ({ children }: ToastProviderProps) => {
+    const [toasts, setToasts] = useState<Toast[]>([]);
+
+    const addToast = (message: string, type: Toast['type'] = 'success') => {
         const id = toastId++;
         setToasts(prev => [...prev, { id, message, type }]);
         setTimeout(() => {
@@ -15,20 +33,20 @@ export const ToastProvider = ({ children }) => {
         }, 5000);
     };
 
-    const removeToast = (id) => {
+    const removeToast = (id: number) => {
         setToasts(prev => prev.filter(t => t.id !== id));
     };
 
-    const toast = {
-        success: (message) => addToast(message, 'success'),
-        error: (message) => addToast(message, 'error'),
-        info: (message) => addToast(message, 'info'),
-        loading: (message) => {
+    const toast: ToastContextType = {
+        success: (message: string) => addToast(message, 'success'),
+        error: (message: string) => addToast(message, 'error'),
+        info: (message: string) => addToast(message, 'info'),
+        loading: (message: string) => {
             const id = toastId++;
             addToast(message, 'loading');
             return id;
         },
-        dismiss: (id) => removeToast(id)
+        dismiss: (id: number) => removeToast(id)
     };
     
     const ToastContainer = () => (
@@ -58,4 +76,10 @@ export const ToastProvider = ({ children }) => {
     );
 };
 
-export const useToast = () => useContext(ToastContext);
+export const useToast = () => {
+  const context = useContext(ToastContext);
+  if (context === undefined) {
+    throw new Error('useToast must be used within a ToastProvider');
+  }
+  return context;
+};
