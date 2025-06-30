@@ -45,7 +45,7 @@ export class MemStorage implements IStorage {
     this.materials = new Map();
     this.articles = new Map();
     this.brands = new Map();
-    this.currentMaterialId = 1;
+    this.currentMaterialId = 100; // Start high to avoid conflicts with scraped products
     this.currentArticleId = 1;
     this.currentBrandId = 1;
     this.seedData();
