@@ -150,12 +150,15 @@ export default function DataImport() {
 
       const data = await response.json();
       
-      toast({
-        title: "Product Added",
-        description: `Successfully imported: ${data.material.name}`,
-      });
-      
-      setSingleUrl("");
+      if (data.success) {
+        toast({
+          title: "Product Added",
+          description: `Successfully imported: ${data.product.name}`,
+        });
+        setSingleUrl("");
+      } else {
+        throw new Error(data.message || "Failed to scrape product");
+      }
     } catch (error) {
       console.error('Single scraping error:', error);
       toast({
