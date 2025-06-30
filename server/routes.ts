@@ -394,18 +394,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "No URLs provided" });
       }
 
-      console.log(`Starting bulk scraping for ${urls.length} URLs...`);
+      // Validate all URLs before processing
+      const supportedDomains = [
+        'msisurfaces.com', 'daltile.com', 'arizonatile.com', 'floridatile.com',
+        'emser.com', 'marazziusa.com', 'cambriasurfaces.com', 'shawfloors.com',
+        'mohawkflooring.com', 'coretecfloors.com', 'grainger.com'
+      ];
+      
+      const invalidUrls = [];
+      const validUrls = [];
+      
+      for (const url of urls) {
+        try {
+          const urlObj = new URL(url);
+          const urlDomain = urlObj.hostname.toLowerCase();
+          const isSupported = supportedDomains.some(domain => urlDomain.includes(domain));
+          
+          if (isSupported) {
+            validUrls.push(url);
+          } else {
+            invalidUrls.push(url);
+          }
+        } catch (urlError) {
+          invalidUrls.push(url);
+        }
+      }
+      
+      if (validUrls.length === 0) {
+        return res.status(400).json({
+          error: "No valid manufacturer URLs found. Please use URLs from MSI, Daltile, Arizona Tile, Shaw, Mohawk, Cambria, or other major building material manufacturers.",
+          invalidUrls: invalidUrls
+        });
+      }
+
+      console.log(`Starting bulk scraping for ${validUrls.length} valid URLs (${invalidUrls.length} invalid URLs skipped)...`);
       
       // Use enhanced simulation scraper with real URL scraping
       const { simulationScraper } = await import('./simulation-scraper');
       const scrapedProducts = [];
       let savedCount = 0;
 
-      // Process URLs sequentially to avoid overwhelming servers
-      for (let i = 0; i < urls.length; i++) {
-        const url = urls[i];
+      // Process valid URLs sequentially to avoid overwhelming servers
+      for (let i = 0; i < validUrls.length; i++) {
+        const url = validUrls[i];
         try {
-          console.log(`Processing URL ${i + 1}/${urls.length}: ${url}`);
+          console.log(`Processing URL ${i + 1}/${validUrls.length}: ${url}`);
           const scrapedProduct = await simulationScraper.scrapeAndSaveFromURL(url);
           
           if (scrapedProduct) {
@@ -430,6 +463,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         scraped: scrapedProducts.length,
         saved: savedCount,
         totalUrls: urls.length,
+        validUrls: validUrls.length,
+        invalidUrls: invalidUrls.length,
+        skippedUrls: invalidUrls,
         products: scrapedProducts.map(p => ({
           name: p.name,
           brand: p.brand,

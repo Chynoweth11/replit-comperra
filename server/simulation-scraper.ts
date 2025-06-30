@@ -1504,9 +1504,9 @@ export class SimulationScraper {
 
   async saveToFirebase(scrapedProduct: SimulatedScrapedProduct): Promise<boolean> {
     try {
-      // Use client-side Firebase to save to comperra-products collection
+      // Use client-side Firebase to save to products collection with deduplication
       const { initializeApp, getApps } = await import('firebase/app');
-      const { getFirestore, collection, addDoc } = await import('firebase/firestore');
+      const { getFirestore, doc, getDoc, setDoc } = await import('firebase/firestore');
       
       const firebaseConfig = {
         apiKey: "AIzaSyC7zXxEiPi77xZt2bPY1jcxt9fJcYxKk94",
@@ -1523,20 +1523,34 @@ export class SimulationScraper {
       }
       
       const db = getFirestore();
+      
+      // Create unique product ID from URL for deduplication
+      const productId = encodeURIComponent(scrapedProduct.sourceUrl);
+      const productRef = doc(db, "products", productId);
+      
+      // Check if product already exists
+      const existing = await getDoc(productRef);
+      if (existing.exists()) {
+        console.log("✅ Product already exists in Firebase. Skipping duplicate save:", scrapedProduct.name);
+        return true;
+      }
+      
+      // Convert to material format
       const material = this.convertToMaterial(scrapedProduct);
       const { sourceUrl, ...insertMaterial } = material;
       
       const docData = {
         ...insertMaterial,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        sourceUrl: scrapedProduct.sourceUrl,
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
       
-      await addDoc(collection(db, 'comperra-products'), docData);
-      console.log(`✅ Saved product to comperra-products collection: ${scrapedProduct.name}`);
+      await setDoc(productRef, docData);
+      console.log(`✅ Product saved to Firebase products collection: ${scrapedProduct.name}`);
       return true;
     } catch (error) {
-      console.log(`Firebase save skipped for ${scrapedProduct.name} (using memory storage)`);
+      console.log(`Firebase save skipped for ${scrapedProduct.name} (using memory storage):`, error);
       return false;
     }
   }
