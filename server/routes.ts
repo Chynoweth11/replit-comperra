@@ -327,8 +327,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`❌ Failed to scrape: ${url}`);
           }
           
-          // Add delay between requests to be respectful
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Add minimal delay between requests for faster processing
+          await new Promise(resolve => setTimeout(resolve, 200));
         } catch (error) {
           console.error(`Error processing URL ${url}:`, error);
         }
