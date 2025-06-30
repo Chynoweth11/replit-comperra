@@ -1,5 +1,5 @@
 // Core Firebase SDKs
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 
 // Add-on SDKs for the services you're using
@@ -7,22 +7,29 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-// Your Firebase config (with corrected storage bucket)
+// Your Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyC7zXxEiPi77xZt2bPY1jcxt9fJcYxKk94",
   authDomain: "comperra-done.firebaseapp.com",
   projectId: "comperra-done",
-  storageBucket: "comperra-done.appspot.com",
+  storageBucket: "comperra-done.firebasestorage.app",
   messagingSenderId: "636329572028",
   appId: "1:636329572028:web:0c8fd582b0372411c142b9",
   measurementId: "G-SBT7935DTH"
 };
 
-// Initialize Firebase app
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase app (singleton pattern)
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// Init analytics (only works in browser)
-const analytics = typeof window !== "undefined" ? getAnalytics(app) : null;
+// Init analytics (only works in browser, with error handling)
+let analytics = null;
+if (typeof window !== "undefined") {
+  try {
+    analytics = getAnalytics(app);
+  } catch (error: any) {
+    console.log('Analytics initialization skipped:', error.code);
+  }
+}
 
 // Init services
 const auth = getAuth(app);
