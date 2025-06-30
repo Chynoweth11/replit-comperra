@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,7 @@ interface ComparisonTableProps {
 }
 
 export default function ComparisonTable({ category, filters, overrideMaterials }: ComparisonTableProps) {
+  const queryClient = useQueryClient();
   const [sortBy, setSortBy] = useState("price-low");
   const [selectedMaterials, setSelectedMaterials] = useState<number[]>([]);
   const [leadModalOpen, setLeadModalOpen] = useState(false);
@@ -90,6 +91,11 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
       if (response.ok) {
         const result = await response.json();
         setPasteUrl("");
+        
+        // Invalidate all materials queries to force refresh
+        await queryClient.invalidateQueries({ 
+          queryKey: ["/api/materials"] 
+        });
         
         // Redirect to the correct category page based on scraped product category
         if (result.product && result.product.category) {

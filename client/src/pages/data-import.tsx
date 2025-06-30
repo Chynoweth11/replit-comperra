@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
@@ -24,6 +25,7 @@ interface PreviewUrl {
 }
 
 export default function DataImport() {
+  const queryClient = useQueryClient();
   const [isScrapingBulk, setIsScrapingBulk] = useState(false);
   const [isScrapingSingle, setIsScrapingSingle] = useState(false);
   const [singleUrl, setSingleUrl] = useState("");
@@ -157,10 +159,10 @@ export default function DataImport() {
         });
         setSingleUrl("");
         
-        // Force refresh of the materials data
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        // Invalidate React Query cache to refresh materials data
+        await queryClient.invalidateQueries({ 
+          queryKey: ["/api/materials"] 
+        });
       } else {
         throw new Error(data.message || "Failed to scrape product");
       }
