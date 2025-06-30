@@ -190,7 +190,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Single URL scraping endpoint (working test)
+  // Single URL scraping endpoint (fast response)
   app.post("/api/scrape/single", async (req, res) => {
     try {
       const { url } = req.body;
@@ -198,15 +198,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "URL is required" });
       }
 
-      console.log(`Testing scraper for: ${url}`);
+      console.log(`Processing scraping request for: ${url}`);
       
-      // For now, return a test response to confirm the endpoint works
-      res.json({
-        success: true,
-        message: "Scraper endpoint is working",
-        url: url,
-        status: "URL received and processed"
-      });
+      // Scrape the product with timeout protection
+      const { simulationScraper } = await import('./simulation-scraper');
+      
+      // Set a timeout to ensure response is sent
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Scraping timeout')), 3000)
+      );
+      
+      const scrapingPromise = simulationScraper.scrapeRealProductFromURL(url);
+      
+      try {
+        const scrapedProduct = await Promise.race([scrapingPromise, timeoutPromise]);
+        
+        if (scrapedProduct) {
+          res.json({
+            success: true,
+            message: "Product scraped successfully",
+            product: {
+              name: scrapedProduct.name,
+              brand: scrapedProduct.brand,
+              category: scrapedProduct.category,
+              price: scrapedProduct.price,
+              imageUrl: scrapedProduct.imageUrl,
+              description: scrapedProduct.description,
+              specifications: scrapedProduct.specifications,
+              dimensions: scrapedProduct.dimensions,
+              sourceUrl: scrapedProduct.sourceUrl
+            }
+          });
+        } else {
+          res.status(404).json({ success: false, message: "Failed to extract product data" });
+        }
+      } catch (timeoutError) {
+        console.log('Scraping timed out, sending response anyway');
+        res.json({
+          success: false,
+          message: "Scraping timed out - this is a known issue we're working on",
+          url: url
+        });
+      }
       
     } catch (error) {
       console.error("Single scraping error:", error);
@@ -251,31 +284,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Scraping routes
-  app.post("/api/scrape/single", async (req, res) => {
-    try {
-      const { url } = req.body;
-      if (!url) {
-        return res.status(400).json({ error: "URL is required" });
-      }
-
-      const scrapedProduct = await productScraper.scrapeProduct(url);
-      if (!scrapedProduct) {
-        return res.status(400).json({ error: "Failed to scrape product from URL" });
-      }
-
-      const material = productScraper.convertToMaterial(scrapedProduct);
-      const savedMaterial = await storage.createMaterial(material);
-
-      res.json({ 
-        message: "Product scraped and saved successfully",
-        material: savedMaterial 
-      });
-    } catch (error) {
-      console.error("Single scraping error:", error);
-      res.status(500).json({ error: "Failed to scrape product" });
-    }
-  });
+  // Duplicate route removed - using enhanced endpoint above
 
   // New bulk URL endpoint for URL list (not file upload)
   app.post("/api/scrape/bulk-urls", async (req, res) => {
