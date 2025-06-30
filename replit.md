@@ -22,6 +22,7 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
+- ✅ **June 30, 2025**: COMPLETED - All 7 categories confirmed working error-free with newest-first product ordering - scraped products now appear at top of category listings with proper createdAt timestamp sorting
 - ✅ **June 30, 2025**: COMPLETED - Fixed URL pasting functionality in scraping interface - frontend now properly connects to backend API with immediate memory storage saves and background Firebase persistence attempts
 - ✅ **June 30, 2025**: COMPLETED - Enhanced bulk URL scraping with elegant multi-URL input interface replacing CSV upload functionality - allows pasting multiple URLs with intelligent category detection and preview table showing detected categories before scraping
 - ✅ **June 30, 2025**: COMPLETED - Implemented comprehensive category detection system using URL analysis for perfect classification across all 7 categories (tiles, slabs, lvt, hardwood, heat, carpet, thermostats) with compound term recognition
