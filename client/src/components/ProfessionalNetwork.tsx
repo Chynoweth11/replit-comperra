@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, UserPlus, FilePlus, LogIn, LogOut, Search, Gem, Bell, BarChart, XCircle, CreditCard, HelpCircle, Lock, Award, Briefcase, UserCheck, ArrowLeft, Star, Mail } from 'lucide-react';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import { useToast } from '@/context/ToastContext';
 import { useAuth } from '@/context/AuthNetworkContext';
 import firebaseService from '@/services/firebase-network';
@@ -89,17 +91,26 @@ function Login({ setView }) {
 
     const handleForgotPassword = async (e) => {
         e.preventDefault();
-        if (!formData.email) {
-            toast.error('Please enter your email address first.');
+        
+        if (!formData.email || !formData.email.includes('@')) {
+            toast.error('Please enter a valid email address.');
             return;
         }
+        
         setLoading(true);
         try {
-            // In a real app, this would send a password reset email
+            await sendPasswordResetEmail(auth, formData.email);
             toast.success('Password reset instructions sent to your email!');
             setShowForgotPassword(false);
         } catch (error) {
-            toast.error('Failed to send reset email. Please try again.');
+            console.error('Password reset error:', error);
+            if (error.code === 'auth/user-not-found') {
+                toast.error('No account found with this email address.');
+            } else if (error.code === 'auth/invalid-email') {
+                toast.error('Please enter a valid email address.');
+            } else {
+                toast.error('Failed to send reset email. Please try again.');
+            }
         } finally {
             setLoading(false);
         }
