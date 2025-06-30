@@ -679,6 +679,26 @@ export class SimulationScraper {
     }
   }
 
+  private detectMaterialType(url: string, name: string): string {
+    // CRITICAL MATERIAL TYPE DETECTION - 100% ACCURACY REQUIRED
+    if (url.includes('quartz') || name.toLowerCase().includes('quartz')) {
+      return 'Engineered Quartz';
+    } else if (url.includes('granite') || name.toLowerCase().includes('granite')) {
+      return 'Natural Granite';
+    } else if (url.includes('marble') || name.toLowerCase().includes('marble') || name.toLowerCase().includes('carrara') || name.toLowerCase().includes('calacatta')) {
+      return 'Natural Marble';
+    } else if (url.includes('travertine') || name.toLowerCase().includes('travertine')) {
+      return 'Natural Travertine';
+    } else if (url.includes('limestone') || name.toLowerCase().includes('limestone')) {
+      return 'Natural Limestone';
+    } else if (url.includes('slate') || name.toLowerCase().includes('slate')) {
+      return 'Natural Slate';
+    } else {
+      // Default to quartz for slabs category
+      return 'Engineered Quartz';
+    }
+  }
+
   private enhanceSpecifications(specs: any, category: string, brand: string, name: string, url: string, imageUrl: string): any {
     // Ensure we have a proper image URL
     if (!imageUrl || imageUrl.includes('placehold.co')) {
@@ -964,18 +984,52 @@ export class SimulationScraper {
           'Country of Origin': 'USA'
         });
       } else if (brand === 'MSI') {
+        // CRITICAL FIX: Intelligent material type detection for MSI based on URL and product name
+        let materialType = 'Engineered Quartz'; // Default for MSI slabs
+        let heatResistance = 'Up to 400°F';
+        let scratchResistance = 'Excellent';
+        let waterAbsorption = 'Non-Porous';
+        let origin = 'USA';
+        
+        // Detect material type from URL and product name
+        if (url.includes('quartz') || name.toLowerCase().includes('quartz')) {
+          materialType = 'Engineered Quartz';
+          heatResistance = 'Up to 400°F';
+          scratchResistance = 'Excellent';
+          waterAbsorption = 'Non-Porous';
+          origin = 'USA';
+        } else if (url.includes('granite') || name.toLowerCase().includes('granite')) {
+          materialType = 'Natural Granite';
+          heatResistance = 'Excellent';
+          scratchResistance = 'Excellent';
+          waterAbsorption = '< 0.5%';
+          origin = 'Brazil';
+        } else if (url.includes('marble') || name.toLowerCase().includes('marble') || name.toLowerCase().includes('carrara') || name.toLowerCase().includes('calacatta')) {
+          materialType = 'Natural Marble';
+          heatResistance = 'Moderate';
+          scratchResistance = 'Moderate';
+          waterAbsorption = '< 0.5%';
+          origin = 'Italy';
+        } else if (url.includes('travertine') || name.toLowerCase().includes('travertine')) {
+          materialType = 'Natural Travertine';
+          heatResistance = 'Moderate';
+          scratchResistance = 'Moderate';
+          waterAbsorption = '2-5%';
+          origin = 'Turkey';
+        }
+        
         Object.assign(enhancedSpecs, {
-          'Material Type': 'Natural Marble',
-          'Color / Pattern': 'Carrara White with Gray Veining',
+          'Material Type': materialType,
+          'Color / Pattern': name.includes('White') ? 'White with Veining' : 'Natural Pattern',
           'Finish': 'Polished',
           'Thickness': '2cm, 3cm',
           'Slab Dimensions': '118" x 55"',
           'Edge Type': 'Straight, Beveled, Bullnose',
           'Applications': 'Countertops, Vanities',
-          'Water Absorption': '< 0.5%',
-          'Scratch / Etch Resistance': 'Moderate',
-          'Heat Resistance': 'Moderate',
-          'Country of Origin': 'Italy'
+          'Water Absorption': waterAbsorption,
+          'Scratch / Etch Resistance': scratchResistance,
+          'Heat Resistance': heatResistance,
+          'Country of Origin': origin
         });
       } else if (brand === 'Arizona Tile') {
         Object.assign(enhancedSpecs, {
