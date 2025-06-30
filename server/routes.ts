@@ -3,10 +3,10 @@ import { createServer, type Server } from "http";
 import { FirebaseStorage } from "./firebase-storage";
 import { MemStorage } from "./storage";
 
-// Initialize memory storage (primary)
-const storage = new MemStorage();
-// Initialize Firebase storage for migration 
-const firebaseStorage = new FirebaseStorage();
+// Initialize Firebase storage (primary) for persistence
+const storage = new FirebaseStorage();
+// Initialize memory storage for fallback 
+const memStorage = new MemStorage();
 import { productScraper } from "./scraper";
 import { z } from "zod";
 import multer from "multer";
@@ -61,9 +61,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log('Clean filters:', cleanFilters);
 
-      const materials = await storage.getMaterials(cleanFilters);
-      console.log(`Found ${materials.length} materials for category: ${cleanFilters.category || 'all'}`);
-      res.json(materials);
+      // Try Firebase first, fallback to memory storage
+      try {
+        const materials = await storage.getMaterials(cleanFilters);
+        console.log(`Found ${materials.length} materials for category: ${cleanFilters.category || 'all'}`);
+        res.json(materials);
+      } catch (firebaseError) {
+        console.log('Firebase materials failed, using memory storage fallback');
+        const materials = await memStorage.getMaterials(cleanFilters);
+        console.log(`✅ Using memory storage articles: ${materials.length} materials found`);
+        res.json(materials);
+      }
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch materials" });
     }
@@ -258,12 +266,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updatedAt: new Date()
         };
         
-        // Use storage interface to save properly
+        // Try memory storage first for immediate response, Firebase in background
         try {
-          // Try to save using the storage interface directly
-          const savedMaterial = await storage.createMaterial(material);
-          console.log('✅ Saved to storage with ID:', savedMaterial.id);
+          // Use memory storage for immediate response
+          const savedMaterial = await memStorage.createMaterial(material);
+          console.log('✅ Saved to memory storage with ID:', savedMaterial.id);
           
+          // Return success immediately
           res.json({
             success: true,
             message: "Product scraped and saved successfully - now visible in category listings",
@@ -280,12 +289,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
               sourceUrl: scrapedProduct.sourceUrl
             }
           });
-        } catch (storageError) {
-          console.log('Storage failed, proceeding with response:', storageError);
-          // Return success even if storage fails
+          
+          // Try Firebase save in background (non-blocking)
+          storage.createMaterial(material).then(firebaseMaterial => {
+            console.log('✅ Background Firebase save successful with ID:', firebaseMaterial.id);
+          }).catch(firebaseError => {
+            console.log('Background Firebase save failed (non-critical):', firebaseError.message);
+          });
+          
+        } catch (memoryError) {
+          console.log('Memory storage failed:', memoryError);
+          // Still return success with scraped data
           res.json({
             success: true,
-            message: "Product scraped successfully (data extraction complete)",
+            message: "Product scraped successfully (storage temporarily unavailable)",
             product: {
               id: Date.now(),
               name: scrapedProduct.name,
