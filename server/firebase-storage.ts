@@ -24,6 +24,7 @@ export class FirebaseStorage implements IStorage {
   private materialsCollection = 'comperra-products';
   private articlesCollection = 'comperra-articles';
   private brandsCollection = 'comperra-brands';
+  private isInitialized = false;
 
   async getMaterials(filters?: {
     category?: string;

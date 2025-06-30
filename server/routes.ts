@@ -1,9 +1,12 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { FirebaseStorage } from "./firebase-storage";
+import { MemStorage } from "./storage";
 
 // Initialize Firebase storage
 const storage = new FirebaseStorage();
+// Initialize memory storage for migration
+const memStorage = new MemStorage();
 import { productScraper } from "./scraper";
 import { z } from "zod";
 import multer from "multer";
@@ -417,6 +420,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Failed to generate tile products data:', error);
       res.status(500).json({});
+    }
+  });
+
+  // Migration endpoint to load articles from memory storage to Firebase
+  app.post("/api/migrate-articles", async (req, res) => {
+    try {
+      console.log('Starting article migration from memory storage to Firebase...');
+      
+      // Get articles from memory storage
+      const articles = await memStorage.getArticles();
+      console.log(`Found ${articles.length} articles to migrate`);
+      
+      let migratedCount = 0;
+      for (const article of articles) {
+        try {
+          const { id, createdAt, updatedAt, ...insertArticle } = article;
+          await storage.createArticle(insertArticle);
+          migratedCount++;
+        } catch (error) {
+          console.error(`Error migrating article ${article.title}:`, error);
+        }
+      }
+      
+      console.log(`Migration completed! Migrated ${migratedCount} articles`);
+      res.json({ 
+        success: true, 
+        message: `Successfully migrated ${migratedCount} articles`,
+        totalArticles: articles.length,
+        migratedCount 
+      });
+    } catch (error) {
+      console.error('Article migration error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to migrate articles",
+        details: error.message 
+      });
     }
   });
 
