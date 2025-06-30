@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, UserPlus, FilePlus, LogIn, LogOut, Search, Gem, Bell, BarChart, XCircle, CreditCard, HelpCircle, Lock, Award, Briefcase, UserCheck, ArrowLeft, Star } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import { useAuth } from '@/context/AuthNetworkContext';
-import firebaseService from '@/services/firebase-network';
+import firebaseService from '@/services/firebase-network-fixed';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 
