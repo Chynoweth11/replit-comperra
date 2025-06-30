@@ -1,6 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { FirebaseStorage } from "./firebase-storage";
+
+// Initialize Firebase storage
+const storage = new FirebaseStorage();
 import { productScraper } from "./scraper";
 import { z } from "zod";
 import multer from "multer";

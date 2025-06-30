@@ -34,16 +34,17 @@ export class FirebaseStorage implements IStorage {
   }): Promise<Material[]> {
     try {
       const materialsRef = collection(db, this.materialsCollection);
-      let q = query(materialsRef, orderBy('name'));
+      // Order by createdAt descending (newest first), then by name
+      let q = query(materialsRef, orderBy('createdAt', 'desc'), orderBy('name'));
 
       // Apply category filter
       if (filters?.category && filters.category !== 'all') {
-        q = query(materialsRef, where('category', '==', filters.category), orderBy('name'));
+        q = query(materialsRef, where('category', '==', filters.category), orderBy('createdAt', 'desc'), orderBy('name'));
       }
 
       // Apply brand filter
       if (filters?.brand && filters.brand !== 'all') {
-        q = query(materialsRef, where('brand', '==', filters.brand), orderBy('name'));
+        q = query(materialsRef, where('brand', '==', filters.brand), orderBy('createdAt', 'desc'), orderBy('name'));
       }
 
       const snapshot = await getDocs(q);

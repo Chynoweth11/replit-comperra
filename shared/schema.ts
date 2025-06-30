@@ -13,6 +13,8 @@ export const materials = pgTable("materials", {
   specifications: json("specifications").notNull(), // JSON object with category-specific specs
   dimensions: text("dimensions"),
   inStock: boolean("in_stock").default(true),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
 });
 
 export const articles = pgTable("articles", {
@@ -100,6 +102,8 @@ export const thermostatSpecsSchema = z.object({
 
 export const insertMaterialSchema = createInsertSchema(materials).omit({
   id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertArticleSchema = createInsertSchema(articles).omit({
