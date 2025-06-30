@@ -119,9 +119,10 @@ export default function DataImport() {
       });
     } catch (error) {
       console.error('Text scraping error:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to import products from URL list.";
       toast({
         title: "Import Failed",
-        description: "Failed to import products from URL list.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -168,9 +169,10 @@ export default function DataImport() {
       }
     } catch (error) {
       console.error('Single scraping error:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to import product from URL.";
       toast({
         title: "Import Failed",
-        description: "Failed to import product from URL.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
