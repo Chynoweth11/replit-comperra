@@ -13,7 +13,10 @@ export const AuthProvider = ({ children }) => {
         else { const profile = await firebaseService.getMemberProfile(authUser.uid); setUser(profile); }
     };
     
-    const register = (data) => firebaseService.registerWithEmail(data);
+    const register = async (data) => {
+        const result = await firebaseService.registerWithEmail(data);
+        return result;
+    };
     const logout = () => setUser(null);
 
     useEffect(() => { setTimeout(() => setLoading(false), 500); }, []);
