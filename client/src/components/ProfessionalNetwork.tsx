@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, UserPlus, FilePlus, LogIn, LogOut, Search, Gem, Bell, BarChart, XCircle, CreditCard, HelpCircle, Lock, Award, Briefcase, UserCheck, ArrowLeft, Star, Mail } from 'lucide-react';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { useToast } from '@/context/ToastContext';
+import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthNetworkContext';
 import firebaseService from '@/services/firebase-network';
 import Header from '@/components/header';
@@ -92,14 +92,20 @@ function Login({ setView }) {
     const handleForgotPassword = async (e) => {
         e.preventDefault();
         
+        console.log('Forgot password clicked, email:', formData.email);
+        
         if (!formData.email || !formData.email.includes('@')) {
             toast.error('Please enter a valid email address.');
             return;
         }
         
         setLoading(true);
+        toast.loading('Sending reset email...');
+        
         try {
+            console.log('Attempting to send password reset email to:', formData.email);
             await sendPasswordResetEmail(auth, formData.email);
+            console.log('Password reset email sent successfully');
             toast.success('Password reset instructions sent to your email!');
             setShowForgotPassword(false);
         } catch (error) {
@@ -108,8 +114,10 @@ function Login({ setView }) {
                 toast.error('No account found with this email address.');
             } else if (error.code === 'auth/invalid-email') {
                 toast.error('Please enter a valid email address.');
+            } else if (error.code === 'auth/too-many-requests') {
+                toast.error('Too many requests. Please try again later.');
             } else {
-                toast.error('Failed to send reset email. Please try again.');
+                toast.error(`Failed to send reset email: ${error.message || 'Please try again.'}`);
             }
         } finally {
             setLoading(false);

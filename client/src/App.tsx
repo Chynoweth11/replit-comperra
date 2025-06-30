@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import CategoryNav from "@/components/category-nav";
+import { ForgotPasswordTest } from "@/components/ForgotPasswordTest";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Comparison from "@/pages/comparison";
@@ -89,6 +90,7 @@ function Router() {
             </ProtectedRoute>
           )}
         </Route>
+        <Route path="/test-forgot-password" component={ForgotPasswordTest} />
         <Route path="*" component={NotFound} />
       </Switch>
     </>
