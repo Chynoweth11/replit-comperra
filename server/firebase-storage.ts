@@ -130,10 +130,21 @@ export class FirebaseStorage implements IStorage {
       const articlesRef = collection(db, this.articlesCollection);
       const q = query(articlesRef, orderBy('title'));
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({
+      const articles = snapshot.docs.map(doc => ({
         id: parseInt(doc.id),
         ...doc.data()
       })) as Article[];
+      
+      // Auto-seed articles if none exist
+      if (articles.length === 0 && !this.isInitialized) {
+        console.log('No articles found in Firebase, seeding from memory storage...');
+        await this.seedArticlesFromMemory();
+        this.isInitialized = true;
+        // Return the seeded articles by calling again
+        return this.getArticles();
+      }
+      
+      return articles;
     } catch (error) {
       console.error('Error fetching articles from Firebase:', error);
       return [];
@@ -226,6 +237,32 @@ export class FirebaseStorage implements IStorage {
     } catch (error) {
       console.error('Error creating brand in Firebase:', error);
       throw error;
+    }
+  }
+
+  // Helper method to seed articles from memory storage
+  async seedArticlesFromMemory(): Promise<void> {
+    try {
+      // Import memory storage to get articles
+      const { MemStorage } = await import('./storage');
+      const memStorage = new MemStorage();
+      
+      const articles = await memStorage.getArticles();
+      console.log(`Seeding ${articles.length} articles to Firebase...`);
+      
+      for (const article of articles) {
+        try {
+          const { id, createdAt, updatedAt, ...insertArticle } = article;
+          await this.createArticle(insertArticle);
+          console.log(`✅ Seeded article: ${article.title}`);
+        } catch (error) {
+          console.error(`Error seeding article ${article.title}:`, error);
+        }
+      }
+      
+      console.log('Articles seeding completed!');
+    } catch (error) {
+      console.error('Error seeding articles from memory:', error);
     }
   }
 
