@@ -289,15 +289,13 @@ export default function DataImport() {
 
     try {
       const urls = previewUrls.map(item => item.url);
-      const csvContent = urls.join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv' });
       
-      const formData = new FormData();
-      formData.append('urlFile', blob, 'urls.csv');
-
-      const response = await fetch('/api/scrape/bulk', {
+      const response = await fetch('/api/scrape/bulk-urls', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ urls }),
       });
 
       if (!response.ok) {

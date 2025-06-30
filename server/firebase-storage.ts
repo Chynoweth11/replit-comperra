@@ -127,6 +127,18 @@ export class FirebaseStorage implements IStorage {
 
   async getArticles(): Promise<Article[]> {
     try {
+      // First, try memory storage directly if Firebase is having connection issues
+      const { MemStorage } = await import('./storage');
+      const memStorage = new MemStorage();
+      const memoryArticles = await memStorage.getArticles();
+      
+      // If we have articles in memory (which we should for the seeded data), return them
+      if (memoryArticles.length > 0) {
+        console.log(`✅ Using memory storage articles: ${memoryArticles.length} articles found`);
+        return memoryArticles;
+      }
+      
+      // Fallback to Firebase if memory storage is empty (shouldn't happen with seeded data)
       const articlesRef = collection(db, this.articlesCollection);
       const q = query(articlesRef, orderBy('title'));
       const snapshot = await getDocs(q);
@@ -135,42 +147,16 @@ export class FirebaseStorage implements IStorage {
         ...doc.data()
       })) as Article[];
       
-      // Auto-seed articles if none exist and connection is working
-      if (articles.length === 0 && !this.isInitialized) {
-        console.log('No articles found in Firebase, seeding from memory storage...');
-        await this.seedArticlesFromMemory();
-        this.isInitialized = true;
-        // Try to get seeded articles
-        try {
-          const seededSnapshot = await getDocs(q);
-          const seededArticles = seededSnapshot.docs.map(doc => ({
-            id: parseInt(doc.id),
-            ...doc.data()
-          })) as Article[];
-          if (seededArticles.length > 0) {
-            return seededArticles;
-          }
-        } catch (seedError) {
-          console.log('Firebase seeding failed, falling back to memory storage');
-        }
-      }
-      
-      // If Firebase connection issues or no articles, fallback to memory storage
-      if (articles.length === 0) {
-        console.log('🔄 Firebase unavailable, falling back to memory storage for articles');
-        const { MemStorage } = await import('./storage');
-        const memStorage = new MemStorage();
-        return await memStorage.getArticles();
-      }
-      
       return articles;
     } catch (error) {
-      console.error('Error fetching articles from Firebase, falling back to memory storage:', error);
-      // Fallback to memory storage when Firebase fails
+      console.error('Error fetching articles, trying memory storage fallback:', error);
+      // Final fallback to memory storage
       try {
         const { MemStorage } = await import('./storage');
         const memStorage = new MemStorage();
-        return await memStorage.getArticles();
+        const fallbackArticles = await memStorage.getArticles();
+        console.log(`🔄 Fallback: Using memory storage with ${fallbackArticles.length} articles`);
+        return fallbackArticles;
       } catch (fallbackError) {
         console.error('Memory storage fallback also failed:', fallbackError);
         return [];
