@@ -210,35 +210,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const scrapingPromise = simulationScraper.scrapeRealProductFromURL(url);
       
-      try {
-        const scrapedProduct = await Promise.race([scrapingPromise, timeoutPromise]);
+      const scrapedProduct = await scrapingPromise;
+      
+      if (scrapedProduct && scrapedProduct.name) {
+        console.log('Converting scraped product to material format...');
+        console.log('Scraped product data:', { name: scrapedProduct.name, category: scrapedProduct.category });
         
-        if (scrapedProduct) {
-          res.json({
-            success: true,
-            message: "Product scraped successfully",
-            product: {
-              name: scrapedProduct.name,
-              brand: scrapedProduct.brand,
-              category: scrapedProduct.category,
-              price: scrapedProduct.price,
-              imageUrl: scrapedProduct.imageUrl,
-              description: scrapedProduct.description,
-              specifications: scrapedProduct.specifications,
-              dimensions: scrapedProduct.dimensions,
-              sourceUrl: scrapedProduct.sourceUrl
-            }
-          });
-        } else {
-          res.status(404).json({ success: false, message: "Failed to extract product data" });
-        }
-      } catch (timeoutError) {
-        console.log('Scraping timed out, sending response anyway');
+        const material = simulationScraper.convertToMaterial(scrapedProduct);
+        console.log('Material to save:', { name: material.name, category: material.category });
+        
+        const savedMaterial = await storage.createMaterial(material);
+        console.log('Saved material with ID:', savedMaterial.id);
+        
         res.json({
-          success: false,
-          message: "Scraping timed out - this is a known issue we're working on",
-          url: url
+          success: true,
+          message: "Product scraped and saved successfully",
+          product: {
+            id: savedMaterial.id,
+            name: scrapedProduct.name,
+            brand: scrapedProduct.brand,
+            category: scrapedProduct.category,
+            price: scrapedProduct.price,
+            imageUrl: scrapedProduct.imageUrl,
+            description: scrapedProduct.description,
+            specifications: scrapedProduct.specifications,
+            dimensions: scrapedProduct.dimensions,
+            sourceUrl: scrapedProduct.sourceUrl
+          },
+          material: savedMaterial
         });
+      } else {
+        res.status(404).json({ success: false, message: "Failed to extract product data" });
       }
       
     } catch (error) {
