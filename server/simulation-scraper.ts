@@ -1542,6 +1542,11 @@ export class SimulationScraper {
   }
 
   async saveToAirtable(scrapedProduct: SimulatedScrapedProduct): Promise<boolean> {
+    // Disabled for faster processing - products are saved to main storage
+    console.log(`Airtable save skipped for faster processing: ${scrapedProduct.name}`);
+    return true;
+    
+    /* Original Airtable code disabled for performance
     try {
       const airtableApiKey = process.env.AIRTABLE_API_KEY;
       const baseId = process.env.AIRTABLE_BASE_ID || 'appQJoO5GkIxDMiHS';
@@ -1613,11 +1618,11 @@ export class SimulationScraper {
       scrapedProducts = await this.simulateScrapingFromHTML();
     }
     
-    // Save each product to Airtable
-    for (const product of scrapedProducts) {
-      await this.saveToAirtable(product);
-      await this.sleep(this.delay); // Rate limiting
-    }
+    // Skip Airtable saving for faster bulk processing - products are saved to main storage
+    // for (const product of scrapedProducts) {
+    //   await this.saveToAirtable(product);
+    //   await this.sleep(this.delay); // Rate limiting
+    // }
     
     return scrapedProducts;
   }
@@ -2332,12 +2337,7 @@ export class SimulationScraper {
       // This provides immediate results with realistic data
       const fallbackProduct = this.createFallbackProduct(url);
       if (fallbackProduct) {
-        // Save to Airtable in background (non-blocking)
-        this.saveToAirtable(fallbackProduct).catch(airtableError => {
-          console.log(`Airtable save skipped (API limit reached): ${fallbackProduct.name}`);
-          // Continue without Airtable - the product will still be saved to storage
-        });
-        
+        // Skip Airtable save for faster processing - products are saved to main storage anyway
         console.log(`Successfully extracted fast data for: ${fallbackProduct.name}`);
         return fallbackProduct;
       }
