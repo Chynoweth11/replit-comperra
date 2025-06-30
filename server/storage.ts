@@ -577,13 +577,16 @@ export class MemStorage implements IStorage {
     ];
 
     materialsData.forEach(material => {
+      const now = new Date().toISOString();
       const newMaterial: Material = { 
         ...material, 
         id: this.currentMaterialId++,
         imageUrl: material.imageUrl || null,
         description: material.description || null,
         dimensions: material.dimensions || null,
-        inStock: material.inStock || null
+        inStock: material.inStock || null,
+        createdAt: now,
+        updatedAt: now
       };
       this.materials.set(newMaterial.id, newMaterial);
     });
@@ -850,7 +853,17 @@ Choosing the right thermostat ensures your heating system performs safely, effic
       }
     }
 
-    return filteredMaterials;
+    // Sort by createdAt descending (newest first), then by name
+    return filteredMaterials.sort((a, b) => {
+      // Sort by createdAt first (newest first)
+      const dateA = new Date(a.createdAt || '2000-01-01').getTime();
+      const dateB = new Date(b.createdAt || '2000-01-01').getTime();
+      if (dateB !== dateA) {
+        return dateB - dateA; // Newest first
+      }
+      // If dates are equal, sort by name
+      return a.name.localeCompare(b.name);
+    });
   }
 
   async getMaterial(id: number): Promise<Material | undefined> {
@@ -883,13 +896,16 @@ Choosing the right thermostat ensures your heating system performs safely, effic
     }
 
     const id = this.currentMaterialId++;
+    const now = new Date().toISOString();
     const newMaterial: Material = { 
       ...material, 
       id,
       imageUrl: material.imageUrl || null,
       description: material.description || null,
       dimensions: material.dimensions || null,
-      inStock: material.inStock || null
+      inStock: material.inStock || null,
+      createdAt: now,
+      updatedAt: now
     };
     this.materials.set(id, newMaterial);
     return newMaterial;
