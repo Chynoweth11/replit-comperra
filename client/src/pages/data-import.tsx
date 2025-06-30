@@ -501,35 +501,55 @@ https://www.akdo.com/collections/ceramic-tile/`;
               </Alert>
             )}
           </Card>
+        )}
 
-          {/* Single URL Import */}
-          <Card className="p-6">
-            <h2 className="text-xl font-bold mb-4">Single Product Import</h2>
-            <p className="text-gray-600 mb-6">Import one product at a time for testing</p>
-            
-            <div className="space-y-4">
+        {activeTab === 'single' && (
+          <Card className="p-8 hover-lift transition-all duration-300">
+            <div className="flex items-center mb-6">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                <span className="text-2xl">📱</span>
+              </div>
               <div>
-                <Label htmlFor="singleUrl">Product URL</Label>
+                <h2 className="text-2xl font-bold text-gray-900">Single Product Import</h2>
+                <p className="text-gray-600">Test individual products for quality and accuracy</p>
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-lg border border-green-200">
+                <h3 className="text-lg font-semibold text-green-900 mb-3">Quick Test</h3>
+                <p className="text-green-800 text-sm">
+                  Perfect for testing a single product URL to verify specifications and category detection before bulk importing.
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="singleUrl" className="text-base font-medium text-gray-700 mb-3 block">
+                  Product URL
+                </Label>
+                <p className="text-sm text-gray-500 mb-3">
+                  Paste any supported manufacturer product URL to test the import process.
+                </p>
                 <Input
                   id="singleUrl"
                   type="url"
-                  placeholder="https://www.daltile.com/products/..."
+                  placeholder="https://www.daltile.com/products/emerson-wood/sterling"
                   value={singleUrl}
                   onChange={(e) => setSingleUrl(e.target.value)}
-                  className="mt-1"
+                  className="w-full p-4 bg-white border-2 border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 transition-all duration-300 focus:border-green-500 focus:ring-2 focus:ring-green-200"
                 />
+                
+                <Button 
+                  onClick={handleSingleUrl}
+                  disabled={isScrapingSingle || !singleUrl.trim()}
+                  className="mt-4 w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105"
+                >
+                  {isScrapingSingle ? "Importing..." : "Import Product"}
+                </Button>
               </div>
-              
-              <Button 
-                onClick={handleSingleUrl}
-                disabled={isScrapingSingle || !singleUrl.trim()}
-                className="w-full bg-royal text-white hover:bg-royal-dark"
-              >
-                {isScrapingSingle ? "Importing..." : "Import Product"}
-              </Button>
             </div>
           </Card>
-        </div>
+        )}
 
         {/* Supported Manufacturers */}
         <Card className="mt-8 p-6">
