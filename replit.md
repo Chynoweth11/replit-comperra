@@ -22,10 +22,6 @@ Comperra is a comprehensive building materials comparison platform that allows u
 - **Package Management**: npm with comprehensive UI component library
 
 ## Recent Changes
-- ✅ **June 30, 2025**: COMPLETED - Enhanced bulk URL scraping with elegant multi-URL input interface replacing CSV upload functionality - allows pasting multiple URLs with intelligent category detection and preview table showing detected categories before scraping
-- ✅ **June 30, 2025**: COMPLETED - Implemented comprehensive category detection system using URL analysis for perfect classification across all 7 categories (tiles, slabs, lvt, hardwood, heat, carpet, thermostats) with compound term recognition
-- ✅ **June 30, 2025**: COMPLETED - Added timestamp fields (createdAt, updatedAt) to materials schema ensuring newest scraped products appear at top of category listings with proper Firebase ordering by creation date DESC
-- ✅ **June 30, 2025**: COMPLETED - Updated Firebase Firestore indexes to support efficient querying with newest-first product ordering and proper category-based filtering
 - ✅ **June 29, 2025**: COMPLETED - Created complete React-based Comperra application for Firebase deployment with authentic functionality matching comperra.com reference site
 - ✅ **June 29, 2025**: COMPLETED - Built comprehensive single-page application with all 7 material categories, product comparison, search functionality, and professional network features
 - ✅ **June 29, 2025**: COMPLETED - Removed JavaScript alert popups and implemented clean UI with proper navigation and category-specific product displays
