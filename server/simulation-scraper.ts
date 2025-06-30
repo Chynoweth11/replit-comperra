@@ -1545,57 +1545,6 @@ export class SimulationScraper {
     // Disabled for faster processing - products are saved to main storage
     console.log(`Airtable save skipped for faster processing: ${scrapedProduct.name}`);
     return true;
-    
-    /* Original Airtable code disabled for performance
-    try {
-      const airtableApiKey = process.env.AIRTABLE_API_KEY;
-      const baseId = process.env.AIRTABLE_BASE_ID || 'appQJoO5GkIxDMiHS';
-      
-      if (!airtableApiKey) {
-        console.log('No Airtable API key found, skipping Airtable save');
-        return false;
-      }
-      
-      const airtableData = {
-        fields: {
-          Name: scrapedProduct.name,
-          Brand: scrapedProduct.brand,
-          Category: scrapedProduct.category,
-          'Price per SF': parseFloat(scrapedProduct.price) || 0,
-          'Product URL': scrapedProduct.sourceUrl,
-          'PEI Rating': scrapedProduct.specifications['PEI Rating'] || '—',
-          'DCOF / Slip Rating': scrapedProduct.specifications['DCOF / Slip Rating'] || '—',
-          'Water Absorption': scrapedProduct.specifications['Water Absorption'] || '—',
-          'Material Type': scrapedProduct.specifications['Material Type'] || '—',
-          Finish: scrapedProduct.specifications['Finish'] || '—',
-          Color: scrapedProduct.specifications['Color'] || '—',
-          'Edge Type': scrapedProduct.specifications['Edge Type'] || '—',
-          'Install Location': scrapedProduct.specifications['Install Location'] || '—',
-          Dimensions: scrapedProduct.specifications['Dimensions'] || '—',
-          Texture: scrapedProduct.specifications['Texture'] || '—',
-          'Image URL': scrapedProduct.imageUrl,
-          'Scraping Method': 'Simulation Scraper',
-          'Date Added': new Date().toISOString()
-        }
-      };
-
-      const response = await axios.post(
-        `https://api.airtable.com/v0/${baseId}/Products`,
-        { records: [airtableData] },
-        {
-          headers: {
-            'Authorization': `Bearer ${airtableApiKey}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      console.log(`Successfully saved ${scrapedProduct.name} to Airtable`);
-      return true;
-    } catch (error) {
-      console.error(`Failed to save ${scrapedProduct.name} to Airtable:`, error);
-      return false;
-    }
   }
 
   async scrapeAndSaveAll(urls?: string[]): Promise<SimulatedScrapedProduct[]> {
