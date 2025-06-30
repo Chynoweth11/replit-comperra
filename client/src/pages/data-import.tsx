@@ -18,6 +18,11 @@ interface ImportResult {
   totalUrls: number;
 }
 
+interface PreviewUrl {
+  url: string;
+  category: string;
+}
+
 export default function DataImport() {
   const [isScrapingBulk, setIsScrapingBulk] = useState(false);
   const [isScrapingSingle, setIsScrapingSingle] = useState(false);
@@ -25,6 +30,8 @@ export default function DataImport() {
   const [urlList, setUrlList] = useState("");
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<ImportResult | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewUrls, setPreviewUrls] = useState<PreviewUrl[]>([]);
   const { toast } = useToast();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -160,6 +167,168 @@ export default function DataImport() {
     }
   };
 
+  // Category detection function based on URL analysis
+  const detectCategoryFromUrl = (url: string): string => {
+    const urlLower = url.toLowerCase();
+    
+    // Thermostat detection (check first for compound terms)
+    if (urlLower.includes('thermostat') || urlLower.includes('thermostats') || 
+        urlLower.includes('temperature-control') || urlLower.includes('heating-control')) {
+      return 'thermostats';
+    }
+    
+    // Carpet detection (including carpet tiles)
+    if (urlLower.includes('carpet') || urlLower.includes('rug') || 
+        urlLower.includes('commercial-carpet') || urlLower.includes('carpet-tile')) {
+      return 'carpet';
+    }
+    
+    // Hardwood detection
+    if (urlLower.includes('hardwood') || urlLower.includes('wood-flooring') || 
+        urlLower.includes('engineered-wood') || urlLower.includes('solid-wood') ||
+        urlLower.includes('oak') || urlLower.includes('maple') || urlLower.includes('hickory') ||
+        urlLower.includes('pine') || urlLower.includes('reclaimed') || urlLower.includes('timber')) {
+      return 'hardwood';
+    }
+    
+    // LVT/Vinyl detection
+    if (urlLower.includes('vinyl') || urlLower.includes('lvt') || 
+        urlLower.includes('luxury-vinyl') || urlLower.includes('lvp') ||
+        urlLower.includes('resilient') || urlLower.includes('waterproof-plank')) {
+      return 'lvt';
+    }
+    
+    // Heating system detection
+    if (urlLower.includes('heating') || urlLower.includes('radiant') || 
+        urlLower.includes('heat-mat') || urlLower.includes('floor-heating') ||
+        urlLower.includes('underfloor')) {
+      return 'heat';
+    }
+    
+    // Stone & Slabs detection (quartz, granite, marble, etc.)
+    if (urlLower.includes('slab') || urlLower.includes('countertop') ||
+        urlLower.includes('quartz') || urlLower.includes('granite') || 
+        urlLower.includes('marble') || urlLower.includes('travertine') ||
+        urlLower.includes('limestone') || urlLower.includes('slate') ||
+        urlLower.includes('natural-stone') || urlLower.includes('engineered-stone')) {
+      return 'slabs';
+    }
+    
+    // Default to tiles for ceramic, porcelain, etc.
+    return 'tiles';
+  };
+
+  // Helper functions for category display
+  const getCategoryDisplayName = (category: string): string => {
+    const categoryNames: Record<string, string> = {
+      'tiles': 'Tiles',
+      'slabs': 'Stone & Slabs', 
+      'lvt': 'Vinyl & LVT',
+      'hardwood': 'Hardwood',
+      'heat': 'Heating',
+      'carpet': 'Carpet',
+      'thermostats': 'Thermostats'
+    };
+    return categoryNames[category] || 'Tiles';
+  };
+
+  const getCategoryColor = (category: string): string => {
+    const categoryColors: Record<string, string> = {
+      'tiles': 'bg-blue-100 text-blue-800',
+      'slabs': 'bg-gray-100 text-gray-800',
+      'lvt': 'bg-green-100 text-green-800',
+      'hardwood': 'bg-amber-100 text-amber-800',
+      'heat': 'bg-red-100 text-red-800',
+      'carpet': 'bg-purple-100 text-purple-800',
+      'thermostats': 'bg-indigo-100 text-indigo-800'
+    };
+    return categoryColors[category] || 'bg-blue-100 text-blue-800';
+  };
+
+  // Preview URLs function
+  const handlePreviewUrls = () => {
+    if (!urlList.trim()) {
+      toast({
+        title: "No URLs provided",
+        description: "Please enter product URLs in the text area",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const urls = urlList
+      .trim()
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(line => line.startsWith('http'));
+
+    if (urls.length === 0) {
+      toast({
+        title: "No valid URLs found",
+        description: "Please ensure each URL starts with http and is on a new line",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const urlsWithCategories = urls.map(url => ({
+      url,
+      category: detectCategoryFromUrl(url)
+    }));
+
+    setPreviewUrls(urlsWithCategories);
+    setShowPreview(!showPreview);
+  };
+
+  // Bulk scraping function
+  const handleBulkScrape = async () => {
+    setIsScrapingBulk(true);
+    setProgress(0);
+    setResult(null);
+
+    try {
+      const urls = previewUrls.map(item => item.url);
+      const csvContent = urls.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      
+      const formData = new FormData();
+      formData.append('urlFile', blob, 'urls.csv');
+
+      const response = await fetch('/api/scrape/bulk', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to process URLs');
+      }
+
+      const data: ImportResult = await response.json();
+      setResult(data);
+      setProgress(100);
+      
+      toast({
+        title: "Import Complete",
+        description: `Successfully imported ${data.saved} products from ${data.totalUrls} URLs`,
+      });
+
+      // Clear the preview after successful scraping
+      setShowPreview(false);
+      setPreviewUrls([]);
+      setUrlList("");
+      
+    } catch (error) {
+      console.error('Bulk scraping error:', error);
+      toast({
+        title: "Import Failed",
+        description: "Failed to import products from URL list.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsScrapingBulk(false);
+    }
+  };
+
   const sampleUrls = `https://www.daltile.com/products/terrazzo-look/outlander/sterling
 https://www.msisurfaces.com/porcelain/brickstone-red/
 https://www.arizonatile.com/en/products/ceramic-porcelain/
@@ -183,42 +352,74 @@ https://www.akdo.com/collections/ceramic-tile/`;
             <p className="text-gray-600 mb-6">Upload a CSV file with product URLs or paste URLs directly</p>
             
             <div className="space-y-4">
-              <div>
-                <Label htmlFor="csvFile">Upload CSV File</Label>
-                <Input
-                  id="csvFile"
-                  type="file"
-                  accept=".csv,.txt"
-                  onChange={handleFileUpload}
-                  disabled={isScrapingBulk}
-                  className="mt-1"
-                />
-                <p className="text-sm text-gray-500 mt-1">
-                  CSV file should contain one URL per line
-                </p>
-              </div>
-              
-              <div className="text-center text-gray-400">or</div>
-              
-              <div>
-                <Label htmlFor="urlList">Paste URLs (one per line)</Label>
+              {/* Elegant Multi-URL Input Interface */}
+              <div id="input-area">
+                <Label htmlFor="urlInput">Paste URLs (one per line)</Label>
                 <Textarea
-                  id="urlList"
+                  id="urlInput"
                   placeholder={sampleUrls}
                   value={urlList}
                   onChange={(e) => setUrlList(e.target.value)}
                   rows={8}
-                  className="mt-1 font-mono text-sm"
+                  className="mt-1 w-full p-4 bg-white border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 transition duration-300 ease-in-out focus:border-blue-500 font-mono text-sm"
                 />
+                <Button 
+                  id="process-button"
+                  onClick={handlePreviewUrls}
+                  disabled={isScrapingBulk || !urlList.trim()}
+                  className="mt-3 w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none transition duration-300 ease-in-out"
+                >
+                  {showPreview ? "Hide Preview" : "Preview URLs"}
+                </Button>
               </div>
-              
-              <Button 
-                onClick={handleTextUpload}
-                disabled={isScrapingBulk || !urlList.trim()}
-                className="w-full bg-royal text-white hover:bg-royal-dark"
-              >
-                {isScrapingBulk ? "Processing..." : "Import from URLs"}
-              </Button>
+
+              {/* URL Preview Area */}
+              {showPreview && previewUrls.length > 0 && (
+                <div id="preview-area" className="mt-6 fade-in">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-gray-800">URL Preview</h3>
+                    <span className="text-sm font-medium text-blue-700 bg-blue-100 px-3 py-1 rounded-full">
+                      {previewUrls.length} URLs Found
+                    </span>
+                  </div>
+                  <div className="overflow-x-auto border border-gray-200 rounded-lg max-h-80">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50 sticky top-0">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            URL
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Detected Category
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {previewUrls.map((item, index) => (
+                          <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                            <td className="px-6 py-4 text-sm text-gray-700" style={{ wordBreak: 'break-all' }}>
+                              {item.url}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-700">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(item.category)}`}>
+                                {getCategoryDisplayName(item.category)}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <Button 
+                    onClick={handleBulkScrape}
+                    disabled={isScrapingBulk}
+                    className="mt-4 w-full bg-royal text-white hover:bg-royal-dark"
+                  >
+                    {isScrapingBulk ? "Processing..." : `Scrape ${previewUrls.length} Products`}
+                  </Button>
+                </div>
+              )}
             </div>
 
             {isScrapingBulk && (
