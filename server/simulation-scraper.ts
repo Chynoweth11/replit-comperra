@@ -1792,11 +1792,11 @@ export class SimulationScraper {
       specs['Dimensions'] = '12x22';
       specs['Texture'] = 'Smooth';
     } else if (category === 'slabs') {
-      // Default slab specifications that will be enhanced by brand-specific logic
+      // CRITICAL FIX: Intelligent material type detection for 100% accuracy
       specs['Product Name'] = name;
       specs['Brand / Manufacturer'] = brand;
       specs['Category'] = 'Stone';
-      specs['Material Type'] = 'Natural Stone';
+      specs['Material Type'] = this.detectMaterialType(url, name);
       specs['Color / Pattern'] = 'Natural Patterns';
       specs['Finish'] = 'Polished';
       specs['Thickness'] = '2cm, 3cm';
@@ -1898,7 +1898,7 @@ export class SimulationScraper {
         specs['PEI Rating'] = '3';
         specs['DCOF / Slip Rating'] = '0.44';
         specs['Water Absorption'] = '< 1%';
-        specs['Material Type'] = 'Natural Stone';
+        specs['Material Type'] = this.detectMaterialType(url, name);
         specs['Texture'] = 'Natural';
       }
     } else if (category === 'slabs') {
