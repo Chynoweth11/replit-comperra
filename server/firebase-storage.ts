@@ -250,17 +250,23 @@ export class FirebaseStorage implements IStorage {
       const articles = await memStorage.getArticles();
       console.log(`Seeding ${articles.length} articles to Firebase...`);
       
+      let successCount = 0;
       for (const article of articles) {
         try {
           const { id, createdAt, updatedAt, ...insertArticle } = article;
           await this.createArticle(insertArticle);
-          console.log(`✅ Seeded article: ${article.title}`);
+          successCount++;
+          console.log(`✅ Seeded article (${successCount}/${articles.length}): ${article.title}`);
+          
+          // Add delay to handle rate limiting
+          await new Promise(resolve => setTimeout(resolve, 500));
         } catch (error) {
-          console.error(`Error seeding article ${article.title}:`, error);
+          console.error(`❌ Error seeding article ${article.title}:`, error);
+          // Continue with next article even if one fails
         }
       }
       
-      console.log('Articles seeding completed!');
+      console.log(`Articles seeding completed! Successfully seeded ${successCount}/${articles.length} articles`);
     } catch (error) {
       console.error('Error seeding articles from memory:', error);
     }

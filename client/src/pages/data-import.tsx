@@ -32,6 +32,7 @@ export default function DataImport() {
   const [result, setResult] = useState<ImportResult | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<PreviewUrl[]>([]);
+  const [activeTab, setActiveTab] = useState<'single' | 'bulk'>('bulk');
   const { toast } = useToast();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -345,37 +346,93 @@ https://www.akdo.com/collections/ceramic-tile/`;
           <p className="text-gray-600">Import real product data from manufacturer websites to populate your comparison database</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Bulk Import */}
-          <Card className="p-6">
-            <h2 className="text-xl font-bold mb-4">Bulk Import</h2>
-            <p className="text-gray-600 mb-6">Upload a CSV file with product URLs or paste URLs directly</p>
+        {/* Tab Navigation */}
+        <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-8 w-fit">
+          <button
+            onClick={() => setActiveTab('bulk')}
+            className={`px-6 py-3 rounded-md font-medium transition-all duration-200 ${
+              activeTab === 'bulk'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            🔗 Bulk URL Import
+          </button>
+          <button
+            onClick={() => setActiveTab('single')}
+            className={`px-6 py-3 rounded-md font-medium transition-all duration-200 ${
+              activeTab === 'single'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            📱 Single Product
+          </button>
+        </div>
+
+        {activeTab === 'bulk' && (
+          <Card className="p-8 hover-lift transition-all duration-300">
+            <div className="flex items-center mb-6">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                <span className="text-2xl">🔗</span>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Bulk URL Import</h2>
+                <p className="text-gray-600">Import multiple products at once with intelligent category detection</p>
+              </div>
+            </div>
             
-            <div className="space-y-4">
-              {/* Elegant Multi-URL Input Interface */}
-              <div id="input-area">
-                <Label htmlFor="urlInput">Paste URLs (one per line)</Label>
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
+                <h3 className="text-lg font-semibold text-blue-900 mb-3">How It Works</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="flex items-center space-x-2">
+                    <span className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                    <span className="text-blue-800">Paste URLs</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                    <span className="text-blue-800">Preview Categories</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                    <span className="text-blue-800">Import Products</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="urlInput" className="text-base font-medium text-gray-700 mb-3 block">
+                  Product URLs
+                </Label>
+                <p className="text-sm text-gray-500 mb-3">
+                  Paste one URL per line. We support Daltile, MSI, Arizona Tile, Shaw, Cambria, and more.
+                </p>
                 <Textarea
                   id="urlInput"
                   placeholder={sampleUrls}
                   value={urlList}
                   onChange={(e) => setUrlList(e.target.value)}
-                  rows={8}
-                  className="mt-1 w-full p-4 bg-white border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 transition duration-300 ease-in-out focus:border-blue-500 font-mono text-sm"
+                  rows={6}
+                  className="w-full p-4 bg-white border-2 border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 transition-all duration-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 font-mono text-sm resize-none"
                 />
-                <Button 
-                  id="process-button"
-                  onClick={handlePreviewUrls}
-                  disabled={isScrapingBulk || !urlList.trim()}
-                  className="mt-3 w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none transition duration-300 ease-in-out"
-                >
-                  {showPreview ? "Hide Preview" : "Preview URLs"}
-                </Button>
+                <div className="flex justify-between items-center mt-3">
+                  <span className="text-sm text-gray-500">
+                    {urlList.trim().split('\n').filter(line => line.trim().startsWith('http')).length} valid URLs detected
+                  </span>
+                  <Button 
+                    onClick={handlePreviewUrls}
+                    disabled={isScrapingBulk || !urlList.trim()}
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-2 px-6 rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105"
+                  >
+                    {showPreview ? "Hide Preview" : "Preview URLs"}
+                  </Button>
+                </div>
               </div>
 
               {/* URL Preview Area */}
               {showPreview && previewUrls.length > 0 && (
-                <div id="preview-area" className="mt-6 fade-in">
+                <div className="fade-in">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold text-gray-800">URL Preview</h3>
                     <span className="text-sm font-medium text-blue-700 bg-blue-100 px-3 py-1 rounded-full">
@@ -414,7 +471,7 @@ https://www.akdo.com/collections/ceramic-tile/`;
                   <Button 
                     onClick={handleBulkScrape}
                     disabled={isScrapingBulk}
-                    className="mt-4 w-full bg-royal text-white hover:bg-royal-dark"
+                    className="mt-4 w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105"
                   >
                     {isScrapingBulk ? "Processing..." : `Scrape ${previewUrls.length} Products`}
                   </Button>
