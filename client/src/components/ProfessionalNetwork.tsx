@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, UserPlus, FilePlus, LogIn, LogOut, Search, Gem, Bell, BarChart, XCircle, CreditCard, HelpCircle, Lock, Award, Briefcase, UserCheck, ArrowLeft, Star } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import { useAuth } from '@/context/AuthNetworkContext';
-import firebaseService from '@/services/firebase-network-fixed';
+import firebaseService from '@/services/firebase-network';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 
@@ -347,13 +347,13 @@ function AdminPanel() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card><h3 className="text-lg font-bold flex items-center gap-2"><BarChart/> Site Analytics</h3>
                     <div className="mt-4 space-y-2">
-                        <p className="text-2xl font-semibold">{firebaseService.MOCK_MEMBERS.length} <span className="text-base font-normal text-slate-500">Total Members</span></p>
-                        <p className="text-2xl font-semibold">{firebaseService.MOCK_LEADS.length} <span className="text-base font-normal text-slate-500">Total Leads</span></p>
+                        <p className="text-2xl font-semibold">0 <span className="text-base font-normal text-slate-500">Total Members</span></p>
+                        <p className="text-2xl font-semibold">0 <span className="text-base font-normal text-slate-500">Total Leads</span></p>
                     </div>
                 </Card>
                  <Card><h3 className="font-bold">Recent Members</h3>
                     <ul className="mt-2 space-y-1 text-sm list-disc list-inside text-slate-600">
-                        {firebaseService.MOCK_MEMBERS.slice(-5).reverse().map(m => <li key={m.uid}>{m.name} ({m.email})</li>)}
+                        <li>No members yet - first registrations will appear here</li>
                     </ul>
                 </Card>
             </div>
