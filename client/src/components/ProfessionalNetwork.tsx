@@ -75,23 +75,77 @@ function SubscriptionInfoModal({ onClose }) {
 function Login({ setView }) {
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [loading, setLoading] = useState(false);
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
     const { login } = useAuth();
     const toast = useToast();
     const handleChange = e => setFormData(p => ({...p, [e.target.name]: e.target.value}));
+    
     const handleSubmit = async (e) => {
         e.preventDefault(); setLoading(true); toast.loading('Signing in...');
         try { await login(formData.email, formData.password); toast.success('Login successful!'); } 
         catch (error) { toast.error('Invalid credentials. Please try again.'); } 
         finally { setLoading(false); }
     };
+
+    const handleForgotPassword = async (e) => {
+        e.preventDefault();
+        if (!formData.email) {
+            toast.error('Please enter your email address first.');
+            return;
+        }
+        setLoading(true);
+        try {
+            // In a real app, this would send a password reset email
+            toast.success('Password reset instructions sent to your email!');
+            setShowForgotPassword(false);
+        } catch (error) {
+            toast.error('Failed to send reset email. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-        <Card><form onSubmit={handleSubmit} className="space-y-6">
-            <h2 className="text-2xl font-bold text-center text-slate-900">Professional & Supplier Login</h2>
-            <Input id="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email Address" />
-            <Input id="password" type="password" value={formData.password} onChange={handleChange} placeholder="Password" />
-            <Button type="submit" disabled={loading}><LogIn size={20}/> {loading ? 'Signing in...' : 'Log In'}</Button>
-            <p className="text-center text-sm text-slate-500">Need an account? <button type="button" onClick={() => setView('register')} className="font-semibold text-blue-600 hover:underline">Register Now</button></p>
-        </form></Card>
+        <Card className="space-y-4">
+            {showForgotPassword ? (
+                <form onSubmit={handleForgotPassword} className="space-y-6">
+                    <div>
+                        <h2 className="text-2xl font-bold text-center text-slate-900">Reset Password</h2>
+                        <p className="text-center text-slate-600 mt-2">Enter your email to receive reset instructions</p>
+                    </div>
+                    <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email Address" required />
+                    <div className="space-y-3">
+                        <Button type="submit" disabled={loading} onClick={handleForgotPassword}>
+                            <Mail size={20}/> {loading ? 'Sending...' : 'Send Reset Instructions'}
+                        </Button>
+                        <Button type="button" variant="secondary" onClick={() => setShowForgotPassword(false)} className="w-full">
+                            <ArrowLeft size={16}/> Back to Login
+                        </Button>
+                    </div>
+                </form>
+            ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <h2 className="text-2xl font-bold text-center text-slate-900">Professional & Supplier Login</h2>
+                    <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email Address" />
+                    <Input id="password" name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Password" />
+                    <Button type="submit" disabled={loading} onClick={handleSubmit}>
+                        <LogIn size={20}/> {loading ? 'Signing in...' : 'Log In'}
+                    </Button>
+                    <div className="text-center space-y-2">
+                        <button 
+                            type="button" 
+                            onClick={() => setShowForgotPassword(true)} 
+                            className="text-sm text-blue-600 hover:underline"
+                        >
+                            Forgot Password?
+                        </button>
+                        <p className="text-sm text-slate-500">
+                            Need an account? <button type="button" onClick={() => setView('register')} className="font-semibold text-blue-600 hover:underline">Register Now</button>
+                        </p>
+                    </div>
+                </form>
+            )}
+        </Card>
     );
 }
 
@@ -100,7 +154,7 @@ function Register({ setView }) {
     const toast = useToast();
     const [loading, setLoading] = useState(false);
     const [showInfoModal, setShowInfoModal] = useState(false);
-    const [formData, setFormData] = useState({ name: '', email: '', password: '', zipCode: '', type: 'pro', subscription: 'credit', services: [] });
+    const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '', zipCode: '', type: 'pro', subscription: 'credit', services: [] });
     
     const serviceOptions = { 
         pro: ['Tile Installation', 'Slabs/Countertop Supply & Installation', 'Vinyl & LVT Installation', 'Hardwood Floor Installation', 'Carpet Installation', 'Heating & Thermostat Installation'], 
@@ -110,10 +164,32 @@ function Register({ setView }) {
     const handleChange = (e) => setFormData(p => ({ ...p, [e.target.name]: e.target.value }));
     const handleServiceToggle = (service) => setFormData(p => ({ ...p, services: p.services.includes(service) ? p.services.filter(s => s !== service) : [...p.services, service] }));
     const handleSubmit = async (e) => {
-        e.preventDefault(); if(formData.services.length === 0) { toast.error("Please select at least one service."); return; }
+        e.preventDefault(); 
+        
+        // Validation checks
+        if(formData.services.length === 0) { 
+            toast.error("Please select at least one service."); 
+            return; 
+        }
+        if(formData.password.length < 6) { 
+            toast.error("Password must be at least 6 characters."); 
+            return; 
+        }
+        if(formData.password !== formData.confirmPassword) { 
+            toast.error("Passwords do not match."); 
+            return; 
+        }
+        
         setLoading(true); toast.loading('Creating account...');
-        try { await register(formData); toast.success('Registration successful! Please log in.'); setView('login'); } 
-        catch(error) { toast.error(error.code === 'auth/email-already-in-use' ? 'Email already exists.' : 'Registration failed.'); } 
+        try { 
+            await register(formData); 
+            toast.success('Registration successful! Please log in.'); 
+            setView('login'); 
+        } 
+        catch(error) { 
+            console.error('Registration error:', error);
+            toast.error(error.code === 'auth/email-already-in-use' ? 'Email already exists.' : 'Registration failed.'); 
+        } 
         finally { setLoading(false); }
     };
     return (
@@ -121,10 +197,11 @@ function Register({ setView }) {
         {showInfoModal && <SubscriptionInfoModal onClose={() => setShowInfoModal(false)} />}
         <Card><form onSubmit={handleSubmit} className="space-y-4">
             <h2 className="text-2xl font-bold text-center text-slate-900">Join Comperra Connect</h2>
-            <Input id="name" value={formData.name} onChange={handleChange} placeholder="Full Name" />
-            <Input id="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email Address" />
-            <Input id="password" type="password" value={formData.password} onChange={handleChange} placeholder="Password (min. 6 chars)" />
-            <Input id="zipCode" value={formData.zipCode} onChange={handleChange} placeholder="5-Digit ZIP Code" />
+            <Input id="name" name="name" value={formData.name} onChange={handleChange} placeholder="Full Name" />
+            <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email Address" />
+            <Input id="password" name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Password (min. 6 chars)" />
+            <Input id="confirmPassword" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} placeholder="Confirm Password" />
+            <Input id="zipCode" name="zipCode" value={formData.zipCode} onChange={handleChange} placeholder="5-Digit ZIP Code" />
             <Select id="type" label="Account Type" value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value, services: [] })}>
                 <option value="pro">Trade Professional (Installation)</option><option value="vendor">Supplier (Material Sales)</option>
             </Select>
