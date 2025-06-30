@@ -107,26 +107,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
     }
   };
 
-  const handleCsvUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
 
-    const formData = new FormData();
-    formData.append('urlFile', file);
-
-    try {
-      const response = await fetch('/api/scrape/bulk', {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (response.ok) {
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error('CSV upload error:', error);
-    }
-  };
 
   const toggleSpec = (spec: keyof typeof visibleSpecs) => {
     setVisibleSpecs(prev => ({ ...prev, [spec]: !prev[spec] }));
@@ -323,7 +304,7 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
 
   return (
     <div className="lg:w-3/4">
-      {/* URL Scraping and CSV Upload Bar */}
+      {/* URL Scraping and Bulk URL Bar */}
       <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
         <div className="flex flex-wrap gap-4 items-center">
           <div className="flex gap-2 items-center flex-1 min-w-64">
@@ -342,19 +323,12 @@ export default function ComparisonTable({ category, filters, overrideMaterials }
             </Button>
           </div>
           <div className="flex gap-2 items-center">
-            <input
-              type="file"
-              id="csv-upload"
-              accept=".csv,.txt"
-              onChange={handleCsvUpload}
-              className="hidden"
-            />
-            <Label 
-              htmlFor="csv-upload" 
-              className="cursor-pointer bg-gray-200 px-3 py-2 rounded border hover:bg-gray-300"
+            <Button 
+              onClick={() => setLocation('/admin/import')}
+              className="bg-gray-200 text-gray-800 hover:bg-gray-300 border"
             >
-              Upload CSV
-            </Label>
+              Bulk URL
+            </Button>
           </div>
         </div>
       </div>
