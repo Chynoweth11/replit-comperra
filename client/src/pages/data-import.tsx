@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 
@@ -17,6 +18,15 @@ interface ImportResult {
   scraped: number;
   saved: number;
   totalUrls: number;
+  validUrls?: number;
+  invalidUrls?: number;
+  skippedUrls?: string[];
+  products?: Array<{
+    name: string;
+    brand: string;
+    category: string;
+    sourceUrl: string;
+  }>;
 }
 
 interface PreviewUrl {
@@ -26,6 +36,7 @@ interface PreviewUrl {
 
 export default function DataImport() {
   const queryClient = useQueryClient();
+  const [location, setLocation] = useLocation();
   const [isScrapingBulk, setIsScrapingBulk] = useState(false);
   const [isScrapingSingle, setIsScrapingSingle] = useState(false);
   const [singleUrl, setSingleUrl] = useState("");
@@ -35,7 +46,30 @@ export default function DataImport() {
   const [showPreview, setShowPreview] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<PreviewUrl[]>([]);
   const [activeTab, setActiveTab] = useState<'single' | 'bulk'>('bulk');
+  const [showNavigationOptions, setShowNavigationOptions] = useState(false);
   const { toast } = useToast();
+
+  // Navigation helper functions
+  const navigateToComparison = () => {
+    setLocation('/compare');
+    setShowNavigationOptions(false);
+  };
+
+  const navigateToCategory = (category: string) => {
+    setLocation(`/comparison/${category}`);
+    setShowNavigationOptions(false);
+  };
+
+  const navigateToAllProducts = () => {
+    setLocation('/comparison/all');
+    setShowNavigationOptions(false);
+  };
+
+  const resetForm = () => {
+    setResult(null);
+    setShowNavigationOptions(false);
+    setProgress(0);
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -93,32 +127,49 @@ export default function DataImport() {
     setResult(null);
 
     try {
-      const urls = urlList.split('\n').filter(url => url.trim().startsWith('http'));
-      const csvContent = urls.join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      
-      const formData = new FormData();
-      formData.append('urlFile', blob, 'urls.csv');
+      // Parse URLs from text input
+      const urls = urlList
+        .split('\n')
+        .map(url => url.trim())
+        .filter(url => url.length > 0 && url.startsWith('http'));
 
-      const response = await fetch('/api/scrape/bulk', {
+      if (urls.length === 0) {
+        throw new Error('No valid URLs found. Please ensure URLs start with http:// or https://');
+      }
+
+      // Use the new bulk URLs endpoint
+      const response = await fetch('/api/scrape/bulk-urls', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ urls }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to process URLs');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to process URLs');
       }
 
       const data: ImportResult = await response.json();
       setResult(data);
       setProgress(100);
       
+      // Invalidate React Query cache to refresh all product listings
+      await queryClient.invalidateQueries({ 
+        queryKey: ["/api/materials"] 
+      });
+      
+      // Show success message and navigation options
+      setShowNavigationOptions(true);
+      setUrlList(""); // Clear the input area
+      
       toast({
         title: "Import Complete",
-        description: `Successfully imported ${data.saved} products from ${data.totalUrls} URLs`,
+        description: `Successfully imported ${data.saved} products from ${data.validUrls || data.totalUrls} URLs${data.invalidUrls ? `. ${data.invalidUrls} invalid URLs skipped.` : ''}`,
       });
     } catch (error) {
-      console.error('Text scraping error:', error);
+      console.error('Bulk scraping error:', error);
       const errorMessage = error instanceof Error ? error.message : "Failed to import products from URL list.";
       toast({
         title: "Import Failed",
