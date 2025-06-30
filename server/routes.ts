@@ -291,6 +291,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // New bulk URL endpoint for URL list (not file upload)
+  app.post("/api/scrape/bulk-urls", async (req, res) => {
+    try {
+      const { urls } = req.body;
+      if (!urls || !Array.isArray(urls)) {
+        return res.status(400).json({ error: "URLs array is required" });
+      }
+
+      if (urls.length === 0) {
+        return res.status(400).json({ error: "No URLs provided" });
+      }
+
+      console.log(`Starting bulk scraping for ${urls.length} URLs...`);
+      
+      // Use enhanced simulation scraper with real URL scraping
+      const { simulationScraper } = await import('./simulation-scraper');
+      const scrapedProducts = [];
+      let savedCount = 0;
+
+      // Process URLs sequentially to avoid overwhelming servers
+      for (let i = 0; i < urls.length; i++) {
+        const url = urls[i];
+        try {
+          console.log(`Processing URL ${i + 1}/${urls.length}: ${url}`);
+          const scrapedProduct = await simulationScraper.scrapeAndSaveFromURL(url);
+          
+          if (scrapedProduct) {
+            scrapedProducts.push(scrapedProduct);
+            const material = simulationScraper.convertToMaterial(scrapedProduct);
+            await storage.createMaterial(material);
+            savedCount++;
+            console.log(`✅ Successfully scraped and saved: ${scrapedProduct.name}`);
+          } else {
+            console.log(`❌ Failed to scrape: ${url}`);
+          }
+          
+          // Add delay between requests to be respectful
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } catch (error) {
+          console.error(`Error processing URL ${url}:`, error);
+        }
+      }
+
+      res.json({
+        message: `Bulk scraping completed`,
+        scraped: scrapedProducts.length,
+        saved: savedCount,
+        totalUrls: urls.length,
+        products: scrapedProducts.map(p => ({
+          name: p.name,
+          brand: p.brand,
+          category: p.category,
+          sourceUrl: p.sourceUrl
+        }))
+      });
+    } catch (error) {
+      console.error("Bulk scraping error:", error);
+      res.status(500).json({ error: "Failed to scrape URLs" });
+    }
+  });
+
   app.post("/api/scrape/bulk", upload.single('urlFile'), async (req, res) => {
     try {
       if (!req.file) {
@@ -314,18 +375,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "No valid URLs found in file" });
       }
 
-      // Scrape products from URLs
-      const scrapedProducts = await productScraper.scrapeProductList(urls);
-      
-      // Save scraped products to storage
+      // Use enhanced simulation scraper instead of old productScraper
+      const { simulationScraper } = await import('./simulation-scraper');
+      const scrapedProducts = [];
       let savedCount = 0;
-      for (const scrapedProduct of scrapedProducts) {
+
+      // Process URLs sequentially
+      for (const url of urls) {
         try {
-          const material = productScraper.convertToMaterial(scrapedProduct);
-          await storage.createMaterial(material);
-          savedCount++;
+          const scrapedProduct = await simulationScraper.scrapeAndSaveFromURL(url);
+          if (scrapedProduct) {
+            scrapedProducts.push(scrapedProduct);
+            const material = simulationScraper.convertToMaterial(scrapedProduct);
+            await storage.createMaterial(material);
+            savedCount++;
+          }
         } catch (error) {
-          console.error("Error saving material:", error);
+          console.error("Error processing URL:", error);
         }
       }
 

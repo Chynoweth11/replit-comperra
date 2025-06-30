@@ -135,19 +135,46 @@ export class FirebaseStorage implements IStorage {
         ...doc.data()
       })) as Article[];
       
-      // Auto-seed articles if none exist
+      // Auto-seed articles if none exist and connection is working
       if (articles.length === 0 && !this.isInitialized) {
         console.log('No articles found in Firebase, seeding from memory storage...');
         await this.seedArticlesFromMemory();
         this.isInitialized = true;
-        // Return the seeded articles by calling again
-        return this.getArticles();
+        // Try to get seeded articles
+        try {
+          const seededSnapshot = await getDocs(q);
+          const seededArticles = seededSnapshot.docs.map(doc => ({
+            id: parseInt(doc.id),
+            ...doc.data()
+          })) as Article[];
+          if (seededArticles.length > 0) {
+            return seededArticles;
+          }
+        } catch (seedError) {
+          console.log('Firebase seeding failed, falling back to memory storage');
+        }
+      }
+      
+      // If Firebase connection issues or no articles, fallback to memory storage
+      if (articles.length === 0) {
+        console.log('🔄 Firebase unavailable, falling back to memory storage for articles');
+        const { MemStorage } = await import('./storage');
+        const memStorage = new MemStorage();
+        return await memStorage.getArticles();
       }
       
       return articles;
     } catch (error) {
-      console.error('Error fetching articles from Firebase:', error);
-      return [];
+      console.error('Error fetching articles from Firebase, falling back to memory storage:', error);
+      // Fallback to memory storage when Firebase fails
+      try {
+        const { MemStorage } = await import('./storage');
+        const memStorage = new MemStorage();
+        return await memStorage.getArticles();
+      } catch (fallbackError) {
+        console.error('Memory storage fallback also failed:', fallbackError);
+        return [];
+      }
     }
   }
 
