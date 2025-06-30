@@ -231,7 +231,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { url } = req.body;
       if (!url) {
-        return res.status(400).json({ message: "URL is required" });
+        return res.status(400).json({ success: false, message: "URL is required" });
+      }
+
+      // Validate URL format
+      try {
+        new URL(url);
+      } catch (urlError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid URL format. Please enter a valid manufacturer website URL." 
+        });
+      }
+
+      // Check if URL contains manufacturer domains
+      const supportedDomains = [
+        'msisurfaces.com', 'daltile.com', 'arizonatile.com', 'floridatile.com',
+        'emser.com', 'marazziusa.com', 'cambriasurfaces.com', 'shawfloors.com',
+        'mohawkflooring.com', 'coretecfloors.com', 'grainger.com'
+      ];
+      
+      const urlDomain = new URL(url).hostname.toLowerCase();
+      const isSupported = supportedDomains.some(domain => urlDomain.includes(domain));
+      
+      if (!isSupported) {
+        return res.status(400).json({
+          success: false,
+          message: "URL not from a supported manufacturer. Please use URLs from MSI, Daltile, Arizona Tile, Shaw, Mohawk, Cambria, or other major building material manufacturers."
+        });
       }
 
       console.log(`Processing scraping request for: ${url}`);
