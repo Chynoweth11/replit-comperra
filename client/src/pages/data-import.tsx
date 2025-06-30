@@ -551,15 +551,78 @@ https://www.akdo.com/collections/ceramic-tile/`;
             )}
 
             {result && (
-              <Alert className="mt-4">
-                <AlertDescription>
-                  <strong>Import Complete:</strong> {result.message}
-                  <br />
-                  Scraped: {result.scraped}/{result.totalUrls} URLs
-                  <br />
-                  Saved: {result.saved} products
-                </AlertDescription>
-              </Alert>
+              <div className="mt-6">
+                <Alert className="mb-4 bg-green-50 border-green-200">
+                  <AlertDescription className="text-green-800">
+                    <strong>Import Complete!</strong> {result.message}
+                    <br />
+                    Scraped: {result.scraped}/{result.totalUrls} URLs
+                    <br />
+                    Saved: {result.saved} products
+                    {result.invalidUrls && result.invalidUrls > 0 && (
+                      <>
+                        <br />
+                        <span className="text-amber-700">Note: {result.invalidUrls} invalid URLs were skipped</span>
+                      </>
+                    )}
+                  </AlertDescription>
+                </Alert>
+
+                {/* Navigation Options */}
+                {showNavigationOptions && (
+                  <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+                    <h3 className="text-lg font-semibold text-blue-900 mb-4">🎉 What would you like to do next?</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <Button 
+                        onClick={navigateToComparison}
+                        className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105"
+                      >
+                        🔍 View Comparison Table
+                      </Button>
+                      
+                      <Button 
+                        onClick={navigateToAllProducts}
+                        className="bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105"
+                      >
+                        🏠 Browse All Products
+                      </Button>
+                    </div>
+
+                    {/* Category-specific navigation */}
+                    {result.products && result.products.length > 0 && (
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-blue-800 mb-2">Browse by Category:</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {Array.from(new Set(result.products.map(p => p.category))).map((category) => (
+                            <Button
+                              key={category}
+                              onClick={() => navigateToCategory(category)}
+                              variant="outline"
+                              className="text-xs py-1 px-3 border-blue-300 text-blue-700 hover:bg-blue-100 capitalize"
+                            >
+                              {category}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-center pt-4 border-t border-blue-200">
+                      <span className="text-sm text-blue-700">
+                        {result.saved} products are now available for comparison
+                      </span>
+                      <Button 
+                        onClick={resetForm}
+                        variant="outline"
+                        className="text-blue-700 border-blue-300 hover:bg-blue-100"
+                      >
+                        Import More Products
+                      </Button>
+                    </div>
+                  </Card>
+                )}
+              </div>
             )}
           </Card>
         )}
