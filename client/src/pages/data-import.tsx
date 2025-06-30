@@ -153,9 +153,14 @@ export default function DataImport() {
       if (data.success) {
         toast({
           title: "Product Added",
-          description: `Successfully imported: ${data.product.name}`,
+          description: `Successfully imported: ${data.product.name} - Category: ${data.product.category}`,
         });
         setSingleUrl("");
+        
+        // Force refresh of the materials data
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } else {
         throw new Error(data.message || "Failed to scrape product");
       }
