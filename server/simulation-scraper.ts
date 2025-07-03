@@ -156,20 +156,25 @@ export class SimulationScraper {
           console.log(`Puppeteer successful - found ${puppeteerResult.images.length} images`);
           
           // Convert Puppeteer result to our format
+          const brand = this.extractBrandFromURL(url);
+          const category = puppeteerResult.category || this.detectCategory(url, '');
+          const bestImage = this.selectBestProductImage(puppeteerResult.images);
+          
           const simulatedProduct: SimulatedScrapedProduct = {
             name: puppeteerResult.productName,
-            brand: this.extractBrandFromURL(url),
+            brand: brand,
             price: 'N/A',
-            category: puppeteerResult.category || this.detectCategory(url, ''),
+            category: category,
             description: puppeteerResult.description || 'Premium product with complete technical specifications',
-            imageUrl: puppeteerResult.images[0] || 'https://placehold.co/400x300/CCCCCC/FFFFFF?text=Product+Image',
-            dimensions: '12x22',
+            imageUrl: bestImage,
+            dimensions: this.extractDimensionsFromProduct(puppeteerResult.productName, category, url),
             specifications: this.enhanceSpecifications({
               'Product URL': url,
+              'Brand / Manufacturer': brand,
               'Images Available': puppeteerResult.images.length.toString(),
               'All Images': puppeteerResult.images.slice(0, 5), // Store first 5 image URLs
               'Image Gallery': puppeteerResult.images.length > 1 ? 'Multiple Images' : 'Single Image'
-            }, puppeteerResult.category || this.detectCategory(url, ''), this.extractBrandFromURL(url), puppeteerResult.productName, url, puppeteerResult.images[0] || ''),
+            }, category, brand, puppeteerResult.productName, url, bestImage),
             sourceUrl: url
           };
           
@@ -404,6 +409,49 @@ export class SimulationScraper {
       
       console.log(`Total specifications after comprehensive extraction: ${Object.keys(specs).length}`);
       
+      // Enhanced dimension extraction from HTML content
+      const dimensionSelectors = [
+        '.size, .dimensions, .product-size, .tile-size, .nominal-size',
+        '.spec-dimensions, .dimension-value, .size-value',
+        '[data-dimension], [data-size]'
+      ];
+      
+      let extractedDimensions = '';
+      for (const selector of dimensionSelectors) {
+        const dimText = $(selector).first().text().trim();
+        if (dimText) {
+          const dimMatch = dimText.match(/(\d+["\']?\s*[xX×]\s*\d+["\']?(?:\s*[xX×]\s*\d+["\']?)?)/);
+          if (dimMatch) {
+            extractedDimensions = dimMatch[1];
+            break;
+          }
+        }
+      }
+      
+      // If no dimensions found in specific selectors, search the entire page
+      if (!extractedDimensions) {
+        const fullHtml = $.html();
+        const dimensionPatterns = [
+          /size[:\s]*(\d+["\']?\s*[xX×]\s*\d+["\']?)/i,
+          /dimensions?[:\s]*(\d+["\']?\s*[xX×]\s*\d+["\']?)/i,
+          /(\d+["\']?\s*[xX×]\s*\d+["\']?)/g
+        ];
+        
+        for (const pattern of dimensionPatterns) {
+          const match = fullHtml.match(pattern);
+          if (match) {
+            extractedDimensions = match[1] || match[0];
+            break;
+          }
+        }
+      }
+      
+      // Store extracted dimensions
+      if (extractedDimensions) {
+        specs['Dimensions'] = extractedDimensions;
+        console.log(`Extracted dimensions from HTML: ${extractedDimensions}`);
+      }
+      
       // Enhanced specification extraction with multiple selectors
       const specSelectors = [
         'table tr', 'ul li', '.specs div', '.specifications div', '.spec-list li',
@@ -413,7 +461,7 @@ export class SimulationScraper {
       ];
       
       for (const selector of specSelectors) {
-        $(selector).each((_, el) => {
+        $(selector).each((_: any, el: any) => {
           const text = $(el).text();
           const $el = $(el);
           
@@ -853,7 +901,7 @@ export class SimulationScraper {
     const specs: Record<string, string> = {};
     
     // Extract from JSON-LD structured data
-    $('script[type="application/ld+json"]').each((_, el) => {
+    $('script[type="application/ld+json"]').each((_: any, el: any) => {
       try {
         const jsonData = JSON.parse($(el).html() || '{}');
         if (jsonData['@type'] === 'Product') {
@@ -1301,6 +1349,71 @@ export class SimulationScraper {
     }
   }
 
+  private selectBestProductImage(images: string[]): string {
+    if (!images || images.length === 0) {
+      return 'https://placehold.co/400x300/CCCCCC/FFFFFF?text=Product+Image';
+    }
+    
+    // Filter out small images, thumbnails, and low-quality images
+    const goodImages = images.filter(img => {
+      const imgLower = img.toLowerCase();
+      return !imgLower.includes('thumb') && 
+             !imgLower.includes('icon') && 
+             !imgLower.includes('logo') &&
+             !imgLower.includes('tiny') &&
+             !imgLower.includes('small') &&
+             !imgLower.includes('xs') &&
+             !imgLower.includes('badge') &&
+             !imgLower.includes('watermark') &&
+             !imgLower.includes('50x50') &&
+             !imgLower.includes('100x100') &&
+             !imgLower.includes('150x150');
+    });
+    
+    // Return the first good image, or the first image if none are filtered
+    return goodImages.length > 0 ? goodImages[0] : images[0];
+  }
+
+  private extractDimensionsFromProduct(name: string, category: string, url: string): string {
+    const nameLower = name.toLowerCase();
+    const urlLower = url.toLowerCase();
+    
+    // Look for dimensions in product name first
+    const dimensionPatterns = [
+      /(\d+["\']?\s*[xX×]\s*\d+["\']?(?:\s*[xX×]\s*\d+["\']?)?)/g,
+      /(\d+\s*x\s*\d+)/g,
+      /(\d+["\']?\s*×\s*\d+["\']?)/g,
+      /(\d+\.\d+["\']?\s*[xX×]\s*\d+\.\d+["\']?)/g
+    ];
+    
+    for (const pattern of dimensionPatterns) {
+      const match = name.match(pattern) || url.match(pattern);
+      if (match) {
+        return match[0];
+      }
+    }
+    
+    // Category-specific default dimensions
+    switch (category) {
+      case 'tiles':
+        return '12" x 12"';
+      case 'slabs':
+        return '120" x 60"';
+      case 'lvt':
+        return '6" x 48"';
+      case 'hardwood':
+        return '3.25" x Random Length';
+      case 'carpet':
+        return '12\' Width';
+      case 'heat':
+        return '10 sq ft coverage';
+      case 'thermostats':
+        return '3.5" x 5.5" x 1.2"';
+      default:
+        return 'Standard Size';
+    }
+  }
+
   private detectMaterialType(url: string, name: string): string {
     // CRITICAL MATERIAL TYPE DETECTION - 100% ACCURACY REQUIRED
     if (url.includes('quartz') || name.toLowerCase().includes('quartz')) {
@@ -1321,6 +1434,8 @@ export class SimulationScraper {
     }
   }
 
+
+
   private enhanceSpecifications(specs: any, category: string, brand: string, name: string, url: string, imageUrl: string): any {
     // Ensure we have a proper image URL
     if (!imageUrl || imageUrl.includes('placehold.co')) {
@@ -1335,7 +1450,20 @@ export class SimulationScraper {
       };
       imageUrl = categoryImages[category as keyof typeof categoryImages] || categoryImages.tiles;
     }
+    
     let finalSpecs = { ...specs };
+    
+    // Always ensure core product information is included
+    finalSpecs['Product Name'] = finalSpecs['Product Name'] || name;
+    finalSpecs['Brand / Manufacturer'] = finalSpecs['Brand / Manufacturer'] || brand;
+    finalSpecs['Category'] = finalSpecs['Category'] || category;
+    finalSpecs['Product URL'] = finalSpecs['Product URL'] || url;
+    finalSpecs['Image URL'] = finalSpecs['Image URL'] || imageUrl;
+    
+    // Ensure dimensions are included with category-appropriate defaults
+    if (!finalSpecs['Dimensions'] && !finalSpecs['Slab Dimensions']) {
+      finalSpecs['Dimensions'] = this.extractDimensionsFromProduct(name, category, url);
+    }
     
     if (category === 'carpet') {
       // Apply comprehensive carpet specifications
