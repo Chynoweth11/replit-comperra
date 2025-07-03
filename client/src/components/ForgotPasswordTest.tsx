@@ -74,13 +74,6 @@ export const ForgotPasswordTest = () => {
           <p>• Try with a real email to test delivery</p>
           <p>• Check browser console for detailed logs</p>
           <p>• Firebase config: {auth.app.options.projectId}</p>
-          <p>• Storage bucket: {auth.app.options.storageBucket}</p>
-          <div className="mt-4 p-2 bg-blue-50 rounded">
-            <p className="text-blue-700 font-medium">Test Instructions:</p>
-            <p className="text-blue-600 text-xs">1. Enter a valid email address</p>
-            <p className="text-blue-600 text-xs">2. Click "Test Forgot Password"</p>
-            <p className="text-blue-600 text-xs">3. Check email for reset link</p>
-          </div>
         </div>
       </CardContent>
     </Card>

@@ -244,38 +244,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Check if URL contains manufacturer domains (expanded list + fallback)
+      // Check if URL contains manufacturer domains
       const supportedDomains = [
         'msisurfaces.com', 'daltile.com', 'arizonatile.com', 'floridatile.com',
         'emser.com', 'marazziusa.com', 'cambriasurfaces.com', 'shawfloors.com',
-        'mohawkflooring.com', 'coretecfloors.com', 'grainger.com', 'homedepot.com',
-        'lowes.com', 'bedrosians.com', 'anatolia.com', 'centurytile.com',
-        'interceramic.com', 'stonepeak.com', 'crossville.com', 'eleganzatiles.com',
-        'flooranddecor.com', 'tileshop.com', 'porcelanosa.com', 'caesarstone.com',
-        'silestone.com', 'viatera.com', 'hanstone.com', 'zodiaq.com',
-        'corian.com', 'wilsonart.com', 'formica.com', 'armstrong.com',
-        'mannington.com', 'tarkett.com', 'karndean.com', 'luxuryvinyl.com',
-        'lumber.com', 'buildersdirect.com', 'tileoutlet.com', 'tilesensation.com'
+        'mohawkflooring.com', 'coretecfloors.com', 'grainger.com'
       ];
       
       const urlDomain = new URL(url).hostname.toLowerCase();
       const isSupported = supportedDomains.some(domain => urlDomain.includes(domain));
       
-      // Allow all URLs for now - removed restrictive validation
-      // if (!isSupported) {
-      //   return res.status(400).json({
-      //     success: false,
-      //     message: "URL not from a supported manufacturer. Please use URLs from MSI, Daltile, Arizona Tile, Shaw, Mohawk, Cambria, or other major building material manufacturers."
-      //   });
-      // }
+      if (!isSupported) {
+        return res.status(400).json({
+          success: false,
+          message: "URL not from a supported manufacturer. Please use URLs from MSI, Daltile, Arizona Tile, Shaw, Mohawk, Cambria, or other major building material manufacturers."
+        });
+      }
 
       console.log(`Processing scraping request for: ${url}`);
       
       // Scrape the product 
       const { simulationScraper } = await import('./simulation-scraper');
       const scrapedProduct = await simulationScraper.scrapeRealProductFromURL(url);
-      
-      console.log('Scraping result:', scrapedProduct ? { name: scrapedProduct.name, category: scrapedProduct.category, brand: scrapedProduct.brand } : 'NULL');
       
       if (scrapedProduct && scrapedProduct.name) {
         console.log('Scraped product successfully!');
@@ -344,49 +334,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
       } else {
-        console.log('Failed to scrape product or invalid result:', scrapedProduct);
-        
-        // Force create a fallback product if scraping completely fails
-        const fallbackProduct = {
-          name: url.split('/').pop()?.replace(/\.(html?|php|aspx?)$/, '').replace(/[-_]/g, ' ') || 'Product',
-          brand: 'Unknown',
-          category: 'tiles',
-          price: 'N/A',
-          imageUrl: 'https://placehold.co/400x300/CCCCCC/FFFFFF?text=Product+Image',
-          description: 'Product information extracted from manufacturer website',
-          specifications: { 'Product URL': url },
-          dimensions: 'N/A',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
-        
-        try {
-          const savedMaterial = await storage.createMaterial(fallbackProduct);
-          console.log('✅ Saved fallback product with ID:', savedMaterial.id);
-          
-          res.json({
-            success: true,
-            message: "Product saved successfully (using available data)",
-            product: {
-              id: savedMaterial.id,
-              name: fallbackProduct.name,
-              brand: fallbackProduct.brand,
-              category: fallbackProduct.category,
-              price: fallbackProduct.price,
-              imageUrl: fallbackProduct.imageUrl,
-              description: fallbackProduct.description,
-              specifications: fallbackProduct.specifications,
-              dimensions: fallbackProduct.dimensions,
-              sourceUrl: url
-            }
-          });
-        } catch (saveError) {
-          console.error('Failed to save fallback product:', saveError);
-          res.status(500).json({
-            success: false,
-            message: "Failed to extract product information from the provided URL."
-          });
-        }
+        res.status(404).json({ success: false, message: "Failed to extract product data" });
       }
       
     } catch (error) {

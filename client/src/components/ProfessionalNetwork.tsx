@@ -79,26 +79,13 @@ function Login({ setView }) {
     const [loading, setLoading] = useState(false);
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const { login } = useAuth();
-    const { toast } = useToast();
+    const toast = useToast();
     const handleChange = e => setFormData(p => ({...p, [e.target.name]: e.target.value}));
     
     const handleSubmit = async (e) => {
-        e.preventDefault(); 
-        setLoading(true);
-        try { 
-            await login(formData.email, formData.password);
-            toast({
-                title: "Login successful!",
-                description: "Welcome back to your professional account.",
-            });
-        } 
-        catch (error) { 
-            toast({
-                title: "Login failed",
-                description: "Invalid credentials. Please try again.",
-                variant: "destructive",
-            });
-        } 
+        e.preventDefault(); setLoading(true); toast.loading('Signing in...');
+        try { await login(formData.email, formData.password); toast.success('Login successful!'); } 
+        catch (error) { toast.error('Invalid credentials. Please try again.'); } 
         finally { setLoading(false); }
     };
 
@@ -108,44 +95,30 @@ function Login({ setView }) {
         console.log('Forgot password clicked, email:', formData.email);
         
         if (!formData.email || !formData.email.includes('@')) {
-            toast({
-                title: "Invalid email",
-                description: "Please enter a valid email address.",
-                variant: "destructive",
-            });
+            toast.error('Please enter a valid email address.');
             return;
         }
         
         setLoading(true);
+        toast.loading('Sending reset email...');
         
         try {
             console.log('Attempting to send password reset email to:', formData.email);
             await sendPasswordResetEmail(auth, formData.email);
             console.log('Password reset email sent successfully');
-            toast({
-                title: "Reset email sent",
-                description: "Password reset instructions sent to your email!",
-            });
+            toast.success('Password reset instructions sent to your email!');
             setShowForgotPassword(false);
-        } catch (error: any) {
+        } catch (error) {
             console.error('Password reset error:', error);
-            let errorMessage = 'Please try again.';
-            
             if (error.code === 'auth/user-not-found') {
-                errorMessage = 'No account found with this email address.';
+                toast.error('No account found with this email address.');
             } else if (error.code === 'auth/invalid-email') {
-                errorMessage = 'Please enter a valid email address.';
+                toast.error('Please enter a valid email address.');
             } else if (error.code === 'auth/too-many-requests') {
-                errorMessage = 'Too many requests. Please try again later.';
-            } else if (error.message) {
-                errorMessage = error.message;
+                toast.error('Too many requests. Please try again later.');
+            } else {
+                toast.error(`Failed to send reset email: ${error.message || 'Please try again.'}`);
             }
-            
-            toast({
-                title: "Failed to send reset email",
-                description: errorMessage,
-                variant: "destructive",
-            });
         } finally {
             setLoading(false);
         }
