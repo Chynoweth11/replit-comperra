@@ -392,17 +392,10 @@ export class SimulationScraper {
       // COMPREHENSIVE SPECIFICATION EXTRACTION
       console.log(`Extracting detailed specifications for ${category} category`);
       
-      // Extract comprehensive specifications using multiple strategies
-      try {
-        const extractedSpecs = this.extractRealSpecifications($, response.data, category, brand, name, url);
-        
-        // Merge basic specs with extracted detailed specs
-        Object.assign(specs, extractedSpecs);
-        
-        console.log(`Extracted ${Object.keys(extractedSpecs).length} detailed specifications from website`);
-      } catch (error) {
-        console.log(`Specification extraction failed, using fallback: ${error}`);
-      }
+      // Extract detailed specifications using real data extraction
+      this.extractDetailedSpecifications($, response.data, specs, category, brand, name, url);
+      
+      console.log(`Total specifications after extraction: ${Object.keys(specs).length}`);
       
       // Enhanced specification extraction with multiple selectors
       const specSelectors = [
@@ -583,6 +576,231 @@ export class SimulationScraper {
   }
 
   // COMPREHENSIVE SPECIFICATION EXTRACTION METHOD
+  private extractDetailedSpecifications($: any, html: string, specs: any, category: string, brand: string, name: string, url: string): void {
+    console.log(`Starting comprehensive ${category} specification extraction`);
+    
+    // Extract from structured data first
+    this.extractFromStructuredData($, html, specs);
+    
+    // Extract category-specific comprehensive specifications
+    this.extractCategorySpecificSpecs($, html, specs, category, brand);
+    
+    // Extract universal specifications
+    this.extractUniversalSpecifications($, html, specs);
+    
+    // Apply comprehensive specifications enhancement
+    const enhancedSpecs = this.enhanceSpecifications(specs, category, brand, name, url, specs['Image URL'] || '');
+    Object.assign(specs, enhancedSpecs);
+    
+    console.log(`Completed comprehensive extraction for ${category}: ${Object.keys(specs).length} total specifications`);
+  }
+  
+  private extractFromStructuredData($: any, html: string, specs: any): void {
+    // Extract from JSON-LD structured data
+    $('script[type="application/ld+json"]').each((_: any, el: any) => {
+      try {
+        const jsonData = JSON.parse($(el).html() || '{}');
+        if (jsonData['@type'] === 'Product') {
+          if (jsonData.name && !specs['Product Name']) specs['Product Name'] = jsonData.name;
+          if (jsonData.brand?.name && !specs['Brand']) specs['Brand'] = jsonData.brand.name;
+          if (jsonData.offers?.price && !specs['Price']) specs['Price'] = jsonData.offers.price;
+          if (jsonData.description && !specs['Description']) specs['Description'] = jsonData.description;
+        }
+      } catch (e) {
+        // Skip invalid JSON
+      }
+    });
+    
+    // Extract from meta tags
+    const ogTitle = $('meta[property="og:title"]').attr('content');
+    const ogDescription = $('meta[property="og:description"]').attr('content');
+    if (ogTitle && !specs['Product Name']) specs['Product Name'] = ogTitle;
+    if (ogDescription && !specs['Description']) specs['Description'] = ogDescription;
+  }
+  
+  private extractCategorySpecificSpecs($: any, html: string, specs: any, category: string, brand: string): void {
+    switch (category) {
+      case 'tiles':
+        this.extractComprehensiveTileSpecs($, html, specs, brand);
+        break;
+      case 'slabs':
+        this.extractComprehensiveSlabSpecs($, html, specs, brand);
+        break;
+      case 'lvt':
+        this.extractComprehensiveLVTSpecs($, html, specs, brand);
+        break;
+      case 'hardwood':
+        this.extractComprehensiveHardwoodSpecs($, html, specs, brand);
+        break;
+      case 'heat':
+        this.extractComprehensiveHeatingSpecs($, html, specs, brand);
+        break;
+      case 'carpet':
+        this.extractComprehensiveCarpetSpecs($, html, specs, brand);
+        break;
+      case 'thermostats':
+        this.extractComprehensiveThermostatSpecs($, html, specs, brand);
+        break;
+    }
+  }
+  
+  private extractComprehensiveTileSpecs($: any, html: string, specs: any, brand: string): void {
+    const patterns = {
+      'Material Type': /material[:\s]*(ceramic|porcelain|natural stone|marble|granite|travertine|glass|metal)/i,
+      'PEI Rating': /pei[:\s]*rating[:\s]*(\d+)|pei[:\s]*(\d+)|class[:\s]*(\d+)/i,
+      'DCOF Rating': /dcof[:\s]*([\d.]+)|slip[:\s]*resistance[:\s]*([\d.]+)|coefficient[:\s]*([\d.]+)/i,
+      'Water Absorption': /water[:\s]*absorption[:\s]*([<>]?\s*[\d.]+%?)|absorption[:\s]*([<>]?\s*[\d.]+%?)/i,
+      'Finish': /finish[:\s]*(glossy|matte|satin|polished|honed|textured|natural|lappato)/i,
+      'Color': /color[:\s]*([a-zA-Z\s\-]+)|colour[:\s]*([a-zA-Z\s\-]+)/i,
+      'Size': /size[:\s]*([\d"x\s\.]+)|dimensions[:\s]*([\d"x\s\.]+)/i,
+      'Thickness': /thickness[:\s]*([\d./]+["'\s]*mm?|[\d./]+["'\s]*inch)/i,
+      'Edge Type': /edge[:\s]*(rectified|pressed|beveled|straight|cushioned)/i,
+      'Installation': /installation[:\s]*(floor|wall|both|indoor|outdoor|wet areas)/i,
+      'Frost Resistance': /frost[:\s]*resist|freeze[:\s]*thaw|outdoor[:\s]*rated/i,
+      'Breaking Strength': /breaking[:\s]*strength[:\s]*([\d.]+)|tensile[:\s]*strength[:\s]*([\d.]+)/i,
+      'Shade Variation': /shade[:\s]*variation[:\s]*(v\d+|low|moderate|high|substantial)/i
+    };
+    
+    this.extractWithPatterns(html, specs, patterns);
+  }
+  
+  private extractComprehensiveSlabSpecs($: any, html: string, specs: any, brand: string): void {
+    const patterns = {
+      'Material Type': /material[:\s]*(quartz|granite|marble|quartzite|natural stone|engineered)/i,
+      'Thickness': /thickness[:\s]*(2cm|3cm|[\d.]+cm|[\d./]+["'\s]*inch)/i,
+      'Slab Dimensions': /slab[:\s]*size[:\s]*([\d"x\s]+)|dimensions[:\s]*([\d"x\s]+)|size[:\s]*([\d"x\s]+)/i,
+      'Finish': /finish[:\s]*(polished|honed|leathered|brushed|flamed|sandblasted)/i,
+      'Edge Options': /edge[:\s]*(straight|beveled|bullnose|ogee|eased|waterfall)/i,
+      'Heat Resistance': /heat[:\s]*resistance[:\s]*([\d°F\s]+)|heat[:\s]*resistant[:\s]*to[:\s]*([\d°F\s]+)/i,
+      'Scratch Resistance': /scratch[:\s]*resistance[:\s]*(excellent|good|moderate|poor)/i,
+      'Applications': /applications?[:\s]*(kitchen|bathroom|countertop|vanity|commercial|residential)/i,
+      'Stain Resistance': /stain[:\s]*resistance[:\s]*(excellent|good|moderate|sealed required)/i,
+      'Pattern': /pattern[:\s]*(veined|solid|speckled|consistent|unique)/i,
+      'Origin': /origin[:\s]*([a-zA-Z\s]+)|quarried[:\s]*in[:\s]*([a-zA-Z\s]+)/i
+    };
+    
+    this.extractWithPatterns(html, specs, patterns);
+  }
+  
+  private extractComprehensiveLVTSpecs($: any, html: string, specs: any, brand: string): void {
+    const patterns = {
+      'Material Type': /material[:\s]*(luxury vinyl tile|luxury vinyl plank|lvt|lvp|vinyl|spc|wpc)/i,
+      'Wear Layer': /wear[:\s]*layer[:\s]*([\d.]+\s*mil)|wear[:\s]*([\d.]+\s*mil)/i,
+      'Core Type': /core[:\s]*type[:\s]*(spc|wpc|rigid|stone plastic composite|wood plastic composite)/i,
+      'Total Thickness': /thickness[:\s]*([\d.]+mm|[\d./]+["'\s]*inch)|total[:\s]*thickness[:\s]*([\d.]+mm)/i,
+      'Waterproof': /waterproof[:\s]*(yes|no|100%)|water[:\s]*resistant[:\s]*(yes|no)/i,
+      'Installation Method': /installation[:\s]*(click|glue|loose lay|floating|adhesive)/i,
+      'Plank Width': /width[:\s]*([\d.]+["'\s]*)|plank[:\s]*width[:\s]*([\d.]+["'\s]*)/i,
+      'Plank Length': /length[:\s]*([\d.]+["'\s]*)|plank[:\s]*length[:\s]*([\d.]+["'\s]*)/i,
+      'Warranty': /warranty[:\s]*([\d]+\s*years?)|guarantee[:\s]*([\d]+\s*years?)/i,
+      'Surface Texture': /texture[:\s]*(embossed|smooth|hand scraped|wire brushed)/i,
+      'Beveled Edge': /beveled[:\s]*edge[:\s]*(yes|no|micro|painted)/i,
+      'Commercial Rating': /commercial[:\s]*rating[:\s]*(class \d+|heavy|moderate|light)/i
+    };
+    
+    this.extractWithPatterns(html, specs, patterns);
+  }
+  
+  private extractComprehensiveHardwoodSpecs($: any, html: string, specs: any, brand: string): void {
+    const patterns = {
+      'Wood Species': /species[:\s]*(oak|maple|hickory|cherry|walnut|pine|birch|ash|bamboo)/i,
+      'Grade': /grade[:\s]*(select|clear|rustic|character|prime|standard|cabin)/i,
+      'Construction': /construction[:\s]*(solid|engineered|laminate|3-layer|5-layer)/i,
+      'Plank Thickness': /thickness[:\s]*([\d./]+["'\s]*inch|[\d.]+mm)/i,
+      'Plank Width': /width[:\s]*([\d.]+["'\s]*)|plank[:\s]*width[:\s]*([\d.]+["'\s]*)/i,
+      'Plank Length': /length[:\s]*(random|[\d.]+["'\s]*)|plank[:\s]*length[:\s]*([\d.]+["'\s]*)/i,
+      'Finish Type': /finish[:\s]*(pre-finished|unfinished|site-finished|factory-finished)/i,
+      'Janka Hardness': /janka[:\s]*hardness[:\s]*([\d,]+)|hardness[:\s]*rating[:\s]*([\d,]+)/i,
+      'Installation Method': /installation[:\s]*(nail down|glue down|floating|staple|click)/i,
+      'Edge Profile': /edge[:\s]*(micro[- ]?beveled|square|pillowed|eased)/i,
+      'Gloss Level': /gloss[:\s]*level[:\s]*(satin|semi-gloss|matte|high gloss)/i,
+      'Radiant Heat': /radiant[:\s]*heat[:\s]*(compatible|approved|yes|no)/i
+    };
+    
+    this.extractWithPatterns(html, specs, patterns);
+  }
+  
+  private extractComprehensiveHeatingSpecs($: any, html: string, specs: any, brand: string): void {
+    const patterns = {
+      'System Type': /system[:\s]*type[:\s]*(electric|hydronic|radiant|in-floor|cable|mat)/i,
+      'Voltage': /voltage[:\s]*(120v|240v|[\d]+v)/i,
+      'Wattage': /wattage[:\s]*([\d]+w|[\d]+\s*watts?)|power[:\s]*([\d]+w)/i,
+      'Coverage Area': /coverage[:\s]*([\d.]+\s*sq\.?\s*ft|[\d.]+\s*sf)|area[:\s]*([\d.]+\s*sq\.?\s*ft)/i,
+      'Installation Type': /installation[:\s]*(under tile|under hardwood|under carpet|in mortar)/i,
+      'Thermostat Compatibility': /thermostat[:\s]*(included|required|optional|compatible)/i,
+      'Wire Spacing': /wire[:\s]*spacing[:\s]*([\d.]+["'\s]*)|spacing[:\s]*([\d.]+["'\s]*)/i,
+      'Cable Diameter': /cable[:\s]*diameter[:\s]*([\d.]+mm|[\d./]+["'\s]*)/i,
+      'Max Length': /max[:\s]*length[:\s]*([\d.]+\s*ft)|length[:\s]*limit[:\s]*([\d.]+\s*ft)/i,
+      'GFCI Required': /gfci[:\s]*(required|yes|included)|ground[:\s]*fault/i,
+      'Warranty Period': /warranty[:\s]*([\d]+\s*years?)|guarantee[:\s]*([\d]+\s*years?)/i
+    };
+    
+    this.extractWithPatterns(html, specs, patterns);
+  }
+  
+  private extractComprehensiveCarpetSpecs($: any, html: string, specs: any, brand: string): void {
+    const patterns = {
+      'Fiber Type': /fiber[:\s]*(nylon|polyester|polypropylene|wool|triexta|olefin)/i,
+      'Pile Style': /pile[:\s]*style[:\s]*(cut|loop|cut and loop|frieze|saxony|textured)/i,
+      'Pile Height': /pile[:\s]*height[:\s]*([\d./]+["'\s]*inch|[\d.]+mm)/i,
+      'Stain Resistance': /stain[:\s]*resistance[:\s]*(yes|excellent|good|scotchgard|lifeguard)/i,
+      'Soil Resistance': /soil[:\s]*resistance[:\s]*(excellent|good|moderate)/i,
+      'Backing Type': /backing[:\s]*(action|unitary|woven|non-woven|synthetic)/i,
+      'Installation Method': /installation[:\s]*(glue down|stretch in|double stick|tack strip)/i,
+      'Traffic Rating': /traffic[:\s]*rating[:\s]*(heavy|moderate|light|commercial|residential)/i,
+      'Face Weight': /face[:\s]*weight[:\s]*([\d.]+\s*oz)|weight[:\s]*([\d.]+\s*oz)/i,
+      'Density': /density[:\s]*([\d,]+)|pile[:\s]*density[:\s]*([\d,]+)/i,
+      'Twist Level': /twist[:\s]*level[:\s]*([\d.]+)|twist[:\s]*([\d.]+)/i,
+      'Warranty Coverage': /warranty[:\s]*([\d]+\s*years?)|guarantee[:\s]*([\d]+\s*years?)/i
+    };
+    
+    this.extractWithPatterns(html, specs, patterns);
+  }
+  
+  private extractComprehensiveThermostatSpecs($: any, html: string, specs: any, brand: string): void {
+    const patterns = {
+      'Device Type': /device[:\s]*type[:\s]*(programmable|smart|wifi|manual|digital)/i,
+      'Voltage Rating': /voltage[:\s]*(120v|240v|[\d]+v)|rated[:\s]*voltage[:\s]*([\d]+v)/i,
+      'Load Capacity': /load[:\s]*capacity[:\s]*([\d.]+a|[\d]+\s*amp)|current[:\s]*rating[:\s]*([\d.]+a)/i,
+      'Sensor Type': /sensor[:\s]*type[:\s]*(floor|air|dual|ambient|remote)/i,
+      'Display Type': /display[:\s]*(touchscreen|lcd|led|digital|backlit)/i,
+      'Connectivity': /connectivity[:\s]*(wifi|bluetooth|zigbee|z-wave|wireless)/i,
+      'Installation Type': /installation[:\s]*(in-wall|surface mount|din rail|gang box)/i,
+      'GFCI Protection': /gfci[:\s]*(built-in|required|yes|no|integrated)/i,
+      'Temperature Range': /temperature[:\s]*range[:\s]*([\d°F\-\s]+)|temp[:\s]*range[:\s]*([\d°F\-\s]+)/i,
+      'Programmable Features': /programmable[:\s]*(yes|no|7-day|5+2|schedule)/i,
+      'Smart Features': /smart[:\s]*features[:\s]*(app control|voice|learning|geofencing)/i,
+      'Warranty Period': /warranty[:\s]*([\d]+\s*years?)|guarantee[:\s]*([\d]+\s*years?)/i
+    };
+    
+    this.extractWithPatterns(html, specs, patterns);
+  }
+  
+  private extractWithPatterns(html: string, specs: any, patterns: Record<string, RegExp>): void {
+    for (const [key, pattern] of Object.entries(patterns)) {
+      if (!specs[key]) { // Only add if not already present
+        const match = html.match(pattern);
+        if (match) {
+          specs[key] = match[1] || match[2] || match[3] || match[0];
+        }
+      }
+    }
+  }
+  
+  private extractUniversalSpecifications($: any, html: string, specs: any): void {
+    const patterns = {
+      'Model Number': /model[:\s]*([a-zA-Z0-9\-]+)|model[:\s]*#[:\s]*([a-zA-Z0-9\-]+)/i,
+      'SKU': /sku[:\s]*([a-zA-Z0-9\-]+)|item[:\s]*#[:\s]*([a-zA-Z0-9\-]+)/i,
+      'UPC Code': /upc[:\s]*([0-9\-]+)|barcode[:\s]*([0-9\-]+)/i,
+      'Country of Origin': /origin[:\s]*([a-zA-Z\s]+)|made[:\s]*in[:\s]*([a-zA-Z\s]+)/i,
+      'Certifications': /certification[:\s]*([a-zA-Z0-9\s,]+)|certified[:\s]*([a-zA-Z0-9\s,]+)/i,
+      'GREENGUARD': /greenguard|low[:\s]*emission|indoor[:\s]*air[:\s]*quality/i,
+      'FloorScore': /floorscore|scs[:\s]*certified/i
+    };
+    
+    this.extractWithPatterns(html, specs, patterns);
+  }
+
   private extractRealSpecifications($: any, html: string, category: string, brand: string, name: string, url: string): Record<string, string> {
     const specs: Record<string, string> = {};
     
