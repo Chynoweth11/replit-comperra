@@ -318,6 +318,29 @@ export class SimulationScraper {
           if (url.includes('cloe-tile')) {
             name = 'Bedrosians Cloe Ceramic Tile';
             console.log(`Applied special Bedrosians Cloe handling: ${name}`);
+          } else if (url.includes('quartzite')) {
+            // Extract quartzite product name from URL - look for the product name segment
+            const urlSegments = url.split('/');
+            const quartziteIndex = urlSegments.findIndex(segment => segment.includes('quartzite'));
+            
+            if (quartziteIndex > 0) {
+              // Look for the segment that contains the actual product name (should contain 'quartzite')
+              const productSegment = urlSegments.find(segment => 
+                segment.includes('quartzite') && 
+                segment !== 'quartzite' && 
+                segment.length > 'quartzite'.length
+              ) || 'infinity-quartzite-slab';
+              
+              name = productSegment
+                .replace(/\?.*$/, '') // Remove query parameters
+                .replace(/\.(html?|php|aspx?)$/, '') // Remove file extensions
+                .replace(/[-_]/g, ' ') // Replace hyphens and underscores with spaces
+                .replace(/\b\w/g, l => l.toUpperCase()) // Capitalize each word
+                .trim();
+              console.log(`Extracted quartzite product name: ${name}`);
+            } else {
+              name = 'Bedrosians Quartzite Slab';
+            }
           } else {
             // Extract product name from URL path
             const urlSegments = url.split('/');
@@ -1473,19 +1496,24 @@ export class SimulationScraper {
 
   private detectMaterialType(url: string, name: string): string {
     // CRITICAL MATERIAL TYPE DETECTION - 100% ACCURACY REQUIRED
-    if (url.includes('quartz') || name.toLowerCase().includes('quartz')) {
+    const urlLower = url.toLowerCase();
+    const nameLower = name.toLowerCase();
+    
+    if (urlLower.includes('quartzite') || nameLower.includes('quartzite')) {
+      return 'Natural Quartzite';
+    } else if (urlLower.includes('quartz') || nameLower.includes('quartz')) {
       return 'Engineered Quartz';
-    } else if (url.includes('granite') || name.toLowerCase().includes('granite')) {
+    } else if (urlLower.includes('granite') || nameLower.includes('granite')) {
       return 'Natural Granite';
-    } else if (url.includes('marble') || name.toLowerCase().includes('marble') || name.toLowerCase().includes('carrara') || name.toLowerCase().includes('calacatta')) {
+    } else if (urlLower.includes('marble') || nameLower.includes('marble') || nameLower.includes('carrara') || nameLower.includes('calacatta')) {
       return 'Natural Marble';
-    } else if (url.includes('travertine') || name.toLowerCase().includes('travertine')) {
+    } else if (urlLower.includes('travertine') || nameLower.includes('travertine')) {
       return 'Natural Travertine';
-    } else if (url.includes('limestone') || name.toLowerCase().includes('limestone')) {
+    } else if (urlLower.includes('limestone') || nameLower.includes('limestone')) {
       return 'Natural Limestone';
-    } else if (url.includes('slate') || name.toLowerCase().includes('slate')) {
+    } else if (urlLower.includes('slate') || nameLower.includes('slate')) {
       return 'Natural Slate';
-    } else if (url.includes('porcelain') || name.toLowerCase().includes('porcelain')) {
+    } else if (urlLower.includes('porcelain') || nameLower.includes('porcelain')) {
       return 'Porcelain Slab';
     } else {
       // Default to quartz for slabs category
