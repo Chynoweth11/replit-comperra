@@ -214,27 +214,32 @@ function Register({ setView }) {
         
         // Validation checks
         if(formData.services.length === 0) { 
-            toast.error("Please select at least one service."); 
+            toast.toast({ title: 'Error', description: 'Please select at least one service.', variant: 'destructive' }); 
             return; 
         }
         if(formData.password.length < 6) { 
-            toast.error("Password must be at least 6 characters."); 
+            toast.toast({ title: 'Error', description: 'Password must be at least 6 characters.', variant: 'destructive' }); 
             return; 
         }
         if(formData.password !== formData.confirmPassword) { 
-            toast.error("Passwords do not match."); 
+            toast.toast({ title: 'Error', description: 'Passwords do not match.', variant: 'destructive' }); 
             return; 
         }
         
-        setLoading(true); toast.loading('Creating account...');
+        setLoading(true); 
+        toast.toast({ title: 'Creating account...', description: 'Please wait while we set up your account.' });
         try { 
             await register(formData); 
-            toast.success('Registration successful! Please log in.'); 
+            toast.toast({ title: 'Success!', description: 'Registration successful! Please log in.' });
             setView('login'); 
         } 
         catch(error) { 
             console.error('Registration error:', error);
-            toast.error(error.code === 'auth/email-already-in-use' ? 'Email already exists.' : 'Registration failed.'); 
+            toast.toast({ 
+                title: 'Error', 
+                description: error.code === 'auth/email-already-in-use' ? 'Email already exists.' : 'Registration failed.',
+                variant: 'destructive'
+            }); 
         } 
         finally { setLoading(false); }
     };
@@ -283,17 +288,17 @@ function Dashboard() {
     const handleClaimLead = async (leadId) => {
         if (!user) return;
         const canClaim = (user.subscription === 'credit' && user.credits > 0) || (user.subscription === 'basic' && user.claimedLeads.length < 4) || user.subscription === 'pro';
-        if (!canClaim) { toast.error("Please upgrade your plan or buy credits."); return; }
-        toast.loading('Claiming lead...');
+        if (!canClaim) { toast.toast({ title: 'Error', description: 'Please upgrade your plan or buy credits.', variant: 'destructive' }); return; }
+        toast.toast({ title: 'Claiming lead...', description: 'Processing your request.' });
         await firebaseService.claimLead(user.uid, leadId);
         const updatedProfile = await firebaseService.getMemberProfile(user.uid);
         setUser(updatedProfile);
-        toast.success('Lead claimed!');
+        toast.toast({ title: 'Success!', description: 'Lead claimed!' });
     };
     const handleStripeCheckout = async () => {
-        toast.loading('Redirecting to payment...');
+        toast.toast({ title: 'Redirecting to payment...', description: 'Processing your purchase.' });
         await firebaseService.createStripeCheckout(user.uid);
-        setTimeout(() => { toast.success('Payment successful! Credits added.'); setUser(p => ({ ...p, credits: (p.credits || 0) + 5 })); }, 2000);
+        setTimeout(() => { toast.toast({ title: 'Success!', description: 'Payment successful! Credits added.' }); setUser(p => ({ ...p, credits: (p.credits || 0) + 5 })); }, 2000);
     };
     if (!user) return null;
     const claimedLeadCount = user.claimedLeads?.length || 0;
@@ -343,13 +348,14 @@ function SubmitLeadForm({ onBack }) {
     const [loading, setLoading] = useState(false);
     const handleChange = e => setFormData(p => ({...p, [e.target.name]: e.target.value}));
     const handleSubmit = async (e) => {
-        e.preventDefault(); setLoading(true); toast.loading('Finding your match...');
+        e.preventDefault(); setLoading(true); 
+        toast.toast({ title: 'Finding your match...', description: 'Searching for professionals in your area.' });
         try { 
             await firebaseService.submitLead(formData); 
-            toast.success('Lead submitted! We will connect you with a pro shortly.'); 
+            toast.toast({ title: 'Success!', description: 'Lead submitted! We will connect you with a pro shortly.' }); 
             setFormData(initialFormState); 
         } 
-        catch(err) { toast.error(err.message || 'Failed to submit lead.'); } 
+        catch(err) { toast.toast({ title: 'Error', description: err.message || 'Failed to submit lead.', variant: 'destructive' }); } 
         finally { setLoading(false); }
     };
     return (
