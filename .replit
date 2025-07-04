@@ -4,7 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["firebase-tools", "yakut"]
+packages = ["firebase-tools", "yakut", "zip"]
 
 [deployment]
 deploymentTarget = "autoscale"
