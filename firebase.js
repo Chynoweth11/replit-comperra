@@ -2,7 +2,6 @@
 
 // Core Firebase SDKs
 import { initializeApp, getApps } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 
 // Add-on SDKs for the services you're using
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
@@ -23,16 +22,6 @@ const firebaseConfig = {
 // Initialize Firebase app (singleton pattern)
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// Init analytics (only works in browser, with error handling)
-let analytics = null;
-if (typeof window !== "undefined") {
-  try {
-    analytics = getAnalytics(app);
-  } catch (error) {
-    console.log('Analytics initialization skipped:', error.code);
-  }
-}
-
 // Init services
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
@@ -40,4 +29,4 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 // Export for use throughout your app
-export { auth, provider, db, storage, analytics };
+export { auth, provider, db, storage };
