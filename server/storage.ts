@@ -878,8 +878,29 @@ Choosing the right thermostat ensures your heating system performs safely, effic
         (m as any).sourceUrl === materialWithUrl.sourceUrl
       );
       if (existingMaterial) {
-        console.log(`Duplicate URL detected: ${materialWithUrl.sourceUrl}. Returning existing material.`);
-        return existingMaterial;
+        // Check if existing material has template variables in dimensions
+        const hasTemplateVars = existingMaterial.dimensions?.includes('{{') || 
+                               existingMaterial.dimensions?.includes('}}') ||
+                               (existingMaterial.specifications as any)?.['Dimensions']?.includes('{{') ||
+                               (existingMaterial.specifications as any)?.['Dimensions']?.includes('}}');
+        
+        if (hasTemplateVars) {
+          console.log(`🔄 Updating existing material with template variables: ${existingMaterial.name}`);
+          // Update the existing material with new data
+          const updatedMaterial: Material = {
+            ...existingMaterial,
+            ...material,
+            id: existingMaterial.id,
+            createdAt: existingMaterial.createdAt,
+            updatedAt: new Date().toISOString()
+          };
+          this.materials.set(existingMaterial.id, updatedMaterial);
+          console.log(`✅ Updated material with improved dimensions: ${updatedMaterial.dimensions}`);
+          return updatedMaterial;
+        } else {
+          console.log(`Duplicate URL detected: ${materialWithUrl.sourceUrl}. Returning existing material.`);
+          return existingMaterial;
+        }
       }
     }
 
@@ -891,8 +912,29 @@ Choosing the right thermostat ensures your heating system performs safely, effic
     );
     
     if (existingByNameBrand) {
-      console.log(`Duplicate product detected: ${material.name} by ${material.brand}. Returning existing material.`);
-      return existingByNameBrand;
+      // Check if existing material has template variables in dimensions
+      const hasTemplateVars = existingByNameBrand.dimensions?.includes('{{') || 
+                             existingByNameBrand.dimensions?.includes('}}') ||
+                             (existingByNameBrand.specifications as any)?.['Dimensions']?.includes('{{') ||
+                             (existingByNameBrand.specifications as any)?.['Dimensions']?.includes('}}');
+      
+      if (hasTemplateVars) {
+        console.log(`🔄 Updating existing material with template variables: ${existingByNameBrand.name}`);
+        // Update the existing material with new data
+        const updatedMaterial: Material = {
+          ...existingByNameBrand,
+          ...material,
+          id: existingByNameBrand.id,
+          createdAt: existingByNameBrand.createdAt,
+          updatedAt: new Date().toISOString()
+        };
+        this.materials.set(existingByNameBrand.id, updatedMaterial);
+        console.log(`✅ Updated material with improved dimensions: ${updatedMaterial.dimensions}`);
+        return updatedMaterial;
+      } else {
+        console.log(`Duplicate product detected: ${material.name} by ${material.brand}. Returning existing material.`);
+        return existingByNameBrand;
+      }
     }
 
     const id = this.currentMaterialId++;
@@ -961,8 +1003,4 @@ export const storage: IStorage = new MemStorage();
 
 console.log('✅ Storage initialized with Memory Storage (Firebase integration available via separate service)');
 
-// Optional: Migrate data from memory to Firebase
-if (useFirebase && process.env.MIGRATE_DATA === 'true') {
-  const memStorage = new MemStorage();
-  (storage as FirebaseStorage).migrateFromMemStorage(memStorage).catch(console.error);
-}
+// Firebase migration handled separately if needed

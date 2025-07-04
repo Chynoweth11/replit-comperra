@@ -85,12 +85,21 @@ export class SimulationScraper {
     
     // PRIORITY 2: COMPOUND KEYWORD RULES (only if URL doesn't clearly indicate category)
     const compoundCategoryMap = {
+      "marble tile": "tiles",
+      "marble tiles": "tiles",
+      "granite tile": "tiles",
+      "granite tiles": "tiles",
+      "travertine tile": "tiles",
+      "travertine tiles": "tiles",
+      "ceramic tile": "tiles",
+      "porcelain tile": "tiles",
       "marble systems": "tiles",
       "nero marquina": "tiles", 
-      "calacatta": "slabs",
-      "carrara": "slabs",
+      "calacatta slab": "slabs",
+      "carrara slab": "slabs",
       "quartz slab": "slabs",
       "granite slab": "slabs",
+      "countertop slab": "slabs",
       "carpet tile": "carpet",
       "carpet tiles": "carpet", 
       "vinyl plank": "lvt",
@@ -125,17 +134,27 @@ export class SimulationScraper {
       return 'lvt';
     }
     
-    if (fullText.includes("slab") || fullText.includes("quartz") || fullText.includes("marble") || fullText.includes("granite")) {
-      return 'slabs';
-    }
-    
     if (fullText.includes("heating") || fullText.includes("radiant")) {
       return 'heat';
     }
     
-    // Check for standalone "tile" only after all other categories ruled out
-    if (fullText.includes("tile")) {
+    // Prioritize tiles over slabs for marble/granite products unless explicitly "slab"
+    if (fullText.includes("tile") || fullText.includes("ceramic") || fullText.includes("porcelain")) {
       console.log(`FALLBACK TILE KEYWORD for: ${url}`);
+      return 'tiles';
+    }
+    
+    // Only classify as slabs if explicitly mentioned or in countertop context
+    if (fullText.includes("slab") || fullText.includes("countertop") || 
+        (fullText.includes("quartz") && !fullText.includes("tile")) ||
+        (fullText.includes("marble") && !fullText.includes("tile") && fullText.includes("kitchen")) ||
+        (fullText.includes("granite") && !fullText.includes("tile") && fullText.includes("kitchen"))) {
+      return 'slabs';
+    }
+    
+    // If marble/granite appears but no clear slab indicators, default to tiles
+    if (fullText.includes("marble") || fullText.includes("granite") || fullText.includes("travertine")) {
+      console.log(`MARBLE/GRANITE FALLBACK TO TILES for: ${url}`);
       return 'tiles';
     }
     
@@ -413,43 +432,78 @@ export class SimulationScraper {
       const dimensionSelectors = [
         '.size, .dimensions, .product-size, .tile-size, .nominal-size',
         '.spec-dimensions, .dimension-value, .size-value',
-        '[data-dimension], [data-size]'
+        '[data-dimension], [data-size]',
+        'td:contains("Size"), td:contains("Dimensions")',
+        'th:contains("Size"), th:contains("Dimensions")'
       ];
       
       let extractedDimensions = '';
-      for (const selector of dimensionSelectors) {
-        const dimText = $(selector).first().text().trim();
-        if (dimText) {
-          const dimMatch = dimText.match(/(\d+["\']?\s*[xX×]\s*\d+["\']?(?:\s*[xX×]\s*\d+["\']?)?)/);
-          if (dimMatch) {
+      
+      // First, try to find dimensions in table cells and structured data
+      $('table tr').each((_: any, row: any) => {
+        const $row = $(row);
+        const cellTexts = $row.find('td').map((_: any, cell: any) => $(cell).text().trim()).get();
+        
+        for (const cellText of cellTexts) {
+          // Skip template variables
+          if (cellText.includes('{{') || cellText.includes('}}')) continue;
+          
+          const dimMatch = cellText.match(/(\d+["\']?\s*[xX×]\s*\d+["\']?(?:\s*[xX×]\s*\d+["\']?)?)/);
+          if (dimMatch && dimMatch[1]) {
             extractedDimensions = dimMatch[1];
-            break;
+            console.log(`Found dimensions in table cell: ${extractedDimensions}`);
+            return false; // Break out of loop
+          }
+        }
+      });
+      
+      // If still no dimensions, try specific selectors
+      if (!extractedDimensions) {
+        for (const selector of dimensionSelectors) {
+          const dimText = $(selector).first().text().trim();
+          if (dimText && !dimText.includes('{{') && !dimText.includes('}}')) {
+            const dimMatch = dimText.match(/(\d+["\']?\s*[xX×]\s*\d+["\']?(?:\s*[xX×]\s*\d+["\']?)?)/);
+            if (dimMatch) {
+              extractedDimensions = dimMatch[1];
+              console.log(`Found dimensions in selector ${selector}: ${extractedDimensions}`);
+              break;
+            }
           }
         }
       }
       
-      // If no dimensions found in specific selectors, search the entire page
+      // If still no dimensions, search the entire page text but exclude template variables
       if (!extractedDimensions) {
-        const fullHtml = $.html();
+        const fullText = $('body').text();
+        const cleanText = fullText.replace(/\{\{[^}]+\}\}/g, ''); // Remove template variables
+        
         const dimensionPatterns = [
-          /size[:\s]*(\d+["\']?\s*[xX×]\s*\d+["\']?)/i,
-          /dimensions?[:\s]*(\d+["\']?\s*[xX×]\s*\d+["\']?)/i,
+          /(?:size|dimensions?)[:\s]*(\d+["\']?\s*[xX×]\s*\d+["\']?)/i,
           /(\d+["\']?\s*[xX×]\s*\d+["\']?)/g
         ];
         
         for (const pattern of dimensionPatterns) {
-          const match = fullHtml.match(pattern);
-          if (match) {
-            extractedDimensions = match[1] || match[0];
-            break;
+          const matches = cleanText.match(pattern);
+          if (matches) {
+            for (const match of matches) {
+              const dimMatch = match.match(/(\d+["\']?\s*[xX×]\s*\d+["\']?)/);
+              if (dimMatch && dimMatch[1]) {
+                extractedDimensions = dimMatch[1];
+                console.log(`Found dimensions in page text: ${extractedDimensions}`);
+                break;
+              }
+            }
+            if (extractedDimensions) break;
           }
         }
       }
       
-      // Store extracted dimensions
-      if (extractedDimensions) {
+      // Store extracted dimensions with validation
+      if (extractedDimensions && !extractedDimensions.includes('{{')) {
         specs['Dimensions'] = extractedDimensions;
-        console.log(`Extracted dimensions from HTML: ${extractedDimensions}`);
+        console.log(`✅ Successfully extracted dimensions: ${extractedDimensions}`);
+      } else {
+        console.log(`❌ No valid dimensions found, using category default`);
       }
       
       // Enhanced specification extraction with multiple selectors
@@ -497,7 +551,10 @@ export class SimulationScraper {
             } else if (/finish|surface|texture/i.test(key)) {
               specs['Finish'] = value;
             } else if (/size|dimension/i.test(key)) {
-              specs['Dimensions'] = value;
+              // Only use value if it doesn't contain template variables
+              if (!value.includes('{{') && !value.includes('}}')) {
+                specs['Dimensions'] = value;
+              }
             } else if (/material|type/i.test(key) && !/install/i.test(key)) {
               specs['Material Type'] = value;
             } else if (/dcof|slip|cof/i.test(key)) {
@@ -1460,9 +1517,18 @@ export class SimulationScraper {
     finalSpecs['Product URL'] = finalSpecs['Product URL'] || url;
     finalSpecs['Image URL'] = finalSpecs['Image URL'] || imageUrl;
     
+    // Clean up any template variables from all specifications
+    Object.keys(finalSpecs).forEach(key => {
+      if (typeof finalSpecs[key] === 'string' && finalSpecs[key].includes('{{')) {
+        console.log(`❌ Removing template variable from ${key}: ${finalSpecs[key]}`);
+        delete finalSpecs[key];
+      }
+    });
+    
     // Ensure dimensions are included with category-appropriate defaults
     if (!finalSpecs['Dimensions'] && !finalSpecs['Slab Dimensions']) {
       finalSpecs['Dimensions'] = this.extractDimensionsFromProduct(name, category, url);
+      console.log(`✅ Using fallback dimensions for ${category}: ${finalSpecs['Dimensions']}`);
     }
     
     if (category === 'carpet') {
