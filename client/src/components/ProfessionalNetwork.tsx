@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthNetworkContext';
 import firebaseService from '@/services/firebase-network';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
+import SubscriptionPlanSelector from './SubscriptionPlanSelector';
 
 // Common UI Components
 const Card = ({ children, className }) => <div className={`bg-white shadow-lg shadow-slate-200/40 rounded-xl p-6 md:p-8 border border-slate-200 ${className}`}>{children}</div>;
@@ -200,7 +201,9 @@ function Register({ setView }) {
     const toast = useToast();
     const [loading, setLoading] = useState(false);
     const [showInfoModal, setShowInfoModal] = useState(false);
-    const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '', zipCode: '', type: 'pro', subscription: 'credit', services: [] });
+    const [showPlanSelector, setShowPlanSelector] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState(null);
+    const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '', zipCode: '', type: 'pro', subscription: '', services: [] });
     
     const serviceOptions = { 
         pro: ['Tile Installation', 'Slabs/Countertop Supply & Installation', 'Vinyl & LVT Installation', 'Hardwood Floor Installation', 'Carpet Installation', 'Heating & Thermostat Installation'], 
@@ -209,12 +212,22 @@ function Register({ setView }) {
 
     const handleChange = (e) => setFormData(p => ({ ...p, [e.target.name]: e.target.value }));
     const handleServiceToggle = (service) => setFormData(p => ({ ...p, services: p.services.includes(service) ? p.services.filter(s => s !== service) : [...p.services, service] }));
+    
+    const handlePlanSelect = (plan) => {
+        setSelectedPlan(plan);
+        setFormData(p => ({ ...p, subscription: plan.id }));
+        setShowPlanSelector(false);
+    };
     const handleSubmit = async (e) => {
         e.preventDefault(); 
         
         // Validation checks
         if(formData.services.length === 0) { 
             toast.toast({ title: 'Error', description: 'Please select at least one service.', variant: 'destructive' }); 
+            return; 
+        }
+        if(!formData.subscription) { 
+            toast.toast({ title: 'Error', description: 'Please select a subscription plan.', variant: 'destructive' }); 
             return; 
         }
         if(formData.password.length < 6) { 
@@ -257,10 +270,35 @@ function Register({ setView }) {
                 <option value="pro">Trade Professional (Installation)</option><option value="vendor">Supplier (Material Sales)</option>
             </Select>
             <div>
-                <div className="flex items-center justify-between mb-1.5"><label htmlFor="subscription" className="block text-sm font-medium text-slate-700">Subscription</label><button type="button" onClick={() => setShowInfoModal(true)} className="text-blue-600 hover:text-blue-800"><HelpCircle size={18}/></button></div>
-                <select id="subscription" name="subscription" value={formData.subscription} onChange={handleChange} className="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 sm:text-sm p-3 bg-white">
-                    {Object.entries(firebaseService.subscriptionTiers || {}).map(([key, { name }]) => <option key={key} value={key}>{name}</option>)}
-                </select>
+                <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-sm font-medium text-slate-700">Subscription Plan</label>
+                    <button type="button" onClick={() => setShowInfoModal(true)} className="text-blue-600 hover:text-blue-800">
+                        <HelpCircle size={18}/>
+                    </button>
+                </div>
+                {selectedPlan ? (
+                    <div className="p-3 border border-slate-300 rounded-lg bg-gray-50 flex items-center justify-between">
+                        <div>
+                            <span className="font-medium text-slate-900">{selectedPlan.name}</span>
+                            <span className="text-slate-600 ml-2">{selectedPlan.price}</span>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowPlanSelector(true)}
+                            className="text-blue-600 hover:text-blue-800 text-sm"
+                        >
+                            Change
+                        </button>
+                    </div>
+                ) : (
+                    <button
+                        type="button"
+                        onClick={() => setShowPlanSelector(true)}
+                        className="w-full p-3 border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-slate-50 text-left"
+                    >
+                        Select subscription plan...
+                    </button>
+                )}
             </div>
             <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Services You Provide</label>
@@ -272,6 +310,14 @@ function Register({ setView }) {
                 <button type="button" onClick={() => setView('professional-auth')} className="font-semibold text-green-600 hover:underline">Create as a Pro or Supplier</button>
             </p>
         </form></Card>
+        
+        {/* Subscription Plan Selector */}
+        {showPlanSelector && (
+            <SubscriptionPlanSelector
+                onSelectPlan={handlePlanSelect}
+                onClose={() => setShowPlanSelector(false)}
+            />
+        )}
         </>
     );
 }
