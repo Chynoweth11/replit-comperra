@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { FirebaseStorage } from "./firebase-storage";
 import { MemStorage } from "./storage";
+import { submitLead, LeadFormData } from "./firebase-leads";
 
 // Initialize memory storage (primary) for immediate functionality
 const storage = new MemStorage();
@@ -592,41 +593,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Lead capture endpoint
   app.post("/api/save-lead", async (req, res) => {
     try {
-      const { name, email, zip, product } = req.body;
+      const { name, email, zip, product, phone, message, isLookingForPro, customerType } = req.body;
       
-      if (!name || !email) {
-        return res.status(400).json({ success: false, error: "Name and email are required" });
+      if (!email) {
+        return res.status(400).json({ success: false, error: "Email is required" });
       }
 
-      console.log('Processing lead:', { name, email, zip, product });
+      console.log('Processing lead:', { name, email, zip, product, phone, isLookingForPro, customerType });
 
-      // Try Airtable with different table names and field configurations
-      if (base) {
-        const tableConfigurations = [
-          { name: 'Leads', fields: { Name: name, Email: email, ZIP: zip || '', Product: product || '', Status: 'New', Created: new Date().toISOString() } },
-          { name: 'Table 1', fields: { Name: name, Email: email, ZIP: zip || '', Product: product || '', Status: 'New', Created: new Date().toISOString() } },
-          { name: 'Leads', fields: { name, email, zip: zip || '', product: product || '', status: 'New', timestamp: new Date().toISOString() } },
-          { name: 'Table 1', fields: { name, email, zip: zip || '', product: product || '', status: 'New', timestamp: new Date().toISOString() } },
-          { name: 'Leads', fields: { Name: name, Email: email, Zip: zip || '', Product: product || '' } },
-          { name: 'Table 1', fields: { Name: name, Email: email, Zip: zip || '', Product: product || '' } }
-        ];
+      // Prepare lead data for Firebase
+      const leadData: LeadFormData = {
+        email,
+        phone: phone || null,
+        zip: zip || null,
+        message: message || product || `Interest in ${product || 'building materials'}`,
+        isLookingForPro: isLookingForPro || false,
+        customerType: customerType || "homeowner",
+        interest: product || "general inquiry",
+        source: "web-form"
+      };
 
-        for (const config of tableConfigurations) {
+      // Try Firebase first
+      try {
+        await submitLead(leadData);
+        console.log('✅ Lead saved to Firebase successfully');
+        
+        // Also try Airtable as backup (if available)
+        if (base) {
           try {
-            await base(config.name).create([{ fields: config.fields }]);
-            console.log(`Successfully saved to ${config.name} with fields:`, Object.keys(config.fields));
-            return res.json({ success: true, message: 'Lead saved successfully' });
-          } catch (error: any) {
-            console.log(`Failed ${config.name} attempt:`, error.message.substring(0, 100));
+            await base('Leads').create([{ 
+              fields: { 
+                Name: name || email, 
+                Email: email, 
+                ZIP: zip || '', 
+                Product: product || '', 
+                Phone: phone || '',
+                Type: leadData.isLookingForPro ? 'trade' : 'vendor',
+                Status: 'New', 
+                Created: new Date().toISOString() 
+              } 
+            }]);
+            console.log('✅ Lead also saved to Airtable backup');
+          } catch (airtableError) {
+            console.log('⚠️ Airtable backup failed (Firebase success maintained)');
+          }
+        }
+
+        return res.json({ success: true, message: 'Lead saved successfully' });
+      } catch (firebaseError) {
+        console.error('❌ Firebase lead submission failed:', firebaseError);
+        
+        // Fallback to Airtable only if Firebase fails
+        if (base) {
+          const tableConfigurations = [
+            { name: 'Leads', fields: { Name: name || email, Email: email, ZIP: zip || '', Product: product || '', Phone: phone || '', Status: 'New', Created: new Date().toISOString() } },
+            { name: 'Table 1', fields: { Name: name || email, Email: email, ZIP: zip || '', Product: product || '', Phone: phone || '', Status: 'New', Created: new Date().toISOString() } }
+          ];
+
+          for (const config of tableConfigurations) {
+            try {
+              await base(config.name).create([{ fields: config.fields }]);
+              console.log(`✅ Lead saved to Airtable fallback: ${config.name}`);
+              return res.json({ success: true, message: 'Lead saved successfully (fallback)' });
+            } catch (error: any) {
+              console.log(`Failed ${config.name} attempt:`, error.message.substring(0, 100));
+            }
           }
         }
         
-        console.warn('All Airtable attempts failed');
+        // Local fallback - always succeed for lead capture
+        console.log('📝 Lead captured (local fallback)');
+        res.json({ success: true, message: 'Lead captured successfully' });
       }
-
-      // Always return success for lead capture (fallback storage)
-      console.log('Lead captured (local fallback)');
-      res.json({ success: true, message: 'Lead captured successfully' });
 
     } catch (error) {
       console.error('Lead capture error:', error);
