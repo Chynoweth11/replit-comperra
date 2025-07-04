@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { FirebaseStorage } from "./firebase-storage";
 import { MemStorage } from "./storage";
 import { submitLead, LeadFormData } from "./firebase-leads";
+import { createAccount, signInUser, resetPassword, signOutUser, getCurrentUser, SignUpData, SignInData } from "./firebase-auth";
 
 // Initialize memory storage (primary) for immediate functionality
 const storage = new MemStorage();
@@ -669,6 +670,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Lead capture error:', error);
       res.status(500).json({ success: false, error: 'Failed to save lead' });
+    }
+  });
+
+  // Authentication endpoints
+  app.post("/api/auth/signup", async (req, res) => {
+    try {
+      const { email, password, role, name, phone, companyName, customerType } = req.body;
+      
+      if (!email || !password || !role) {
+        return res.status(400).json({ success: false, error: "Email, password, and role are required" });
+      }
+
+      const signUpData: SignUpData = {
+        email,
+        password,
+        role,
+        name: name || undefined,
+        phone: phone || undefined,
+        companyName: companyName || undefined,
+        customerType: customerType || undefined
+      };
+
+      const result = await createAccount(signUpData);
+      res.json(result);
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      res.status(400).json({ success: false, error: error.message });
+    }
+  });
+
+  app.post("/api/auth/signin", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ success: false, error: "Email and password are required" });
+      }
+
+      const signInData: SignInData = { email, password };
+      const result = await signInUser(signInData);
+      res.json(result);
+    } catch (error: any) {
+      console.error('Signin error:', error);
+      res.status(400).json({ success: false, error: error.message });
+    }
+  });
+
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ success: false, error: "Email is required" });
+      }
+
+      await resetPassword(email);
+      res.json({ success: true, message: "Password reset email sent" });
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      res.status(400).json({ success: false, error: error.message });
+    }
+  });
+
+  app.post("/api/auth/signout", async (req, res) => {
+    try {
+      await signOutUser();
+      res.json({ success: true, message: "Signed out successfully" });
+    } catch (error: any) {
+      console.error('Signout error:', error);
+      res.status(400).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get("/api/auth/current-user", async (req, res) => {
+    try {
+      const user = await getCurrentUser();
+      res.json({ success: true, user });
+    } catch (error: any) {
+      console.error('Get current user error:', error);
+      res.status(400).json({ success: false, error: error.message });
     }
   });
 
