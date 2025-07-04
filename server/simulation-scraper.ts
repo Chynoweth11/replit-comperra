@@ -1485,6 +1485,8 @@ export class SimulationScraper {
       return 'Natural Limestone';
     } else if (url.includes('slate') || name.toLowerCase().includes('slate')) {
       return 'Natural Slate';
+    } else if (url.includes('porcelain') || name.toLowerCase().includes('porcelain')) {
+      return 'Porcelain Slab';
     } else {
       // Default to quartz for slabs category
       return 'Engineered Quartz';
@@ -1759,7 +1761,7 @@ export class SimulationScraper {
         'Product Name': name,
         'Brand / Manufacturer': brand,
         'Category': 'Stone & Slabs',
-        'Material Type': 'Engineered Quartz',
+        'Material Type': this.detectMaterialType(url, name),
         'Color / Pattern': 'White with Gray Veining',
         'Finish': 'Polished',
         'Thickness': '2cm, 3cm',
@@ -2758,7 +2760,7 @@ export class SimulationScraper {
       specs['Product Name'] = name;
       specs['Brand / Manufacturer'] = brand;
       specs['Category'] = 'Stone & Slabs';
-      specs['Material Type'] = 'Engineered Quartz';
+      specs['Material Type'] = this.detectMaterialType(url, name);
       specs['Color / Pattern'] = 'White with Gray Veining';
       specs['Finish'] = 'Polished';
       specs['Thickness'] = '2cm, 3cm';
