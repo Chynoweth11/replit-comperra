@@ -11,6 +11,12 @@ const firebaseConfig = {
 
 export async function initializeFirebaseCollections() {
   try {
+    // Skip Firebase initialization if not properly configured
+    if (!process.env.VITE_FIREBASE_API_KEY || !process.env.VITE_FIREBASE_PROJECT_ID) {
+      console.log('⚠️  Firebase configuration missing, skipping initialization');
+      return false;
+    }
+
     // Initialize Firebase app if not already initialized
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
     const db = getFirestore(app);
@@ -70,16 +76,22 @@ export async function initializeFirebaseCollections() {
       }
     ];
 
-    // Try to create each collection with a timeout
+    // Try to create each collection with a timeout - silently fail on permission errors
     for (const col of collectionsToCreate) {
       try {
         await Promise.race([
           addDoc(collection(db, col.name), col.data),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000))
         ]);
         console.log(`✅ Collection ${col.name} initialized`);
       } catch (error) {
-        console.log(`⚠️  Collection ${col.name} initialization skipped: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        // Silently skip permission errors and other Firebase issues
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        if (errorMessage.includes('PERMISSION_DENIED') || errorMessage.includes('Timeout')) {
+          console.log(`⚠️  Collection ${col.name} initialization skipped: Firebase permissions`);
+        } else {
+          console.log(`⚠️  Collection ${col.name} initialization skipped: ${errorMessage}`);
+        }
       }
     }
     
