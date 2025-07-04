@@ -26,6 +26,67 @@ export class FirebaseStorage implements IStorage {
   private brandsCollection = 'comperra-brands';
   private isInitialized = false;
 
+  async initializeCollections(): Promise<void> {
+    if (this.isInitialized) return;
+    
+    try {
+      console.log('🔄 Initializing Firebase collections automatically...');
+      
+      // Create sample documents to ensure collections exist
+      const sampleData = {
+        products: {
+          name: "Sample Marble Slab",
+          category: "slabs",
+          brand: "System",
+          price: "0.00",
+          dimensions: "120\" x 60\"",
+          specifications: { materialType: "Sample" },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        leads: {
+          email: "system@comperra.com",
+          interest: "System initialization",
+          customerType: "system",
+          createdAt: new Date().toISOString()
+        },
+        vendors: {
+          companyName: "System Vendor",
+          email: "system@comperra.com",
+          active: true,
+          createdAt: new Date().toISOString()
+        },
+        trades: {
+          name: "System Trade",
+          trade: "System",
+          email: "system@comperra.com",
+          createdAt: new Date().toISOString()
+        },
+        customers: {
+          name: "System Customer",
+          email: "system@comperra.com",
+          customerType: "system",
+          createdAt: new Date().toISOString()
+        }
+      };
+
+      // Create collections by adding sample documents
+      await Promise.all([
+        addDoc(collection(db, 'comperra-products'), sampleData.products),
+        addDoc(collection(db, 'leads'), sampleData.leads),
+        addDoc(collection(db, 'vendors'), sampleData.vendors),
+        addDoc(collection(db, 'trades'), sampleData.trades),
+        addDoc(collection(db, 'customers'), sampleData.customers)
+      ]);
+
+      console.log('✅ Firebase collections initialized successfully');
+      this.isInitialized = true;
+    } catch (error) {
+      console.log('⚠️  Firebase collections initialization failed (this is normal if already exists):', error instanceof Error ? error.message : 'Unknown error');
+      this.isInitialized = true; // Mark as initialized even if failed to avoid repeated attempts
+    }
+  }
+
   async getMaterials(filters?: {
     category?: string;
     brand?: string;
@@ -33,6 +94,9 @@ export class FirebaseStorage implements IStorage {
     maxPrice?: number;
     search?: string;
   }): Promise<Material[]> {
+    // Initialize collections on first use
+    await this.initializeCollections();
+    
     try {
       const materialsRef = collection(db, this.materialsCollection);
       // Order by createdAt descending (newest first), then by name
