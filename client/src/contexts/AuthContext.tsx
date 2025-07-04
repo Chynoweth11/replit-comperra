@@ -176,4 +176,5 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   );
 };
 
+export { AuthContext };
 export type { SignUpData, CompanyUser };

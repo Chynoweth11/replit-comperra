@@ -84,6 +84,19 @@ export class SimulationScraper {
     }
     
     // PRIORITY 2: COMPOUND KEYWORD RULES (only if URL doesn't clearly indicate category)
+    // Check SLABS first (higher priority than tiles)
+    const slabKeywords = [
+      "calacatta slab", "carrara slab", "quartz slab", "granite slab", "countertop slab",
+      "marble slab", "porcelain slab", "travertine slab", "limestone slab", "quartzite slab"
+    ];
+    
+    for (const keyword of slabKeywords) {
+      if (fullText.includes(keyword)) {
+        console.log(`SLAB KEYWORD MATCH: "${keyword}" -> slabs for URL: ${url}`);
+        return 'slabs';
+      }
+    }
+    
     const compoundCategoryMap = {
       "marble tile": "tiles",
       "marble tiles": "tiles",
@@ -95,11 +108,6 @@ export class SimulationScraper {
       "porcelain tile": "tiles",
       "marble systems": "tiles",
       "nero marquina": "tiles", 
-      "calacatta slab": "slabs",
-      "carrara slab": "slabs",
-      "quartz slab": "slabs",
-      "granite slab": "slabs",
-      "countertop slab": "slabs",
       "carpet tile": "carpet",
       "carpet tiles": "carpet", 
       "vinyl plank": "lvt",
@@ -2423,13 +2431,11 @@ export class SimulationScraper {
       const { getFirestore, doc, getDoc, setDoc } = await import('firebase/firestore');
       
       const firebaseConfig = {
-        apiKey: "AIzaSyC7zXxEiPi77xZt2bPY1jcxt9fJcYxKk94",
-        authDomain: "comperra-done.firebaseapp.com",
-        projectId: "comperra-done",
-        storageBucket: "comperra-done.firebasestorage.app",
-        messagingSenderId: "636329572028",
-        appId: "1:636329572028:web:0c8fd582b0372411c142b9",
-        measurementId: "G-SBT7935DTH"
+        apiKey: process.env.VITE_FIREBASE_API_KEY,
+        authDomain: `${process.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
+        projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+        storageBucket: `${process.env.VITE_FIREBASE_PROJECT_ID}.firebasestorage.app`,
+        appId: process.env.VITE_FIREBASE_APP_ID
       };
 
       if (!getApps().length) {

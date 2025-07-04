@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { ShieldCheck, UserPlus, FilePlus, LogIn, LogOut, Search, Gem, Bell, BarChart, XCircle, CreditCard, HelpCircle, Lock, Award, Briefcase, UserCheck, ArrowLeft, Star, Mail } from 'lucide-react';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/context/AuthNetworkContext';
+import { AuthContext } from '@/contexts/AuthContext';
 import firebaseService from '@/services/firebase-network';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
@@ -79,7 +79,7 @@ function Login({ setView }) {
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [loading, setLoading] = useState(false);
     const [showForgotPassword, setShowForgotPassword] = useState(false);
-    const { login } = useAuth();
+    const { signIn } = useContext(AuthContext);
     const { toast } = useToast();
     const handleChange = e => setFormData(p => ({...p, [e.target.name]: e.target.value}));
     
@@ -87,7 +87,7 @@ function Login({ setView }) {
         e.preventDefault(); 
         setLoading(true);
         try { 
-            await login(formData.email, formData.password);
+            await signIn(formData.email, formData.password);
             toast({
                 title: "Login successful!",
                 description: "Welcome back to your professional account.",
@@ -197,7 +197,7 @@ function Login({ setView }) {
 }
 
 function Register({ setView }) {
-    const { register } = useAuth();
+    const { signUp } = useContext(AuthContext);
     const toast = useToast();
     const [loading, setLoading] = useState(false);
     const [showInfoModal, setShowInfoModal] = useState(false);
@@ -242,7 +242,16 @@ function Register({ setView }) {
         setLoading(true); 
         toast.toast({ title: 'Creating account...', description: 'Please wait while we set up your account.' });
         try { 
-            await register(formData); 
+            // Map form data to signUp format
+            const signUpData = {
+                email: formData.email,
+                password: formData.password,
+                role: (formData.type === 'pro' ? 'trade' : 'vendor') as 'trade' | 'vendor',
+                name: formData.name,
+                companyName: formData.name // For professionals, use name as company name
+            };
+            
+            await signUp(signUpData); 
             toast.toast({ title: 'Success!', description: 'Registration successful! Please log in.' });
             setView('login'); 
         } 
@@ -323,7 +332,7 @@ function Register({ setView }) {
 }
 
 function Dashboard() {
-    const { user, logout, setUser } = useAuth();
+    const { user, signOut } = useContext(AuthContext);
     const [leads, setLeads] = useState([]);
     const [loadingLeads, setLoadingLeads] = useState(true);
     const toast = useToast();
@@ -357,7 +366,7 @@ function Dashboard() {
                 <div className="flex items-center gap-4">
                     {user.subscription === 'credit' && <div className="flex items-center gap-2 bg-amber-100 text-amber-800 font-bold py-2 px-4 rounded-lg"><Gem className="text-amber-500" size={20}/> {user.credits} Credits</div>}
                     {user.subscription === 'basic' && <div className="flex items-center gap-2 bg-slate-200 text-slate-800 font-bold py-2 px-4 rounded-lg">{claimedLeadCount} / 2 leads claimed this month</div>}
-                    <Button onClick={logout} variant="secondary" className="!w-auto"><LogOut size={16}/> Logout</Button>
+                    <Button onClick={signOut} variant="secondary" className="!w-auto"><LogOut size={16}/> Logout</Button>
                 </div>
             </div>
              <Card className="w-full">
@@ -513,11 +522,11 @@ function LandingPage() {
 }
 
 function AdminPanel() {
-    const { logout } = useAuth();
+    const { signOut } = useContext(AuthContext);
     return (
         <div className="lg:col-span-2">
             <div className="flex justify-between items-center mb-6"><h2 className="text-3xl font-bold text-slate-900">Admin Dashboard</h2>
-                <Button onClick={logout} variant="secondary" className="!w-auto"><LogOut size={16}/> Logout</Button>
+                <Button onClick={signOut} variant="secondary" className="!w-auto"><LogOut size={16}/> Logout</Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card><h3 className="text-lg font-bold flex items-center gap-2"><BarChart/> Site Analytics</h3>
@@ -537,7 +546,7 @@ function AdminPanel() {
 }
 
 function AppContent() {
-    const { user, loading } = useAuth();
+    const { user, loading } = useContext(AuthContext);
     if (loading) { return <div className="text-center mt-10"><SkeletonLoader className="h-48 w-full max-w-2xl mx-auto" /></div>; }
     if (user?.isAdmin) return <AdminPanel />;
     return user ? <Dashboard /> : <LandingPage />;
