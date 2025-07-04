@@ -3,13 +3,11 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, se
 import { getFirestore, collection, addDoc, doc, setDoc, getDoc } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC7zXxEiPi77xZt2bPY1jcxt9fJcYxKk94",
-  authDomain: "comperra-done.firebaseapp.com",
-  projectId: "comperra-done",
-  storageBucket: "comperra-done.firebasestorage.app",
-  messagingSenderId: "636329572028",
-  appId: "1:636329572028:web:0c8fd582b0372411c142b9",
-  measurementId: "G-SBT7935DTH"
+  apiKey: process.env.VITE_FIREBASE_API_KEY,
+  authDomain: `${process.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
+  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: `${process.env.VITE_FIREBASE_PROJECT_ID}.firebasestorage.app`,
+  appId: process.env.VITE_FIREBASE_APP_ID,
 };
 
 // Initialize Firebase if not already initialized
@@ -46,6 +44,8 @@ export interface SignInData {
 
 export async function createAccount(signUpData: SignUpData): Promise<any> {
   try {
+    console.log('Creating account for:', signUpData.email, 'with role:', signUpData.role);
+    
     // Create account with Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(auth, signUpData.email, signUpData.password);
     const user = userCredential.user;

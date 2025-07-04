@@ -2,13 +2,11 @@ import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, collection, addDoc, connectFirestoreEmulator } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC7zXxEiPi77xZt2bPY1jcxt9fJcYxKk94",
-  authDomain: "comperra-done.firebaseapp.com",
-  projectId: "comperra-done",
-  storageBucket: "comperra-done.firebasestorage.app",
-  messagingSenderId: "636329572028",
-  appId: "1:636329572028:web:0c8fd582b0372411c142b9",
-  measurementId: "G-SBT7935DTH"
+  apiKey: process.env.VITE_FIREBASE_API_KEY,
+  authDomain: `${process.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
+  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: `${process.env.VITE_FIREBASE_PROJECT_ID}.firebasestorage.app`,
+  appId: process.env.VITE_FIREBASE_APP_ID,
 };
 
 export async function initializeFirebaseCollections() {
