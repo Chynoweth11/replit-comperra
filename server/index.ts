@@ -38,13 +38,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Initialize Firebase collections automatically on server start (non-blocking)
-  // Run in background without blocking server startup
-  setImmediate(() => {
-    initializeFirebaseCollections().catch(error => {
-      console.log('⚠️  Firebase initialization failed silently:', error instanceof Error ? error.message : 'Unknown error');
-    });
-  });
+  // Firebase initialization disabled to prevent permission errors
+  // Firebase collections will be created when needed by the application
+  console.log('🔄 Firebase initialization skipped - collections will be created on-demand');
   
   const server = await registerRoutes(app);
 
