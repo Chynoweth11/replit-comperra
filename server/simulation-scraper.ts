@@ -2,7 +2,7 @@
 // simulation-scraper.ts - Enhanced Scraper with Puppeteer Integration
 // ==========================
 import { InsertMaterial } from '../shared/schema';
-import { storage } from './storage';
+import { storage } from './storage.js';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { puppeteerScraper, PuppeteerScrapedProduct } from './puppeteer-scraper.js';

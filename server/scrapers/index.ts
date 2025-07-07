@@ -1,11 +1,11 @@
 // ==========================
 // index.ts - Entry Point
 // ==========================
-import { preprocessURL } from './preprocessor';
-import { scrapeMSIProduct } from './scraper.msi';
-import { scrapeDaltileProduct } from './scraper.daltile';
-import { scrapeUniversalProduct } from './scraper.universal';
-import { normalizeSpecs } from './normalizer';
+import { preprocessURL } from './preprocessor.js';
+import { scrapeMSIProduct } from './scraper.msi.js';
+import { scrapeDaltileProduct } from './scraper.daltile.js';
+import { scrapeUniversalProduct } from './scraper.universal.js';
+import { normalizeSpecs } from './normalizer.js';
 
 export async function scrapeProduct(url: string) {
   const { brand, category } = await preprocessURL(url);

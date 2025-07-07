@@ -1,7 +1,7 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, collection, doc, setDoc, getDocs, getDoc, addDoc, query, where, orderBy } from 'firebase/firestore';
 import { Material, InsertMaterial, Article, InsertArticle, Brand, InsertBrand } from '../shared/schema';
-import { IStorage } from './storage';
+import { IStorage } from './storage.js';
 
 // Initialize Firebase Client SDK (works in Replit)
 const firebaseConfig = {
