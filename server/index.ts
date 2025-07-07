@@ -61,14 +61,10 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Use PORT environment variable for deployment compatibility (Vercel, etc.)
-  // Falls back to 5000 for local development
+  // Use PORT environment variable for deployment, fallback to 5000 for Replit
   const port = process.env.PORT || 5000;
-  server.listen({
-    port: Number(port),
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`✅ Comperra server running on port ${port}`);
+
+  app.listen(port, () => {
+    console.log(`✅ Comperra server is listening on port ${port}`);
   });
 })();
