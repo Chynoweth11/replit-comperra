@@ -1,15 +1,15 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { FirebaseStorage } from "./firebase-storage";
-import { MemStorage } from "./storage";
-import { submitLead, LeadFormData } from "./firebase-leads";
-import { createAccount, signInUser, resetPassword, signOutUser, getCurrentUser, SignUpData, SignInData } from "./firebase-auth";
+import { FirebaseStorage } from "./firebase-storage.js";
+import { MemStorage } from "./storage.js";
+import { submitLead, LeadFormData } from "./firebase-leads.js";
+import { createAccount, signInUser, resetPassword, signOutUser, getCurrentUser, SignUpData, SignInData } from "./firebase-auth.js";
 
 // Initialize memory storage (primary) for immediate functionality
 const storage = new MemStorage();
 // Initialize Firebase storage for background persistence when available
 const firebaseStorage = new FirebaseStorage();
-import { productScraper } from "./scraper";
+import { productScraper } from "./scraper.js";
 import { z } from "zod";
 import multer from "multer";
 import csvParser from "csv-parser";
