@@ -529,10 +529,16 @@ export class SimulationScraper {
         }
       }
       
-      // Store extracted dimensions with validation
+      // Store extracted dimensions with validation and category awareness
       if (extractedDimensions && !extractedDimensions.includes('{{')) {
-        specs['Dimensions'] = extractedDimensions;
-        console.log(`✅ Successfully extracted dimensions: ${extractedDimensions}`);
+        // For slabs, use Slab Dimensions instead of Dimensions to avoid confusion
+        if (category === 'slabs') {
+          specs['Slab Dimensions'] = extractedDimensions;
+          console.log(`✅ Successfully extracted slab dimensions: ${extractedDimensions}`);
+        } else {
+          specs['Dimensions'] = extractedDimensions;
+          console.log(`✅ Successfully extracted dimensions: ${extractedDimensions}`);
+        }
       } else {
         console.log(`❌ No valid dimensions found, using category default`);
       }
@@ -1569,8 +1575,31 @@ export class SimulationScraper {
     
     // Ensure dimensions are included with category-appropriate defaults
     if (!finalSpecs['Dimensions'] && !finalSpecs['Slab Dimensions']) {
-      finalSpecs['Dimensions'] = this.extractDimensionsFromProduct(name, category, url);
-      console.log(`✅ Using fallback dimensions for ${category}: ${finalSpecs['Dimensions']}`);
+      const defaultDimensions = this.extractDimensionsFromProduct(name, category, url);
+      if (category === 'slabs') {
+        finalSpecs['Slab Dimensions'] = defaultDimensions;
+        // Remove any incorrect Dimensions field for slabs
+        delete finalSpecs['Dimensions'];
+      } else {
+        finalSpecs['Dimensions'] = defaultDimensions;
+      }
+      console.log(`✅ Using fallback dimensions for ${category}: ${defaultDimensions}`);
+    }
+    
+    // For slabs, ensure consistency between dimensions fields and remove any incorrect tile dimensions
+    if (category === 'slabs') {
+      // Always remove any generic Dimensions field for slabs to avoid confusion
+      if (finalSpecs['Dimensions']) {
+        console.log(`❌ Removing generic Dimensions field for slab: ${finalSpecs['Dimensions']}`);
+        delete finalSpecs['Dimensions'];
+      }
+      
+      // Ensure Slab Dimensions is present
+      if (!finalSpecs['Slab Dimensions']) {
+        const defaultDimensions = this.extractDimensionsFromProduct(name, category, url);
+        finalSpecs['Slab Dimensions'] = defaultDimensions;
+        console.log(`✅ Added default slab dimensions: ${defaultDimensions}`);
+      }
     }
     
     if (category === 'carpet') {
@@ -2414,6 +2443,12 @@ export class SimulationScraper {
   }
 
   convertToMaterial(scrapedProduct: SimulatedScrapedProduct): InsertMaterial & { sourceUrl: string } {
+    // For slabs, use Slab Dimensions for the main dimensions field
+    let dimensions = scrapedProduct.dimensions;
+    if (scrapedProduct.category === 'slabs' && scrapedProduct.specifications?.['Slab Dimensions']) {
+      dimensions = scrapedProduct.specifications['Slab Dimensions'];
+    }
+    
     return {
       name: scrapedProduct.name,
       category: scrapedProduct.category as any,
@@ -2422,7 +2457,7 @@ export class SimulationScraper {
       imageUrl: scrapedProduct.imageUrl,
       description: scrapedProduct.description,
       specifications: scrapedProduct.specifications,
-      dimensions: scrapedProduct.dimensions,
+      dimensions: dimensions,
       inStock: true,
       sourceUrl: scrapedProduct.sourceUrl
     };

@@ -10,13 +10,24 @@ const firebaseConfig = {
   appId: process.env.VITE_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase if not already initialized
-if (!getApps().length) {
-  initializeApp(firebaseConfig);
-}
+// Initialize Firebase only if all required config is present
+let auth: any = null;
+let db: any = null;
 
-const auth = getAuth();
-const db = getFirestore();
+try {
+  if (process.env.VITE_FIREBASE_API_KEY && process.env.VITE_FIREBASE_PROJECT_ID && process.env.VITE_FIREBASE_APP_ID) {
+    if (!getApps().length) {
+      initializeApp(firebaseConfig);
+    }
+    auth = getAuth();
+    db = getFirestore();
+    console.log('✅ Firebase auth initialized successfully');
+  } else {
+    console.log('⚠️ Firebase auth configuration missing, auth features disabled');
+  }
+} catch (error) {
+  console.log('⚠️ Firebase auth initialization failed:', error.message);
+}
 
 export interface UserData {
   email: string;

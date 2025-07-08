@@ -12,11 +12,22 @@ const firebaseConfig = {
   appId: process.env.VITE_FIREBASE_APP_ID,
 };
 
-if (!getApps().length) {
-  initializeApp(firebaseConfig);
-}
+// Initialize Firebase only if properly configured
+let db: any = null;
 
-const db = getFirestore();
+try {
+  if (process.env.VITE_FIREBASE_API_KEY && process.env.VITE_FIREBASE_PROJECT_ID && process.env.VITE_FIREBASE_APP_ID) {
+    if (!getApps().length) {
+      initializeApp(firebaseConfig);
+    }
+    db = getFirestore();
+    console.log('✅ Firebase storage initialized successfully');
+  } else {
+    console.log('⚠️ Firebase storage configuration missing, using memory storage');
+  }
+} catch (error) {
+  console.log('⚠️ Firebase storage initialization failed:', error.message);
+}
 
 export class FirebaseStorage implements IStorage {
   private materialsCollection = 'comperra-products';
