@@ -1481,11 +1481,15 @@ export class SimulationScraper {
       }
     }
     
-    // Category-specific default dimensions
+    // Category-specific default dimensions with proper formatting
     switch (category) {
       case 'tiles':
         return '12" x 12"';
       case 'slabs':
+        // MSI standard slab dimensions
+        if (url.includes('msisurfaces.com')) {
+          return '120" x 55" (Standard Slab)';
+        }
         return '120" x 60"';
       case 'lvt':
         return '6" x 48"';
