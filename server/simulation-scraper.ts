@@ -2478,11 +2478,13 @@ export class SimulationScraper {
       const { getFirestore, doc, getDoc, setDoc } = await import('firebase/firestore');
       
       const firebaseConfig = {
-        apiKey: process.env.VITE_FIREBASE_API_KEY,
-        authDomain: `${process.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
-        projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-        storageBucket: `${process.env.VITE_FIREBASE_PROJECT_ID}.firebasestorage.app`,
-        appId: process.env.VITE_FIREBASE_APP_ID
+        apiKey: process.env.VITE_FIREBASE_API_KEY || "AIzaSyDGOOGLE_API_KEYFREBASE",
+        authDomain: "comperra-done.firebaseapp.com",
+        projectId: "comperra-done",
+        storageBucket: "comperra-done.firebasestorage.app",
+        messagingSenderId: "636329572028",
+        appId: "1:636329572028:web:aa3a66f248e5b320c142b9",
+        measurementId: "G-QMBYGHYWRW"
       };
 
       if (!getApps().length) {
@@ -2523,8 +2525,8 @@ export class SimulationScraper {
   }
 
   async saveToAirtable(scrapedProduct: SimulatedScrapedProduct): Promise<boolean> {
-    // Disabled for faster processing - products are saved to main storage
-    console.log(`Airtable save skipped for faster processing: ${scrapedProduct.name}`);
+    // Airtable integration removed - using Firebase only
+    console.log('Airtable integration removed, using Firebase storage only');
     return true;
   }
 

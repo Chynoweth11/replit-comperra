@@ -13,29 +13,11 @@ import { productScraper } from "./scraper.js";
 import { z } from "zod";
 import multer from "multer";
 import csvParser from "csv-parser";
-import Airtable from "airtable";
 
 // Configure multer for file uploads
 const upload = multer({ dest: '/tmp/uploads/' });
 
-// Configure Airtable
-const airtableApiKey = process.env.AIRTABLE_API_KEY;
-if (!airtableApiKey) {
-  console.warn('AIRTABLE_API_KEY environment variable not set. Lead capture will be disabled.');
-} else {
-  console.log('AIRTABLE_API_KEY configured successfully');
-}
-
-// Use the correct Airtable base ID provided by user
-const baseId = 'appQJoO5GkIxDMiHS';
-
-// API key is now properly configured
-
-const base = airtableApiKey ? new Airtable({
-  apiKey: airtableApiKey
-}).base(baseId) : undefined;
-
-console.log('Using Airtable base ID:', baseId);
+console.log('Using Firebase only - Airtable removed');
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Materials routes
