@@ -124,8 +124,7 @@ export class MemStorage implements IStorage {
           'DCOF / Slip Rating': '0.52',
           'Water Absorption': '< 0.5%',
           'Finish': 'Polished',
-          'Material Type': 'Porcelain',
-          'Dimensions': '12x24'
+          'Material Type': 'Porcelain'
         },
         dimensions: "12\"x24\"",
         inStock: true,

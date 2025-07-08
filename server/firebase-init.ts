@@ -2,17 +2,19 @@ import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, collection, addDoc, connectFirestoreEmulator } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: `${process.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: `${process.env.VITE_FIREBASE_PROJECT_ID}.firebasestorage.app`,
-  appId: process.env.VITE_FIREBASE_APP_ID,
+  apiKey: process.env.VITE_FIREBASE_API_KEY || "AIzaSyDGOOGLE_API_KEYFREBASE",
+  authDomain: "comperra-done.firebaseapp.com",
+  projectId: "comperra-done",
+  storageBucket: "comperra-done.firebasestorage.app",
+  messagingSenderId: "636329572028",
+  appId: "1:636329572028:web:aa3a66f248e5b320c142b9",
+  measurementId: "G-QMBYGHYWRW"
 };
 
 export async function initializeFirebaseCollections() {
   try {
     // Skip Firebase initialization if not properly configured
-    if (!process.env.VITE_FIREBASE_API_KEY || !process.env.VITE_FIREBASE_PROJECT_ID) {
+    if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
       console.log('⚠️  Firebase configuration missing, skipping initialization');
       return false;
     }

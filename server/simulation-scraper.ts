@@ -1600,6 +1600,14 @@ export class SimulationScraper {
         finalSpecs['Slab Dimensions'] = defaultDimensions;
         console.log(`✅ Added default slab dimensions: ${defaultDimensions}`);
       }
+      
+      // Final safety check - remove any remaining Dimensions field that might have been added later
+      Object.keys(finalSpecs).forEach(key => {
+        if (key === 'Dimensions' && finalSpecs[key]) {
+          console.log(`❌ Final cleanup: Removing remaining Dimensions field for slab: ${finalSpecs[key]}`);
+          delete finalSpecs[key];
+        }
+      });
     }
     
     if (category === 'carpet') {
@@ -2716,7 +2724,7 @@ export class SimulationScraper {
       specs['Color'] = 'White';
       specs['Edge Type'] = 'Rectified';
       specs['Install Location'] = 'Floor, Wall';
-      specs['Dimensions'] = '12x22';
+      // Dimensions removed - category-specific dimension field used instead
       specs['Texture'] = 'Smooth';
     } else if (category === 'slabs') {
       // CRITICAL FIX: Intelligent material type detection for 100% accuracy
@@ -2756,7 +2764,7 @@ export class SimulationScraper {
         } else {
           specs['Color'] = 'Natural Stone Look';
           specs['Finish'] = 'Matte';
-          specs['Dimensions'] = '12x24';
+          // Dimensions removed - category-specific dimension field used instead
         }
         specs['PEI Rating'] = specs['PEI Rating'] || '3';
         specs['DCOF / Slip Rating'] = specs['DCOF / Slip Rating'] || '0.42';
@@ -2765,7 +2773,7 @@ export class SimulationScraper {
         if (url.includes('3d')) {
           specs['Color'] = 'White Matte';
           specs['Finish'] = 'Matte';
-          specs['Dimensions'] = '12x22';
+          // Dimensions removed - category-specific dimension field used instead
           specs['PEI Rating'] = '4';
           specs['DCOF / Slip Rating'] = '0.45';
           specs['Water Absorption'] = '< 0.3%';
@@ -2794,7 +2802,7 @@ export class SimulationScraper {
         } else {
           specs['Color'] = 'Neutral';
           specs['Finish'] = 'Satin';
-          specs['Dimensions'] = '12x12';
+          // Dimensions removed - category-specific dimension field used instead
           specs['PEI Rating'] = '3';
           specs['DCOF / Slip Rating'] = '0.42';
           specs['Water Absorption'] = '< 3%';
@@ -2821,7 +2829,7 @@ export class SimulationScraper {
       } else if (brand === 'Emser Tile') {
         specs['Color'] = 'Natural Stone';
         specs['Finish'] = 'Honed';
-        specs['Dimensions'] = '12x24';
+        // Dimensions removed - category-specific dimension field used instead
         specs['PEI Rating'] = '3';
         specs['DCOF / Slip Rating'] = '0.44';
         specs['Water Absorption'] = '< 1%';

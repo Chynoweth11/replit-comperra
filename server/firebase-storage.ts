@@ -5,18 +5,20 @@ import { IStorage } from './storage.js';
 
 // Initialize Firebase Client SDK (works in Replit)
 const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: `${process.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: `${process.env.VITE_FIREBASE_PROJECT_ID}.firebasestorage.app`,
-  appId: process.env.VITE_FIREBASE_APP_ID,
+  apiKey: process.env.VITE_FIREBASE_API_KEY || "AIzaSyDGOOGLE_API_KEYFREBASE",
+  authDomain: "comperra-done.firebaseapp.com",
+  projectId: "comperra-done",
+  storageBucket: "comperra-done.firebasestorage.app",
+  messagingSenderId: "636329572028",
+  appId: "1:636329572028:web:aa3a66f248e5b320c142b9",
+  measurementId: "G-QMBYGHYWRW"
 };
 
 // Initialize Firebase only if properly configured
 let db: any = null;
 
 try {
-  if (process.env.VITE_FIREBASE_API_KEY && process.env.VITE_FIREBASE_PROJECT_ID && process.env.VITE_FIREBASE_APP_ID) {
+  if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId) {
     if (!getApps().length) {
       initializeApp(firebaseConfig);
     }
