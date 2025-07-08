@@ -1,8 +1,13 @@
 {
+  "version": 2,
+  "name": "comperra",
   "builds": [
     {
       "src": "server/index.ts",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["shared/**", "server/**"]
+      }
     }
   ],
   "routes": [
@@ -10,5 +15,10 @@
       "src": "/(.*)",
       "dest": "server/index.ts"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "installCommand": "npm install --no-optional",
+  "buildCommand": "npm run build"
 }
