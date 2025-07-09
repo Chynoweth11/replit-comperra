@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 
-export default function Footer() {
+export function Footer() {
   const [, navigate] = useLocation();
 
   return (
@@ -66,3 +66,5 @@ export default function Footer() {
     </footer>
   );
 }
+
+export default Footer;

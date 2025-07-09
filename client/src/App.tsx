@@ -38,6 +38,14 @@ import VendorLeads from "@/pages/vendor/leads";
 import TradeLeads from "@/pages/trade/leads";
 import QuotesPage from "@/pages/quotes";
 import ProfilePage from "@/pages/profile";
+import DashboardLeads from "@/pages/dashboard-leads";
+import DashboardProducts from "@/pages/dashboard-products";
+import DashboardSubscription from "@/pages/dashboard-subscription";
+import DashboardSettings from "@/pages/dashboard-settings";
+import DashboardMyLeads from "@/pages/dashboard-my-leads";
+import DashboardCurrentLeads from "@/pages/dashboard-current-leads";
+import DashboardPotentialLeads from "@/pages/dashboard-potential-leads";
+import DashboardLeadsHistory from "@/pages/dashboard-leads-history";
 import FirebaseDemo from "@/pages/FirebaseDemo";
 import { ProfessionalNetwork } from "@/components/ProfessionalNetwork";
 import { ToastProvider } from "@/context/ToastContext";
@@ -78,6 +86,62 @@ function Router() {
           {() => (
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/dashboard/leads">
+          {() => (
+            <ProtectedRoute>
+              <DashboardLeads />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/dashboard/products">
+          {() => (
+            <ProtectedRoute>
+              <DashboardProducts />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/dashboard/subscription">
+          {() => (
+            <ProtectedRoute>
+              <DashboardSubscription />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/dashboard/settings">
+          {() => (
+            <ProtectedRoute>
+              <DashboardSettings />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/dashboard/my-leads">
+          {() => (
+            <ProtectedRoute>
+              <DashboardMyLeads />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/dashboard/current-leads">
+          {() => (
+            <ProtectedRoute>
+              <DashboardCurrentLeads />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/dashboard/potential-leads">
+          {() => (
+            <ProtectedRoute>
+              <DashboardPotentialLeads />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/dashboard/leads-history">
+          {() => (
+            <ProtectedRoute>
+              <DashboardLeadsHistory />
             </ProtectedRoute>
           )}
         </Route>

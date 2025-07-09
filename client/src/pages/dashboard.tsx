@@ -61,48 +61,54 @@ export default function Dashboard() {
           You're logged in as a <strong>{userType === "vendor" ? "Vendor" : "Trade Professional"}</strong>.
         </p>
 
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Lead Tracking */}
-          <Card>
-            <CardContent className="p-4">
-              <h2 className="text-lg font-semibold">📍 Lead Tracking</h2>
-              <p className="text-sm text-gray-500 mt-1">
-                Lead tracking based on ZIP code and trade type
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Matched Leads */}
+          <Card className="h-full">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold mb-2">📥 Matched Leads</h2>
+              <p className="text-sm text-gray-500 mb-4">
+                View personalized leads based on your ZIP code, radius, and specialty.
               </p>
-              <p className="text-2xl font-bold mt-2">{leadCount}</p>
-              <Button className="mt-3 w-full" onClick={() => setLocation(`/${userType}/leads`)}>
+              <div className="text-center mb-4">
+                <p className="text-3xl font-bold text-blue-600">{leadCount}</p>
+              </div>
+              <Button className="w-full" onClick={() => setLocation('/dashboard/leads')}>
                 View Leads
               </Button>
             </CardContent>
           </Card>
 
-          {/* Product Management (Only for Vendors) */}
+          {/* Product Listings (Only for Vendors) */}
           {userType === "vendor" && (
-            <Card>
-              <CardContent className="p-4">
-                <h2 className="text-lg font-semibold">📦 Product Management</h2>
-                <p className="text-sm text-gray-500 mt-1">
-                  Product management (for vendors only)
+            <Card className="h-full">
+              <CardContent className="p-6">
+                <h2 className="text-lg font-semibold mb-2">📦 Product Listings</h2>
+                <p className="text-sm text-gray-500 mb-4">
+                  Manage your inventory, pricing, and availability.
                 </p>
-                <p className="text-2xl font-bold mt-2">{productCount}</p>
-                <Button className="mt-3 w-full" onClick={() => setLocation(`/${userType}/products`)}>
+                <div className="text-center mb-4">
+                  <p className="text-3xl font-bold text-green-600">{productCount}</p>
+                </div>
+                <Button className="w-full" onClick={() => setLocation('/dashboard/products')}>
                   Manage Products
                 </Button>
               </CardContent>
             </Card>
           )}
 
-          {/* Subscription Status */}
-          <Card>
-            <CardContent className="p-4">
-              <h2 className="text-lg font-semibold">💳 Subscription Status</h2>
-              <p className="text-sm text-gray-500 mt-1">
+          {/* Subscription */}
+          <Card className="h-full">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold mb-2">💳 Subscription</h2>
+              <p className="text-sm text-gray-500 mb-4">
                 Track your plan status and billing.
               </p>
-              <p className="text-base font-bold mt-2">
-                Status: <span className={isActive ? 'text-green-600' : 'text-red-600'}>{subscriptionStatus}</span>
-              </p>
-              <Button className="mt-3 w-full" onClick={() => setLocation(`/${userType}/subscription`)}>
+              <div className="text-center mb-4">
+                <p className="text-lg font-bold">
+                  Status: <span className={isActive ? 'text-green-600' : 'text-red-600'}>{subscriptionStatus}</span>
+                </p>
+              </div>
+              <Button className="w-full" onClick={() => setLocation('/dashboard/subscription')}>
                 Manage Subscription
               </Button>
             </CardContent>
@@ -111,51 +117,51 @@ export default function Dashboard() {
 
         {/* Lead Management Section */}
         <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-4">Lead Management</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <h2 className="text-xl font-semibold mb-6">Lead Management</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* My Leads */}
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-blue-600">My Leads</h3>
-                <p className="text-2xl font-bold text-blue-600 mt-2">12</p>
-                <p className="text-sm text-gray-500">Active leads</p>
-                <Button size="sm" className="mt-3 w-full">
+            <Card className="h-full">
+              <CardContent className="p-6 text-center">
+                <h3 className="font-semibold text-blue-600 mb-3">My Leads</h3>
+                <p className="text-3xl font-bold text-blue-600 mb-2">12</p>
+                <p className="text-sm text-gray-500 mb-4">Active leads</p>
+                <Button size="sm" className="w-full" onClick={() => setLocation('/dashboard/my-leads')}>
                   View My Leads
                 </Button>
               </CardContent>
             </Card>
 
             {/* Current Leads */}
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-green-600">Current Leads</h3>
-                <p className="text-2xl font-bold text-green-600 mt-2">8</p>
-                <p className="text-sm text-gray-500">In progress</p>
-                <Button size="sm" className="mt-3 w-full">
+            <Card className="h-full">
+              <CardContent className="p-6 text-center">
+                <h3 className="font-semibold text-green-600 mb-3">Current Leads</h3>
+                <p className="text-3xl font-bold text-green-600 mb-2">8</p>
+                <p className="text-sm text-gray-500 mb-4">In progress</p>
+                <Button size="sm" className="w-full" onClick={() => setLocation('/dashboard/current-leads')}>
                   View Current
                 </Button>
               </CardContent>
             </Card>
 
             {/* Potential Leads */}
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-orange-600">Potential Leads</h3>
-                <p className="text-2xl font-bold text-orange-600 mt-2">25</p>
-                <p className="text-sm text-gray-500">Prospects</p>
-                <Button size="sm" className="mt-3 w-full">
+            <Card className="h-full">
+              <CardContent className="p-6 text-center">
+                <h3 className="font-semibold text-orange-600 mb-3">Potential Leads</h3>
+                <p className="text-3xl font-bold text-orange-600 mb-2">25</p>
+                <p className="text-sm text-gray-500 mb-4">Prospects</p>
+                <Button size="sm" className="w-full" onClick={() => setLocation('/dashboard/potential-leads')}>
                   View Potential
                 </Button>
               </CardContent>
             </Card>
 
             {/* Leads History */}
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-gray-600">Leads History</h3>
-                <p className="text-2xl font-bold text-gray-600 mt-2">47</p>
-                <p className="text-sm text-gray-500">Completed</p>
-                <Button size="sm" className="mt-3 w-full">
+            <Card className="h-full">
+              <CardContent className="p-6 text-center">
+                <h3 className="font-semibold text-gray-600 mb-3">Leads History</h3>
+                <p className="text-3xl font-bold text-gray-600 mb-2">47</p>
+                <p className="text-sm text-gray-500 mb-4">Completed</p>
+                <Button size="sm" className="w-full" onClick={() => setLocation('/dashboard/leads-history')}>
                   View History
                 </Button>
               </CardContent>
@@ -164,12 +170,12 @@ export default function Dashboard() {
         </div>
 
         {/* Account Settings */}
-        <div className="mt-6">
+        <div className="mt-8">
           <Card>
-            <CardContent className="p-4">
-              <h2 className="text-lg font-semibold">⚙️ Account Settings</h2>
-              <p className="text-sm text-gray-500 mt-1">Email: {userEmail}</p>
-              <Button className="mt-3 w-full" variant="secondary" onClick={() => setLocation(`/${userType}/settings`)}>
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold mb-3">⚙️ Account Settings</h2>
+              <p className="text-sm text-gray-500 mb-4">Email: {userEmail}</p>
+              <Button className="w-full" variant="secondary" onClick={() => setLocation('/dashboard/settings')}>
                 Edit Profile
               </Button>
             </CardContent>

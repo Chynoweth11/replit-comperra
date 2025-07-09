@@ -17,7 +17,7 @@ interface SearchSuggestion {
   brand: string;
 }
 
-export default function Header() {
+export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
@@ -315,3 +315,5 @@ export default function Header() {
     </>
   );
 }
+
+export default Header;
