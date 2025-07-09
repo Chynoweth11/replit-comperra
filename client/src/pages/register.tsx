@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { Link, useLocation } from 'wouter';
-import { auth } from '@/lib/firebase';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +19,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [, navigate] = useLocation();
+  const { signUp } = useAuth();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,31 +48,19 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Update the user's display name
-      if (name) {
-        await updateProfile(userCredential.user, {
-          displayName: name,
-        });
-      }
+      await signUp({
+        email,
+        password,
+        role: 'customer', // Join Free accounts are always 'customer' type
+        name,
+        phone,
+        customerType
+      });
 
       navigate('/dashboard');
     } catch (err: any) {
       console.error('Registration error:', err);
-      if (err.code === 'auth/email-already-in-use') {
-        setError('An account with this email already exists.');
-      } else if (err.code === 'auth/invalid-email') {
-        setError('Please enter a valid email address.');
-      } else if (err.code === 'auth/weak-password') {
-        setError('Password is too weak. Please choose a stronger password.');
-      } else if (err.code === 'auth/operation-not-allowed') {
-        setError('Email/password registration is not enabled. Please contact support.');
-      } else if (err.code === 'auth/invalid-api-key') {
-        setError('Authentication service configuration error. Please contact support.');
-      } else {
-        setError(`Registration failed: ${err.message || 'Please try again.'}`);
-      }
+      setError(`Registration failed: ${err.message || 'Please try again.'}`);
     } finally {
       setLoading(false);
     }
@@ -159,10 +147,15 @@ export default function RegisterPage() {
                     <SelectItem value="homeowner">Homeowner</SelectItem>
                     <SelectItem value="designer">Designer</SelectItem>
                     <SelectItem value="architect">Architect</SelectItem>
-                    <SelectItem value="trade">Trade Professional</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-sm text-gray-500 mt-1">
+                  Join Free accounts are for homeowners and design professionals. 
+                  <Link href="/professional-network" className="text-blue-600 hover:underline ml-1">
+                    Trade professionals click here
+                  </Link>
+                </p>
               </div>
 
               {error && (
