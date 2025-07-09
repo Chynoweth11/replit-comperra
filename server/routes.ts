@@ -917,38 +917,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Vendor-specific endpoints
   app.get('/api/vendor/leads', async (req: Request, res: Response) => {
     try {
-      // Mock vendor leads data
-      const leads = [
-        {
-          id: '1',
-          email: 'customer1@example.com',
-          phone: '(555) 123-4567',
-          zipCode: '85001',
-          materialCategory: 'Tiles',
-          projectType: 'Kitchen Renovation',
-          budget: 5000,
-          timeline: 'Within 3 months',
-          description: 'Looking for premium ceramic tiles for kitchen backsplash',
-          status: 'new',
-          intentScore: 8,
-          createdAt: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: '2',
-          email: 'customer2@example.com',
-          zipCode: '85002',
-          materialCategory: 'Stone & Slabs',
-          projectType: 'Bathroom Remodel',
-          budget: 8000,
-          timeline: 'Within 6 months',
-          description: 'Need natural stone countertops for master bathroom',
-          status: 'contacted',
-          intentScore: 7,
-          createdAt: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        }
-      ];
+      // Return empty leads array until real data is available
+      const leads = [];
       
       res.json({ success: true, leads });
     } catch (error) {
@@ -959,27 +929,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/vendor/products', async (req: Request, res: Response) => {
     try {
-      // Mock vendor products data
-      const products = [
-        {
-          id: '1',
-          name: 'Premium Ceramic Tile Collection',
-          category: 'Tiles',
-          price: '$4.99/sq ft',
-          views: 1245,
-          inquiries: 23,
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: '2',
-          name: 'Natural Stone Countertops',
-          category: 'Stone & Slabs',
-          price: '$89.99/sq ft',
-          views: 892,
-          inquiries: 15,
-          lastUpdated: new Date().toISOString()
-        }
-      ];
+      // Return empty products array until real data is available
+      const products = [];
       
       res.json({ success: true, products });
     } catch (error) {
@@ -991,38 +942,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Trade-specific endpoints
   app.get('/api/trade/leads', async (req: Request, res: Response) => {
     try {
-      // Mock trade leads data
-      const leads = [
-        {
-          id: '1',
-          email: 'homeowner1@example.com',
-          phone: '(555) 987-6543',
-          zipCode: '85001',
-          materialCategory: 'Hardwood',
-          projectType: 'Flooring Installation',
-          budget: 12000,
-          timeline: 'Within 2 months',
-          description: 'Need professional installation of hardwood flooring in living areas',
-          status: 'new',
-          intentScore: 9,
-          createdAt: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: '2',
-          email: 'homeowner2@example.com',
-          zipCode: '85002',
-          materialCategory: 'Vinyl & LVT',
-          projectType: 'Complete Floor Replacement',
-          budget: 6000,
-          timeline: 'Within 4 months',
-          description: 'Replace old carpet with luxury vinyl planks throughout home',
-          status: 'quoted',
-          intentScore: 7,
-          createdAt: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        }
-      ];
+      // Return empty leads array until real data is available
+      const leads = [];
       
       res.json({ success: true, leads });
     } catch (error) {

@@ -154,14 +154,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setUser(userData);
       setUserProfile(userData);
 
-      // Redirect based on role
-      if (data.user.role === 'vendor') {
-        window.location.href = '/vendor-dashboard';
-      } else if (data.user.role === 'trade') {
-        window.location.href = '/trade-dashboard';
-      } else {
-        window.location.href = '/';
-      }
+      // Always redirect to homepage after signup
+      window.location.href = '/';
     } catch (error) {
       console.error('Sign up error:', error);
       throw error;
@@ -196,14 +190,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setUser(userData);
       setUserProfile(userData);
 
-      // Redirect based on role
-      if (data.user.role === 'vendor') {
-        window.location.href = '/vendor-dashboard';
-      } else if (data.user.role === 'trade') {
-        window.location.href = '/trade-dashboard';
-      } else {
-        window.location.href = '/';
-      }
+      // Always redirect to homepage after signin
+      window.location.href = '/';
     } catch (error) {
       console.error('Sign in error:', error);
       throw error;

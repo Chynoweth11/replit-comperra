@@ -22,6 +22,7 @@ import {
   Brain
 } from 'lucide-react';
 import SmartMatchAI from '@/components/SmartMatchAI';
+import GoogleMap from '@/components/GoogleMap';
 
 interface LeadData {
   id: string;
@@ -271,71 +272,87 @@ const VendorDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {leads.map((lead) => (
-                    <div key={lead.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center space-x-3">
-                          <Badge className={getStatusColor(lead.status)}>
-                            {lead.status}
-                          </Badge>
-                          <span className={`font-medium ${getIntentColor(lead.intentScore)}`}>
-                            Intent Score: {lead.intentScore}/10
-                          </span>
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {new Date(lead.createdAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-2">
-                            <Mail className="h-4 w-4 text-gray-500" />
-                            <span className="text-sm">{lead.email}</span>
+                  {leads.length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="font-medium mb-2">Lead Locations</h4>
+                      <GoogleMap leads={leads} height="300px" />
+                    </div>
+                  )}
+                  {leads.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Leads Yet</h3>
+                      <p className="text-sm text-gray-500">
+                        Your customer leads will appear here once they're available.
+                      </p>
+                    </div>
+                  ) : (
+                    leads.map((lead) => (
+                      <div key={lead.id} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center space-x-3">
+                            <Badge className={getStatusColor(lead.status)}>
+                              {lead.status}
+                            </Badge>
+                            <span className={`font-medium ${getIntentColor(lead.intentScore)}`}>
+                              Intent Score: {lead.intentScore}/10
+                            </span>
                           </div>
-                          {lead.phone && (
-                            <div className="flex items-center space-x-2">
-                              <Phone className="h-4 w-4 text-gray-500" />
-                              <span className="text-sm">{lead.phone}</span>
-                            </div>
-                          )}
-                          <div className="flex items-center space-x-2">
-                            <MapPin className="h-4 w-4 text-gray-500" />
-                            <span className="text-sm">{lead.zipCode}</span>
+                          <div className="text-sm text-gray-500">
+                            {new Date(lead.createdAt).toLocaleDateString()}
                           </div>
                         </div>
                         
-                        <div className="space-y-2">
-                          <p className="text-sm"><strong>Category:</strong> {lead.materialCategory}</p>
-                          <p className="text-sm"><strong>Project:</strong> {lead.projectType}</p>
-                          {lead.budget && (
-                            <p className="text-sm"><strong>Budget:</strong> ${lead.budget.toLocaleString()}</p>
-                          )}
-                          {lead.timeline && (
-                            <p className="text-sm"><strong>Timeline:</strong> {lead.timeline}</p>
-                          )}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <Mail className="h-4 w-4 text-gray-500" />
+                              <span className="text-sm">{lead.email}</span>
+                            </div>
+                            {lead.phone && (
+                              <div className="flex items-center space-x-2">
+                                <Phone className="h-4 w-4 text-gray-500" />
+                                <span className="text-sm">{lead.phone}</span>
+                              </div>
+                            )}
+                            <div className="flex items-center space-x-2">
+                              <MapPin className="h-4 w-4 text-gray-500" />
+                              <span className="text-sm">{lead.zipCode}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <p className="text-sm"><strong>Category:</strong> {lead.materialCategory}</p>
+                            <p className="text-sm"><strong>Project:</strong> {lead.projectType}</p>
+                            {lead.budget && (
+                              <p className="text-sm"><strong>Budget:</strong> ${lead.budget.toLocaleString()}</p>
+                            )}
+                            {lead.timeline && (
+                              <p className="text-sm"><strong>Timeline:</strong> {lead.timeline}</p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {lead.description && (
+                          <div className="mt-3 p-3 bg-gray-50 rounded">
+                            <p className="text-sm">{lead.description}</p>
+                          </div>
+                        )}
+                        
+                        <div className="mt-4 flex space-x-2">
+                          <Button size="sm" variant="outline">
+                            Contact Lead
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            Update Status
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            View Details
+                          </Button>
                         </div>
                       </div>
-                      
-                      {lead.description && (
-                        <div className="mt-3 p-3 bg-gray-50 rounded">
-                          <p className="text-sm">{lead.description}</p>
-                        </div>
-                      )}
-                      
-                      <div className="mt-4 flex space-x-2">
-                        <Button size="sm" variant="outline">
-                          Contact Lead
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          Update Status
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          View Details
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -356,36 +373,47 @@ const VendorDashboard: React.FC = () => {
                     <Button>Add New Product</Button>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {products.map((product) => (
-                      <Card key={product.id}>
-                        <CardHeader>
-                          <CardTitle className="text-sm">{product.name}</CardTitle>
-                          <CardDescription>{product.category}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm">Price:</span>
-                              <span className="text-sm font-medium">{product.price}</span>
+                  {products.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Products Yet</h3>
+                      <p className="text-sm text-gray-500 mb-4">
+                        Start by adding your first product to the marketplace.
+                      </p>
+                      <Button>Add Your First Product</Button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {products.map((product) => (
+                        <Card key={product.id}>
+                          <CardHeader>
+                            <CardTitle className="text-sm">{product.name}</CardTitle>
+                            <CardDescription>{product.category}</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span className="text-sm">Price:</span>
+                                <span className="text-sm font-medium">{product.price}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm">Views:</span>
+                                <span className="text-sm">{product.views}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm">Inquiries:</span>
+                                <span className="text-sm">{product.inquiries}</span>
+                              </div>
                             </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm">Views:</span>
-                              <span className="text-sm">{product.views}</span>
+                            <div className="mt-4 flex space-x-2">
+                              <Button size="sm" variant="outline">Edit</Button>
+                              <Button size="sm" variant="outline">View</Button>
                             </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm">Inquiries:</span>
-                              <span className="text-sm">{product.inquiries}</span>
-                            </div>
-                          </div>
-                          <div className="mt-4 flex space-x-2">
-                            <Button size="sm" variant="outline">Edit</Button>
-                            <Button size="sm" variant="outline">View</Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -398,70 +426,53 @@ const VendorDashboard: React.FC = () => {
           <TabsContent value="subscription" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Subscription Management</CardTitle>
-                <CardDescription>Manage your Comperra vendor subscription</CardDescription>
+                <CardTitle>Subscription Plans</CardTitle>
+                <CardDescription>Choose the right plan for your business</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-                    <div>
-                      <h3 className="font-medium">Professional Plan</h3>
-                      <p className="text-sm text-gray-600">Full access to vendor features</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold">$299/month</p>
-                      <Badge className="bg-green-100 text-green-800">Active</Badge>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Basic Plan */}
+                  <div className="border rounded-lg p-6 text-center">
+                    <h3 className="text-lg font-semibold mb-2">Basic</h3>
+                    <div className="text-3xl font-bold mb-4">$29<span className="text-sm font-normal">/month</span></div>
+                    <ul className="text-sm space-y-2 mb-6">
+                      <li>• Up to 10 leads per month</li>
+                      <li>• Basic analytics</li>
+                      <li>• Email support</li>
+                      <li>• Product listings</li>
+                    </ul>
+                    <Button className="w-full">Get Started</Button>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="font-medium mb-2">Plan Features</h4>
-                      <ul className="space-y-1 text-sm">
-                        <li className="flex items-center space-x-2">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          <span>Unlimited product listings</span>
-                        </li>
-                        <li className="flex items-center space-x-2">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          <span>Priority lead matching</span>
-                        </li>
-                        <li className="flex items-center space-x-2">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          <span>Advanced analytics</span>
-                        </li>
-                        <li className="flex items-center space-x-2">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          <span>Custom branding</span>
-                        </li>
-                      </ul>
+
+                  {/* Professional Plan */}
+                  <div className="border-2 border-blue-500 rounded-lg p-6 text-center relative">
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                      <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm">Most Popular</span>
                     </div>
-                    
-                    <div>
-                      <h4 className="font-medium mb-2">Usage This Month</h4>
-                      <div className="space-y-3">
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Leads Generated</span>
-                            <span>{metrics.totalLeads}/100</span>
-                          </div>
-                          <Progress value={(metrics.totalLeads / 100) * 100} />
-                        </div>
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Product Views</span>
-                            <span>2,847/10,000</span>
-                          </div>
-                          <Progress value={28.47} />
-                        </div>
-                      </div>
-                    </div>
+                    <h3 className="text-lg font-semibold mb-2">Professional</h3>
+                    <div className="text-3xl font-bold mb-4">$79<span className="text-sm font-normal">/month</span></div>
+                    <ul className="text-sm space-y-2 mb-6">
+                      <li>• Unlimited leads</li>
+                      <li>• Advanced analytics</li>
+                      <li>• Priority support</li>
+                      <li>• Smart Match AI</li>
+                      <li>• Custom branding</li>
+                    </ul>
+                    <Button className="w-full">Upgrade Now</Button>
                   </div>
-                  
-                  <div className="flex space-x-4">
-                    <Button variant="outline">Change Plan</Button>
-                    <Button variant="outline">View Billing</Button>
-                    <Button variant="outline">Cancel Subscription</Button>
+
+                  {/* Enterprise Plan */}
+                  <div className="border rounded-lg p-6 text-center">
+                    <h3 className="text-lg font-semibold mb-2">Enterprise</h3>
+                    <div className="text-3xl font-bold mb-4">$199<span className="text-sm font-normal">/month</span></div>
+                    <ul className="text-sm space-y-2 mb-6">
+                      <li>• Everything in Professional</li>
+                      <li>• Dedicated account manager</li>
+                      <li>• Custom integrations</li>
+                      <li>• Advanced reporting</li>
+                      <li>• API access</li>
+                    </ul>
+                    <Button className="w-full">Contact Sales</Button>
                   </div>
                 </div>
               </CardContent>

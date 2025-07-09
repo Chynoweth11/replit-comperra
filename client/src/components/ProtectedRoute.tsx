@@ -24,8 +24,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
   }
 
   if (!userProfile) {
-    // Redirect to login if not authenticated
-    navigate('/login');
+    // Don't redirect during render to avoid React warning
+    React.useEffect(() => {
+      navigate('/login');
+    }, [navigate]);
     return null;
   }
 

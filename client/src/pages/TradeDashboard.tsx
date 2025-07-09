@@ -23,6 +23,7 @@ import {
   Brain
 } from 'lucide-react';
 import SmartMatchAI from '@/components/SmartMatchAI';
+import GoogleMap from '@/components/GoogleMap';
 
 interface LeadData {
   id: string;
@@ -325,71 +326,87 @@ const TradeDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {leads.map((lead) => (
-                    <div key={lead.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center space-x-3">
-                          <Badge className={getStatusColor(lead.status)}>
-                            {lead.status}
-                          </Badge>
-                          <span className={`font-medium ${getIntentColor(lead.intentScore)}`}>
-                            Intent Score: {lead.intentScore}/10
-                          </span>
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {new Date(lead.createdAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-2">
-                            <Mail className="h-4 w-4 text-gray-500" />
-                            <span className="text-sm">{lead.email}</span>
+                  {leads.length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="font-medium mb-2">Project Locations</h4>
+                      <GoogleMap leads={leads} height="300px" />
+                    </div>
+                  )}
+                  {leads.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Projects Yet</h3>
+                      <p className="text-sm text-gray-500">
+                        Your project leads will appear here once they're available.
+                      </p>
+                    </div>
+                  ) : (
+                    leads.map((lead) => (
+                      <div key={lead.id} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center space-x-3">
+                            <Badge className={getStatusColor(lead.status)}>
+                              {lead.status}
+                            </Badge>
+                            <span className={`font-medium ${getIntentColor(lead.intentScore)}`}>
+                              Intent Score: {lead.intentScore}/10
+                            </span>
                           </div>
-                          {lead.phone && (
-                            <div className="flex items-center space-x-2">
-                              <Phone className="h-4 w-4 text-gray-500" />
-                              <span className="text-sm">{lead.phone}</span>
-                            </div>
-                          )}
-                          <div className="flex items-center space-x-2">
-                            <MapPin className="h-4 w-4 text-gray-500" />
-                            <span className="text-sm">{lead.zipCode}</span>
+                          <div className="text-sm text-gray-500">
+                            {new Date(lead.createdAt).toLocaleDateString()}
                           </div>
                         </div>
                         
-                        <div className="space-y-2">
-                          <p className="text-sm"><strong>Category:</strong> {lead.materialCategory}</p>
-                          <p className="text-sm"><strong>Project:</strong> {lead.projectType}</p>
-                          {lead.budget && (
-                            <p className="text-sm"><strong>Budget:</strong> ${lead.budget.toLocaleString()}</p>
-                          )}
-                          {lead.timeline && (
-                            <p className="text-sm"><strong>Timeline:</strong> {lead.timeline}</p>
-                          )}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <Mail className="h-4 w-4 text-gray-500" />
+                              <span className="text-sm">{lead.email}</span>
+                            </div>
+                            {lead.phone && (
+                              <div className="flex items-center space-x-2">
+                                <Phone className="h-4 w-4 text-gray-500" />
+                                <span className="text-sm">{lead.phone}</span>
+                              </div>
+                            )}
+                            <div className="flex items-center space-x-2">
+                              <MapPin className="h-4 w-4 text-gray-500" />
+                              <span className="text-sm">{lead.zipCode}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <p className="text-sm"><strong>Category:</strong> {lead.materialCategory}</p>
+                            <p className="text-sm"><strong>Project:</strong> {lead.projectType}</p>
+                            {lead.budget && (
+                              <p className="text-sm"><strong>Budget:</strong> ${lead.budget.toLocaleString()}</p>
+                            )}
+                            {lead.timeline && (
+                              <p className="text-sm"><strong>Timeline:</strong> {lead.timeline}</p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {lead.description && (
+                          <div className="mt-3 p-3 bg-gray-50 rounded">
+                            <p className="text-sm">{lead.description}</p>
+                          </div>
+                        )}
+                        
+                        <div className="mt-4 flex space-x-2">
+                          <Button size="sm" variant="outline">
+                            Contact Customer
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            Send Quote
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            Update Status
+                          </Button>
                         </div>
                       </div>
-                      
-                      {lead.description && (
-                        <div className="mt-3 p-3 bg-gray-50 rounded">
-                          <p className="text-sm">{lead.description}</p>
-                        </div>
-                      )}
-                      
-                      <div className="mt-4 flex space-x-2">
-                        <Button size="sm" variant="outline">
-                          Contact Customer
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          Send Quote
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          Update Status
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
