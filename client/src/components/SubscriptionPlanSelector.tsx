@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Check, X } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface SubscriptionPlan {
   id: string;
@@ -68,16 +69,46 @@ const subscriptionPlans: SubscriptionPlan[] = [
 export default function SubscriptionPlanSelector({ onSelectPlan, onClose }: SubscriptionPlanSelectorProps) {
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { userProfile } = useAuth();
 
   const handleSelectPlan = (plan: SubscriptionPlan) => {
     setSelectedPlan(plan);
     setShowModal(true);
   };
 
-  const handleConfirmPlan = () => {
-    if (selectedPlan) {
-      onSelectPlan(selectedPlan);
-      setShowModal(false);
+  const handleConfirmPlan = async () => {
+    if (!selectedPlan || !userProfile) return;
+
+    setIsSubmitting(true);
+    try {
+      // Save subscription selection to Firebase
+      const response = await fetch('/api/subscription/select', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: userProfile.uid,
+          email: userProfile.email,
+          planId: selectedPlan.id,
+          planName: selectedPlan.name,
+          price: selectedPlan.price,
+          billingCycle: selectedPlan.mode === 'subscription' ? 
+            (selectedPlan.id === 'pro-yearly' ? 'yearly' : 'monthly') : 'one-time'
+        }),
+      });
+
+      if (response.ok) {
+        onSelectPlan(selectedPlan);
+        setShowModal(false);
+      } else {
+        console.error('Failed to save subscription selection');
+      }
+    } catch (error) {
+      console.error('Error saving subscription:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -208,13 +239,19 @@ export default function SubscriptionPlanSelector({ onSelectPlan, onClose }: Subs
             <div className="mt-8 space-y-3">
               <button
                 onClick={handleConfirmPlan}
-                className="w-full bg-indigo-500 text-white font-semibold py-3 rounded-lg hover:bg-indigo-600 transition-colors duration-300"
+                disabled={isSubmitting}
+                className={`w-full font-semibold py-3 rounded-lg transition-colors duration-300 ${
+                  isSubmitting 
+                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
+                    : 'bg-indigo-500 text-white hover:bg-indigo-600'
+                }`}
               >
-                Confirm and Continue
+                {isSubmitting ? 'Processing...' : 'Confirm and Continue'}
               </button>
               <button
                 onClick={handleCloseModal}
-                className="w-full bg-gray-200 text-gray-800 font-semibold py-3 rounded-lg hover:bg-gray-300 transition-colors duration-300"
+                disabled={isSubmitting}
+                className="w-full bg-gray-200 text-gray-800 font-semibold py-3 rounded-lg hover:bg-gray-300 transition-colors duration-300 disabled:opacity-50"
               >
                 Cancel
               </button>

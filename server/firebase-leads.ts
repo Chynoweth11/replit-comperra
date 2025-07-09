@@ -199,3 +199,25 @@ export async function saveCustomer(customer: any): Promise<void> {
     throw error;
   }
 }
+
+// Save subscription selection to Firebase
+export async function saveSubscription(subscriptionData: any): Promise<void> {
+  try {
+    await addDoc(collection(db, "subscriptions"), {
+      userId: subscriptionData.userId,
+      email: subscriptionData.email,
+      planId: subscriptionData.planId,
+      planName: subscriptionData.planName,
+      price: subscriptionData.price,
+      billingCycle: subscriptionData.billingCycle, // monthly, yearly, one-time
+      status: subscriptionData.status || "active",
+      startDate: new Date().toISOString(),
+      features: subscriptionData.features || [],
+      createdAt: new Date().toISOString()
+    });
+    console.log(`✅ Subscription saved to Firebase: ${subscriptionData.email} - ${subscriptionData.planName}`);
+  } catch (error) {
+    console.error('❌ Error saving subscription to Firebase:', error);
+    throw error;
+  }
+}

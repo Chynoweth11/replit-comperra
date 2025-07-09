@@ -935,6 +935,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Subscription handling endpoint
+  app.post('/api/subscription/select', async (req: Request, res: Response) => {
+    try {
+      const { userId, email, planId, planName, price, billingCycle } = req.body;
+      
+      if (!userId || !email || !planId || !planName || !price) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Missing required subscription data' 
+        });
+      }
+
+      // Import the subscription saving function
+      const { saveSubscription } = await import('./firebase-leads');
+      
+      const subscriptionData = {
+        userId,
+        email,
+        planId,
+        planName,
+        price,
+        billingCycle: billingCycle || 'monthly',
+        status: 'active',
+        features: getFeaturesByPlan(planId)
+      };
+
+      await saveSubscription(subscriptionData);
+      
+      res.json({ 
+        success: true, 
+        message: 'Subscription selected successfully',
+        subscription: subscriptionData
+      });
+    } catch (error) {
+      console.error('Error selecting subscription:', error);
+      res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Helper function to get features by plan ID
+function getFeaturesByPlan(planId: string): string[] {
+  const planFeatures = {
+    'pay-as-you-go': [
+      'One-time payment',
+      'Standard feature access',
+      '50 mile matching radius',
+      'Limited support or visibility'
+    ],
+    'pro-monthly': [
+      'All Pro features',
+      'Priority Support',
+      '50 mile matching radius',
+      'Unlimited lead claims'
+    ],
+    'pro-yearly': [
+      'All Pro features',
+      'Priority Support',
+      '50 mile matching radius',
+      'Unlimited lead claims'
+    ]
+  };
+  
+  return planFeatures[planId] || [];
 }

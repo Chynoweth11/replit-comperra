@@ -50,7 +50,6 @@ const VendorDashboard: React.FC = () => {
     totalLeads: 0,
     activeLeads: 0,
     conversionRate: 0,
-    monthlyRevenue: 0,
     responseTime: 0
   });
 
@@ -170,7 +169,7 @@ const VendorDashboard: React.FC = () => {
 
           <TabsContent value="overview" className="space-y-6">
             {/* Metrics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
@@ -201,17 +200,6 @@ const VendorDashboard: React.FC = () => {
                 <CardContent>
                   <div className="text-2xl font-bold">{metrics.conversionRate.toFixed(1)}%</div>
                   <p className="text-xs text-muted-foreground">+2.1% from last month</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">${metrics.monthlyRevenue.toLocaleString()}</div>
-                  <p className="text-xs text-muted-foreground">+8.3% from last month</p>
                 </CardContent>
               </Card>
             </div>
