@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { Link, useLocation } from 'wouter';
-import { auth } from '@/lib/firebase';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +17,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [, navigate] = useLocation();
+  const { signIn, resetPassword } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,21 +26,11 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate('/dashboard');
+      await signIn(email, password);
+      // Navigation is handled by AuthContext
     } catch (err: any) {
       console.error('Login error:', err);
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-        setError('Invalid email or password.');
-      } else if (err.code === 'auth/invalid-email') {
-        setError('Please enter a valid email address.');
-      } else if (err.code === 'auth/operation-not-allowed') {
-        setError('Email/password login is not enabled. Please contact support.');
-      } else if (err.code === 'auth/invalid-api-key') {
-        setError('Authentication service configuration error. Please contact support.');
-      } else {
-        setError(`Login failed: ${err.message || 'Please try again.'}`);
-      }
+      setError(err.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -58,18 +48,12 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await sendPasswordResetEmail(auth, email);
-      setSuccess('Password reset instructions sent to your email!');
+      await resetPassword(email);
+      setSuccess('Password reset instructions sent to your email! Please check your inbox and follow the instructions to reset your password.');
       setShowForgotPassword(false);
     } catch (err: any) {
       console.error('Password reset error:', err);
-      if (err.code === 'auth/user-not-found') {
-        setError('No account found with this email address.');
-      } else if (err.code === 'auth/invalid-email') {
-        setError('Please enter a valid email address.');
-      } else {
-        setError('Failed to send reset email. Please try again.');
-      }
+      setError(err.message || 'Failed to send reset email. Please try again.');
     } finally {
       setLoading(false);
     }

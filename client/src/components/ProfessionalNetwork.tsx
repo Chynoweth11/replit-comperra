@@ -79,7 +79,7 @@ function Login({ setView }) {
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [loading, setLoading] = useState(false);
     const [showForgotPassword, setShowForgotPassword] = useState(false);
-    const { signIn } = useContext(AuthContext);
+    const { signIn, resetPassword } = useContext(AuthContext);
     const { toast } = useToast();
     const handleChange = e => setFormData(p => ({...p, [e.target.name]: e.target.value}));
     
@@ -106,8 +106,6 @@ function Login({ setView }) {
     const handleForgotPassword = async (e) => {
         e.preventDefault();
         
-        console.log('Forgot password clicked, email:', formData.email);
-        
         if (!formData.email || !formData.email.includes('@')) {
             toast({
                 title: "Invalid email",
@@ -120,31 +118,17 @@ function Login({ setView }) {
         setLoading(true);
         
         try {
-            console.log('Attempting to send password reset email to:', formData.email);
-            await sendPasswordResetEmail(auth, formData.email);
-            console.log('Password reset email sent successfully');
+            await resetPassword(formData.email);
             toast({
                 title: "Reset email sent",
-                description: "Password reset instructions sent to your email!",
+                description: "Password reset instructions sent to your email! Please check your inbox and follow the instructions to reset your password.",
             });
             setShowForgotPassword(false);
         } catch (error: any) {
             console.error('Password reset error:', error);
-            let errorMessage = 'Please try again.';
-            
-            if (error.code === 'auth/user-not-found') {
-                errorMessage = 'No account found with this email address.';
-            } else if (error.code === 'auth/invalid-email') {
-                errorMessage = 'Please enter a valid email address.';
-            } else if (error.code === 'auth/too-many-requests') {
-                errorMessage = 'Too many requests. Please try again later.';
-            } else if (error.message) {
-                errorMessage = error.message;
-            }
-            
             toast({
                 title: "Failed to send reset email",
-                description: errorMessage,
+                description: error.message || "Please try again.",
                 variant: "destructive",
             });
         } finally {

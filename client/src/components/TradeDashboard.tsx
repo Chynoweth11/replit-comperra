@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";
+import { ArrowLeft, Home, LogOut } from "lucide-react";
 
 interface TradeDashboardProps {
   leadCount?: number;
@@ -41,6 +42,37 @@ export default function TradeDashboard({
 
   return (
     <div className="p-6">
+      {/* Navigation Header */}
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+        <div className="flex items-center space-x-4">
+          <Button 
+            variant="ghost" 
+            onClick={() => setLocation('/')}
+            className="flex items-center space-x-2 hover:bg-gray-100"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Home</span>
+          </Button>
+          <div className="h-6 w-px bg-gray-300"></div>
+          <Button 
+            variant="ghost" 
+            onClick={() => setLocation('/')}
+            className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+          >
+            <Home className="w-5 h-5" />
+            <span className="font-bold text-lg">Comperra</span>
+          </Button>
+        </div>
+        <Button 
+          variant="ghost" 
+          onClick={handleSignOut}
+          className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Sign Out</span>
+        </Button>
+      </div>
+
       <h1 className="text-2xl font-semibold">Welcome back, {user?.name || 'User'}!</h1>
       <p className="text-sm text-gray-600 mt-1">
         You're logged in as a <strong>Trade Professional</strong>.
@@ -91,12 +123,7 @@ export default function TradeDashboard({
         </Card>
       </div>
 
-      {/* Sign Out */}
-      <div className="mt-4">
-        <Button variant="destructive" onClick={handleSignOut}>
-          Sign Out
-        </Button>
-      </div>
+
     </div>
   );
 }
