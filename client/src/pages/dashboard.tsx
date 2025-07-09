@@ -62,12 +62,12 @@ export default function Dashboard() {
         </p>
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Matched Leads */}
+          {/* Lead Tracking */}
           <Card>
             <CardContent className="p-4">
-              <h2 className="text-lg font-semibold">📥 Matched Leads</h2>
+              <h2 className="text-lg font-semibold">📍 Lead Tracking</h2>
               <p className="text-sm text-gray-500 mt-1">
-                View personalized leads based on your ZIP code, radius, and specialty.
+                Lead tracking based on ZIP code and trade type
               </p>
               <p className="text-2xl font-bold mt-2">{leadCount}</p>
               <Button className="mt-3 w-full" onClick={() => setLocation(`/${userType}/leads`)}>
@@ -76,13 +76,13 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Product Listings (Only for Vendors) */}
+          {/* Product Management (Only for Vendors) */}
           {userType === "vendor" && (
             <Card>
               <CardContent className="p-4">
-                <h2 className="text-lg font-semibold">📦 Product Listings</h2>
+                <h2 className="text-lg font-semibold">📦 Product Management</h2>
                 <p className="text-sm text-gray-500 mt-1">
-                  Manage your inventory, pricing, and availability.
+                  Product management (for vendors only)
                 </p>
                 <p className="text-2xl font-bold mt-2">{productCount}</p>
                 <Button className="mt-3 w-full" onClick={() => setLocation(`/${userType}/products`)}>
@@ -92,10 +92,10 @@ export default function Dashboard() {
             </Card>
           )}
 
-          {/* Subscription */}
+          {/* Subscription Status */}
           <Card>
             <CardContent className="p-4">
-              <h2 className="text-lg font-semibold">💳 Subscription</h2>
+              <h2 className="text-lg font-semibold">💳 Subscription Status</h2>
               <p className="text-sm text-gray-500 mt-1">
                 Track your plan status and billing.
               </p>
@@ -107,6 +107,60 @@ export default function Dashboard() {
               </Button>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Lead Management Section */}
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold mb-4">Lead Management</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* My Leads */}
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-blue-600">My Leads</h3>
+                <p className="text-2xl font-bold text-blue-600 mt-2">12</p>
+                <p className="text-sm text-gray-500">Active leads</p>
+                <Button size="sm" className="mt-3 w-full">
+                  View My Leads
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Current Leads */}
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-green-600">Current Leads</h3>
+                <p className="text-2xl font-bold text-green-600 mt-2">8</p>
+                <p className="text-sm text-gray-500">In progress</p>
+                <Button size="sm" className="mt-3 w-full">
+                  View Current
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Potential Leads */}
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-orange-600">Potential Leads</h3>
+                <p className="text-2xl font-bold text-orange-600 mt-2">25</p>
+                <p className="text-sm text-gray-500">Prospects</p>
+                <Button size="sm" className="mt-3 w-full">
+                  View Potential
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Leads History */}
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-gray-600">Leads History</h3>
+                <p className="text-2xl font-bold text-gray-600 mt-2">47</p>
+                <p className="text-sm text-gray-500">Completed</p>
+                <Button size="sm" className="mt-3 w-full">
+                  View History
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Account Settings */}
@@ -222,7 +276,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -246,28 +300,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-blue-500" />
-                Quote Requests
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-gray-600">
-                  Track your pricing and sample requests.
-                </p>
-                <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-medium">
-                  {quoteHistory.length}
-                </span>
-              </div>
-              <Button variant="outline" className="w-full" onClick={handleViewQuotes}>
-                <History className="h-4 w-4 mr-2" />
-                View Quote History
-              </Button>
-            </CardContent>
-          </Card>
+
 
           <Card>
             <CardHeader>

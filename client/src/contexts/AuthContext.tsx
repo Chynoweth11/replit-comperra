@@ -56,20 +56,26 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check localStorage for existing user session
-    const storedUser = localStorage.getItem('comperra-user');
-    if (storedUser) {
+    // Clear localStorage and fetch fresh user data on app start
+    localStorage.removeItem('comperra-user');
+    
+    // Check current user from server
+    const checkCurrentUser = async () => {
       try {
-        const userData = JSON.parse(storedUser);
-        setUser(userData);
-        setUserProfile(userData);
-        setLoading(false);
-        return;
+        const response = await fetch('/api/auth/current-user');
+        const data = await response.json();
+        if (data.success && data.user) {
+          setUser(data.user);
+          setUserProfile(data.user);
+          localStorage.setItem('comperra-user', JSON.stringify(data.user));
+        }
       } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('comperra-user');
+        console.error('Error fetching current user:', error);
       }
-    }
+      setLoading(false);
+    };
+    
+    checkCurrentUser();
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
