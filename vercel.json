@@ -19,6 +19,6 @@
   "env": {
     "NODE_ENV": "production"
   },
-  "installCommand": "npm install --no-optional",
+  "installCommand": "npm install",
   "buildCommand": "npm run build"
 }
