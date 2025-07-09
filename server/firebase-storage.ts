@@ -18,15 +18,9 @@ const firebaseConfig = {
 let db: any = null;
 
 try {
-  if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId) {
-    if (!getApps().length) {
-      initializeApp(firebaseConfig);
-    }
-    db = getFirestore();
-    console.log('✅ Firebase storage initialized successfully');
-  } else {
-    console.log('⚠️ Firebase storage configuration missing, using memory storage');
-  }
+  // Temporarily disable Firebase initialization to prevent metadata errors
+  console.log('⚠️ Firebase storage temporarily disabled due to metadata validation issues');
+  db = null;
 } catch (error) {
   console.log('⚠️ Firebase storage initialization failed:', error.message);
 }
@@ -41,6 +35,11 @@ export class FirebaseStorage implements IStorage {
     if (this.isInitialized) return;
     
     try {
+      if (!db) {
+        console.log('⚠️ Firebase not available, skipping collection initialization');
+        this.isInitialized = true;
+        return;
+      }
       console.log('🔄 Initializing Firebase collections automatically...');
       
       // Create sample documents to ensure collections exist

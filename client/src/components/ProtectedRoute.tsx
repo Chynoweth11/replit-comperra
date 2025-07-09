@@ -12,6 +12,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
   const { userProfile, loading } = useAuth();
   const [, navigate] = useLocation();
 
+  // Always call useEffect hook to maintain consistent hook order
+  React.useEffect(() => {
+    if (!loading && !userProfile) {
+      navigate('/login');
+    }
+  }, [loading, userProfile, navigate]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -24,10 +31,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
   }
 
   if (!userProfile) {
-    // Don't redirect during render to avoid React warning
-    React.useEffect(() => {
-      navigate('/login');
-    }, [navigate]);
     return null;
   }
 

@@ -19,15 +19,20 @@ export class PuppeteerScraper {
 
   async initBrowser() {
     if (!this.browser) {
-      this.browser = await puppeteer.launch({
-        headless: true,
-        args: [
-          '--no-sandbox', 
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-gpu'
-        ]
-      });
+      try {
+        this.browser = await puppeteer.launch({
+          headless: true,
+          args: [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu'
+          ]
+        });
+      } catch (error) {
+        console.log('⚠️ Puppeteer Chrome not available, scraping will use fallback method');
+        return null;
+      }
     }
     return this.browser;
   }
@@ -46,6 +51,9 @@ export class PuppeteerScraper {
     let page;
     try {
       const browser = await this.initBrowser();
+      if (!browser) {
+        throw new Error('Puppeteer browser not available');
+      }
       page = await browser.newPage();
       
       await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');

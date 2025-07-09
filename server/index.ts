@@ -38,7 +38,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Firebase initialization disabled to prevent permission errors
+  // Firebase initialization disabled to prevent metadata errors
   // Firebase collections will be created when needed by the application
   console.log('🔄 Firebase initialization skipped - collections will be created on-demand');
   
