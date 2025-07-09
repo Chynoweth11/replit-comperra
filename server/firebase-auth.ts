@@ -19,6 +19,9 @@ let db: any = null;
 // Simple in-memory user store for fallback authentication
 export const fallbackUsers = new Map<string, { email: string; role: string; name?: string; password: string }>();
 
+// Track current logged-in user - simple session storage
+const userSessions = new Map<string, any>();
+
 try {
   if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId) {
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
@@ -238,14 +241,19 @@ export async function signInUser(signInData: SignInData): Promise<any> {
     const userDoc = await getDoc(doc(db, "users", user.uid));
     const userData = userDoc.exists() ? userDoc.data() : null;
 
+    const firebaseUser = {
+      uid: user.uid,
+      email: user.email,
+      role: userData?.role || 'customer'
+    };
+
+    // Store current user for getCurrentUser() function
+    userSessions.set(signInData.email, firebaseUser);
+
     console.log(`✅ User signed in successfully: ${signInData.email}`);
     return {
       success: true,
-      user: {
-        uid: user.uid,
-        email: user.email,
-        role: userData?.role || 'customer'
-      }
+      user: firebaseUser
     };
   } catch (error: any) {
     console.error('❌ Error signing in:', error);
@@ -284,6 +292,9 @@ export async function signInUser(signInData: SignInData): Promise<any> {
       name: storedUser?.name || 'Professional User'
     };
 
+    // Store current user for getCurrentUser() function
+    userSessions.set(signInData.email, fallbackUser);
+    
     console.log(`✅ Fallback signin successful: ${signInData.email}`);
     return {
       success: true,
@@ -305,32 +316,47 @@ export async function resetPassword(email: string): Promise<void> {
 export async function signOutUser(): Promise<void> {
   try {
     await signOut(auth);
+    userSessions.clear(); // Clear all user sessions
     console.log('✅ User signed out successfully');
   } catch (error: any) {
+    userSessions.clear(); // Clear all user sessions even on error
     console.error('❌ Error signing out:', error);
     throw new Error(error.message || 'Failed to sign out');
   }
 }
 
 export async function getCurrentUser(): Promise<any> {
-  return new Promise((resolve) => {
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      unsubscribe();
-      if (user) {
-        // Get user role from Firestore
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        const userData = userDoc.exists() ? userDoc.data() : null;
-        
-        resolve({
-          uid: user.uid,
-          email: user.email,
-          role: userData?.role || 'customer'
-        });
-      } else {
-        resolve(null);
-      }
+  try {
+    // Check for most recent session user (simple approach)
+    const mostRecentUser = Array.from(userSessions.values()).pop();
+    if (mostRecentUser) {
+      return mostRecentUser;
+    }
+
+    // Then check Firebase auth
+    return new Promise((resolve) => {
+      const unsubscribe = auth.onAuthStateChanged(async (user) => {
+        unsubscribe();
+        if (user) {
+          // Get user role from Firestore
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          const userData = userDoc.exists() ? userDoc.data() : null;
+          
+          resolve({
+            uid: user.uid,
+            email: user.email,
+            role: userData?.role || 'customer'
+          });
+        } else {
+          resolve(null);
+        }
+      });
     });
-  });
+  } catch (error) {
+    // Return fallback user or null
+    const mostRecentUser = Array.from(userSessions.values()).pop();
+    return mostRecentUser || null;
+  }
 }
 
 export { auth, db };
