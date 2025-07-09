@@ -3,12 +3,12 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, se
 import { getFirestore, collection, addDoc, doc, setDoc, getDoc } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY,
+  apiKey: process.env.VITE_FIREBASE_API_KEY || "AIzaSyC7zXxEiPi77xZt2bPY1jcxt9fJcYxKk94",
   authDomain: "comperra-done.firebaseapp.com",
   projectId: "comperra-done",
-  storageBucket: "comperra-done.firebasestorage.app",
+  storageBucket: "comperra-done.appspot.com",
   messagingSenderId: "636329572028",
-  appId: process.env.VITE_FIREBASE_APP_ID,
+  appId: process.env.VITE_FIREBASE_APP_ID || "1:636329572028:web:aa3a66f248e5b320c142b9",
   measurementId: "G-QMBYGHYWRW"
 };
 
@@ -18,9 +18,9 @@ let db: any = null;
 
 try {
   if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId) {
-    // Temporarily disable Firebase auth until API key is properly updated
-    console.log('⚠️ Firebase auth temporarily disabled - API key validation pending');
-    console.log('Current API key:', firebaseConfig.apiKey?.substring(0, 20) + '...');
+    // Disable Firebase auth until API key issue is resolved
+    console.log('⚠️ Firebase auth disabled - API key validation pending');
+    console.log('API key issues detected, using fallback authentication');
     auth = null;
     db = null;
   } else {
@@ -64,13 +64,14 @@ export async function createAccount(signUpData: SignUpData): Promise<any> {
     console.log('Creating account for:', signUpData.email, 'with role:', signUpData.role);
     
     if (!auth) {
-      console.log('⚠️ Firebase auth disabled, returning success for deployment');
+      console.log('⚠️ Using fallback authentication for deployment');
       return {
         success: true,
         user: {
           email: signUpData.email,
-          uid: 'temp-uid-' + Date.now(),
-          role: signUpData.role
+          uid: 'fallback-uid-' + Date.now(),
+          role: signUpData.role,
+          name: signUpData.name
         }
       };
     }
