@@ -182,12 +182,7 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Sign Out */}
-        <div className="mt-4">
-          <Button variant="destructive" onClick={handleSignOut}>
-            Sign Out
-          </Button>
-        </div>
+
       </div>
     );
   };

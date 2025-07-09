@@ -137,14 +137,15 @@ const TradeDashboard: React.FC = () => {
   }
 
   const handleSignOut = async () => {
-    console.log('Sign out button clicked');
+    console.log('TradeDashboard: Sign out button clicked');
     try {
-      console.log('Attempting to sign out...');
+      console.log('TradeDashboard: Attempting to sign out...');
       await signOut();
-      console.log('Sign out successful');
-      // Navigation is handled by signOut function
+      console.log('TradeDashboard: Sign out successful');
+      // Additional navigation just in case
+      window.location.href = '/';
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('TradeDashboard: Error signing out:', error);
     }
   };
 

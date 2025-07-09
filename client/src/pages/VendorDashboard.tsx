@@ -135,14 +135,15 @@ const VendorDashboard: React.FC = () => {
   }
 
   const handleSignOut = async () => {
-    console.log('Sign out button clicked');
+    console.log('VendorDashboard: Sign out button clicked');
     try {
-      console.log('Attempting to sign out...');
+      console.log('VendorDashboard: Attempting to sign out...');
       await signOut();
-      console.log('Sign out successful');
-      // Navigation is handled by signOut function
+      console.log('VendorDashboard: Sign out successful');
+      // Additional navigation just in case
+      window.location.href = '/';
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('VendorDashboard: Error signing out:', error);
     }
   };
 
