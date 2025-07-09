@@ -51,84 +51,101 @@ export default function Dashboard() {
     setLocation('/profile');
   };
 
+  // Professional Dashboard Component
+  const ProfessionalDashboard = ({ userType, userName, leadCount, productCount, subscriptionStatus, userEmail, isActive }) => {
+    return (
+      <div className="p-6">
+        <h1 className="text-2xl font-semibold">Welcome back, {userName}!</h1>
+        <p className="text-sm text-gray-600 mt-1">
+          You're logged in as a <strong>{userType === "vendor" ? "Vendor" : "Trade Professional"}</strong>.
+        </p>
+
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Matched Leads */}
+          <Card>
+            <CardContent className="p-4">
+              <h2 className="text-lg font-semibold">📥 Matched Leads</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                View personalized leads based on your ZIP code, radius, and specialty.
+              </p>
+              <p className="text-2xl font-bold mt-2">{leadCount}</p>
+              <Button className="mt-3 w-full" onClick={() => setLocation(`/${userType}/leads`)}>
+                View Leads
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Product Listings (Only for Vendors) */}
+          {userType === "vendor" && (
+            <Card>
+              <CardContent className="p-4">
+                <h2 className="text-lg font-semibold">📦 Product Listings</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Manage your inventory, pricing, and availability.
+                </p>
+                <p className="text-2xl font-bold mt-2">{productCount}</p>
+                <Button className="mt-3 w-full" onClick={() => setLocation(`/${userType}/products`)}>
+                  Manage Products
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Subscription */}
+          <Card>
+            <CardContent className="p-4">
+              <h2 className="text-lg font-semibold">💳 Subscription</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Track your plan status and billing.
+              </p>
+              <p className="text-base font-bold mt-2">
+                Status: <span className={isActive ? 'text-green-600' : 'text-red-600'}>{subscriptionStatus}</span>
+              </p>
+              <Button className="mt-3 w-full" onClick={() => setLocation(`/${userType}/subscription`)}>
+                Manage Subscription
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Account Settings */}
+        <div className="mt-6">
+          <Card>
+            <CardContent className="p-4">
+              <h2 className="text-lg font-semibold">⚙️ Account Settings</h2>
+              <p className="text-sm text-gray-500 mt-1">Email: {userEmail}</p>
+              <Button className="mt-3 w-full" variant="secondary" onClick={() => setLocation(`/${userType}/settings`)}>
+                Edit Profile
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Sign Out */}
+        <div className="mt-4">
+          <Button variant="destructive" onClick={handleSignOut}>
+            Sign Out
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
   // Show role-specific dashboard content
   if (user?.role === 'vendor') {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
         <main className="max-w-4xl mx-auto px-4 py-8">
-          <div className="p-6">
-            <h1 className="text-2xl font-semibold">Welcome back, {user.name || 'User'}!</h1>
-            <p className="text-sm text-gray-600 mt-1">
-              You're logged in as a <strong>Vendor</strong>.
-            </p>
-
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Matched Leads */}
-              <Card>
-                <CardContent className="p-4">
-                  <h2 className="text-lg font-semibold">📥 Matched Leads</h2>
-                  <p className="text-sm text-gray-500 mt-1">
-                    View personalized leads based on your ZIP code, radius, and specialty.
-                  </p>
-                  <p className="text-2xl font-bold mt-2">3</p>
-                  <Button className="mt-3 w-full" onClick={() => setLocation('/vendor/leads')}>
-                    View Leads
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Product Listings */}
-              <Card>
-                <CardContent className="p-4">
-                  <h2 className="text-lg font-semibold">📦 Product Listings</h2>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Manage your inventory, pricing, and availability.
-                  </p>
-                  <p className="text-2xl font-bold mt-2">12</p>
-                  <Button className="mt-3 w-full" onClick={() => setLocation('/vendor/products')}>
-                    Manage Products
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Subscription */}
-              <Card>
-                <CardContent className="p-4">
-                  <h2 className="text-lg font-semibold">💳 Subscription</h2>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Track your plan status and billing.
-                  </p>
-                  <p className="text-base font-bold mt-2">
-                    Status: <span className="text-green-600">Active</span>
-                  </p>
-                  <Button className="mt-3 w-full" onClick={() => setLocation('/vendor/subscription')}>
-                    Manage Subscription
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Account Settings */}
-            <div className="mt-6">
-              <Card>
-                <CardContent className="p-4">
-                  <h2 className="text-lg font-semibold">⚙️ Account Settings</h2>
-                  <p className="text-sm text-gray-500 mt-1">Email: {user.email}</p>
-                  <Button className="mt-3 w-full" variant="secondary" onClick={() => setLocation('/vendor/settings')}>
-                    Edit Profile
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Sign Out */}
-            <div className="mt-4">
-              <Button variant="destructive" onClick={handleSignOut}>
-                Sign Out
-              </Button>
-            </div>
-          </div>
+          <ProfessionalDashboard
+            userType="vendor"
+            userName={user.name || 'User'}
+            leadCount={3}
+            productCount={12}
+            subscriptionStatus="Active"
+            userEmail={user.email}
+            isActive={true}
+          />
         </main>
         <Footer />
       </div>
@@ -140,64 +157,15 @@ export default function Dashboard() {
       <div className="min-h-screen bg-gray-50">
         <Header />
         <main className="max-w-4xl mx-auto px-4 py-8">
-          <div className="p-6">
-            <h1 className="text-2xl font-semibold">Welcome back, {user.name || 'User'}!</h1>
-            <p className="text-sm text-gray-600 mt-1">
-              You're logged in as a <strong>Trade Professional</strong>.
-            </p>
-
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Matched Leads */}
-              <Card>
-                <CardContent className="p-4">
-                  <h2 className="text-lg font-semibold">📥 Matched Leads</h2>
-                  <p className="text-sm text-gray-500 mt-1">
-                    View personalized leads based on your ZIP code, radius, and specialty.
-                  </p>
-                  <p className="text-2xl font-bold mt-2">5</p>
-                  <Button className="mt-3 w-full" onClick={() => setLocation('/trade/leads')}>
-                    View Leads
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Subscription */}
-              <Card>
-                <CardContent className="p-4">
-                  <h2 className="text-lg font-semibold">💳 Subscription</h2>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Track your plan status and billing.
-                  </p>
-                  <p className="text-base font-bold mt-2">
-                    Status: <span className="text-green-600">Active</span>
-                  </p>
-                  <Button className="mt-3 w-full" onClick={() => setLocation('/trade/subscription')}>
-                    Manage Subscription
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Account Settings */}
-            <div className="mt-6">
-              <Card>
-                <CardContent className="p-4">
-                  <h2 className="text-lg font-semibold">⚙️ Account Settings</h2>
-                  <p className="text-sm text-gray-500 mt-1">Email: {user.email}</p>
-                  <Button className="mt-3 w-full" variant="secondary" onClick={() => setLocation('/trade/settings')}>
-                    Edit Profile
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Sign Out */}
-            <div className="mt-4">
-              <Button variant="destructive" onClick={handleSignOut}>
-                Sign Out
-              </Button>
-            </div>
-          </div>
+          <ProfessionalDashboard
+            userType="trade"
+            userName={user.name || 'User'}
+            leadCount={5}
+            productCount={0}
+            subscriptionStatus="Active"
+            userEmail={user.email}
+            isActive={true}
+          />
         </main>
         <Footer />
       </div>
