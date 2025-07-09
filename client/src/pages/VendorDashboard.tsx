@@ -18,7 +18,10 @@ import {
   Clock,
   DollarSign,
   Target,
-  Brain
+  Brain,
+  ArrowLeft,
+  Home,
+  LogOut
 } from 'lucide-react';
 import SmartMatchAI from '@/components/SmartMatchAI';
 import GoogleMap from '@/components/GoogleMap';
@@ -42,7 +45,7 @@ interface LeadData {
 
 
 const VendorDashboard: React.FC = () => {
-  const { userProfile, loading } = useAuth();
+  const { userProfile, loading, signOut } = useAuth();
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
   const [leads, setLeads] = useState<LeadData[]>([]);
@@ -131,15 +134,39 @@ const VendorDashboard: React.FC = () => {
     );
   }
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      {/* Navigation Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Vendor Dashboard</h1>
-              <p className="text-sm text-gray-600">Welcome back, {userProfile.businessName || userProfile.email}</p>
+            <div className="flex items-center space-x-4">
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate('/')}
+                className="flex items-center space-x-2 hover:bg-gray-100"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back to Home</span>
+              </Button>
+              <div className="h-6 w-px bg-gray-300"></div>
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate('/')}
+                className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              >
+                <Home className="w-5 h-5" />
+                <span className="font-bold text-lg">Comperra</span>
+              </Button>
             </div>
             <div className="flex items-center space-x-4">
               <Badge variant="secondary" className="bg-blue-100 text-blue-800">
@@ -152,8 +179,24 @@ const VendorDashboard: React.FC = () => {
               >
                 Profile Settings
               </Button>
+              <Button 
+                variant="ghost" 
+                onClick={handleSignOut}
+                className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out</span>
+              </Button>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Dashboard Title */}
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <h1 className="text-2xl font-bold text-gray-900">Vendor Dashboard</h1>
+          <p className="text-sm text-gray-600">Welcome back, {userProfile.businessName || userProfile.email}</p>
         </div>
       </div>
 
