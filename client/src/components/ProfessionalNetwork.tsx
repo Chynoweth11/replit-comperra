@@ -373,7 +373,7 @@ function Dashboard() {
                                 </div>
                             );
                         })
-                    ) : ( <div className="text-center py-10 px-4 bg-slate-100 rounded-lg"><Search className="mx-auto text-slate-400 h-12 w-12" /><h3 className="mt-2 text-lg font-medium text-slate-800">No new leads match your profile.</h3></div> )}
+                    ) : ( <div className="text-center py-10 px-4 bg-slate-100 rounded-lg"><Search className="mx-auto text-slate-400 h-12 w-12" /><h3 className="mt-2 text-lg font-medium text-slate-800">New leads will appear here when they match your profile.</h3></div> )}
                 </div>
             </Card>
         </div>
