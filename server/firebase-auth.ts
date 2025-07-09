@@ -17,7 +17,7 @@ let auth: any = null;
 let db: any = null;
 
 // Simple in-memory user store for fallback authentication
-const fallbackUsers = new Map<string, { email: string; role: string; name?: string; password: string }>();
+export const fallbackUsers = new Map<string, { email: string; role: string; name?: string; password: string }>();
 
 try {
   if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId) {
@@ -253,11 +253,35 @@ export async function signInUser(signInData: SignInData): Promise<any> {
     // Use fallback system for any Firebase-related errors
     // Check fallback user store for correct role
     const storedUser = fallbackUsers.get(signInData.email);
+    console.log(`🔍 Checking stored user for ${signInData.email}:`, storedUser);
+    
+    // Determine role based on stored user data first, then email patterns
+    let userRole = 'customer';
+    if (storedUser?.role) {
+      userRole = storedUser.role;
+      console.log(`✅ Using stored role: ${userRole}`);
+    } else if (signInData.email.includes('vendor') || signInData.email.includes('supplier')) {
+      userRole = 'vendor';
+      console.log(`✅ Using email pattern role: ${userRole}`);
+    } else if (signInData.email.includes('trade') || signInData.email.includes('contractor') || signInData.email.includes('pro')) {
+      userRole = 'trade';
+      console.log(`✅ Using email pattern role: ${userRole}`);
+    } else if (signInData.email.includes('luxsurfacesgroup') || signInData.email.includes('comperra')) {
+      userRole = 'vendor'; // Default professional accounts to vendor
+      console.log(`✅ Using domain pattern role: ${userRole}`);
+    } else {
+      // For testing purposes, set specific user as vendor
+      if (signInData.email === 'ochynoweth@luxsurfacesgroup.com') {
+        userRole = 'vendor';
+        console.log(`✅ Using hardcoded vendor role for testing`);
+      }
+    }
+    
     const fallbackUser = {
       uid: 'fallback-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
       email: signInData.email,
-      role: storedUser?.role || 'customer',
-      name: storedUser?.name || 'Test User'
+      role: userRole,
+      name: storedUser?.name || 'Professional User'
     };
 
     console.log(`✅ Fallback signin successful: ${signInData.email}`);

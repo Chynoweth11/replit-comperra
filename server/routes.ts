@@ -806,6 +806,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin endpoint to set user roles
+  app.post('/api/admin/set-role', async (req, res) => {
+    try {
+      const { email, role } = req.body;
+      
+      if (!email || !role) {
+        return res.status(400).json({ success: false, error: 'Email and role are required' });
+      }
+      
+      if (!['vendor', 'trade', 'customer', 'homeowner'].includes(role)) {
+        return res.status(400).json({ success: false, error: 'Invalid role' });
+      }
+      
+      // Import fallback users from firebase-auth
+      const { fallbackUsers } = await import('./firebase-auth');
+      
+      // Update fallback user store
+      const existingUser = fallbackUsers.get(email);
+      if (existingUser) {
+        existingUser.role = role;
+      } else {
+        fallbackUsers.set(email, {
+          email,
+          role,
+          name: 'Professional User',
+          password: 'temp123'
+        });
+      }
+      
+      console.log(`✅ Admin: Set role for ${email} to ${role}`);
+      res.json({ success: true, message: `Role updated to ${role}` });
+    } catch (error) {
+      console.error('Error setting user role:', error);
+      res.status(500).json({ success: false, error: 'Failed to set user role' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
