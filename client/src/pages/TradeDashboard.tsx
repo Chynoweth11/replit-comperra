@@ -419,70 +419,57 @@ const TradeDashboard: React.FC = () => {
           <TabsContent value="subscription" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Subscription Management</CardTitle>
-                <CardDescription>Manage your Comperra trade professional subscription</CardDescription>
+                <CardTitle>Subscription Plans</CardTitle>
+                <CardDescription>Choose the right plan for your trade business</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
-                    <div>
-                      <h3 className="font-medium">Professional Plan</h3>
-                      <p className="text-sm text-gray-600">Full access to trade professional features</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold">$199/month</p>
-                      <Badge className="bg-green-100 text-green-800">Active</Badge>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Pay-as-you-go Plan */}
+                  <div className="border rounded-lg p-6 text-center">
+                    <h3 className="text-lg font-semibold mb-2">Pay-as-you-go</h3>
+                    <div className="text-3xl font-bold mb-4">$15<span className="text-sm font-normal">/lead</span></div>
+                    <p className="text-sm text-gray-600 mb-4">For single projects or leads.</p>
+                    <ul className="text-sm space-y-2 mb-6">
+                      <li>• One-time payment</li>
+                      <li>• Standard feature access</li>
+                      <li>• 50 mile matching radius</li>
+                      <li>• Limited support or visibility</li>
+                    </ul>
+                    <Button className="w-full">Get Started</Button>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="font-medium mb-2">Plan Features</h4>
-                      <ul className="space-y-1 text-sm">
-                        <li className="flex items-center space-x-2">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          <span>Priority lead notifications</span>
-                        </li>
-                        <li className="flex items-center space-x-2">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          <span>Geographic lead matching</span>
-                        </li>
-                        <li className="flex items-center space-x-2">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          <span>Advanced project management</span>
-                        </li>
-                        <li className="flex items-center space-x-2">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          <span>Customer rating system</span>
-                        </li>
-                      </ul>
+
+                  {/* Pro Plan Monthly */}
+                  <div className="border-2 border-indigo-500 rounded-lg p-6 text-center relative">
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                      <span className="bg-indigo-500 text-white px-4 py-1 rounded-full text-sm">Most Popular</span>
                     </div>
-                    
-                    <div>
-                      <h4 className="font-medium mb-2">Usage This Month</h4>
-                      <div className="space-y-3">
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Leads Received</span>
-                            <span>{metrics.totalLeads}/75</span>
-                          </div>
-                          <Progress value={(metrics.totalLeads / 75) * 100} />
-                        </div>
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Response Rate</span>
-                            <span>92%</span>
-                          </div>
-                          <Progress value={92} />
-                        </div>
-                      </div>
-                    </div>
+                    <h3 className="text-lg font-semibold mb-2">Pro Plan</h3>
+                    <div className="text-3xl font-bold mb-4">$49<span className="text-sm font-normal">/mo</span></div>
+                    <p className="text-sm text-gray-600 mb-4">For professionals and small teams.</p>
+                    <ul className="text-sm space-y-2 mb-6">
+                      <li>• All Pro features</li>
+                      <li>• Priority Support</li>
+                      <li>• 50 mile matching radius</li>
+                      <li>• Unlimited lead claims</li>
+                    </ul>
+                    <Button className="w-full">Upgrade Now</Button>
                   </div>
-                  
-                  <div className="flex space-x-4">
-                    <Button variant="outline">Change Plan</Button>
-                    <Button variant="outline">View Billing</Button>
-                    <Button variant="outline">Cancel Subscription</Button>
+
+                  {/* Pro Plan Yearly */}
+                  <div className="border-2 border-emerald-500 rounded-lg p-6 text-center relative">
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                      <span className="bg-emerald-500 text-white px-4 py-1 rounded-full text-sm">Save 15%</span>
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">Pro Plan</h3>
+                    <div className="text-3xl font-bold mb-4">$490<span className="text-sm font-normal">/yr</span></div>
+                    <p className="text-sm text-gray-600 mb-4">Best value for long-term projects.</p>
+                    <ul className="text-sm space-y-2 mb-6">
+                      <li>• All Pro features</li>
+                      <li>• Priority Support</li>
+                      <li>• 50 mile matching radius</li>
+                      <li>• Unlimited lead claims</li>
+                    </ul>
+                    <Button className="w-full">Contact Sales</Button>
                   </div>
                 </div>
               </CardContent>

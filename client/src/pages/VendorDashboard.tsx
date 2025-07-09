@@ -356,46 +356,50 @@ const VendorDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Basic Plan */}
+                  {/* Pay-as-you-go Plan */}
                   <div className="border rounded-lg p-6 text-center">
-                    <h3 className="text-lg font-semibold mb-2">Basic</h3>
-                    <div className="text-3xl font-bold mb-4">$29<span className="text-sm font-normal">/month</span></div>
+                    <h3 className="text-lg font-semibold mb-2">Pay-as-you-go</h3>
+                    <div className="text-3xl font-bold mb-4">$15<span className="text-sm font-normal">/lead</span></div>
+                    <p className="text-sm text-gray-600 mb-4">For single projects or leads.</p>
                     <ul className="text-sm space-y-2 mb-6">
-                      <li>• Up to 10 leads per month</li>
-                      <li>• Basic analytics</li>
-                      <li>• Email support</li>
-                      <li>• Product listings</li>
+                      <li>• One-time payment</li>
+                      <li>• Standard feature access</li>
+                      <li>• 50 mile matching radius</li>
+                      <li>• Limited support or visibility</li>
                     </ul>
                     <Button className="w-full">Get Started</Button>
                   </div>
 
-                  {/* Professional Plan */}
-                  <div className="border-2 border-blue-500 rounded-lg p-6 text-center relative">
+                  {/* Pro Plan Monthly */}
+                  <div className="border-2 border-indigo-500 rounded-lg p-6 text-center relative">
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm">Most Popular</span>
+                      <span className="bg-indigo-500 text-white px-4 py-1 rounded-full text-sm">Most Popular</span>
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">Professional</h3>
-                    <div className="text-3xl font-bold mb-4">$79<span className="text-sm font-normal">/month</span></div>
+                    <h3 className="text-lg font-semibold mb-2">Pro Plan</h3>
+                    <div className="text-3xl font-bold mb-4">$49<span className="text-sm font-normal">/mo</span></div>
+                    <p className="text-sm text-gray-600 mb-4">For professionals and small teams.</p>
                     <ul className="text-sm space-y-2 mb-6">
-                      <li>• Unlimited leads</li>
-                      <li>• Advanced analytics</li>
-                      <li>• Priority support</li>
-                      <li>• Smart Match AI</li>
-                      <li>• Custom branding</li>
+                      <li>• All Pro features</li>
+                      <li>• Priority Support</li>
+                      <li>• 50 mile matching radius</li>
+                      <li>• Unlimited lead claims</li>
                     </ul>
                     <Button className="w-full">Upgrade Now</Button>
                   </div>
 
-                  {/* Enterprise Plan */}
-                  <div className="border rounded-lg p-6 text-center">
-                    <h3 className="text-lg font-semibold mb-2">Enterprise</h3>
-                    <div className="text-3xl font-bold mb-4">$199<span className="text-sm font-normal">/month</span></div>
+                  {/* Pro Plan Yearly */}
+                  <div className="border-2 border-emerald-500 rounded-lg p-6 text-center relative">
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                      <span className="bg-emerald-500 text-white px-4 py-1 rounded-full text-sm">Save 15%</span>
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">Pro Plan</h3>
+                    <div className="text-3xl font-bold mb-4">$490<span className="text-sm font-normal">/yr</span></div>
+                    <p className="text-sm text-gray-600 mb-4">Best value for long-term projects.</p>
                     <ul className="text-sm space-y-2 mb-6">
-                      <li>• Everything in Professional</li>
-                      <li>• Dedicated account manager</li>
-                      <li>• Custom integrations</li>
-                      <li>• Advanced reporting</li>
-                      <li>• API access</li>
+                      <li>• All Pro features</li>
+                      <li>• Priority Support</li>
+                      <li>• 50 mile matching radius</li>
+                      <li>• Unlimited lead claims</li>
                     </ul>
                     <Button className="w-full">Contact Sales</Button>
                   </div>
