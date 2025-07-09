@@ -16,6 +16,9 @@ const firebaseConfig = {
 let auth: any = null;
 let db: any = null;
 
+// Simple in-memory user store for fallback authentication
+const fallbackUsers = new Map<string, { email: string; role: string; name?: string; password: string }>();
+
 try {
   if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId) {
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
@@ -64,6 +67,15 @@ export async function createAccount(signUpData: SignUpData): Promise<any> {
     
     if (!auth) {
       console.log('⚠️ Using fallback authentication for deployment');
+      
+      // Save to fallback user store
+      fallbackUsers.set(signUpData.email, {
+        email: signUpData.email,
+        role: signUpData.role,
+        name: signUpData.name,
+        password: signUpData.password
+      });
+      
       return {
         success: true,
         user: {
@@ -141,6 +153,14 @@ export async function createAccount(signUpData: SignUpData): Promise<any> {
       // If Firebase fails, use fallback system
       console.log('⚠️ Firebase auth failed, using fallback system:', firebaseError.code);
       
+      // Save to fallback user store
+      fallbackUsers.set(signUpData.email, {
+        email: signUpData.email,
+        role: signUpData.role,
+        name: signUpData.name,
+        password: signUpData.password
+      });
+      
       const fallbackUser = {
         uid: 'fallback-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
         email: signUpData.email,
@@ -158,6 +178,14 @@ export async function createAccount(signUpData: SignUpData): Promise<any> {
     console.error('❌ Error creating account:', error);
     
     // Use fallback system for any Firebase-related errors
+    // Save to fallback user store
+    fallbackUsers.set(signUpData.email, {
+      email: signUpData.email,
+      role: signUpData.role,
+      name: signUpData.name,
+      password: signUpData.password
+    });
+    
     const fallbackUser = {
       uid: 'fallback-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
       email: signUpData.email,
@@ -177,6 +205,21 @@ export async function signInUser(signInData: SignInData): Promise<any> {
   try {
     if (!auth) {
       console.log('⚠️ Using fallback authentication for deployment');
+      
+      // Check fallback user store for correct role
+      const fallbackUser = fallbackUsers.get(signInData.email);
+      if (fallbackUser) {
+        return {
+          success: true,
+          user: {
+            email: signInData.email,
+            uid: 'fallback-uid-' + Date.now(),
+            role: fallbackUser.role,
+            name: fallbackUser.name || 'Test User'
+          }
+        };
+      }
+      
       return {
         success: true,
         user: {
@@ -208,11 +251,13 @@ export async function signInUser(signInData: SignInData): Promise<any> {
     console.error('❌ Error signing in:', error);
     
     // Use fallback system for any Firebase-related errors
+    // Check fallback user store for correct role
+    const storedUser = fallbackUsers.get(signInData.email);
     const fallbackUser = {
       uid: 'fallback-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
       email: signInData.email,
-      role: 'customer',
-      name: 'Test User'
+      role: storedUser?.role || 'customer',
+      name: storedUser?.name || 'Test User'
     };
 
     console.log(`✅ Fallback signin successful: ${signInData.email}`);

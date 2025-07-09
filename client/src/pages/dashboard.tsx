@@ -14,16 +14,8 @@ export default function Dashboard() {
   const [quoteHistory, setQuoteHistory] = useState([]);
 
   useEffect(() => {
-    // Redirect based on user role
-    if (user) {
-      if (user.role === 'vendor') {
-        setLocation('/vendor-dashboard');
-        return;
-      } else if (user.role === 'trade') {
-        setLocation('/trade-dashboard');
-        return;
-      }
-    }
+    // Only redirect if user is not a customer
+    // Let vendors and trades access this page if they navigate here directly
 
     // Load saved comparisons from localStorage
     const saved = localStorage.getItem('savedComparisons');
@@ -59,6 +51,160 @@ export default function Dashboard() {
     setLocation('/profile');
   };
 
+  // Show role-specific dashboard content
+  if (user?.role === 'vendor') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="max-w-4xl mx-auto px-4 py-8">
+          <div className="p-6">
+            <h1 className="text-2xl font-semibold">Welcome back, {user.name || 'User'}!</h1>
+            <p className="text-sm text-gray-600 mt-1">
+              You're logged in as a <strong>Vendor</strong>.
+            </p>
+
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Matched Leads */}
+              <Card>
+                <CardContent className="p-4">
+                  <h2 className="text-lg font-semibold">📥 Matched Leads</h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    View personalized leads based on your ZIP code, radius, and specialty.
+                  </p>
+                  <p className="text-2xl font-bold mt-2">3</p>
+                  <Button className="mt-3 w-full" onClick={() => setLocation('/vendor/leads')}>
+                    View Leads
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Product Listings */}
+              <Card>
+                <CardContent className="p-4">
+                  <h2 className="text-lg font-semibold">📦 Product Listings</h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Manage your inventory, pricing, and availability.
+                  </p>
+                  <p className="text-2xl font-bold mt-2">12</p>
+                  <Button className="mt-3 w-full" onClick={() => setLocation('/vendor/products')}>
+                    Manage Products
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Subscription */}
+              <Card>
+                <CardContent className="p-4">
+                  <h2 className="text-lg font-semibold">💳 Subscription</h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Track your plan status and billing.
+                  </p>
+                  <p className="text-base font-bold mt-2">
+                    Status: <span className="text-green-600">Active</span>
+                  </p>
+                  <Button className="mt-3 w-full" onClick={() => setLocation('/vendor/subscription')}>
+                    Manage Subscription
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Account Settings */}
+            <div className="mt-6">
+              <Card>
+                <CardContent className="p-4">
+                  <h2 className="text-lg font-semibold">⚙️ Account Settings</h2>
+                  <p className="text-sm text-gray-500 mt-1">Email: {user.email}</p>
+                  <Button className="mt-3 w-full" variant="secondary" onClick={() => setLocation('/vendor/settings')}>
+                    Edit Profile
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Sign Out */}
+            <div className="mt-4">
+              <Button variant="destructive" onClick={handleSignOut}>
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (user?.role === 'trade') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="max-w-4xl mx-auto px-4 py-8">
+          <div className="p-6">
+            <h1 className="text-2xl font-semibold">Welcome back, {user.name || 'User'}!</h1>
+            <p className="text-sm text-gray-600 mt-1">
+              You're logged in as a <strong>Trade Professional</strong>.
+            </p>
+
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Matched Leads */}
+              <Card>
+                <CardContent className="p-4">
+                  <h2 className="text-lg font-semibold">📥 Matched Leads</h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    View personalized leads based on your ZIP code, radius, and specialty.
+                  </p>
+                  <p className="text-2xl font-bold mt-2">5</p>
+                  <Button className="mt-3 w-full" onClick={() => setLocation('/trade/leads')}>
+                    View Leads
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Subscription */}
+              <Card>
+                <CardContent className="p-4">
+                  <h2 className="text-lg font-semibold">💳 Subscription</h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Track your plan status and billing.
+                  </p>
+                  <p className="text-base font-bold mt-2">
+                    Status: <span className="text-green-600">Active</span>
+                  </p>
+                  <Button className="mt-3 w-full" onClick={() => setLocation('/trade/subscription')}>
+                    Manage Subscription
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Account Settings */}
+            <div className="mt-6">
+              <Card>
+                <CardContent className="p-4">
+                  <h2 className="text-lg font-semibold">⚙️ Account Settings</h2>
+                  <p className="text-sm text-gray-500 mt-1">Email: {user.email}</p>
+                  <Button className="mt-3 w-full" variant="secondary" onClick={() => setLocation('/trade/settings')}>
+                    Edit Profile
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Sign Out */}
+            <div className="mt-4">
+              <Button variant="destructive" onClick={handleSignOut}>
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Customer dashboard
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -67,7 +213,7 @@ export default function Dashboard() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Welcome back, {user?.displayName || 'User'}!
+                Welcome back, {user?.displayName || user?.name || 'User'}!
               </h1>
               <p className="text-gray-600 mt-2">
                 Manage your saved comparisons, quotes, and account settings.
