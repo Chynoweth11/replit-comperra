@@ -1,12 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-// Firebase auth temporarily disabled - using fallback system
-// import { onAuthStateChanged, User } from 'firebase/auth';
-// import { auth } from '@/lib/firebase';
-
-interface User {
-  uid: string;
-  email: string;
-}
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 interface CompanyUser {
   uid: string;
@@ -62,18 +56,28 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing user session in localStorage
-    const savedUser = localStorage.getItem('comperra-user');
-    if (savedUser) {
-      try {
-        const userData = JSON.parse(savedUser);
-        setUser(userData);
-        setUserProfile(userData);
-      } catch (error) {
-        console.error('Error parsing saved user:', error);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setUser(user);
+      
+      if (user) {
+        // Fetch user profile from our API
+        try {
+          const response = await fetch('/api/auth/current-user');
+          const data = await response.json();
+          if (data.success && data.user) {
+            setUserProfile(data.user);
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+        }
+      } else {
+        setUserProfile(null);
       }
-    }
-    setLoading(false);
+      
+      setLoading(false);
+    });
+
+    return unsubscribe;
   }, []);
 
   async function signUp(signUpData: SignUpData) {

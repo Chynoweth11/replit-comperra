@@ -3,12 +3,12 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, se
 import { getFirestore, collection, addDoc, doc, setDoc, getDoc } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY || "AIzaSyC7zXxEiPi77xZt2bPY1jcxt9fJcYxKk94",
+  apiKey: "AIzaSyC7zXxEiPi77xZt2bPY1jcxt9fJcYxKk94",
   authDomain: "comperra-done.firebaseapp.com",
   projectId: "comperra-done",
-  storageBucket: "comperra-done.appspot.com",
+  storageBucket: "comperra-done.firebasestorage.app",
   messagingSenderId: "636329572028",
-  appId: process.env.VITE_FIREBASE_APP_ID || "1:636329572028:web:aa3a66f248e5b320c142b9",
+  appId: "1:636329572028:web:aa3a66f248e5b320c142b9",
   measurementId: "G-QMBYGHYWRW"
 };
 
@@ -18,11 +18,10 @@ let db: any = null;
 
 try {
   if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId) {
-    // Disable Firebase auth until API key issue is resolved
-    console.log('⚠️ Firebase auth disabled - API key validation pending');
-    console.log('API key issues detected, using fallback authentication');
-    auth = null;
-    db = null;
+    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+    auth = getAuth(app);
+    db = getFirestore(app);
+    console.log('✅ Firebase authentication enabled with complete configuration');
   } else {
     console.log('⚠️ Firebase auth configuration missing, auth features disabled');
     console.log('Missing config:', { 

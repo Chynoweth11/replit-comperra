@@ -8,12 +8,12 @@ import { getStorage } from "firebase/storage";
 
 // Your Firebase config
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyC7zXxEiPi77xZt2bPY1jcxt9fJcYxKk94",
+  apiKey: "AIzaSyC7zXxEiPi77xZt2bPY1jcxt9fJcYxKk94",
   authDomain: "comperra-done.firebaseapp.com",
   projectId: "comperra-done",
-  storageBucket: "comperra-done.appspot.com",
+  storageBucket: "comperra-done.firebasestorage.app",
   messagingSenderId: "636329572028",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:636329572028:web:aa3a66f248e5b320c142b9",
+  appId: "1:636329572028:web:aa3a66f248e5b320c142b9",
   measurementId: "G-QMBYGHYWRW"
 };
 
