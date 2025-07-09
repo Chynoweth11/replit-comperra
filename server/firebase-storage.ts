@@ -18,9 +18,21 @@ const firebaseConfig = {
 let db: any = null;
 
 try {
-  // Temporarily disable Firebase initialization to prevent metadata errors
-  console.log('⚠️ Firebase storage temporarily disabled due to metadata validation issues');
-  db = null;
+  if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+    // Clean the appId to remove any problematic characters
+    const cleanConfig = {
+      ...firebaseConfig,
+      appId: firebaseConfig.appId?.replace(/[^a-zA-Z0-9:.-]/g, '') || firebaseConfig.appId
+    };
+    
+    if (!getApps().length) {
+      initializeApp(cleanConfig);
+    }
+    db = getFirestore();
+    console.log('✅ Firebase storage initialized successfully');
+  } else {
+    console.log('⚠️ Firebase storage configuration missing, using memory storage');
+  }
 } catch (error) {
   console.log('⚠️ Firebase storage initialization failed:', error.message);
 }

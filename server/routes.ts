@@ -584,15 +584,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log('Processing lead:', { name, email, zip, product, phone, isLookingForPro, customerType });
 
+      // Map product to material category for matching
+      const materialCategoryMap: Record<string, string> = {
+        'Tiles': 'tiles',
+        'Stone & Slabs': 'slabs',
+        'Vinyl & LVT': 'lvt',
+        'Hardwood': 'hardwood',
+        'Carpet': 'carpet',
+        'Heating & Thermostats': 'heat'
+      };
+
       // Prepare lead data for Firebase
       const leadData: LeadFormData = {
         email,
         phone: phone || null,
         zip: zip || null,
+        zipCode: zip || null,
         message: message || product || `Interest in ${product || 'building materials'}`,
         isLookingForPro: isLookingForPro || false,
         customerType: customerType || "homeowner",
         interest: product || "general inquiry",
+        materialCategory: materialCategoryMap[product] || 'general',
+        projectType: req.body.projectType || 'General Inquiry',
+        timeline: req.body.timeline || null,
         source: "web-form"
       };
 

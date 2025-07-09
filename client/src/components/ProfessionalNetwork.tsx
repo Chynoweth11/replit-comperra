@@ -406,9 +406,34 @@ function SubmitLeadForm({ onBack }) {
         e.preventDefault(); setLoading(true); 
         toast.toast({ title: 'Finding your match...', description: 'Searching for professionals in your area.' });
         try { 
-            await firebaseService.submitLead(formData); 
-            toast.toast({ title: 'Success!', description: 'Lead submitted! We will connect you with a pro shortly.' }); 
-            setFormData(initialFormState); 
+            // Use backend API for lead submission with proper matching
+            const response = await fetch('/api/save-lead', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    zip: formData.zipCode,
+                    product: formData.serviceType,
+                    message: formData.details,
+                    isLookingForPro: formData.leadType === 'pro',
+                    customerType: 'homeowner',
+                    projectType: formData.projectType,
+                    timeline: formData.timeline
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                toast.toast({ title: 'Success!', description: 'Lead submitted! We will connect you with a pro shortly.' }); 
+                setFormData(initialFormState); 
+            } else {
+                throw new Error(result.message || 'Failed to submit lead');
+            }
         } 
         catch(err) { toast.toast({ title: 'Error', description: err.message || 'Failed to submit lead.', variant: 'destructive' }); } 
         finally { setLoading(false); }

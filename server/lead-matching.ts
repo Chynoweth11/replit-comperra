@@ -1,5 +1,31 @@
-import { collection, query, where, getDocs, doc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { db } from './firebase-init';
+import { collection, query, where, getDocs, doc, updateDoc, arrayUnion, getFirestore } from 'firebase/firestore';
+import { initializeApp, getApps } from 'firebase/app';
+
+const firebaseConfig = {
+  apiKey: process.env.VITE_FIREBASE_API_KEY,
+  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.VITE_FIREBASE_APP_ID,
+  measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID
+};
+
+// Initialize Firebase if not already initialized
+let db: any = null;
+try {
+  if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+    if (!getApps().length) {
+      initializeApp(firebaseConfig);
+    }
+    db = getFirestore();
+    console.log('✅ Lead matching Firebase initialized successfully');
+  } else {
+    console.log('⚠️ Lead matching Firebase configuration missing');
+  }
+} catch (error) {
+  console.log('⚠️ Lead matching Firebase initialization failed:', error.message);
+}
 
 /**
  * Mock ZIP code coordinates database
@@ -92,11 +118,104 @@ function calculateIntentScore(lead: any): number {
 }
 
 /**
+ * Fallback lead matching when Firebase is not available
+ */
+async function fallbackLeadMatching(leadData: any): Promise<void> {
+  console.log('🔄 Running fallback lead matching for:', leadData.email);
+  
+  const leadCoords = getCoordsFromZip(leadData.zipCode);
+  if (!leadCoords) {
+    console.log('⚠️ No coordinates found for ZIP:', leadData.zipCode);
+    return;
+  }
+  
+  // Mock vendor data for demonstration
+  const mockVendors = [
+    { 
+      id: 'vendor1', 
+      businessName: 'Arizona Tile Supply', 
+      zipCode: '85001', 
+      productCategories: ['tiles', 'slabs'], 
+      email: 'contact@arizonatile.com' 
+    },
+    { 
+      id: 'vendor2', 
+      businessName: 'Phoenix Flooring Pro', 
+      zipCode: '85301', 
+      productCategories: ['lvt', 'hardwood'], 
+      email: 'info@phoenixflooring.com' 
+    }
+  ];
+  
+  // Mock trade data for demonstration
+  const mockTrades = [
+    { 
+      id: 'trade1', 
+      specialty: 'Tile Installation', 
+      zipCode: '85002', 
+      serviceRadius: 50, 
+      email: 'installer@tilepro.com' 
+    },
+    { 
+      id: 'trade2', 
+      specialty: 'Flooring Installation', 
+      zipCode: '85336', 
+      serviceRadius: 75, 
+      email: 'contact@flooringexperts.com' 
+    }
+  ];
+  
+  const matchedVendors: string[] = [];
+  const matchedTrades: string[] = [];
+  
+  // Match vendors within 50 miles
+  mockVendors.forEach(vendor => {
+    const vendorCoords = getCoordsFromZip(vendor.zipCode);
+    if (vendorCoords) {
+      const distance = calculateDistance(
+        leadCoords.lat, leadCoords.lng,
+        vendorCoords.lat, vendorCoords.lng
+      );
+      
+      if (distance <= 50 && vendor.productCategories.includes(leadData.materialCategory)) {
+        matchedVendors.push(vendor.id);
+        console.log(`✅ Matched vendor: ${vendor.businessName} (${distance.toFixed(1)} miles)`);
+      }
+    }
+  });
+  
+  // Match trades within service radius
+  mockTrades.forEach(trade => {
+    const tradeCoords = getCoordsFromZip(trade.zipCode);
+    if (tradeCoords) {
+      const distance = calculateDistance(
+        leadCoords.lat, leadCoords.lng,
+        tradeCoords.lat, tradeCoords.lng
+      );
+      
+      const serviceRadius = trade.serviceRadius || 50;
+      if (distance <= serviceRadius) {
+        matchedTrades.push(trade.id);
+        console.log(`✅ Matched trade: ${trade.specialty} (${distance.toFixed(1)} miles)`);
+      }
+    }
+  });
+  
+  console.log(`🎯 Lead matching complete: ${matchedVendors.length} vendors, ${matchedTrades.length} trades`);
+}
+
+/**
  * Enhanced lead matching with category filtering and geographic proximity
  */
 export async function matchLeadWithProfessionals(leadData: any): Promise<void> {
   try {
     console.log('🔍 Starting lead matching for:', leadData.email);
+    
+    if (!db) {
+      console.log('⚠️ Firebase not available for lead matching, using fallback');
+      await fallbackLeadMatching(leadData);
+      return;
+    }
     
     const leadCoords = getCoordsFromZip(leadData.zipCode);
     if (!leadCoords) {

@@ -1,6 +1,7 @@
 import { collection, addDoc } from "firebase/firestore";
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
+import { matchLeadWithProfessionals } from './lead-matching.js';
 
 const firebaseConfig = {
   apiKey: process.env.VITE_FIREBASE_API_KEY,
@@ -62,15 +63,28 @@ export async function submitLead(formData: LeadFormData): Promise<void> {
       lastUpdated: new Date().toISOString()
     };
 
-    const docRef = await addDoc(collection(db, "leads"), leadData);
-    console.log(`✅ Lead submitted successfully: ${leadData.email} (${leadType}) with ID: ${docRef.id}`);
+    let leadId = null;
     
-    // Trigger lead matching if we have enough data
-    if (leadData.zipCode && leadData.materialCategory) {
-      await matchLeadWithProfessionals({ ...leadData, id: docRef.id });
+    // Try to save to Firebase first
+    try {
+      const docRef = await addDoc(collection(db, "leads"), leadData);
+      leadId = docRef.id;
+      console.log(`✅ Lead submitted successfully: ${leadData.email} (${leadType}) with ID: ${leadId}`);
+    } catch (fbError) {
+      console.log(`⚠️ Firebase lead submission failed, continuing with matching: ${fbError.message}`);
+      leadId = `temp_${Date.now()}`;
     }
+    
+    // Always trigger lead matching regardless of Firebase success/failure
+    if (leadData.zipCode && leadData.materialCategory) {
+      console.log(`🔄 Starting lead matching process for ${leadData.email} with material category: ${leadData.materialCategory}`);
+      await matchLeadWithProfessionals({ ...leadData, id: leadId });
+    } else {
+      console.log(`⚠️ Lead matching skipped - missing zipCode: ${leadData.zipCode}, materialCategory: ${leadData.materialCategory}`);
+    }
+    
   } catch (error) {
-    console.error('❌ Error submitting lead to Firebase:', error);
+    console.error('❌ Error in lead submission process:', error);
     throw error;
   }
 }
@@ -108,21 +122,7 @@ function calculateIntentScore(formData: LeadFormData): number {
   return Math.min(score, 10); // Cap at 10
 }
 
-// Mock lead matching function (simplified version)
-async function matchLeadWithProfessionals(leadData: any): Promise<void> {
-  try {
-    console.log('🔍 Starting lead matching for:', leadData.email);
-    // In a real implementation, this would use the lead-matching.ts functionality
-    // For now, we'll just log the attempt
-    console.log('🎯 Lead matching would be triggered here with data:', {
-      zipCode: leadData.zipCode,
-      materialCategory: leadData.materialCategory,
-      intentScore: leadData.intentScore
-    });
-  } catch (error) {
-    console.error('❌ Error in lead matching:', error);
-  }
-}
+// The actual matchLeadWithProfessionals function is imported from lead-matching.ts
 
 // Save product to Firebase
 export async function saveProduct(product: any): Promise<void> {
