@@ -1,6 +1,12 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+// Firebase auth temporarily disabled - using fallback system
+// import { onAuthStateChanged, User } from 'firebase/auth';
+// import { auth } from '@/lib/firebase';
+
+interface User {
+  uid: string;
+  email: string;
+}
 
 interface CompanyUser {
   uid: string;
@@ -56,28 +62,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      
-      if (user) {
-        // Fetch user profile from our API
-        try {
-          const response = await fetch('/api/auth/current-user');
-          const data = await response.json();
-          if (data.success && data.user) {
-            setUserProfile(data.user);
-          }
-        } catch (error) {
-          console.error('Error fetching user profile:', error);
-        }
-      } else {
-        setUserProfile(null);
+    // Check for existing user session in localStorage
+    const savedUser = localStorage.getItem('comperra-user');
+    if (savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        setUser(userData);
+        setUserProfile(userData);
+      } catch (error) {
+        console.error('Error parsing saved user:', error);
       }
-      
-      setLoading(false);
-    });
-
-    return unsubscribe;
+    }
+    setLoading(false);
   }, []);
 
   async function signUp(signUpData: SignUpData) {
@@ -96,7 +92,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         throw new Error(data.error);
       }
 
-      setUserProfile(data.user);
+      // Save user to localStorage and state
+      const userData = {
+        uid: data.user.uid,
+        email: data.user.email,
+        role: data.user.role,
+        name: data.user.name
+      };
+      
+      localStorage.setItem('comperra-user', JSON.stringify(userData));
+      setUser(userData);
+      setUserProfile(userData);
     } catch (error) {
       console.error('Sign up error:', error);
       throw error;
@@ -119,7 +125,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         throw new Error(data.error);
       }
 
-      setUserProfile(data.user);
+      // Save user to localStorage and state
+      const userData = {
+        uid: data.user.uid,
+        email: data.user.email,
+        role: data.user.role,
+        name: data.user.name
+      };
+      
+      localStorage.setItem('comperra-user', JSON.stringify(userData));
+      setUser(userData);
+      setUserProfile(userData);
     } catch (error) {
       console.error('Sign in error:', error);
       throw error;
@@ -132,6 +148,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         method: 'POST',
       });
 
+      localStorage.removeItem('comperra-user');
       setUser(null);
       setUserProfile(null);
     } catch (error) {
