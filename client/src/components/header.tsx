@@ -1,14 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { signOut } from "firebase/auth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X, User, Users } from "lucide-react";
 import Fuse from 'fuse.js';
 import { useMaterials } from "@/hooks/use-materials";
 import { useAuth } from "@/contexts/AuthContext";
-import { auth } from "@/lib/firebase";
 
 interface SearchSuggestion {
   id: number;
@@ -25,15 +23,15 @@ export function Header() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const [location, navigate] = useLocation();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   
   // Get all materials for fuzzy search
   const { data: allMaterials = [] } = useMaterials();
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
-      navigate('/');
+      await signOut();
+      // Navigation is handled by the signOut function
     } catch (error) {
       console.error('Error signing out:', error);
     }
