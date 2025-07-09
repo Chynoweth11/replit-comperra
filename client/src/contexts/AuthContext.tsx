@@ -199,14 +199,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }
 
   async function signOut() {
+    console.log('AuthContext signOut called');
     try {
-      await fetch('/api/auth/signout', {
+      console.log('Calling API signout endpoint...');
+      const response = await fetch('/api/auth/signout', {
         method: 'POST',
       });
+      console.log('API signout response:', response.status);
 
+      console.log('Clearing localStorage and state...');
       localStorage.removeItem('comperra-user');
       setUser(null);
       setUserProfile(null);
+      
+      console.log('Redirecting to homepage...');
       window.location.href = '/';
     } catch (error) {
       console.error('Sign out error:', error);
