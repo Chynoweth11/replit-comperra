@@ -141,8 +141,8 @@ const TradeDashboard: React.FC = () => {
     try {
       console.log('Attempting to sign out...');
       await signOut();
-      console.log('Sign out successful, navigating to homepage');
-      navigate('/');
+      console.log('Sign out successful');
+      // Navigation is handled by signOut function
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -190,8 +190,13 @@ const TradeDashboard: React.FC = () => {
               </Button>
               <Button 
                 variant="ghost" 
-                onClick={handleSignOut}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSignOut();
+                }}
                 className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                type="button"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Sign Out</span>
