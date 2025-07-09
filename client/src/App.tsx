@@ -32,6 +32,10 @@ import Vendors from "@/pages/vendors";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 import Dashboard from "@/pages/dashboard";
+import VendorDashboardPage from "@/pages/vendor-dashboard";
+import TradeDashboardPage from "@/pages/trade-dashboard";
+import VendorLeads from "@/pages/vendor/leads";
+import TradeLeads from "@/pages/trade/leads";
 import QuotesPage from "@/pages/quotes";
 import ProfilePage from "@/pages/profile";
 import FirebaseDemo from "@/pages/FirebaseDemo";
@@ -74,6 +78,34 @@ function Router() {
           {() => (
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/vendor-dashboard">
+          {() => (
+            <ProtectedRoute>
+              <VendorDashboardPage />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/trade-dashboard">
+          {() => (
+            <ProtectedRoute>
+              <TradeDashboardPage />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/vendor/leads">
+          {() => (
+            <ProtectedRoute>
+              <VendorLeads />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/trade/leads">
+          {() => (
+            <ProtectedRoute>
+              <TradeLeads />
             </ProtectedRoute>
           )}
         </Route>

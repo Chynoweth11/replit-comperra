@@ -247,9 +247,9 @@ export default function Header() {
             <Link href="/contact" className="hover:text-royal transition-colors">Help</Link>
             {user ? (
               <>
-                <Link href="/dashboard" className="hover:text-royal transition-colors flex items-center gap-1">
+                <Link href={user.role === 'vendor' ? '/vendor-dashboard' : user.role === 'trade' ? '/trade-dashboard' : '/dashboard'} className="hover:text-royal transition-colors flex items-center gap-1">
                   <User className="h-4 w-4" />
-                  {user.displayName || 'Dashboard'}
+                  {user.name || 'Dashboard'}
                 </Link>
                 <Button variant="outline" size="sm" onClick={handleSignOut}>
                   Sign Out
@@ -292,7 +292,7 @@ export default function Header() {
                 <Link href="/contact" className="block py-2 hover:text-royal">Help</Link>
                 {user ? (
                   <>
-                    <Link href="/dashboard" className="block py-2 hover:text-royal">Dashboard</Link>
+                    <Link href={user.role === 'vendor' ? '/vendor-dashboard' : user.role === 'trade' ? '/trade-dashboard' : '/dashboard'} className="block py-2 hover:text-royal">Dashboard</Link>
                     <Button variant="outline" className="w-full" onClick={handleSignOut}>
                       Sign Out
                     </Button>

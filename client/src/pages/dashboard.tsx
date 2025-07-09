@@ -1,6 +1,4 @@
-import { signOut } from 'firebase/auth';
-import { Link, useLocation } from 'wouter';
-import { auth } from '@/lib/firebase';
+import { useLocation } from 'wouter';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,12 +8,23 @@ import { User, Heart, FileText, Settings, Eye, History, Edit } from 'lucide-reac
 import { useState, useEffect } from 'react';
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [, setLocation] = useLocation();
   const [savedComparisons, setSavedComparisons] = useState([]);
   const [quoteHistory, setQuoteHistory] = useState([]);
 
   useEffect(() => {
+    // Redirect based on user role
+    if (user) {
+      if (user.role === 'vendor') {
+        setLocation('/vendor-dashboard');
+        return;
+      } else if (user.role === 'trade') {
+        setLocation('/trade-dashboard');
+        return;
+      }
+    }
+
     // Load saved comparisons from localStorage
     const saved = localStorage.getItem('savedComparisons');
     if (saved) {
@@ -27,11 +36,12 @@ export default function Dashboard() {
     if (quotes) {
       setQuoteHistory(JSON.parse(quotes));
     }
-  }, []);
+  }, [user, setLocation]);
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
+      await signOut();
+      setLocation('/');
     } catch (error) {
       console.error('Error signing out:', error);
     }
