@@ -17,8 +17,17 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "USE_FIREBASE": "true",
+    "FIREBASE_PROJECT_ID": "comperra-done",
+    "VITE_FIREBASE_API_KEY": "AIzaSyC7zXxEiPi77xZt2bPY1jcxt9fJcYxKk94",
+    "VITE_FIREBASE_PROJECT_ID": "comperra-done",
+    "VITE_FIREBASE_APP_ID": "1:636329572028:web:aa3a66f248e5b320c142b9",
+    "VITE_FIREBASE_AUTH_DOMAIN": "comperra-done.firebaseapp.com",
+    "VITE_FIREBASE_STORAGE_BUCKET": "comperra-done.firebasestorage.app",
+    "VITE_FIREBASE_MESSAGING_SENDER_ID": "636329572028",
+    "VITE_FIREBASE_MEASUREMENT_ID": "G-QMBYGHYWRW"
   },
-  "installCommand": "npm install",
+  "installCommand": "npm install && npm install rollup @rollup/rollup-linux-x64-gnu",
   "buildCommand": "npm run build"
 }
