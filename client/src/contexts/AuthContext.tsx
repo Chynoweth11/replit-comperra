@@ -56,6 +56,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check localStorage for existing user session
+    const storedUser = localStorage.getItem('comperra-user');
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+        setUserProfile(userData);
+        setLoading(false);
+        return;
+      } catch (error) {
+        console.error('Error parsing stored user:', error);
+        localStorage.removeItem('comperra-user');
+      }
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
       
@@ -107,6 +122,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       localStorage.setItem('comperra-user', JSON.stringify(userData));
       setUser(userData);
       setUserProfile(userData);
+
+      // Redirect based on role
+      if (data.user.role === 'vendor' || data.user.role === 'trade') {
+        window.location.href = '/dashboard';
+      } else {
+        window.location.href = '/';
+      }
     } catch (error) {
       console.error('Sign up error:', error);
       throw error;
@@ -140,6 +162,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       localStorage.setItem('comperra-user', JSON.stringify(userData));
       setUser(userData);
       setUserProfile(userData);
+
+      // Redirect based on role
+      if (data.user.role === 'vendor' || data.user.role === 'trade') {
+        window.location.href = '/dashboard';
+      } else {
+        window.location.href = '/';
+      }
     } catch (error) {
       console.error('Sign in error:', error);
       throw error;
@@ -155,6 +184,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       localStorage.removeItem('comperra-user');
       setUser(null);
       setUserProfile(null);
+      window.location.href = '/';
     } catch (error) {
       console.error('Sign out error:', error);
       throw error;
