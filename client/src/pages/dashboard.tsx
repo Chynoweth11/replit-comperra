@@ -14,9 +14,10 @@ export default function Dashboard() {
   const [quoteHistory, setQuoteHistory] = useState([]);
 
   useEffect(() => {
-    // Only redirect if user is not a customer
-    // Let vendors and trades access this page if they navigate here directly
-
+    // Debug logging
+    console.log('Dashboard - Current user:', user);
+    console.log('Dashboard - User role:', user?.role);
+    
     // Load saved comparisons from localStorage
     const saved = localStorage.getItem('savedComparisons');
     if (saved) {
@@ -130,6 +131,34 @@ export default function Dashboard() {
       </div>
     );
   };
+
+  // Show sign-in prompt if no user
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="max-w-4xl mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Please Sign In</h1>
+            <p className="text-gray-600 mb-8">You need to be signed in to access your dashboard.</p>
+            <div className="space-y-4">
+              <Link href="/customer-login">
+                <Button className="bg-royal text-white hover:bg-royal-dark mr-4">
+                  Customer Login
+                </Button>
+              </Link>
+              <Link href="/professional-login">
+                <Button className="bg-royal text-white hover:bg-royal-dark">
+                  Professional Login
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   // Show role-specific dashboard content
   if (user?.role === 'vendor') {
