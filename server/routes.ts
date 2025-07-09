@@ -848,35 +848,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { role, userId } = req.query;
       
-      // Mock smart match metrics - in production, this would fetch real data
+      // Return empty metrics until real data is available
       const metrics = {
-        totalMatches: Math.floor(Math.random() * 100) + 20,
-        successRate: Math.floor(Math.random() * 30) + 70,
-        avgResponseTime: Math.random() * 10 + 2,
-        geographicCoverage: Math.floor(Math.random() * 40) + 60,
-        intentAccuracy: Math.floor(Math.random() * 20) + 80,
-        customerSatisfaction: Math.random() * 1 + 4
+        totalMatches: 0,
+        successRate: 0,
+        avgResponseTime: 0,
+        geographicCoverage: 0,
+        intentAccuracy: 0,
+        customerSatisfaction: 0
       };
       
-      const insights = [
-        { zip: '85001', leadCount: 12, avgResponseTime: 3.2, opportunity: 'high' },
-        { zip: '85002', leadCount: 8, avgResponseTime: 5.1, opportunity: 'medium' },
-        { zip: '90210', leadCount: 15, avgResponseTime: 2.8, opportunity: 'high' }
-      ];
-      
-      const recentMatches = [
-        {
-          id: '1',
-          customerEmail: 'customer@example.com',
-          materialCategory: 'Tiles',
-          intentScore: 8,
-          zipCode: '85001',
-          matchedVendors: 3,
-          matchedTrades: 2,
-          status: 'new',
-          createdAt: new Date().toISOString()
-        }
-      ];
+      const insights = [];
+      const recentMatches = [];
       
       res.json({
         success: true,

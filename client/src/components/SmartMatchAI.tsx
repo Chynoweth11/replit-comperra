@@ -175,8 +175,9 @@ export const SmartMatchAI: React.FC<SmartMatchAIProps> = ({ userRole, userId }) 
             </div>
             <Button 
               onClick={optimizeMatching}
-              disabled={optimizing}
-              className="bg-blue-600 hover:bg-blue-700"
+              disabled={optimizing || metrics.totalMatches === 0}
+              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+              variant={metrics.totalMatches === 0 ? "outline" : "default"}
             >
               {optimizing ? (
                 <>
@@ -186,19 +187,28 @@ export const SmartMatchAI: React.FC<SmartMatchAIProps> = ({ userRole, userId }) 
               ) : (
                 <>
                   <Zap className="h-4 w-4 mr-2" />
-                  Optimize Matching
+                  {metrics.totalMatches === 0 ? 'Awaiting Data' : 'Optimize Matching'}
                 </>
               )}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              Smart Match AI continuously learns from your interactions to improve lead quality and matching accuracy.
-            </AlertDescription>
-          </Alert>
+          {metrics.totalMatches === 0 ? (
+            <Alert>
+              <Brain className="h-4 w-4" />
+              <AlertDescription>
+                Smart Match AI is ready to help you find quality leads. The system will start learning and improving as lead data becomes available.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                Smart Match AI continuously learns from your interactions to improve lead quality and matching accuracy.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
 
@@ -283,28 +293,38 @@ export const SmartMatchAI: React.FC<SmartMatchAIProps> = ({ userRole, userId }) 
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {insights.map((insight, index) => (
-              <div key={index} className="p-3 border rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium">ZIP {insight.zip}</span>
-                  <Badge className={getOpportunityColor(insight.opportunity)}>
-                    {insight.opportunity}
-                  </Badge>
-                </div>
-                <div className="text-sm text-gray-600 space-y-1">
-                  <div className="flex justify-between">
-                    <span>Leads:</span>
-                    <span>{insight.leadCount}</span>
+          {insights.length === 0 ? (
+            <div className="text-center py-8">
+              <MapPin className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No Geographic Data Yet</h3>
+              <p className="text-sm text-gray-500">
+                Geographic insights will appear here as your lead data grows.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {insights.map((insight, index) => (
+                <div key={index} className="p-3 border rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium">ZIP {insight.zip}</span>
+                    <Badge className={getOpportunityColor(insight.opportunity)}>
+                      {insight.opportunity}
+                    </Badge>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Avg Response:</span>
-                    <span>{insight.avgResponseTime.toFixed(1)}h</span>
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <div className="flex justify-between">
+                      <span>Leads:</span>
+                      <span>{insight.leadCount}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Avg Response:</span>
+                      <span>{insight.avgResponseTime.toFixed(1)}h</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -320,77 +340,43 @@ export const SmartMatchAI: React.FC<SmartMatchAIProps> = ({ userRole, userId }) 
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {recentMatches.map((match) => (
-              <div key={match.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-3 h-3 rounded-full ${getStatusColor(match.status)}`}></div>
-                  <div>
-                    <p className="font-medium">{match.customerEmail}</p>
-                    <p className="text-sm text-gray-600">
-                      {match.materialCategory} • ZIP {match.zipCode}
+          {recentMatches.length === 0 ? (
+            <div className="text-center py-8">
+              <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No Recent Matches</h3>
+              <p className="text-sm text-gray-500">
+                AI-powered lead matches will appear here as they become available.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {recentMatches.map((match) => (
+                <div key={match.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-3 h-3 rounded-full ${getStatusColor(match.status)}`}></div>
+                    <div>
+                      <p className="font-medium">{match.customerEmail}</p>
+                      <p className="text-sm text-gray-600">
+                        {match.materialCategory} • ZIP {match.zipCode}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-sm font-medium ${getIntentColor(match.intentScore)}`}>
+                      Intent: {match.intentScore}/10
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {userRole === 'vendor' ? match.matchedVendors : match.matchedTrades} matches
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className={`text-sm font-medium ${getIntentColor(match.intentScore)}`}>
-                    Intent: {match.intentScore}/10
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {userRole === 'vendor' ? match.matchedVendors : match.matchedTrades} matches
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* AI Recommendations */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5" />
-            AI Recommendations
-          </CardTitle>
-          <CardDescription>
-            Personalized suggestions to improve your matching performance
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
-              <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5" />
-              <div>
-                <p className="font-medium text-blue-900">Optimize Response Time</p>
-                <p className="text-sm text-blue-700">
-                  Responding within 2 hours increases conversion rate by 35%
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
-              <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-              <div>
-                <p className="font-medium text-green-900">Expand Service Area</p>
-                <p className="text-sm text-green-700">
-                  3 high-opportunity ZIP codes identified within 25 miles
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg">
-              <CheckCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
-              <div>
-                <p className="font-medium text-yellow-900">Focus on High-Intent Leads</p>
-                <p className="text-sm text-yellow-700">
-                  Prioritize leads with intent scores above 7 for better conversion
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
     </div>
   );
 };

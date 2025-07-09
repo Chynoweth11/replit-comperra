@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { 
   Users, 
-  Package, 
   TrendingUp, 
   Calendar, 
   Mail, 
@@ -40,22 +39,13 @@ interface LeadData {
   lastUpdated: string;
 }
 
-interface ProductData {
-  id: string;
-  name: string;
-  category: string;
-  price: string;
-  views: number;
-  inquiries: number;
-  lastUpdated: string;
-}
+
 
 const VendorDashboard: React.FC = () => {
   const { userProfile, loading } = useAuth();
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
   const [leads, setLeads] = useState<LeadData[]>([]);
-  const [products, setProducts] = useState<ProductData[]>([]);
   const [metrics, setMetrics] = useState({
     totalLeads: 0,
     activeLeads: 0,
@@ -84,12 +74,7 @@ const VendorDashboard: React.FC = () => {
         setLeads(leadsData.leads || []);
       }
 
-      // Fetch products
-      const productsResponse = await fetch('/api/vendor/products');
-      if (productsResponse.ok) {
-        const productsData = await productsResponse.json();
-        setProducts(productsData.products || []);
-      }
+
 
       // Calculate metrics
       const totalLeads = leads.length;
@@ -176,10 +161,9 @@ const VendorDashboard: React.FC = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="leads">Leads</TabsTrigger>
-            <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="smart-match">Smart Match AI</TabsTrigger>
             <TabsTrigger value="subscription">Subscription</TabsTrigger>
           </TabsList>
@@ -358,66 +342,7 @@ const VendorDashboard: React.FC = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="products" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Product Management</CardTitle>
-                <CardDescription>Manage your product listings and performance</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-sm text-gray-600">Total Products: {products.length}</p>
-                    </div>
-                    <Button>Add New Product</Button>
-                  </div>
-                  
-                  {products.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Products Yet</h3>
-                      <p className="text-sm text-gray-500 mb-4">
-                        Start by adding your first product to the marketplace.
-                      </p>
-                      <Button>Add Your First Product</Button>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {products.map((product) => (
-                        <Card key={product.id}>
-                          <CardHeader>
-                            <CardTitle className="text-sm">{product.name}</CardTitle>
-                            <CardDescription>{product.category}</CardDescription>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-2">
-                              <div className="flex justify-between">
-                                <span className="text-sm">Price:</span>
-                                <span className="text-sm font-medium">{product.price}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-sm">Views:</span>
-                                <span className="text-sm">{product.views}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-sm">Inquiries:</span>
-                                <span className="text-sm">{product.inquiries}</span>
-                              </div>
-                            </div>
-                            <div className="mt-4 flex space-x-2">
-                              <Button size="sm" variant="outline">Edit</Button>
-                              <Button size="sm" variant="outline">View</Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+
 
           <TabsContent value="smart-match" className="space-y-6">
             <SmartMatchAI userRole="vendor" userId={userProfile.uid} />
