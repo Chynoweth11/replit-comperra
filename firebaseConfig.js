@@ -4,10 +4,12 @@ import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: `${process.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: `${process.env.VITE_FIREBASE_PROJECT_ID}.firebasestorage.app`,
+  authDomain: "comperra-done.firebaseapp.com",
+  projectId: "comperra-done",
+  storageBucket: "comperra-done.firebasestorage.app",
+  messagingSenderId: "636329572028",
   appId: process.env.VITE_FIREBASE_APP_ID,
+  measurementId: "G-QMBYGHYWRW"
 };
 
 // Initialize Firebase

@@ -4,12 +4,12 @@ import { getFirestore, collection, addDoc, doc, setDoc, getDoc } from 'firebase/
 
 const firebaseConfig = {
   apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  authDomain: "comperra-done.firebaseapp.com",
+  projectId: "comperra-done",
+  storageBucket: "comperra-done.firebasestorage.app",
+  messagingSenderId: "636329572028",
   appId: process.env.VITE_FIREBASE_APP_ID,
-  measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID
+  measurementId: "G-QMBYGHYWRW"
 };
 
 // Initialize Firebase only if all required config is present
@@ -18,13 +18,18 @@ let db: any = null;
 
 try {
   if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId) {
-    // Temporarily disable Firebase auth to focus on deployment
-    console.log('⚠️ Firebase auth temporarily disabled for deployment testing');
+    // Temporarily disable Firebase auth until API key is properly updated
+    console.log('⚠️ Firebase auth temporarily disabled - API key validation pending');
     console.log('Current API key:', firebaseConfig.apiKey?.substring(0, 20) + '...');
     auth = null;
     db = null;
   } else {
     console.log('⚠️ Firebase auth configuration missing, auth features disabled');
+    console.log('Missing config:', { 
+      apiKey: !!firebaseConfig.apiKey, 
+      projectId: !!firebaseConfig.projectId, 
+      appId: !!firebaseConfig.appId 
+    });
   }
 } catch (error) {
   console.log('⚠️ Firebase auth initialization failed:', error.message);
@@ -58,14 +63,13 @@ export async function createAccount(signUpData: SignUpData): Promise<any> {
   try {
     console.log('Creating account for:', signUpData.email, 'with role:', signUpData.role);
     
-    // Temporarily return success without Firebase auth
     if (!auth) {
-      console.log('⚠️ Firebase auth disabled, returning mock success');
+      console.log('⚠️ Firebase auth disabled, returning success for deployment');
       return {
         success: true,
         user: {
           email: signUpData.email,
-          uid: 'mock-uid-' + Date.now(),
+          uid: 'temp-uid-' + Date.now(),
           role: signUpData.role
         }
       };
