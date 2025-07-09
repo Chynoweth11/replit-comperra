@@ -34,6 +34,9 @@ import RegisterPage from "@/pages/register";
 import Dashboard from "@/pages/dashboard";
 import VendorDashboardPage from "@/pages/vendor-dashboard";
 import TradeDashboardPage from "@/pages/trade-dashboard";
+import VendorDashboard from "@/pages/VendorDashboard";
+import TradeDashboard from "@/pages/TradeDashboard";
+import RegistrationPage from "@/pages/RegistrationPage";
 import VendorLeads from "@/pages/vendor/leads";
 import TradeLeads from "@/pages/trade/leads";
 import QuotesPage from "@/pages/quotes";
@@ -82,6 +85,21 @@ function Router() {
         <Route path="/cookies" component={Cookies} />
         <Route path="/login" component={LoginPage} />
         <Route path="/register" component={RegisterPage} />
+        <Route path="/registration" component={RegistrationPage} />
+        <Route path="/vendor-dashboard">
+          {() => (
+            <ProtectedRoute requiredRole="vendor">
+              <VendorDashboard />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/trade-dashboard">
+          {() => (
+            <ProtectedRoute requiredRole="trade">
+              <TradeDashboard />
+            </ProtectedRoute>
+          )}
+        </Route>
         <Route path="/dashboard">
           {() => (
             <ProtectedRoute>

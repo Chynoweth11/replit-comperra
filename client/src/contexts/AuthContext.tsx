@@ -1,11 +1,25 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 
 interface CompanyUser {
   uid: string;
   email: string;
   role: 'vendor' | 'trade' | 'customer' | 'homeowner';
+  name?: string;
+  phone?: string;
+  companyName?: string;
+  customerType?: string;
+  businessName?: string;
+  brandAffiliation?: string;
+  licenseNumber?: string;
+  serviceRadius?: number;
+  specialty?: string;
+  zipCode?: string;
+  budget?: number;
+  projectDetails?: string;
+  productCategories?: string[];
 }
 
 interface AuthContextType {
@@ -77,22 +91,33 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     
     checkCurrentUser();
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setUser(firebaseUser);
       
-      if (user) {
-        // Fetch user profile from our API
+      if (firebaseUser) {
+        // First try to get user data from Firestore
         try {
-          const response = await fetch('/api/auth/current-user');
-          const data = await response.json();
-          if (data.success && data.user) {
-            setUserProfile(data.user);
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          
+          if (userDoc.exists()) {
+            const userData = userDoc.data() as CompanyUser;
+            setUserProfile(userData);
+            localStorage.setItem('comperra-user', JSON.stringify(userData));
+          } else {
+            // Fallback to API endpoint if no Firestore data
+            const response = await fetch('/api/auth/current-user');
+            const data = await response.json();
+            if (data.success && data.user) {
+              setUserProfile(data.user);
+              localStorage.setItem('comperra-user', JSON.stringify(data.user));
+            }
           }
         } catch (error) {
           console.error('Error fetching user profile:', error);
         }
       } else {
         setUserProfile(null);
+        localStorage.removeItem('comperra-user');
       }
       
       setLoading(false);
@@ -130,8 +155,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setUserProfile(userData);
 
       // Redirect based on role
-      if (data.user.role === 'vendor' || data.user.role === 'trade') {
-        window.location.href = '/dashboard';
+      if (data.user.role === 'vendor') {
+        window.location.href = '/vendor-dashboard';
+      } else if (data.user.role === 'trade') {
+        window.location.href = '/trade-dashboard';
       } else {
         window.location.href = '/';
       }
@@ -170,8 +197,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setUserProfile(userData);
 
       // Redirect based on role
-      if (data.user.role === 'vendor' || data.user.role === 'trade') {
-        window.location.href = '/dashboard';
+      if (data.user.role === 'vendor') {
+        window.location.href = '/vendor-dashboard';
+      } else if (data.user.role === 'trade') {
+        window.location.href = '/trade-dashboard';
       } else {
         window.location.href = '/';
       }

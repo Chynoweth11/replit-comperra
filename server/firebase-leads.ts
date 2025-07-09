@@ -21,11 +21,18 @@ export interface LeadFormData {
   email: string;
   phone?: string;
   zip?: string;
+  zipCode?: string;
   message?: string;
   isLookingForPro?: boolean;
   customerType?: string;
   interest?: string;
   source?: string;
+  materialCategory?: string;
+  projectType?: string;
+  budget?: number;
+  timeline?: string;
+  projectDetails?: string;
+  description?: string;
 }
 
 export async function submitLead(formData: LeadFormData): Promise<void> {
@@ -37,19 +44,83 @@ export async function submitLead(formData: LeadFormData): Promise<void> {
       email: formData.email,
       phone: formData.phone || null,
       zip: formData.zip || null,
-      requestDetails: formData.message || null,
+      zipCode: formData.zipCode || formData.zip || null,
+      requestDetails: formData.message || formData.description || null,
       type: leadType, // "vendor" or "trade"
       source: formData.source || "customer-request",
       customerType: formData.customerType || "homeowner",
       interest: formData.interest || null,
-      createdAt: new Date().toISOString()
+      materialCategory: formData.materialCategory || formData.interest || "General",
+      projectType: formData.projectType || "General Inquiry",
+      budget: formData.budget || null,
+      timeline: formData.timeline || null,
+      projectDetails: formData.projectDetails || null,
+      description: formData.description || formData.message || "",
+      status: "new",
+      intentScore: calculateIntentScore(formData),
+      createdAt: new Date().toISOString(),
+      lastUpdated: new Date().toISOString()
     };
 
-    await addDoc(collection(db, "leads"), leadData);
-    console.log(`✅ Lead submitted successfully: ${leadData.email} (${leadType})`);
+    const docRef = await addDoc(collection(db, "leads"), leadData);
+    console.log(`✅ Lead submitted successfully: ${leadData.email} (${leadType}) with ID: ${docRef.id}`);
+    
+    // Trigger lead matching if we have enough data
+    if (leadData.zipCode && leadData.materialCategory) {
+      await matchLeadWithProfessionals({ ...leadData, id: docRef.id });
+    }
   } catch (error) {
     console.error('❌ Error submitting lead to Firebase:', error);
     throw error;
+  }
+}
+
+// Calculate intent score based on lead characteristics
+function calculateIntentScore(formData: LeadFormData): number {
+  let score = 5; // Base score
+  
+  // Urgency indicators
+  const description = formData.description || formData.message || "";
+  if (description.toLowerCase().includes('urgent') || description.toLowerCase().includes('asap')) {
+    score += 3;
+  }
+  
+  // Budget indicators
+  if (formData.budget && formData.budget > 1000) {
+    score += 2;
+  }
+  
+  // Contact information completeness
+  if (formData.phone && formData.email) {
+    score += 1;
+  }
+  
+  // Project details specificity
+  if (formData.projectDetails && formData.projectDetails.length > 50) {
+    score += 1;
+  }
+  
+  // Timeline indicators
+  if (formData.timeline && formData.timeline.toLowerCase().includes('month')) {
+    score += 1;
+  }
+  
+  return Math.min(score, 10); // Cap at 10
+}
+
+// Mock lead matching function (simplified version)
+async function matchLeadWithProfessionals(leadData: any): Promise<void> {
+  try {
+    console.log('🔍 Starting lead matching for:', leadData.email);
+    // In a real implementation, this would use the lead-matching.ts functionality
+    // For now, we'll just log the attempt
+    console.log('🎯 Lead matching would be triggered here with data:', {
+      zipCode: leadData.zipCode,
+      materialCategory: leadData.materialCategory,
+      intentScore: leadData.intentScore
+    });
+  } catch (error) {
+    console.error('❌ Error in lead matching:', error);
   }
 }
 

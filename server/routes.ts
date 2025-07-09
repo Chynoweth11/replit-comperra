@@ -843,6 +843,194 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Smart Match AI endpoints
+  app.get('/api/smart-match/metrics', async (req: Request, res: Response) => {
+    try {
+      const { role, userId } = req.query;
+      
+      // Mock smart match metrics - in production, this would fetch real data
+      const metrics = {
+        totalMatches: Math.floor(Math.random() * 100) + 20,
+        successRate: Math.floor(Math.random() * 30) + 70,
+        avgResponseTime: Math.random() * 10 + 2,
+        geographicCoverage: Math.floor(Math.random() * 40) + 60,
+        intentAccuracy: Math.floor(Math.random() * 20) + 80,
+        customerSatisfaction: Math.random() * 1 + 4
+      };
+      
+      const insights = [
+        { zip: '85001', leadCount: 12, avgResponseTime: 3.2, opportunity: 'high' },
+        { zip: '85002', leadCount: 8, avgResponseTime: 5.1, opportunity: 'medium' },
+        { zip: '90210', leadCount: 15, avgResponseTime: 2.8, opportunity: 'high' }
+      ];
+      
+      const recentMatches = [
+        {
+          id: '1',
+          customerEmail: 'customer@example.com',
+          materialCategory: 'Tiles',
+          intentScore: 8,
+          zipCode: '85001',
+          matchedVendors: 3,
+          matchedTrades: 2,
+          status: 'new',
+          createdAt: new Date().toISOString()
+        }
+      ];
+      
+      res.json({
+        success: true,
+        metrics,
+        insights,
+        recentMatches
+      });
+    } catch (error) {
+      console.error('Error fetching smart match metrics:', error);
+      res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+  });
+  
+  app.post('/api/smart-match/optimize', async (req: Request, res: Response) => {
+    try {
+      const { userRole, userId, optimizationGoals } = req.body;
+      
+      console.log(`🤖 Optimizing smart match for ${userRole} ${userId} with goals:`, optimizationGoals);
+      
+      // Simulate optimization process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      res.json({
+        success: true,
+        message: 'Smart matching optimization completed',
+        improvements: {
+          responseTime: '+15%',
+          matchAccuracy: '+8%',
+          geographicCoverage: '+5%'
+        }
+      });
+    } catch (error) {
+      console.error('Error optimizing smart match:', error);
+      res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+  });
+
+  // Vendor-specific endpoints
+  app.get('/api/vendor/leads', async (req: Request, res: Response) => {
+    try {
+      // Mock vendor leads data
+      const leads = [
+        {
+          id: '1',
+          email: 'customer1@example.com',
+          phone: '(555) 123-4567',
+          zipCode: '85001',
+          materialCategory: 'Tiles',
+          projectType: 'Kitchen Renovation',
+          budget: 5000,
+          timeline: 'Within 3 months',
+          description: 'Looking for premium ceramic tiles for kitchen backsplash',
+          status: 'new',
+          intentScore: 8,
+          createdAt: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: '2',
+          email: 'customer2@example.com',
+          zipCode: '85002',
+          materialCategory: 'Stone & Slabs',
+          projectType: 'Bathroom Remodel',
+          budget: 8000,
+          timeline: 'Within 6 months',
+          description: 'Need natural stone countertops for master bathroom',
+          status: 'contacted',
+          intentScore: 7,
+          createdAt: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        }
+      ];
+      
+      res.json({ success: true, leads });
+    } catch (error) {
+      console.error('Error fetching vendor leads:', error);
+      res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+  });
+
+  app.get('/api/vendor/products', async (req: Request, res: Response) => {
+    try {
+      // Mock vendor products data
+      const products = [
+        {
+          id: '1',
+          name: 'Premium Ceramic Tile Collection',
+          category: 'Tiles',
+          price: '$4.99/sq ft',
+          views: 1245,
+          inquiries: 23,
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: '2',
+          name: 'Natural Stone Countertops',
+          category: 'Stone & Slabs',
+          price: '$89.99/sq ft',
+          views: 892,
+          inquiries: 15,
+          lastUpdated: new Date().toISOString()
+        }
+      ];
+      
+      res.json({ success: true, products });
+    } catch (error) {
+      console.error('Error fetching vendor products:', error);
+      res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+  });
+
+  // Trade-specific endpoints
+  app.get('/api/trade/leads', async (req: Request, res: Response) => {
+    try {
+      // Mock trade leads data
+      const leads = [
+        {
+          id: '1',
+          email: 'homeowner1@example.com',
+          phone: '(555) 987-6543',
+          zipCode: '85001',
+          materialCategory: 'Hardwood',
+          projectType: 'Flooring Installation',
+          budget: 12000,
+          timeline: 'Within 2 months',
+          description: 'Need professional installation of hardwood flooring in living areas',
+          status: 'new',
+          intentScore: 9,
+          createdAt: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: '2',
+          email: 'homeowner2@example.com',
+          zipCode: '85002',
+          materialCategory: 'Vinyl & LVT',
+          projectType: 'Complete Floor Replacement',
+          budget: 6000,
+          timeline: 'Within 4 months',
+          description: 'Replace old carpet with luxury vinyl planks throughout home',
+          status: 'quoted',
+          intentScore: 7,
+          createdAt: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        }
+      ];
+      
+      res.json({ success: true, leads });
+    } catch (error) {
+      console.error('Error fetching trade leads:', error);
+      res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
