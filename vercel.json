@@ -28,6 +28,6 @@
     "VITE_FIREBASE_MESSAGING_SENDER_ID": "636329572028",
     "VITE_FIREBASE_MEASUREMENT_ID": "G-QMBYGHYWRW"
   },
-  "installCommand": "npm install && npm install rollup @rollup/rollup-linux-x64-gnu",
+  "installCommand": "npm ci --production=false --no-audit --no-fund",
   "buildCommand": "npm run build"
 }
