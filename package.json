@@ -64,6 +64,8 @@
     "firebase-tools": "^14.9.0",
     "framer-motion": "^11.13.1",
     "fuse.js": "^7.1.0",
+    "geofire-common": "^6.0.0",
+    "geolib": "^3.3.4",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.453.0",
     "memorystore": "^1.6.7",
