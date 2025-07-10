@@ -51,7 +51,7 @@ export async function submitLead(formData: LeadFormData): Promise<void> {
       source: formData.source || "customer-request",
       customerType: formData.customerType || "homeowner",
       interest: formData.interest || null,
-      materialCategory: formData.materialCategory || formData.interest || "General",
+      materialCategory: (formData.materialCategory || formData.interest || "General").toLowerCase(),
       projectType: formData.projectType || "General Inquiry",
       budget: formData.budget || null,
       timeline: formData.timeline || null,

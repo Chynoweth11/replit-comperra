@@ -558,7 +558,8 @@ function AppContent() {
     const { user, loading } = useContext(AuthContext);
     if (loading) { return <div className="text-center mt-10"><SkeletonLoader className="h-48 w-full max-w-2xl mx-auto" /></div>; }
     if (user?.isAdmin) return <AdminPanel />;
-    return user ? <Dashboard /> : <LandingPage />;
+    // Always show LandingPage for professionals route regardless of login status
+    return <LandingPage />;
 }
 
 // Main App Component

@@ -168,6 +168,12 @@ async function matchUsersByGeohash(role: string, origin: { lat: number; lng: num
     console.log('🔄 Firebase unavailable, using fallback matching');
     return getFallbackMatches(role, origin, category);
   }
+  
+  // Also check fallback users for better matching
+  const fallbackMatches = getFallbackMatches(role, origin, category);
+  if (fallbackMatches.length > 0) {
+    console.log(`✅ Found ${fallbackMatches.length} fallback matches for ${role} role`);
+  }
 
   try {
     const radiusInM = 160934.4; // 100 miles in meters for broader initial matching
@@ -215,8 +221,11 @@ async function matchUsersByGeohash(role: string, origin: { lat: number; lng: num
       }
     }
     
+    // Combine Firebase matches with fallback matches for better coverage
+    const allMatches = [...matched, ...fallbackMatches];
+    
     // Sort by distance (closest first)
-    return matched.sort((a, b) => a.distance - b.distance);
+    return allMatches.sort((a, b) => a.distance - b.distance);
     
   } catch (error) {
     console.error('❌ Error in geohash matching:', error);
@@ -247,6 +256,15 @@ function getFallbackMatches(role: string, origin: { lat: number; lng: number }, 
         longitude: -111.93,
         serviceRadius: 50,
         productCategories: ['lvt', 'hardwood', 'carpet']
+      },
+      { 
+        uid: 'vendor3', 
+        businessName: 'Colorado Tile & Stone', 
+        email: 'ochynoweth@luxsurfacesgroup.com',
+        latitude: 39.1911, 
+        longitude: -106.8175,
+        serviceRadius: 100,
+        productCategories: ['tiles', 'slabs', 'hardwood', 'lvt', 'carpet']
       }
     ],
     trade: [
@@ -267,6 +285,15 @@ function getFallbackMatches(role: string, origin: { lat: number; lng: number }, 
         longitude: -112.07,
         serviceRadius: 75,
         tradeCategories: ['hardwood', 'lvt', 'carpet']
+      },
+      { 
+        uid: 'trade3', 
+        businessName: 'Colorado Installation Pro', 
+        email: 'ochynoweth@luxsurfacesgroup.com',
+        latitude: 39.1911, 
+        longitude: -106.8175,
+        serviceRadius: 100,
+        tradeCategories: ['tiles', 'slabs', 'hardwood', 'lvt', 'carpet']
       }
     ]
   };
@@ -274,17 +301,24 @@ function getFallbackMatches(role: string, origin: { lat: number; lng: number }, 
   const candidates = mockData[role as keyof typeof mockData] || [];
   const matched: any[] = [];
   
+  console.log(`🔍 Checking ${candidates.length} ${role} candidates for category: ${category}`);
+  
   candidates.forEach(candidate => {
     const distance = calculateDistance(
       origin.lat, origin.lng,
       candidate.latitude, candidate.longitude
     );
     
+    console.log(`📏 ${candidate.businessName}: ${distance.toFixed(1)}mi away (max: ${candidate.serviceRadius}mi)`);
+    
     if (distance <= candidate.serviceRadius) {
       const categoryField = role === 'vendor' ? 'productCategories' : 'tradeCategories';
       const categories = candidate[categoryField] || [];
       
+      console.log(`🏷️ ${candidate.businessName} categories:`, categories);
+      
       if (categories.includes(category)) {
+        console.log(`✅ ${candidate.businessName} matched for ${category}`);
         matched.push({
           ...candidate,
           distance: distance,
@@ -388,13 +422,15 @@ async function fallbackLeadMatching(leadData: any): Promise<void> {
  * Enhanced lead matching with category filtering and geographic proximity
  */
 export async function matchLeadWithProfessionals(leadData: any): Promise<void> {
-  console.log(`🔄 Starting enhanced geohash lead matching for: ${leadData.email} (${leadData.materialCategory})`);
+  console.log(`🔄 Starting enhanced geohash lead matching for: ${leadData.email} (${leadData.materialCategory}) in ZIP: ${leadData.zipCode}`);
   
   const leadCoords = getCoordsFromZip(leadData.zipCode);
   if (!leadCoords) {
     console.log(`⚠️ No coordinates found for ZIP: ${leadData.zipCode}`);
     return;
   }
+
+  console.log(`📍 Lead coordinates: ${leadCoords.lat}, ${leadCoords.lng}`);
 
   try {
     // Use enhanced geohash matching for vendors
@@ -418,9 +454,13 @@ export async function matchLeadWithProfessionals(leadData: any): Promise<void> {
     // Log detailed match results
     if (matchedVendors.length > 0) {
       console.log(`📍 Matched vendors:`, matchedVendors.map(v => `${v.businessName} (${v.distance.toFixed(1)}mi)`));
+    } else {
+      console.log(`⚠️ No vendors matched for category: ${leadData.materialCategory}`);
     }
     if (matchedTrades.length > 0) {
       console.log(`📍 Matched trades:`, matchedTrades.map(t => `${t.businessName} (${t.distance.toFixed(1)}mi)`));
+    } else {
+      console.log(`⚠️ No trades matched for category: ${leadData.materialCategory}`);
     }
 
     // Update lead with matched professionals (if Firebase is available)
