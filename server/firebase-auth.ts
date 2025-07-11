@@ -367,15 +367,24 @@ export async function sendSignInLink(email: string, continueUrl?: string): Promi
   }
 
   const actionCodeSettings = {
-    // URL to redirect back to after sign-in
-    url: continueUrl || `${process.env.FRONTEND_URL || 'http://localhost:5000'}/auth/complete`,
+    // URL to redirect back to after sign-in - must be in authorized domains
+    url: continueUrl || 'https://comperra-done.firebaseapp.com/auth/complete',
     // This must be true for email link sign-in
     handleCodeInApp: true,
+    // Firebase project configuration
+    iOS: {
+      bundleId: 'com.comperra.app'
+    },
+    android: {
+      packageName: 'com.comperra.app',
+      installApp: true,
+      minimumVersion: '12'
+    }
   };
 
   try {
     await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-    console.log(`✅ Sign-in link sent to ${email}`);
+    console.log(`✅ Sign-in link sent to ${email} with handler: https://comperra-done.firebaseapp.com/__/auth/handler`);
   } catch (error) {
     console.error('❌ Failed to send sign-in link:', error);
     throw error;

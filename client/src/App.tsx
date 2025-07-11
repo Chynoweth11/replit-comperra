@@ -53,6 +53,7 @@ import FirebaseDemo from "@/pages/FirebaseDemo";
 import { ProfessionalNetwork } from "@/components/ProfessionalNetwork";
 import EmailSignInComplete from "@/pages/EmailSignInComplete";
 import EmailSignInDemo from "@/pages/EmailSignInDemo";
+import FirebaseAuthDemo from "@/pages/FirebaseAuthDemo";
 import { ToastProvider } from "@/context/ToastContext";
 import { AuthProvider as NetworkAuthProvider } from "@/context/AuthNetworkContext";
 
@@ -75,6 +76,7 @@ function Router() {
         <Route path="/firebase-demo" component={FirebaseDemo} />
         <Route path="/auth/complete" component={EmailSignInComplete} />
         <Route path="/auth/email-demo" component={EmailSignInDemo} />
+        <Route path="/auth/firebase-demo" component={FirebaseAuthDemo} />
         <Route path="/specs" component={Specs} />
         <Route path="/pricing" component={Pricing} />
         <Route path="/buying-guides" component={BuyingGuides} />

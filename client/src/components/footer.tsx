@@ -38,6 +38,7 @@ export function Footer() {
               <li><button onClick={() => navigate("/buying-guides")} className="text-gray-300 hover:text-white text-left">Buying Guides</button></li>
               <li><button onClick={() => navigate("/installation")} className="text-gray-300 hover:text-white text-left">Installation Tips</button></li>
               <li><button onClick={() => navigate("/faq")} className="text-gray-300 hover:text-white text-left">FAQ</button></li>
+              <li><button onClick={() => navigate("/auth/firebase-demo")} className="text-gray-300 hover:text-white text-left">Firebase Auth Demo</button></li>
             </ul>
           </div>
           

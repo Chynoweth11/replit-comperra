@@ -244,25 +244,52 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   async function sendSignInLink(email: string, continueUrl?: string) {
     try {
-      const response = await fetch('/api/auth/send-sign-in-link', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Use Firebase's own action code settings for proper email link generation
+      const actionCodeSettings = {
+        url: continueUrl || 'https://comperra-done.firebaseapp.com/auth/complete',
+        handleCodeInApp: true,
+        iOS: {
+          bundleId: 'com.comperra.app'
         },
-        body: JSON.stringify({ email, continueUrl }),
-      });
+        android: {
+          packageName: 'com.comperra.app',
+          installApp: true,
+          minimumVersion: '12'
+        }
+      };
 
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error);
-      }
-
+      // Send directly through Firebase client SDK for better handling
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+      
       // Store email for completion
       localStorage.setItem('emailForSignIn', email);
-    } catch (error) {
+      
+      console.log('✅ Sign-in link sent successfully via Firebase');
+    } catch (error: any) {
       console.error('Send sign-in link error:', error);
-      throw error;
+      
+      // Fallback to server endpoint if direct Firebase call fails
+      try {
+        const response = await fetch('/api/auth/send-sign-in-link', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, continueUrl }),
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+          throw new Error(data.error);
+        }
+
+        // Store email for completion
+        localStorage.setItem('emailForSignIn', email);
+      } catch (fallbackError) {
+        console.error('Fallback send sign-in link error:', fallbackError);
+        throw error; // Throw original error
+      }
     }
   }
 

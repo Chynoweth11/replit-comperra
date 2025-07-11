@@ -7,6 +7,10 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 // Your Firebase config
+// Project: Comperra (comperra-done)
+// Public name: Comperra
+// Support email: ochynoweth@luxsurfacesgroup.com
+// Auth handler: https://comperra-done.firebaseapp.com/__/auth/handler
 const firebaseConfig = {
   apiKey: "AIzaSyC7zXxEiPi77xZt2bPY1jcxt9fJcYxKk94",
   authDomain: "comperra-done.firebaseapp.com",
