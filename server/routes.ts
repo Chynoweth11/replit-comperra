@@ -3,6 +3,14 @@ import { createServer, type Server } from "http";
 import { FirebaseStorage } from "./firebase-storage.js";
 import { MemStorage } from "./storage.js";
 import { submitLead, LeadFormData } from "./firebase-leads.js";
+import { 
+  registerProfessional, 
+  submitLeadAndMatch, 
+  getProfessionalProfile, 
+  updateProfessionalProfile,
+  getLeadsForProfessional,
+  getCoordinatesFromZip
+} from './professional-matching.js';
 import { createAccount, signInUser, resetPassword, signOutUser, getCurrentUser, SignUpData, SignInData, sendSignInLink, isEmailSignInLink, completeEmailSignIn } from "./firebase-auth.js";
 
 // Initialize memory storage (primary) for immediate functionality
@@ -613,6 +621,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Try Firebase first
       try {
         await submitLead(leadData);
+        
+        // Enhanced matching with professional matching system
+        try {
+          const coordinates = getCoordinatesFromZip(zip);
+          if (coordinates) {
+            const leadRequest = {
+              customerUid: `guest_${Date.now()}`,
+              customerEmail: email,
+              customerName: name,
+              customerPhone: phone,
+              zipCode: zip,
+              materialCategory: product.toLowerCase(),
+              projectType: 'General Inquiry',
+              projectDetails: leadData.description || 'Customer inquiry',
+              urgency: 'medium' as const,
+              isLookingForPro: isLookingForPro || false,
+              createdAt: new Date()
+            };
+            
+            const matchResult = await submitLeadAndMatch(leadRequest);
+            console.log(`✅ Professional matching completed: ${matchResult.totalMatches} matches found`);
+            
+            if (matchResult.totalMatches > 0) {
+              console.log(`🎯 Connected customer with ${matchResult.matchedVendors.length} vendors and ${matchResult.matchedTrades.length} trades`);
+            }
+          }
+        } catch (matchingError) {
+          console.log('⚠️ Professional matching failed (non-critical):', matchingError.message);
+        }
         console.log('✅ Lead saved to Firebase successfully');
         
         // Also try Airtable as backup (if available)
@@ -963,9 +1000,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Vendor-specific endpoints
   app.get('/api/vendor/leads', async (req: Request, res: Response) => {
     try {
-      // Return empty leads array until real data is available
-      const leads = [];
+      const { professionalUid } = req.query;
       
+      if (!professionalUid) {
+        return res.status(400).json({ success: false, error: 'Professional UID required' });
+      }
+      
+      const leads = await getLeadsForProfessional(professionalUid as string);
       res.json({ success: true, leads });
     } catch (error) {
       console.error('Error fetching vendor leads:', error);
@@ -988,13 +1029,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Trade-specific endpoints
   app.get('/api/trade/leads', async (req: Request, res: Response) => {
     try {
-      // Return empty leads array until real data is available
-      const leads = [];
+      const { professionalUid } = req.query;
       
+      if (!professionalUid) {
+        return res.status(400).json({ success: false, error: 'Professional UID required' });
+      }
+      
+      const leads = await getLeadsForProfessional(professionalUid as string);
       res.json({ success: true, leads });
     } catch (error) {
       console.error('Error fetching trade leads:', error);
       res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+  });
+
+  // Professional registration endpoints
+  app.post('/api/professional/register', async (req: Request, res: Response) => {
+    try {
+      const profileData = req.body;
+      
+      // Validate required fields
+      if (!profileData.email || !profileData.role || !profileData.name || !profileData.zipCode) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Missing required fields: email, role, name, zipCode' 
+        });
+      }
+      
+      // Set default values
+      profileData.serviceRadius = profileData.serviceRadius || 50;
+      profileData.productCategories = profileData.productCategories || [];
+      profileData.tradeCategories = profileData.tradeCategories || [];
+      
+      const professionalId = await registerProfessional(profileData);
+      
+      res.json({
+        success: true,
+        message: 'Professional registered successfully',
+        professionalId,
+        profile: profileData
+      });
+    } catch (error) {
+      console.error('Professional registration error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to register professional' 
+      });
+    }
+  });
+
+  app.get('/api/professional/profile/:uid', async (req: Request, res: Response) => {
+    try {
+      const { uid } = req.params;
+      const profile = await getProfessionalProfile(uid);
+      
+      if (!profile) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Professional profile not found' 
+        });
+      }
+      
+      res.json({ success: true, profile });
+    } catch (error) {
+      console.error('Error fetching professional profile:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch professional profile' 
+      });
+    }
+  });
+
+  app.put('/api/professional/profile/:uid', async (req: Request, res: Response) => {
+    try {
+      const { uid } = req.params;
+      const updates = req.body;
+      
+      await updateProfessionalProfile(uid, updates);
+      
+      res.json({
+        success: true,
+        message: 'Professional profile updated successfully'
+      });
+    } catch (error) {
+      console.error('Error updating professional profile:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to update professional profile' 
+      });
+    }
+  });
+
+  // Enhanced lead matching endpoint
+  app.post('/api/lead/match', async (req: Request, res: Response) => {
+    try {
+      const leadData = req.body;
+      
+      // Validate required fields
+      if (!leadData.customerEmail || !leadData.zipCode || !leadData.materialCategory) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Missing required fields: customerEmail, zipCode, materialCategory' 
+        });
+      }
+      
+      const matchResult = await submitLeadAndMatch(leadData);
+      
+      res.json({
+        success: true,
+        message: 'Lead matched successfully',
+        matchResult
+      });
+    } catch (error) {
+      console.error('Lead matching error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to match lead with professionals' 
+      });
     }
   });
 
