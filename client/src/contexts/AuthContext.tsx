@@ -171,16 +171,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // Create user with Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, signUpData.email, signUpData.password);
       
-      // Save user profile to Firestore
-      await saveUserToFirestore(userCredential.user, {
-        role: signUpData.role,
-        name: signUpData.name,
-        phone: signUpData.phone,
-        companyName: signUpData.companyName,
-        customerType: signUpData.customerType,
-        signInMethod: 'email',
-        createdAt: serverTimestamp()
-      });
+      // Save user profile to Firestore (with error handling)
+      try {
+        await saveUserToFirestore(userCredential.user, {
+          role: signUpData.role,
+          name: signUpData.name,
+          phone: signUpData.phone,
+          companyName: signUpData.companyName,
+          customerType: signUpData.customerType,
+          signInMethod: 'email',
+          createdAt: serverTimestamp()
+        });
+      } catch (firestoreError) {
+        console.warn('Firestore save failed, user still created:', firestoreError);
+        // Continue with signup even if Firestore fails
+      }
       
       // Send email verification
       await sendEmailVerification(userCredential.user);
@@ -205,10 +210,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // Sign in with Firebase Auth
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      // Update user profile in Firestore
-      await saveUserToFirestore(userCredential.user, {
-        signInMethod: 'email'
-      });
+      // Update user profile in Firestore (with error handling)
+      try {
+        await saveUserToFirestore(userCredential.user, {
+          signInMethod: 'email'
+        });
+      } catch (firestoreError) {
+        console.warn('Firestore update failed, signin still successful:', firestoreError);
+        // Continue with signin even if Firestore fails
+      }
       
       console.log('✅ Sign in successful');
       

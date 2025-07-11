@@ -287,6 +287,47 @@ export default function EnhancedAuthForm({ mode, onToggleMode }: EnhancedAuthFor
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phoneNumber">Phone Number</Label>
+                    <Input
+                      id="phoneNumber"
+                      type="tel"
+                      placeholder="+1 (555) 123-4567"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    />
+                  </div>
+
+                  {(formData.role === 'vendor' || formData.role === 'trade') && (
+                    <div className="space-y-2">
+                      <Label htmlFor="companyName">Company Name</Label>
+                      <Input
+                        id="companyName"
+                        placeholder="Enter your company name"
+                        value={formData.companyName}
+                        onChange={(e) => setFormData({...formData, companyName: e.target.value})}
+                      />
+                    </div>
+                  )}
+
+                  {formData.role === 'customer' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="customerType">Customer Type</Label>
+                      <Select value={formData.customerType} onValueChange={(value) => setFormData({...formData, customerType: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select customer type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="homeowner">Homeowner</SelectItem>
+                          <SelectItem value="designer">Designer</SelectItem>
+                          <SelectItem value="architect">Architect</SelectItem>
+                          <SelectItem value="contractor">Contractor</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </>
               )}
 
