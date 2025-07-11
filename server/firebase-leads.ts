@@ -78,14 +78,23 @@ export async function submitLead(formData: LeadFormData): Promise<void> {
     // Always trigger lead matching regardless of Firebase success/failure
     if (leadData.zipCode && leadData.materialCategory) {
       console.log(`🔄 Starting lead matching process for ${leadData.email} with material category: ${leadData.materialCategory}`);
-      await matchLeadWithProfessionals({ ...leadData, id: leadId });
+      try {
+        // Add timeout to prevent hanging
+        await Promise.race([
+          matchLeadWithProfessionals({ ...leadData, id: leadId }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Matching timeout')), 5000))
+        ]);
+      } catch (matchError) {
+        console.log('⚠️ Lead matching failed or timed out:', matchError.message);
+      }
     } else {
       console.log(`⚠️ Lead matching skipped - missing zipCode: ${leadData.zipCode}, materialCategory: ${leadData.materialCategory}`);
     }
     
   } catch (error) {
     console.error('❌ Error in lead submission process:', error);
-    throw error;
+    // Don't throw error - just log it so the API can still respond
+    console.log('⚠️ Lead submission process completed with errors, but continuing...');
   }
 }
 
