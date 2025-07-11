@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
 import { getFirestore, collection, addDoc, doc, setDoc, getDoc } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -356,6 +356,105 @@ export async function getCurrentUser(): Promise<any> {
     // Return fallback user or null
     const mostRecentUser = Array.from(userSessions.values()).pop();
     return mostRecentUser || null;
+  }
+}
+
+// Send sign-in link to email
+export async function sendSignInLink(email: string, continueUrl?: string): Promise<void> {
+  if (!auth) {
+    console.log('⚠️ Firebase auth not available, cannot send sign-in link');
+    throw new Error('Authentication service unavailable');
+  }
+
+  const actionCodeSettings = {
+    // URL to redirect back to after sign-in
+    url: continueUrl || `${process.env.FRONTEND_URL || 'http://localhost:5000'}/auth/complete`,
+    // This must be true for email link sign-in
+    handleCodeInApp: true,
+  };
+
+  try {
+    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+    console.log(`✅ Sign-in link sent to ${email}`);
+  } catch (error) {
+    console.error('❌ Failed to send sign-in link:', error);
+    throw error;
+  }
+}
+
+// Check if current URL is a sign-in link
+export function isEmailSignInLink(url: string): boolean {
+  if (!auth) return false;
+  return isSignInWithEmailLink(auth, url);
+}
+
+// Complete sign-in with email link
+export async function completeEmailSignIn(email: string, emailLink: string): Promise<any> {
+  if (!auth) {
+    console.log('⚠️ Firebase auth not available, using fallback');
+    
+    // Create fallback user session
+    const fallbackUser = {
+      uid: 'fallback-uid-' + Date.now(),
+      email: email,
+      role: 'customer' // Default role for email link sign-in
+    };
+    
+    fallbackUsers.set(email, {
+      email: email,
+      role: 'customer',
+      password: 'email-link-auth'
+    });
+    
+    userSessions.set(fallbackUser.uid, fallbackUser);
+    
+    return {
+      success: true,
+      user: fallbackUser
+    };
+  }
+
+  try {
+    const result = await signInWithEmailLink(auth, email, emailLink);
+    const user = result.user;
+
+    // Check if user profile exists in Firestore
+    let userProfile = null;
+    if (db) {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          userProfile = userDoc.data();
+        } else {
+          // Create new user profile for email link sign-in
+          userProfile = {
+            uid: user.uid,
+            email: user.email,
+            role: 'customer',
+            createdAt: new Date().toISOString(),
+            lastLogin: new Date().toISOString()
+          };
+          
+          await setDoc(doc(db, 'users', user.uid), userProfile);
+        }
+      } catch (dbError) {
+        console.log('⚠️ Firestore profile operation failed:', dbError);
+      }
+    }
+
+    return {
+      success: true,
+      user: {
+        uid: user.uid,
+        email: user.email,
+        role: userProfile?.role || 'customer',
+        name: userProfile?.name,
+        ...userProfile
+      }
+    };
+  } catch (error) {
+    console.error('❌ Email link sign-in failed:', error);
+    throw error;
   }
 }
 

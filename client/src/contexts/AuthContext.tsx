@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged, User, isSignInWithEmailLink, signInWithEmailLink, sendSignInLinkToEmail } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 
@@ -30,6 +30,9 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  sendSignInLink: (email: string, continueUrl?: string) => Promise<void>;
+  completeEmailSignIn: (email: string) => Promise<void>;
+  isSignInLink: (url: string) => boolean;
 }
 
 interface SignUpData {
@@ -50,6 +53,9 @@ const AuthContext = createContext<AuthContextType>({
   signIn: async () => {},
   signOut: async () => {},
   resetPassword: async () => {},
+  sendSignInLink: async () => {},
+  completeEmailSignIn: async () => {},
+  isSignInLink: () => false,
 });
 
 export const useAuth = () => {
@@ -236,6 +242,71 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }
 
+  async function sendSignInLink(email: string, continueUrl?: string) {
+    try {
+      const response = await fetch('/api/auth/send-sign-in-link', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, continueUrl }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error);
+      }
+
+      // Store email for completion
+      localStorage.setItem('emailForSignIn', email);
+    } catch (error) {
+      console.error('Send sign-in link error:', error);
+      throw error;
+    }
+  }
+
+  async function completeEmailSignIn(email: string) {
+    try {
+      const response = await fetch('/api/auth/complete-email-sign-in', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, emailLink: window.location.href }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error);
+      }
+
+      // Save user to localStorage and state
+      const userData = {
+        uid: data.user.uid,
+        email: data.user.email,
+        role: data.user.role,
+        name: data.user.name
+      };
+      
+      localStorage.setItem('comperra-user', JSON.stringify(userData));
+      localStorage.removeItem('emailForSignIn');
+      setUser(userData);
+      setUserProfile(userData);
+
+      // Redirect to homepage after successful sign-in
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Complete email sign-in error:', error);
+      throw error;
+    }
+  }
+
+  function isSignInLink(url: string): boolean {
+    return isSignInWithEmailLink(auth, url);
+  }
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -244,7 +315,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       signUp, 
       signIn, 
       signOut, 
-      resetPassword 
+      resetPassword,
+      sendSignInLink,
+      completeEmailSignIn,
+      isSignInLink
     }}>
       {children}
     </AuthContext.Provider>

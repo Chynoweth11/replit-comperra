@@ -51,6 +51,8 @@ import DashboardPotentialLeads from "@/pages/dashboard-potential-leads";
 import DashboardLeadsHistory from "@/pages/dashboard-leads-history";
 import FirebaseDemo from "@/pages/FirebaseDemo";
 import { ProfessionalNetwork } from "@/components/ProfessionalNetwork";
+import EmailSignInComplete from "@/pages/EmailSignInComplete";
+import EmailSignInDemo from "@/pages/EmailSignInDemo";
 import { ToastProvider } from "@/context/ToastContext";
 import { AuthProvider as NetworkAuthProvider } from "@/context/AuthNetworkContext";
 
@@ -71,6 +73,8 @@ function Router() {
         <Route path="/professionals" component={ProfessionalNetwork} />
         <Route path="/professional-network" component={ProfessionalNetwork} />
         <Route path="/firebase-demo" component={FirebaseDemo} />
+        <Route path="/auth/complete" component={EmailSignInComplete} />
+        <Route path="/auth/email-demo" component={EmailSignInDemo} />
         <Route path="/specs" component={Specs} />
         <Route path="/pricing" component={Pricing} />
         <Route path="/buying-guides" component={BuyingGuides} />

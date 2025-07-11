@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { FirebaseStorage } from "./firebase-storage.js";
 import { MemStorage } from "./storage.js";
 import { submitLead, LeadFormData } from "./firebase-leads.js";
-import { createAccount, signInUser, resetPassword, signOutUser, getCurrentUser, SignUpData, SignInData } from "./firebase-auth.js";
+import { createAccount, signInUser, resetPassword, signOutUser, getCurrentUser, SignUpData, SignInData, sendSignInLink, isEmailSignInLink, completeEmailSignIn } from "./firebase-auth.js";
 
 // Initialize memory storage (primary) for immediate functionality
 const storage = new MemStorage();
@@ -745,6 +745,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, user });
     } catch (error: any) {
       console.error('Get current user error:', error);
+      res.status(400).json({ success: false, error: error.message });
+    }
+  });
+
+  // Email link authentication routes
+  app.post("/api/auth/send-sign-in-link", async (req, res) => {
+    try {
+      const { email, continueUrl } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ success: false, error: "Email is required" });
+      }
+
+      await sendSignInLink(email, continueUrl);
+      res.json({ success: true, message: "Sign-in link sent to your email" });
+    } catch (error: any) {
+      console.error('Send sign-in link error:', error);
+      res.status(400).json({ success: false, error: error.message });
+    }
+  });
+
+  app.post("/api/auth/complete-email-sign-in", async (req, res) => {
+    try {
+      const { email, emailLink } = req.body;
+      
+      if (!email || !emailLink) {
+        return res.status(400).json({ success: false, error: "Email and email link are required" });
+      }
+
+      const result = await completeEmailSignIn(email, emailLink);
+      res.json(result);
+    } catch (error: any) {
+      console.error('Complete email sign-in error:', error);
+      res.status(400).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get("/api/auth/is-sign-in-link", async (req, res) => {
+    try {
+      const { url } = req.query;
+      
+      if (!url) {
+        return res.status(400).json({ success: false, error: "URL is required" });
+      }
+
+      const isSignInLink = isEmailSignInLink(url as string);
+      res.json({ success: true, isSignInLink });
+    } catch (error: any) {
+      console.error('Check sign-in link error:', error);
       res.status(400).json({ success: false, error: error.message });
     }
   });
