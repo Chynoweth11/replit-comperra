@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Mail, Phone, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { 
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -20,11 +20,14 @@ import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
   sendPasswordResetEmail,
-  signOut as firebaseSignOut
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+  User
 } from 'firebase/auth';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 export default function FirebaseAuthDemo() {
-  const { user, userProfile } = useAuth();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error'>('error');
@@ -40,11 +43,30 @@ export default function FirebaseAuthDemo() {
   const [confirmationResult, setConfirmationResult] = useState<any>(null);
   const [recaptchaVerifier, setRecaptchaVerifier] = useState<any>(null);
 
+  // Input validation patterns
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^\+[1-9]\d{1,14}$/; // E.164 format
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; // Min 8 chars, 1 letter, 1 number
+  const codeRegex = /^\d{6}$/; // 6 digits
+
   useEffect(() => {
     // Handle email link sign-in on page load
     if (isSignInWithEmailLink(auth, window.location.href)) {
       handleEmailLinkSignIn();
     }
+
+    // Set up auth state listener
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setLoading(false);
+      if (user) {
+        await updateUserInFirestore(user);
+        setCurrentUser(user);
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const showMessage = (msg: string, type: 'success' | 'error' = 'error') => {
@@ -53,7 +75,26 @@ export default function FirebaseAuthDemo() {
     setTimeout(() => setMessage(''), 5000);
   };
 
+  const updateUserInFirestore = async (user: User) => {
+    try {
+      const userRef = doc(db, "users", user.uid);
+      const userData = {
+        uid: user.uid,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        emailVerified: user.emailVerified,
+        lastLogin: serverTimestamp(),
+        providerId: user.providerData[0]?.providerId || 'password',
+      };
+      // Use setDoc with merge:true to create or update, preserving existing fields like 'role'
+      await setDoc(userRef, userData, { merge: true });
+    } catch (error) {
+      console.error('Error updating user in Firestore:', error);
+    }
+  };
+
   const parseFirebaseError = (error: any) => {
+    console.error('Detailed Firebase Error:', error);
     switch (error.code) {
       case 'auth/user-not-found': return 'No account found with this email. Please sign up.';
       case 'auth/wrong-password': return 'Incorrect password. Please try again.';
@@ -69,7 +110,8 @@ export default function FirebaseAuthDemo() {
 
   const handleEmailSignUp = async () => {
     if (!email || !password) return showMessage('Please enter both email and password.');
-    if (password.length < 6) return showMessage('Password must be at least 6 characters long.');
+    if (!emailRegex.test(email)) return showMessage('Invalid email format.');
+    if (!passwordRegex.test(password)) return showMessage('Password must be at least 8 characters with letters and numbers.');
 
     setLoading(true);
     try {
@@ -85,6 +127,7 @@ export default function FirebaseAuthDemo() {
 
   const handleEmailSignIn = async () => {
     if (!email || !password) return showMessage('Please enter both email and password.');
+    if (!emailRegex.test(email)) return showMessage('Invalid email format.');
 
     setLoading(true);
     try {
@@ -99,6 +142,7 @@ export default function FirebaseAuthDemo() {
 
   const handlePasswordReset = async () => {
     if (!email) return showMessage('Please enter your email to reset the password.');
+    if (!emailRegex.test(email)) return showMessage('Invalid email format.');
 
     setLoading(true);
     try {
@@ -113,11 +157,12 @@ export default function FirebaseAuthDemo() {
 
   const handleSendEmailLink = async () => {
     if (!emailLinkInput) return showMessage('Please enter your email address.');
+    if (!emailRegex.test(emailLinkInput)) return showMessage('Invalid email format.');
 
     setLoading(true);
     try {
       const actionCodeSettings = {
-        url: 'https://comperra-done.firebaseapp.com/auth/firebase-demo',
+        url: window.location.href, // Redirect back to same page
         handleCodeInApp: true,
         iOS: {
           bundleId: 'com.comperra.app'
@@ -188,7 +233,7 @@ export default function FirebaseAuthDemo() {
 
   const handleSendPhoneCode = async () => {
     if (!phoneNumber) return showMessage('Please enter a phone number.');
-    if (!phoneNumber.startsWith('+')) return showMessage('Please include country code (e.g., +1).');
+    if (!phoneRegex.test(phoneNumber)) return showMessage('Invalid phone number format. Use +1xxxxxxxxxx.');
 
     if (!recaptchaVerifier) {
       setupRecaptcha();
@@ -208,7 +253,7 @@ export default function FirebaseAuthDemo() {
   };
 
   const handleVerifyPhoneCode = async () => {
-    if (!verificationCode || verificationCode.length !== 6) return showMessage('Please enter the 6-digit code.');
+    if (!codeRegex.test(verificationCode)) return showMessage('Please enter the 6-digit code.');
     if (!confirmationResult) return showMessage('Please send a code first.');
 
     setLoading(true);
@@ -231,7 +276,7 @@ export default function FirebaseAuthDemo() {
     }
   };
 
-  if (user) {
+  if (currentUser) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
         <div className="w-full max-w-md space-y-4">
@@ -255,13 +300,16 @@ export default function FirebaseAuthDemo() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg space-y-2">
-                <p><strong>UID:</strong> <span className="font-mono text-sm break-all">{user.uid}</span></p>
-                <p><strong>Email:</strong> <span className="font-mono text-sm break-all">{user.email}</span> 
-                  <Badge variant={user.emailVerified ? "default" : "destructive"} className="ml-2">
-                    {user.emailVerified ? 'Verified' : 'Not Verified'}
+                <p><strong>UID:</strong> <span className="font-mono text-sm break-all">{currentUser.uid}</span></p>
+                <p><strong>Email:</strong> <span className="font-mono text-sm break-all">{currentUser.email}</span> 
+                  <Badge variant={currentUser.emailVerified ? "default" : "destructive"} className="ml-2">
+                    {currentUser.emailVerified ? 'Verified' : 'Not Verified'}
                   </Badge>
                 </p>
-                <p><strong>Phone:</strong> <span className="font-mono text-sm break-all">{user.phoneNumber || 'None'}</span></p>
+                <p><strong>Phone:</strong> <span className="font-mono text-sm break-all">{currentUser.phoneNumber || 'None'}</span></p>
+                <p><strong>Provider:</strong> <span className="font-mono text-sm">{currentUser.providerData[0]?.providerId || 'password'}</span></p>
+                <p><strong>Created:</strong> <span className="font-mono text-sm">{new Date(currentUser.metadata.creationTime || '').toLocaleDateString()}</span></p>
+                <p><strong>Last Sign In:</strong> <span className="font-mono text-sm">{new Date(currentUser.metadata.lastSignInTime || '').toLocaleDateString()}</span></p>
               </div>
               <Button onClick={handleSignOut} className="w-full" variant="destructive">
                 Sign Out
