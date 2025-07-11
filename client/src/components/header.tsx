@@ -255,8 +255,8 @@ export function Header() {
               </>
             ) : (
               <>
-                <Link href="/login" className="hover:text-royal transition-colors">Sign In</Link>
-                <Link href="/register">
+                <Link href="/auth" className="hover:text-royal transition-colors">Sign In</Link>
+                <Link href="/auth">
                   <Button className="bg-royal text-white hover:bg-royal-dark">
                     Join Free
                   </Button>
@@ -297,8 +297,8 @@ export function Header() {
                   </>
                 ) : (
                   <>
-                    <Link href="/login" className="block py-2 hover:text-royal">Sign In</Link>
-                    <Link href="/register">
+                    <Link href="/auth" className="block py-2 hover:text-royal">Sign In</Link>
+                    <Link href="/auth">
                       <Button className="w-full bg-royal text-white hover:bg-royal-dark">
                         Join Free
                       </Button>
