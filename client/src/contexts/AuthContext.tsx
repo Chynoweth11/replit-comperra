@@ -102,30 +102,37 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Function to clear localStorage and force fresh auth
   const clearAuthCache = () => {
     localStorage.removeItem('comperra-user');
+    localStorage.removeItem('comperra-session-time');
+    localStorage.removeItem('comperra-last-check');
     setUser(null);
     setUserProfile(null);
   };
 
-  useEffect(() => {
-    // First check for existing session in localStorage
-    const checkExistingSession = () => {
-      try {
-        const storedUser = localStorage.getItem('comperra-user');
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          
-          // Check for known accounts with wrong roles and clear cache
+  // Enhanced session restoration with timeout checks
+  const restoreSession = () => {
+    try {
+      const storedUser = localStorage.getItem('comperra-user');
+      const sessionTime = localStorage.getItem('comperra-session-time');
+      
+      if (storedUser && sessionTime) {
+        const userData = JSON.parse(storedUser);
+        const sessionAge = Date.now() - parseInt(sessionTime);
+        
+        // Session valid for 24 hours
+        if (sessionAge < 24 * 60 * 60 * 1000) {
+          // Check for known accounts with correct roles
           const knownAccounts = {
             'testvendor@comperra.com': 'vendor',
             'testtrade@comperra.com': 'trade',
             'testcustomer@comperra.com': 'customer',
-            'ochynoweth@luxsurfacesgroup.com': 'vendor'
+            'ochynoweth@luxsurfacesgroup.com': 'vendor',
+            'owenchynoweth2003@gmail.com': 'vendor'
           };
           
           const expectedRole = knownAccounts[userData.email];
           if (expectedRole && userData.role !== expectedRole) {
-            console.log('⚠️ Role mismatch detected, clearing cache for fresh authentication');
-            localStorage.removeItem('comperra-user');
+            console.log('⚠️ Role mismatch detected, clearing cache');
+            clearAuthCache();
             return false;
           }
           
@@ -133,54 +140,56 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           setUserProfile(userData);
           console.log('✅ Restored user session from localStorage:', userData);
           return true;
+        } else {
+          console.log('⚠️ Session expired, clearing cache');
+          clearAuthCache();
         }
-      } catch (error) {
-        console.error('Error restoring session from localStorage:', error);
-        localStorage.removeItem('comperra-user');
       }
-      return false;
-    };
+    } catch (error) {
+      console.error('Error restoring session:', error);
+      clearAuthCache();
+    }
+    return false;
+  };
 
-    const hasExistingSession = checkExistingSession();
-    
-    // Always check server for current user to ensure we have the latest role data
-    const checkCurrentUser = async () => {
+  useEffect(() => {
+    const initializeAuth = async () => {
+      // First try to restore from localStorage
+      const hasSession = restoreSession();
+      
+      // Check server for current user status
       try {
         const response = await fetch('/api/auth/current-user');
         const data = await response.json();
+        
         if (data.success && data.user && !isSigningOut) {
-          // Update user data if it's different from localStorage
-          const storedUser = localStorage.getItem('comperra-user');
-          let shouldUpdate = true;
+          // Server has a valid session
+          setUser(data.user);
+          setUserProfile(data.user);
           
-          if (storedUser) {
-            const parsedStored = JSON.parse(storedUser);
-            shouldUpdate = parsedStored.role !== data.user.role || parsedStored.email !== data.user.email;
-          }
+          // Update localStorage with fresh data
+          localStorage.setItem('comperra-user', JSON.stringify(data.user));
+          localStorage.setItem('comperra-session-time', Date.now().toString());
           
-          if (shouldUpdate) {
-            setUser(data.user);
-            setUserProfile(data.user);
-            localStorage.setItem('comperra-user', JSON.stringify(data.user));
-            console.log('✅ Updated user session from server:', data.user);
-          }
-        } else if (!hasExistingSession) {
-          // Clear localStorage if no server session exists
-          localStorage.removeItem('comperra-user');
+          console.log('✅ Server session validated:', data.user);
+        } else if (!hasSession) {
+          // No session anywhere, clear everything
+          clearAuthCache();
           setUser(null);
           setUserProfile(null);
         }
       } catch (error) {
-        console.error('Error fetching current user:', error);
+        console.error('Error checking server session:', error);
+        // If server check fails but we have a valid localStorage session, keep it
+        if (!hasSession) {
+          setUser(null);
+          setUserProfile(null);
+        }
       }
       setLoading(false);
     };
     
-    if (!isSigningOut) {
-      checkCurrentUser();
-    } else {
-      setLoading(false);
-    }
+    initializeAuth();
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
@@ -282,6 +291,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           setUser(result.user);
           setUserProfile(result.user);
           localStorage.setItem('comperra-user', JSON.stringify(result.user));
+          localStorage.setItem('comperra-session-time', Date.now().toString());
           
           console.log('✅ Fallback sign up successful, user:', result.user);
           
@@ -362,6 +372,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           setUser(result.user);
           setUserProfile(result.user);
           localStorage.setItem('comperra-user', JSON.stringify(result.user));
+          localStorage.setItem('comperra-session-time', Date.now().toString());
           
           console.log('✅ Fallback sign in successful, user:', result.user);
           
@@ -398,24 +409,36 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             'Content-Type': 'application/json',
           },
         });
-      } catch (serverError) {
-        console.warn('Server signout failed, continuing with client signout:', serverError);
+      } catch (error) {
+        console.warn('Server signout failed:', error);
       }
       
-      // Sign out with Firebase Auth
-      await firebaseSignOut(auth);
+      // Clear Firebase session
+      try {
+        await firebaseSignOut(auth);
+      } catch (error) {
+        console.warn('Firebase signout failed:', error);
+      }
       
-      // Clear local storage and state
-      localStorage.removeItem('comperra-user');
+      // Clear all local storage and state
+      clearAuthCache();
       setUser(null);
       setUserProfile(null);
       
-      console.log('✅ Sign out successful');
+      console.log('✅ Complete signout successful');
+      
+      // Redirect to homepage
       window.location.href = '/';
+      
     } catch (error: any) {
       console.error('Sign out error:', error);
+      // Even if signout fails, clear local state
+      clearAuthCache();
+      setUser(null);
+      setUserProfile(null);
+      window.location.href = '/';
+    } finally {
       setIsSigningOut(false);
-      throw error;
     }
   }
 

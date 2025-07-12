@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import SmartMatchAI from '@/components/SmartMatchAI';
 import GoogleMap from '@/components/GoogleMap';
+import { useSessionPersistence } from '@/hooks/useSessionPersistence';
 
 interface LeadData {
   id: string;
@@ -47,6 +48,7 @@ interface LeadData {
 const VendorDashboard: React.FC = () => {
   const { userProfile, loading, signOut } = useAuth();
   const [, navigate] = useLocation();
+  const { sessionActive } = useSessionPersistence();
   const [activeTab, setActiveTab] = useState('overview');
   const [leads, setLeads] = useState<LeadData[]>([]);
   const [subscription, setSubscription] = useState({
@@ -65,15 +67,29 @@ const VendorDashboard: React.FC = () => {
   });
 
   useEffect(() => {
-    if (!loading && (!userProfile || userProfile.role !== 'vendor')) {
-      navigate('/');
-      return;
-    }
-    
-    if (userProfile) {
+    if (!loading) {
+      // Check authentication and session
+      if (!userProfile || !sessionActive) {
+        console.log('⚠️ Authentication failed, redirecting to signin');
+        navigate('/auth?tab=signin');
+        return;
+      }
+      
+      // Check role
+      if (userProfile.role !== 'vendor') {
+        console.log('⚠️ User is not a vendor, redirecting to appropriate dashboard');
+        if (userProfile.role === 'trade') {
+          navigate('/trade-dashboard');
+        } else {
+          navigate('/dashboard');
+        }
+        return;
+      }
+      
+      // Fetch dashboard data if authenticated
       fetchDashboardData();
     }
-  }, [userProfile, loading, navigate]);
+  }, [userProfile, loading, navigate, sessionActive]);
 
   const fetchDashboardData = async () => {
     try {

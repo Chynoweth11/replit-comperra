@@ -1534,6 +1534,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Session refresh endpoint
+  app.post('/api/auth/refresh-session', async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ success: false, error: 'User ID required' });
+      }
+      
+      // Check if user exists in our systems
+      const user = fallbackUsers.get(userId) || Array.from(fallbackUsers.values()).find(u => u.email === userId);
+      
+      if (user) {
+        // Update last activity
+        const updatedUser = { ...user, lastActivity: new Date().toISOString() };
+        fallbackUsers.set(userId, updatedUser);
+        
+        console.log('✅ Session refreshed for user:', userId);
+        res.json({ success: true, message: 'Session refreshed successfully' });
+      } else {
+        res.status(404).json({ success: false, error: 'User not found' });
+      }
+    } catch (error) {
+      console.error('Session refresh error:', error);
+      res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
