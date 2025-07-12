@@ -467,11 +467,11 @@ export class SimulationScraper {
       // COMPREHENSIVE SPECIFICATION EXTRACTION
       console.log(`Extracting detailed specifications for ${category} category`);
       
-      // Apply comprehensive specifications enhancement immediately
-      const comprehensiveSpecs = this.enhanceSpecifications(specs, category, brand, name, url, '');
-      Object.assign(specs, comprehensiveSpecs);
+      // PRIORITY: Extract real specifications from HTML first
+      const realSpecs = this.extractRealSpecifications($, response.data, category, brand, name, url);
+      Object.assign(specs, realSpecs);
       
-      console.log(`Total specifications after comprehensive extraction: ${Object.keys(specs).length}`);
+      console.log(`Total specifications after real extraction: ${Object.keys(specs).length}`);
       
       // Enhanced dimension extraction from HTML content
       const dimensionSelectors = [
@@ -557,87 +557,7 @@ export class SimulationScraper {
         console.log(`❌ No valid dimensions found, using category default`);
       }
       
-      // Enhanced specification extraction with multiple selectors
-      const specSelectors = [
-        'table tr', 'ul li', '.specs div', '.specifications div', '.spec-list li',
-        '.product-details tr', '.product-info div', '.attributes li', '.features li',
-        '.technical-specs tr', '.detail-section div', '.spec-row', '.product-spec',
-        '.attributes-table tr', '.spec-table tr', '.product-specifications tr'
-      ];
-      
-      for (const selector of specSelectors) {
-        $(selector).each((_: any, el: any) => {
-          const text = $(el).text();
-          const $el = $(el);
-          
-          // Try different patterns for key-value extraction
-          const colonMatch = text.split(':');
-          const tabMatch = text.split('\t');
-          
-          let key = '', value = '';
-          
-          if (colonMatch.length === 2) {
-            key = colonMatch[0].trim();
-            value = colonMatch[1].trim();
-          } else if (tabMatch.length === 2) {
-            key = tabMatch[0].trim();
-            value = tabMatch[1].trim();
-          } else {
-            // Try to find label/value in separate elements
-            const label = $el.find('.label, .key, .spec-label').text().trim();
-            const val = $el.find('.value, .spec-value').text().trim();
-            if (label && val) {
-              key = label;
-              value = val;
-            }
-          }
-          
-          if (key && value && key.length < 80 && value.length < 200) {
-            // Enhanced field mapping
-            if (/pei/i.test(key)) {
-              const peiValue = value.match(/([0-5])/);
-              if (peiValue) specs['PEI Rating'] = peiValue[1];
-            } else if (/color/i.test(key)) {
-              specs['Color'] = value;
-            } else if (/finish|surface|texture/i.test(key)) {
-              specs['Finish'] = value;
-            } else if (/size|dimension/i.test(key)) {
-              // Only use value if it doesn't contain template variables
-              if (!value.includes('{{') && !value.includes('}}')) {
-                specs['Dimensions'] = value;
-              }
-            } else if (/material|type/i.test(key) && !/install/i.test(key)) {
-              specs['Material Type'] = value;
-            } else if (/dcof|slip|cof/i.test(key)) {
-              specs['DCOF / Slip Rating'] = value;
-            } else if (/absorption|water/i.test(key)) {
-              specs['Water Absorption'] = value;
-            } else if (/edge/i.test(key)) {
-              specs['Edge Type'] = value;
-            } else if (/install|application|use/i.test(key)) {
-              specs['Install Location'] = value;
-            } else if (/thickness/i.test(key)) {
-              specs['Thickness'] = value;
-            } else if (/wear.*layer/i.test(key)) {
-              specs['Wear Layer'] = value;
-            } else if (/species|wood/i.test(key)) {
-              specs['Wood Species'] = value;
-            } else if (/janka|hardness/i.test(key)) {
-              specs['Hardness (Janka)'] = value;
-            } else if (/voltage/i.test(key)) {
-              specs['Voltage'] = value;
-            } else if (/watt/i.test(key)) {
-              specs['Wattage'] = value;
-            } else if (/coverage/i.test(key)) {
-              specs['Coverage Area (SF)'] = value;
-            } else if (/fiber/i.test(key)) {
-              specs['Fiber Type'] = value;
-            } else if (/pile/i.test(key)) {
-              specs['Pile Style'] = value;
-            }
-          }
-        });
-      }
+      // Real specification extraction is now handled by extractRealSpecifications method
       
       // Extract price
       const priceMatch = response.data.match(/\$\s?([\d,]+\.?\d*)\s?\/?\s?(?:SF|sq\.?\s?ft|per\s?sq|square)/i);
@@ -645,8 +565,16 @@ export class SimulationScraper {
         specs['Price per SF'] = priceMatch[1].replace(',', '');
       }
       
-      // Apply comprehensive specifications based on detected category
-      let finalSpecs = this.enhanceSpecifications(specs, category, brand, name, url, imageUrl);
+      // Apply comprehensive specifications based on detected category - only use synthetic specs as fallback
+      let finalSpecs = { ...specs }; // Use real extracted specs as base
+      
+      // Only add synthetic specs for missing fields
+      const syntheticSpecs = this.enhanceSpecifications({}, category, brand, name, url, imageUrl);
+      for (const [key, value] of Object.entries(syntheticSpecs)) {
+        if (!finalSpecs[key]) {
+          finalSpecs[key] = value;
+        }
+      }
       
       // Force thermostat specifications if detected as thermostats category
       if (category === 'thermostats') {

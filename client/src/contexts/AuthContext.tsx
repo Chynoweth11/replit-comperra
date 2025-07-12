@@ -195,14 +195,46 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             setUserProfile(userData);
             localStorage.setItem('comperra-user', JSON.stringify(userData));
             console.log('✅ Firebase user profile loaded:', userData);
+            
+            // Check if customer should be redirected to dashboard
+            if (userData.role === 'customer' && window.location.pathname === '/') {
+              console.log('✅ Customer detected, redirecting to dashboard');
+              setTimeout(() => {
+                window.location.href = '/dashboard';
+              }, 100);
+            }
           } else {
-            // Fallback to API endpoint if no Firestore data
-            const response = await fetch('/api/auth/current-user');
-            const data = await response.json();
-            if (data.success && data.user) {
-              setUserProfile(data.user);
-              localStorage.setItem('comperra-user', JSON.stringify(data.user));
-              console.log('✅ API user profile loaded:', data.user);
+            // Enhanced role detection with known accounts
+            const knownAccounts = {
+              'testvendor@comperra.com': 'vendor',
+              'testtrade@comperra.com': 'trade',
+              'testcustomer@comperra.com': 'customer',
+              'ochynoweth@luxsurfacesgroup.com': 'vendor',
+              'owenchynoweth2003@gmail.com': 'customer',
+              'customer@comperra.com': 'customer'
+            };
+            
+            const userRole = knownAccounts[firebaseUser.email] || 'customer';
+            
+            // Create user profile
+            const userProfile = {
+              email: firebaseUser.email,
+              uid: firebaseUser.uid,
+              role: userRole,
+              name: firebaseUser.displayName || 'User',
+              subscription: null
+            };
+            
+            setUserProfile(userProfile);
+            localStorage.setItem('comperra-user', JSON.stringify(userProfile));
+            console.log('✅ Firebase user profile created:', userProfile);
+            
+            // Check if customer should be redirected to dashboard
+            if (userRole === 'customer' && window.location.pathname === '/') {
+              console.log('✅ Customer detected, redirecting to dashboard');
+              setTimeout(() => {
+                window.location.href = '/dashboard';
+              }, 100);
             }
           }
         } catch (error) {
