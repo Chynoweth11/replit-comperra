@@ -218,8 +218,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           
           console.log('✅ Fallback sign up successful');
           
-          // Redirect to homepage after signup
-          window.location.href = '/';
+          // Redirect based on user role
+          if (result.user.role === 'vendor') {
+            window.location.href = '/vendor-dashboard';
+          } else if (result.user.role === 'trade') {
+            window.location.href = '/trade-dashboard';
+          } else {
+            window.location.href = '/';
+          }
         } else {
           throw new Error(result.message || 'Account creation failed');
         }
@@ -253,8 +259,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         
         console.log('✅ Firebase sign in successful');
         
-        // Redirect to homepage after signin
-        window.location.href = '/';
+        // Get user role from Firebase and redirect accordingly
+        const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+        const userData = userDoc.exists() ? userDoc.data() : null;
+        const userRole = userData?.role || 'customer';
+        
+        // Redirect based on user role
+        if (userRole === 'vendor') {
+          window.location.href = '/vendor-dashboard';
+        } else if (userRole === 'trade') {
+          window.location.href = '/trade-dashboard';
+        } else {
+          window.location.href = '/';
+        }
         return;
       } catch (firebaseError: any) {
         console.warn('Firebase signin failed, trying fallback:', firebaseError);
@@ -278,8 +295,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           
           console.log('✅ Fallback sign in successful');
           
-          // Redirect to homepage after signin
-          window.location.href = '/';
+          // Redirect based on user role
+          if (result.user.role === 'vendor') {
+            window.location.href = '/vendor-dashboard';
+          } else if (result.user.role === 'trade') {
+            window.location.href = '/trade-dashboard';
+          } else {
+            window.location.href = '/';
+          }
         } else {
           throw new Error(result.message || 'Authentication failed');
         }
