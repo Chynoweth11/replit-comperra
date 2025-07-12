@@ -51,6 +51,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   sendPhoneVerification: (phoneNumber: string) => Promise<any>;
   verifyPhoneCode: (verificationId: string, code: string) => Promise<void>;
+  clearAuthCache: () => void;
 }
 
 interface SignUpData {
@@ -77,6 +78,7 @@ const AuthContext = createContext<AuthContextType>({
   signInWithGoogle: async () => {},
   sendPhoneVerification: async () => {},
   verifyPhoneCode: async () => {},
+  clearAuthCache: () => {},
 });
 
 export const useAuth = () => {
@@ -97,6 +99,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(true);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
+  // Function to clear localStorage and force fresh auth
+  const clearAuthCache = () => {
+    localStorage.removeItem('comperra-user');
+    setUser(null);
+    setUserProfile(null);
+  };
+
   useEffect(() => {
     // First check for existing session in localStorage
     const checkExistingSession = () => {
@@ -104,6 +113,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         const storedUser = localStorage.getItem('comperra-user');
         if (storedUser) {
           const userData = JSON.parse(storedUser);
+          
+          // Check for known accounts with wrong roles and clear cache
+          const knownAccounts = {
+            'testvendor@comperra.com': 'vendor',
+            'testtrade@comperra.com': 'trade',
+            'ochynoweth@luxsurfacesgroup.com': 'vendor'
+          };
+          
+          const expectedRole = knownAccounts[userData.email];
+          if (expectedRole && userData.role !== expectedRole) {
+            console.log('⚠️ Role mismatch detected, clearing cache for fresh authentication');
+            localStorage.removeItem('comperra-user');
+            return false;
+          }
+          
           setUser(userData);
           setUserProfile(userData);
           console.log('✅ Restored user session from localStorage:', userData);
@@ -118,24 +142,40 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     const hasExistingSession = checkExistingSession();
     
-    // Only check server for current user if no existing session and not signing out
-    if (!hasExistingSession && !isSigningOut) {
-      const checkCurrentUser = async () => {
-        try {
-          const response = await fetch('/api/auth/current-user');
-          const data = await response.json();
-          if (data.success && data.user && !isSigningOut) {
+    // Always check server for current user to ensure we have the latest role data
+    const checkCurrentUser = async () => {
+      try {
+        const response = await fetch('/api/auth/current-user');
+        const data = await response.json();
+        if (data.success && data.user && !isSigningOut) {
+          // Update user data if it's different from localStorage
+          const storedUser = localStorage.getItem('comperra-user');
+          let shouldUpdate = true;
+          
+          if (storedUser) {
+            const parsedStored = JSON.parse(storedUser);
+            shouldUpdate = parsedStored.role !== data.user.role || parsedStored.email !== data.user.email;
+          }
+          
+          if (shouldUpdate) {
             setUser(data.user);
             setUserProfile(data.user);
             localStorage.setItem('comperra-user', JSON.stringify(data.user));
-            console.log('✅ Loaded user session from server:', data.user);
+            console.log('✅ Updated user session from server:', data.user);
           }
-        } catch (error) {
-          console.error('Error fetching current user:', error);
+        } else if (!hasExistingSession) {
+          // Clear localStorage if no server session exists
+          localStorage.removeItem('comperra-user');
+          setUser(null);
+          setUserProfile(null);
         }
-        setLoading(false);
-      };
-      
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+      }
+      setLoading(false);
+    };
+    
+    if (!isSigningOut) {
       checkCurrentUser();
     } else {
       setLoading(false);
@@ -573,7 +613,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       isSignInLink,
       signInWithGoogle,
       sendPhoneVerification,
-      verifyPhoneCode
+      verifyPhoneCode,
+      clearAuthCache
     }}>
       {children}
     </AuthContext.Provider>
