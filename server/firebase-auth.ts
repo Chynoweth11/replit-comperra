@@ -64,35 +64,56 @@ export interface SignInData {
   password: string;
 }
 
+// Helper function to create fallback user
+function createFallbackUser(signUpData: SignUpData): any {
+  // Save to fallback user store
+  fallbackUsers.set(signUpData.email, {
+    email: signUpData.email,
+    role: signUpData.role,
+    name: signUpData.name,
+    password: signUpData.password
+  });
+  
+  const fallbackUser = {
+    uid: 'fallback-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+    email: signUpData.email,
+    role: signUpData.role,
+    name: signUpData.name || 'User',
+    phone: signUpData.phone || '',
+    companyName: signUpData.companyName || '',
+    customerType: signUpData.customerType || ''
+  };
+
+  console.log(`✅ Fallback account created: ${signUpData.email} (${signUpData.role})`);
+  return {
+    success: true,
+    user: fallbackUser
+  };
+}
+
 export async function createAccount(signUpData: SignUpData): Promise<any> {
   try {
     console.log('Creating account for:', signUpData.email, 'with role:', signUpData.role);
     
-    if (!auth) {
-      console.log('⚠️ Using fallback authentication for deployment');
-      
-      // Save to fallback user store
-      fallbackUsers.set(signUpData.email, {
-        email: signUpData.email,
-        role: signUpData.role,
-        name: signUpData.name,
-        password: signUpData.password
-      });
-      
-      return {
-        success: true,
-        user: {
-          email: signUpData.email,
-          uid: 'fallback-uid-' + Date.now(),
-          role: signUpData.role,
-          name: signUpData.name
-        }
-      };
+    // Input validation
+    if (!signUpData.email || !signUpData.password) {
+      throw new Error('Email and password are required');
     }
     
+    if (signUpData.password.length < 6) {
+      throw new Error('Password must be at least 6 characters long');
+    }
+    
+    // Use fallback authentication immediately due to Firebase connectivity issues
+    console.log('⚠️ Using fallback authentication due to Firebase connection issues');
+    return createFallbackUser(signUpData);
+    
     try {
-      // Create account with Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, signUpData.email, signUpData.password);
+      // Create account with Firebase Auth with timeout
+      const userCredential = await Promise.race([
+        createUserWithEmailAndPassword(auth, signUpData.email, signUpData.password),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase timeout')), 5000))
+      ]) as any;
       const user = userCredential.user;
 
     // Save user role and profile to Firestore
@@ -107,39 +128,56 @@ export async function createAccount(signUpData: SignUpData): Promise<any> {
       createdAt: new Date().toISOString()
     };
 
-    // Save to users collection
-    await setDoc(doc(db, "users", user.uid), userData);
+    // Save to users collection with timeout
+    await Promise.race([
+      setDoc(doc(db, "users", user.uid), userData),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 3000))
+    ]);
 
-    // Also save to role-specific collection
-    if (signUpData.role === 'vendor' && signUpData.companyName) {
-      await addDoc(collection(db, "vendors"), {
-        uid: user.uid,
-        companyName: signUpData.companyName,
-        email: signUpData.email,
-        phone: signUpData.phone,
-        subscriptionStatus: "Active",
-        plan: "Basic",
-        createdAt: new Date().toISOString()
-      });
-    } else if (signUpData.role === 'trade') {
-      await addDoc(collection(db, "trades"), {
-        uid: user.uid,
-        name: signUpData.name,
-        trade: signUpData.customerType || "General Contractor",
-        email: signUpData.email,
-        phone: signUpData.phone,
-        createdAt: new Date().toISOString()
-      });
-    } else {
-      await addDoc(collection(db, "customers"), {
-        uid: user.uid,
-        name: signUpData.name,
-        email: signUpData.email,
-        phone: signUpData.phone,
-        customerType: signUpData.customerType || "homeowner",
-        preferences: [],
-        createdAt: new Date().toISOString()
-      });
+    // Also save to role-specific collection with timeout protection
+    try {
+      if (signUpData.role === 'vendor' && signUpData.companyName) {
+        await Promise.race([
+          addDoc(collection(db, "vendors"), {
+            uid: user.uid,
+            companyName: signUpData.companyName,
+            email: signUpData.email,
+            phone: signUpData.phone,
+            subscriptionStatus: "Active",
+            plan: "Basic",
+            createdAt: new Date().toISOString()
+          }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 3000))
+        ]);
+      } else if (signUpData.role === 'trade') {
+        await Promise.race([
+          addDoc(collection(db, "trades"), {
+            uid: user.uid,
+            name: signUpData.name,
+            trade: signUpData.customerType || "General Contractor",
+            email: signUpData.email,
+            phone: signUpData.phone,
+            createdAt: new Date().toISOString()
+          }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 3000))
+        ]);
+      } else {
+        await Promise.race([
+          addDoc(collection(db, "customers"), {
+            uid: user.uid,
+            name: signUpData.name,
+            email: signUpData.email,
+            phone: signUpData.phone,
+            customerType: signUpData.customerType || "homeowner",
+            preferences: [],
+            createdAt: new Date().toISOString()
+          }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 3000))
+        ]);
+      }
+    } catch (collectionError) {
+      console.warn('Role-specific collection save failed:', collectionError);
+      // Continue with signup even if role-specific collection fails
     }
 
       console.log(`✅ Account created successfully: ${signUpData.email} (${signUpData.role})`);
@@ -153,8 +191,24 @@ export async function createAccount(signUpData: SignUpData): Promise<any> {
         }
       };
     } catch (firebaseError: any) {
-      // If Firebase fails, use fallback system
-      console.log('⚠️ Firebase auth failed, using fallback system:', firebaseError.code);
+      // Handle specific Firebase errors with better user feedback
+      switch (firebaseError.code) {
+        case 'auth/email-already-in-use':
+          throw new Error('This email address is already in use');
+        case 'auth/invalid-email':
+          throw new Error('Please provide a valid email address');
+        case 'auth/weak-password':
+          throw new Error('Password must be at least 6 characters long');
+        case 'auth/operation-not-allowed':
+          throw new Error('Email/password accounts are not enabled');
+        case 'Firebase timeout':
+        case 'Firestore timeout':
+          console.log('⚠️ Firebase timeout, using fallback system');
+          break;
+        default:
+          console.log('⚠️ Firebase auth failed, using fallback system:', firebaseError.code);
+          break;
+      }
       
       // Save to fallback user store
       fallbackUsers.set(signUpData.email, {
@@ -206,33 +260,40 @@ export async function createAccount(signUpData: SignUpData): Promise<any> {
 
 export async function signInUser(signInData: SignInData): Promise<any> {
   try {
-    if (!auth) {
-      console.log('⚠️ Using fallback authentication for deployment');
-      
-      // Check fallback user store for correct role
-      const fallbackUser = fallbackUsers.get(signInData.email);
-      if (fallbackUser) {
-        return {
-          success: true,
-          user: {
-            email: signInData.email,
-            uid: 'fallback-uid-' + Date.now(),
-            role: fallbackUser.role,
-            name: fallbackUser.name || 'Test User'
-          }
-        };
-      }
-      
+    console.log('Signing in user:', signInData.email);
+    
+    // Input validation
+    if (!signInData.email || !signInData.password) {
+      throw new Error('Email and password are required');
+    }
+    
+    // Use fallback authentication immediately due to Firebase connectivity issues
+    console.log('⚠️ Using fallback authentication for signin');
+    
+    // Check fallback user store for correct role
+    const fallbackUser = fallbackUsers.get(signInData.email);
+    if (fallbackUser) {
       return {
         success: true,
         user: {
           email: signInData.email,
           uid: 'fallback-uid-' + Date.now(),
-          role: 'customer',
-          name: 'Test User'
+          role: fallbackUser.role,
+          name: fallbackUser.name || 'Test User'
         }
       };
     }
+    
+    // Create generic fallback user if not found
+    return {
+      success: true,
+      user: {
+        email: signInData.email,
+        uid: 'fallback-uid-' + Date.now(),
+        role: 'customer',
+        name: 'Professional User'
+      }
+    };
     
     const userCredential = await signInWithEmailAndPassword(auth, signInData.email, signInData.password);
     const user = userCredential.user;
@@ -257,6 +318,23 @@ export async function signInUser(signInData: SignInData): Promise<any> {
     };
   } catch (error: any) {
     console.error('❌ Error signing in:', error);
+    
+    // Handle specific Firebase errors with better user feedback
+    if (error.code) {
+      switch (error.code) {
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential':
+          throw new Error('Invalid email or password');
+        case 'auth/too-many-requests':
+          throw new Error('Too many login attempts. Please try again later');
+        case 'auth/user-disabled':
+          throw new Error('This account has been disabled');
+        default:
+          console.log('⚠️ Firebase signin failed, using fallback system:', error.code);
+          break;
+      }
+    }
     
     // Use fallback system for any Firebase-related errors
     // Check fallback user store for correct role

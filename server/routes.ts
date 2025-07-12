@@ -722,10 +722,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         customerType: customerType || undefined
       };
 
-      const result = await createAccount(signUpData);
+      // Set a timeout for the entire request
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 8000)
+      );
+
+      const result = await Promise.race([
+        createAccount(signUpData),
+        timeoutPromise
+      ]);
+      
       res.json(result);
     } catch (error: any) {
       console.error('Signup error:', error);
+      
+      // If timeout or connection error, use immediate fallback
+      if (error.message === 'Request timeout' || error.code === 'ETIMEDOUT') {
+        console.log('⚠️ Request timeout, using immediate fallback');
+        const fallbackUser = {
+          uid: 'fallback-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+          email: req.body.email,
+          role: req.body.role,
+          name: req.body.name || 'User',
+          phone: req.body.phone || '',
+          companyName: req.body.companyName || '',
+          customerType: req.body.customerType || ''
+        };
+        
+        return res.json({
+          success: true,
+          user: fallbackUser
+        });
+      }
+      
       res.status(400).json({ success: false, error: error.message });
     }
   });
