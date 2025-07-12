@@ -109,12 +109,17 @@ export default function EnhancedAuthForm({ mode, onToggleMode }: EnhancedAuthFor
 
     setLoading(true);
     try {
-      await signIn(formData.email, formData.password);
+      const userResult = await signIn(formData.email, formData.password);
       showMessage('Signed in successfully! Redirecting...', 'success');
-      // Keep loading state until redirect completes
-      setTimeout(() => {
-        setLoading(false);
-      }, 2000);
+      
+      // Handle redirect based on user role
+      if (userResult?.role === 'vendor') {
+        setTimeout(() => window.location.href = '/vendor-dashboard', 1000);
+      } else if (userResult?.role === 'trade') {
+        setTimeout(() => window.location.href = '/trade-dashboard', 1000);
+      } else {
+        setTimeout(() => window.location.href = '/dashboard', 1000);
+      }
     } catch (error: any) {
       showMessage(parseFirebaseError(error));
       setLoading(false);

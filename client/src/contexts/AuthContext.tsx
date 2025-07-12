@@ -183,64 +183,44 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     initializeAuth();
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
+      if (firebaseUser && !isSigningOut) {
+        console.log('✅ Firebase user authenticated:', firebaseUser.email);
         
-        // Try to get user data from Firestore
-        try {
-          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-          
-          if (userDoc.exists()) {
-            const userData = userDoc.data() as CompanyUser;
-            setUserProfile(userData);
-            localStorage.setItem('comperra-user', JSON.stringify(userData));
-            console.log('✅ Firebase user profile loaded:', userData);
-            
-            // Check if customer should be redirected to dashboard
-            if (userData.role === 'customer' && (window.location.pathname === '/' || window.location.pathname === '/auth')) {
-              console.log('✅ Customer detected, redirecting to dashboard');
-              setTimeout(() => {
-                window.location.href = '/dashboard';
-              }, 100);
-            }
-          } else {
-            // Enhanced role detection with known accounts
-            const knownAccounts = {
-              'testvendor@comperra.com': 'vendor',
-              'testtrade@comperra.com': 'trade',
-              'testcustomer@comperra.com': 'customer',
-              'ochynoweth@luxsurfacesgroup.com': 'vendor',
-              'owenchynoweth2003@gmail.com': 'customer',
-              'customer@comperra.com': 'customer'
-            };
-            
-            const userRole = knownAccounts[firebaseUser.email] || 'customer';
-            
-            // Create user profile
-            const userProfile = {
-              email: firebaseUser.email,
-              uid: firebaseUser.uid,
-              role: userRole,
-              name: firebaseUser.displayName || 'User',
-              subscription: null
-            };
-            
-            setUserProfile(userProfile);
-            localStorage.setItem('comperra-user', JSON.stringify(userProfile));
-            console.log('✅ Firebase user profile created:', userProfile);
-            
-            // Check if customer should be redirected to dashboard
-            if (userRole === 'customer' && (window.location.pathname === '/' || window.location.pathname === '/auth')) {
-              console.log('✅ Customer detected, redirecting to dashboard');
-              setTimeout(() => {
-                window.location.href = '/dashboard';
-              }, 100);
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching user profile:', error);
+        // Enhanced role detection with known accounts
+        const knownAccounts = {
+          'testvendor@comperra.com': 'vendor',
+          'testtrade@comperra.com': 'trade',
+          'testcustomer@comperra.com': 'customer',
+          'ochynoweth@luxsurfacesgroup.com': 'vendor',
+          'owenchynoweth2003@gmail.com': 'customer',
+          'customer@comperra.com': 'customer'
+        };
+        
+        const userRole = knownAccounts[firebaseUser.email] || 'customer';
+        
+        // Create user profile immediately
+        const userProfile = {
+          email: firebaseUser.email,
+          uid: firebaseUser.uid,
+          role: userRole,
+          name: firebaseUser.displayName || 'User',
+          subscription: null
+        };
+        
+        // Set user state immediately
+        setUser(firebaseUser);
+        setUserProfile(userProfile);
+        localStorage.setItem('comperra-user', JSON.stringify(userProfile));
+        console.log('✅ Firebase user profile set:', userProfile);
+        
+        // Check if customer should be redirected to dashboard
+        if (userRole === 'customer' && (window.location.pathname === '/' || window.location.pathname === '/auth')) {
+          console.log('✅ Customer detected, redirecting to dashboard');
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 500);
         }
-      } else {
+      } else if (!firebaseUser && !isSigningOut) {
         // Only clear state if no stored session exists
         if (!localStorage.getItem('comperra-user')) {
           setUser(null);
@@ -350,21 +330,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         
-        // Update user profile in Firestore (with error handling)
-        try {
-          await saveUserToFirestore(userCredential.user, {
-            signInMethod: 'email'
-          });
-        } catch (firestoreError) {
-          console.warn('Firestore update failed, signin still successful:', firestoreError);
-          // Continue with signin even if Firestore fails
-        }
-        
         console.log('✅ Firebase sign in successful');
-        
-        // Get user role from Firebase and redirect accordingly
-        const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
-        const userData = userDoc.exists() ? userDoc.data() : null;
         
         // Enhanced role detection with known accounts
         const knownAccounts = {
@@ -376,50 +342,27 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           'customer@comperra.com': 'customer'
         };
         
-        const userRole = knownAccounts[userCredential.user.email] || userData?.role || 'customer';
+        const userRole = knownAccounts[userCredential.user.email] || 'customer';
         
         // Create user object for session management
         const firebaseUser = {
           email: userCredential.user.email,
           uid: userCredential.user.uid,
           role: userRole,
-          name: userCredential.user.displayName || userData?.name || 'User',
-          subscription: userData?.subscription || null
+          name: userCredential.user.displayName || 'User',
+          subscription: null
         };
         
-        // Set user state and save session
+        // Set user state and save session immediately
         setUser(firebaseUser);
         setUserProfile(firebaseUser);
+        localStorage.setItem('comperra-user', JSON.stringify(firebaseUser));
         sessionManager.saveSession(firebaseUser);
         
         console.log('✅ Firebase user session established:', firebaseUser);
         
-        // Also establish backend session for API compatibility
-        try {
-          await fetch('/api/auth/signin', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email: userCredential.user.email, password: password }),
-          });
-        } catch (backendError) {
-          console.warn('Backend session creation failed, but Firebase session is active');
-        }
-        
-        // Redirect based on user role
-        setTimeout(() => {
-          if (userRole === 'vendor') {
-            console.log('✅ Redirecting to vendor dashboard');
-            window.location.href = '/vendor-dashboard';
-          } else if (userRole === 'trade') {
-            console.log('✅ Redirecting to trade dashboard');
-            window.location.href = '/trade-dashboard';
-          } else {
-            console.log('✅ Redirecting to customer dashboard');
-            window.location.href = '/dashboard';
-          }
-        }, 500);
+        // Return success to allow EnhancedAuthForm to handle the redirect
+        return firebaseUser;
         return;
       } catch (firebaseError: any) {
         console.warn('Firebase signin failed, trying fallback:', firebaseError);
