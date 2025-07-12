@@ -1322,6 +1322,218 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Review System Routes
+  app.post('/api/vendor/review', async (req: Request, res: Response) => {
+    try {
+      const { submitReview } = await import('./review-system');
+      await submitReview(req.body);
+      res.json({ success: true, message: 'Review submitted successfully' });
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      res.status(500).json({ error: 'Failed to submit review' });
+    }
+  });
+
+  app.get('/api/vendor/:vendorId/reviews', async (req: Request, res: Response) => {
+    try {
+      const { getVendorReviews } = await import('./review-system');
+      const reviews = await getVendorReviews(req.params.vendorId);
+      res.json({ reviews });
+    } catch (error) {
+      console.error('Error getting vendor reviews:', error);
+      res.status(500).json({ error: 'Failed to get reviews' });
+    }
+  });
+
+  app.get('/api/vendor/:vendorId/stats', async (req: Request, res: Response) => {
+    try {
+      const { getVendorStats } = await import('./review-system');
+      const stats = await getVendorStats(req.params.vendorId);
+      res.json({ stats });
+    } catch (error) {
+      console.error('Error getting vendor stats:', error);
+      res.status(500).json({ error: 'Failed to get stats' });
+    }
+  });
+
+  // Advanced Lead Management Routes
+  app.get('/api/lead/:leadId/vendors', async (req: Request, res: Response) => {
+    try {
+      const { getVendorLeads } = await import('./advanced-lead-matching');
+      const vendors = await getVendorLeads(req.params.leadId);
+      res.json({ vendors });
+    } catch (error) {
+      console.error('Error getting lead vendors:', error);
+      res.status(500).json({ error: 'Failed to get vendors' });
+    }
+  });
+
+  app.put('/api/vendor-lead/:vendorLeadId/status', async (req: Request, res: Response) => {
+    try {
+      const { updateVendorLeadStatus } = await import('./advanced-lead-matching');
+      await updateVendorLeadStatus(req.params.vendorLeadId, req.body.status);
+      res.json({ success: true, message: 'Status updated successfully' });
+    } catch (error) {
+      console.error('Error updating vendor lead status:', error);
+      res.status(500).json({ error: 'Failed to update status' });
+    }
+  });
+
+  app.post('/api/admin/reset-weekly-leads', async (req: Request, res: Response) => {
+    try {
+      const { resetWeeklyLeadCounts } = await import('./advanced-lead-matching');
+      await resetWeeklyLeadCounts();
+      res.json({ success: true, message: 'Weekly lead counts reset' });
+    } catch (error) {
+      console.error('Error resetting weekly lead counts:', error);
+      res.status(500).json({ error: 'Failed to reset counts' });
+    }
+  });
+
+  // Customer Profile Management Routes
+  app.get('/api/customer/profile', async (req: Request, res: Response) => {
+    try {
+      const { getCustomerProfile } = await import('./vendor-profile-management');
+      const customerId = req.query.customerId as string || 'current-customer';
+      const profile = await getCustomerProfile(customerId);
+      res.json({ profile });
+    } catch (error) {
+      console.error('Error getting customer profile:', error);
+      res.status(500).json({ error: 'Failed to get profile' });
+    }
+  });
+
+  app.put('/api/customer/profile', async (req: Request, res: Response) => {
+    try {
+      const { updateCustomerProfile } = await import('./vendor-profile-management');
+      const customerId = req.query.customerId as string || 'current-customer';
+      await updateCustomerProfile(customerId, req.body);
+      res.json({ success: true, message: 'Profile updated successfully' });
+    } catch (error) {
+      console.error('Error updating customer profile:', error);
+      res.status(500).json({ error: 'Failed to update profile' });
+    }
+  });
+
+  app.post('/api/customer/favorite-vendor', async (req: Request, res: Response) => {
+    try {
+      const { toggleFavoriteVendor } = await import('./vendor-profile-management');
+      const customerId = req.body.customerId || 'current-customer';
+      await toggleFavoriteVendor(customerId, req.body.vendorId);
+      res.json({ success: true, message: 'Favorite vendor toggled' });
+    } catch (error) {
+      console.error('Error toggling favorite vendor:', error);
+      res.status(500).json({ error: 'Failed to update favorite' });
+    }
+  });
+
+  app.post('/api/customer/block-vendor', async (req: Request, res: Response) => {
+    try {
+      const { toggleBlockedVendor } = await import('./vendor-profile-management');
+      const customerId = req.body.customerId || 'current-customer';
+      await toggleBlockedVendor(customerId, req.body.vendorId);
+      res.json({ success: true, message: 'Vendor blocked/unblocked' });
+    } catch (error) {
+      console.error('Error toggling blocked vendor:', error);
+      res.status(500).json({ error: 'Failed to update blocked vendor' });
+    }
+  });
+
+  app.get('/api/customer/leads', async (req: Request, res: Response) => {
+    try {
+      const customerId = req.query.customerId as string || 'current-customer';
+      const leads = []; // Placeholder - implement with Firebase queries
+      res.json({ leads });
+    } catch (error) {
+      console.error('Error getting customer leads:', error);
+      res.status(500).json({ error: 'Failed to get leads' });
+    }
+  });
+
+  // Vendor Profile Management Routes
+  app.get('/api/vendor/:vendorId/metrics', async (req: Request, res: Response) => {
+    try {
+      const { getVendorMetrics } = await import('./vendor-profile-management');
+      const metrics = await getVendorMetrics(req.params.vendorId);
+      res.json({ metrics });
+    } catch (error) {
+      console.error('Error getting vendor metrics:', error);
+      res.status(500).json({ error: 'Failed to get metrics' });
+    }
+  });
+
+  app.put('/api/vendor/:vendorId/subscription', async (req: Request, res: Response) => {
+    try {
+      const { updateVendorSubscription } = await import('./vendor-profile-management');
+      await updateVendorSubscription(req.params.vendorId, req.body);
+      res.json({ success: true, message: 'Subscription updated successfully' });
+    } catch (error) {
+      console.error('Error updating vendor subscription:', error);
+      res.status(500).json({ error: 'Failed to update subscription' });
+    }
+  });
+
+  app.get('/api/vendors/by-material/:material', async (req: Request, res: Response) => {
+    try {
+      const { getVendorsByMaterialAndLocation } = await import('./vendor-profile-management');
+      const zipCode = req.query.zipCode as string || '';
+      const vendors = await getVendorsByMaterialAndLocation(req.params.material, zipCode);
+      res.json({ vendors });
+    } catch (error) {
+      console.error('Error getting vendors by material:', error);
+      res.status(500).json({ error: 'Failed to get vendors' });
+    }
+  });
+
+  // Enhanced Lead Submission with Smart Matching
+  app.post('/api/lead/submit', async (req: Request, res: Response) => {
+    try {
+      const { smartMatchVendors } = await import('./advanced-lead-matching');
+      const leadData = req.body;
+      
+      // Create lead in Firebase
+      const leadId = Date.now().toString(); // In real app, use Firebase doc ID
+      
+      // Run smart matching
+      const matches = await smartMatchVendors(leadId, leadData);
+      
+      res.json({ 
+        success: true, 
+        message: 'Lead submitted successfully',
+        leadId,
+        matches: matches.length,
+        matchedVendors: matches
+      });
+    } catch (error) {
+      console.error('Error submitting lead:', error);
+      res.status(500).json({ error: 'Failed to submit lead' });
+    }
+  });
+
+  // Process Expired Leads (called by cron job)
+  app.post('/api/admin/process-expired-leads', async (req: Request, res: Response) => {
+    try {
+      const { processExpiredLeads } = await import('./advanced-lead-matching');
+      await processExpiredLeads();
+      res.json({ success: true, message: 'Expired leads processed' });
+    } catch (error) {
+      console.error('Error processing expired leads:', error);
+      res.status(500).json({ error: 'Failed to process expired leads' });
+    }
+  });
+
+  // Get customer reviews
+  app.get('/api/customer/:customerId/reviews', async (req: Request, res: Response) => {
+    try {
+      const { getCustomerReviews } = await import('./review-system');
+      const reviews = await getCustomerReviews(req.params.customerId);
+      res.json({ reviews });
+    } catch (error) {
+      console.error('Error getting customer reviews:', error);
+      res.status(500).json({ error: 'Failed to get reviews' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
@@ -1351,3 +1563,5 @@ function getFeaturesByPlan(planId: string): string[] {
   
   return planFeatures[planId] || [];
 }
+
+// Review System Routes

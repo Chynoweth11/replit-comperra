@@ -131,6 +131,21 @@ function calculateIntentScore(formData: LeadFormData): number {
   return Math.min(score, 10); // Cap at 10
 }
 
+// Determine urgency level based on timeline
+function determineUrgency(timeline: string | undefined): 'low' | 'medium' | 'high' {
+  if (!timeline) return 'low';
+  
+  const timelineLower = timeline.toLowerCase();
+  
+  if (timelineLower.includes('immediate') || timelineLower.includes('asap') || timelineLower.includes('urgent')) {
+    return 'high';
+  } else if (timelineLower.includes('week') || timelineLower.includes('month')) {
+    return 'medium';
+  } else {
+    return 'low';
+  }
+}
+
 // The actual matchLeadWithProfessionals function is imported from lead-matching.ts
 
 // Save product to Firebase
