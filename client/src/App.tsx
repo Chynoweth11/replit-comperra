@@ -32,6 +32,7 @@ import Vendors from "@/pages/vendors";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 import Dashboard from "@/pages/dashboard";
+import CustomerDashboard from "@/pages/CustomerDashboard";
 import VendorDashboardPage from "@/pages/vendor-dashboard";
 import TradeDashboardPage from "@/pages/trade-dashboard";
 import VendorDashboard from "@/pages/VendorDashboard";
@@ -111,7 +112,7 @@ function Router() {
         <Route path="/dashboard">
           {() => (
             <ProtectedRoute>
-              <Dashboard />
+              <CustomerDashboard />
             </ProtectedRoute>
           )}
         </Route>

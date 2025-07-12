@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { 
   Users, 
@@ -66,6 +68,12 @@ const VendorDashboard: React.FC = () => {
     conversionRate: 0,
     responseTime: 0
   });
+  const [selectedLead, setSelectedLead] = useState<any>(null);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [contactMessage, setContactMessage] = useState('');
+  const [newStatus, setNewStatus] = useState('');
 
   useEffect(() => {
     // Use sessionManager for more reliable authentication
@@ -145,6 +153,75 @@ const VendorDashboard: React.FC = () => {
     if (score >= 8) return 'text-green-600';
     if (score >= 6) return 'text-yellow-600';
     return 'text-red-600';
+  };
+
+  const handleContactLead = (lead: any) => {
+    setSelectedLead(lead);
+    setContactMessage(`Hi ${lead.customerName || 'there'}, I saw your request for ${lead.materialCategory} in ${lead.zipCode}. I'd be happy to help with your project. Could we schedule a time to discuss your needs?`);
+    setIsContactModalOpen(true);
+  };
+
+  const handleUpdateStatus = (lead: any) => {
+    setSelectedLead(lead);
+    setNewStatus(lead.status);
+    setIsStatusModalOpen(true);
+  };
+
+  const handleViewDetails = (lead: any) => {
+    setSelectedLead(lead);
+    setIsDetailsModalOpen(true);
+  };
+
+  const submitContactMessage = async () => {
+    if (!selectedLead || !contactMessage.trim()) return;
+    
+    try {
+      const response = await fetch(`/api/vendor-lead/${selectedLead.id}/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          message: contactMessage,
+          vendorId: userProfile?.uid 
+        }),
+      });
+
+      if (response.ok) {
+        console.log('Contact message sent successfully');
+        setIsContactModalOpen(false);
+        setContactMessage('');
+        fetchDashboardData(); // Refresh data
+      }
+    } catch (error) {
+      console.error('Error sending contact message:', error);
+    }
+  };
+
+  const submitStatusUpdate = async () => {
+    if (!selectedLead || !newStatus) return;
+    
+    try {
+      const response = await fetch(`/api/vendor-lead/${selectedLead.id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          status: newStatus,
+          vendorId: userProfile?.uid 
+        }),
+      });
+
+      if (response.ok) {
+        console.log('Status updated successfully');
+        setIsStatusModalOpen(false);
+        setNewStatus('');
+        fetchDashboardData(); // Refresh data
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
   };
 
   if (loading) {
@@ -399,13 +476,25 @@ const VendorDashboard: React.FC = () => {
                         )}
                         
                         <div className="mt-4 flex space-x-2">
-                          <Button size="sm" variant="outline">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleContactLead(lead)}
+                          >
                             Contact Lead
                           </Button>
-                          <Button size="sm" variant="outline">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleUpdateStatus(lead)}
+                          >
                             Update Status
                           </Button>
-                          <Button size="sm" variant="outline">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleViewDetails(lead)}
+                          >
                             View Details
                           </Button>
                         </div>
@@ -546,6 +635,166 @@ const VendorDashboard: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Contact Lead Modal */}
+      <Dialog open={isContactModalOpen} onOpenChange={setIsContactModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Contact Lead</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedLead && (
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm"><strong>Customer:</strong> {selectedLead.customerName || selectedLead.email}</p>
+                <p className="text-sm"><strong>Project:</strong> {selectedLead.materialCategory} • {selectedLead.zipCode}</p>
+              </div>
+            )}
+            <div>
+              <label htmlFor="contactMessage" className="block text-sm font-medium mb-2">
+                Your Message
+              </label>
+              <textarea
+                id="contactMessage"
+                value={contactMessage}
+                onChange={(e) => setContactMessage(e.target.value)}
+                placeholder="Write your message to the customer..."
+                className="w-full p-3 border border-gray-300 rounded-md resize-none"
+                rows={4}
+              />
+            </div>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setIsContactModalOpen(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={submitContactMessage}
+                className="flex-1"
+                disabled={!contactMessage.trim()}
+              >
+                Send Message
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Update Status Modal */}
+      <Dialog open={isStatusModalOpen} onOpenChange={setIsStatusModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Update Lead Status</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedLead && (
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm"><strong>Customer:</strong> {selectedLead.customerName || selectedLead.email}</p>
+                <p className="text-sm"><strong>Current Status:</strong> {selectedLead.status}</p>
+              </div>
+            )}
+            <div>
+              <label htmlFor="newStatus" className="block text-sm font-medium mb-2">
+                New Status
+              </label>
+              <Select value={newStatus} onValueChange={setNewStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select new status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="new">New</SelectItem>
+                  <SelectItem value="contacted">Contacted</SelectItem>
+                  <SelectItem value="qualified">Qualified</SelectItem>
+                  <SelectItem value="proposal-sent">Proposal Sent</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                  <SelectItem value="declined">Declined</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setIsStatusModalOpen(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={submitStatusUpdate}
+                className="flex-1"
+                disabled={!newStatus}
+              >
+                Update Status
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Details Modal */}
+      <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Lead Details</DialogTitle>
+          </DialogHeader>
+          {selectedLead && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <h4 className="font-medium">Customer Information</h4>
+                  <div className="space-y-2">
+                    <p className="text-sm"><strong>Name:</strong> {selectedLead.customerName || 'Not provided'}</p>
+                    <p className="text-sm"><strong>Email:</strong> {selectedLead.email}</p>
+                    <p className="text-sm"><strong>Phone:</strong> {selectedLead.phone || 'Not provided'}</p>
+                    <p className="text-sm"><strong>Location:</strong> {selectedLead.zipCode}</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <h4 className="font-medium">Project Details</h4>
+                  <div className="space-y-2">
+                    <p className="text-sm"><strong>Category:</strong> {selectedLead.materialCategory}</p>
+                    <p className="text-sm"><strong>Project Type:</strong> {selectedLead.projectType}</p>
+                    <p className="text-sm"><strong>Budget:</strong> {selectedLead.budget ? `$${selectedLead.budget.toLocaleString()}` : 'Not specified'}</p>
+                    <p className="text-sm"><strong>Timeline:</strong> {selectedLead.timeline || 'Not specified'}</p>
+                    <p className="text-sm"><strong>Intent Score:</strong> <span className={getIntentColor(selectedLead.intentScore)}>{selectedLead.intentScore}/10</span></p>
+                  </div>
+                </div>
+              </div>
+              
+              {selectedLead.description && (
+                <div className="space-y-2">
+                  <h4 className="font-medium">Project Description</h4>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm">{selectedLead.description}</p>
+                  </div>
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                <h4 className="font-medium">Lead Information</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <p className="text-sm"><strong>Status:</strong> {selectedLead.status}</p>
+                  <p className="text-sm"><strong>Created:</strong> {new Date(selectedLead.createdAt).toLocaleDateString()}</p>
+                  <p className="text-sm"><strong>Customer Type:</strong> {selectedLead.customerType || 'Not specified'}</p>
+                  <p className="text-sm"><strong>Source:</strong> {selectedLead.source || 'Direct'}</p>
+                </div>
+              </div>
+              
+              <div className="pt-4 border-t">
+                <Button
+                  onClick={() => setIsDetailsModalOpen(false)}
+                  className="w-full"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

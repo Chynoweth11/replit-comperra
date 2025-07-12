@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 
 interface LeadCaptureModalProps {
@@ -26,8 +28,11 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
     projectType: "",
     timeline: "",
     budget: "",
+    projectDetails: "",
     message: "",
-    isLookingForPro: false
+    isLookingForPro: false,
+    materialCategory: "",
+    source: "pricing-request"
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -47,12 +52,30 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/save-lead', {
+      const response = await fetch('/api/lead/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          customerEmail: formData.email,
+          customerName: formData.name,
+          customerPhone: formData.phone,
+          zipCode: formData.zip,
+          projectDetails: formData.projectDetails,
+          description: formData.message,
+          materialCategory: formData.materialCategory,
+          projectType: formData.projectType,
+          timeline: formData.timeline,
+          budget: formData.budget,
+          isLookingForPro: formData.isLookingForPro,
+          customerType: formData.customerType,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          source: formData.source
+        }),
       });
 
       const result = await response.json();
@@ -75,8 +98,11 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
           projectType: "",
           timeline: "",
           budget: "",
+          projectDetails: "",
           message: "",
-          isLookingForPro: false
+          isLookingForPro: false,
+          materialCategory: "",
+          source: "pricing-request"
         });
         onClose();
       } else {
@@ -218,8 +244,9 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="homeowner">Homeowner</SelectItem>
-                <SelectItem value="designer">Designer</SelectItem>
+                <SelectItem value="designer">Interior Designer</SelectItem>
                 <SelectItem value="architect">Architect</SelectItem>
+                <SelectItem value="contractor">Contractor</SelectItem>
                 <SelectItem value="trade">Trade Professional</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
@@ -277,24 +304,51 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
           </div>
           
           <div>
-            <Label htmlFor="message">Project Details</Label>
-            <textarea
+            <Label htmlFor="materialCategory">Material Category</Label>
+            <Select value={formData.materialCategory} onValueChange={(value) => handleInputChange("materialCategory", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select material category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="tiles">Tiles</SelectItem>
+                <SelectItem value="stone-slabs">Stone & Slabs</SelectItem>
+                <SelectItem value="vinyl-lvt">Vinyl & LVT</SelectItem>
+                <SelectItem value="hardwood">Hardwood</SelectItem>
+                <SelectItem value="carpet">Carpet</SelectItem>
+                <SelectItem value="heating">Heating Systems</SelectItem>
+                <SelectItem value="thermostats">Thermostats</SelectItem>
+                <SelectItem value="multiple">Multiple Categories</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="projectDetails">Project Details</Label>
+            <Textarea
+              id="projectDetails"
+              value={formData.projectDetails}
+              onChange={(e) => handleInputChange("projectDetails", e.target.value)}
+              placeholder="Describe your project requirements, measurements, specifications, or any specific needs..."
+              rows={4}
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="message">Additional Message</Label>
+            <Textarea
               id="message"
               value={formData.message}
               onChange={(e) => handleInputChange("message", e.target.value)}
-              placeholder="Tell us about your project, specific requirements, or any questions you have..."
-              className="w-full p-3 border border-gray-300 rounded-md resize-none"
+              placeholder="Any additional questions or comments..."
               rows={3}
             />
           </div>
           
           <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
+            <Checkbox
               id="isLookingForPro"
               checked={formData.isLookingForPro}
-              onChange={(e) => handleInputChange("isLookingForPro", e.target.checked.toString())}
-              className="rounded border-gray-300"
+              onCheckedChange={(checked) => handleInputChange("isLookingForPro", checked.toString())}
             />
             <Label htmlFor="isLookingForPro" className="text-sm">
               I'm looking for professional installation/trade services
