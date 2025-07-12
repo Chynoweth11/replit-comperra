@@ -1321,6 +1321,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced lead submission with professional matching
+  app.post('/api/lead/submit', async (req: Request, res: Response) => {
+    try {
+      const leadData = req.body;
+      
+      // Validate required fields (handle both form field names)
+      const email = leadData.email || leadData.customerEmail;
+      const zipCode = leadData.zip || leadData.zipCode;
+      const materialCategory = leadData.materialCategory;
+      
+      if (!email || !zipCode || !materialCategory) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Missing required fields: email, zipCode, and materialCategory' 
+        });
+      }
+      
+      // Normalize the lead data for the submission system
+      const normalizedLead = {
+        ...leadData,
+        customerEmail: email,
+        customerName: leadData.name || leadData.customerName,
+        zipCode: zipCode,
+        projectDetails: leadData.projectDetails || leadData.description || leadData.message,
+        description: leadData.projectDetails || leadData.description || leadData.message,
+        message: leadData.projectDetails || leadData.description || leadData.message
+      };
+      
+      // Submit the lead with professional matching
+      const { submitLead } = await import('./firebase-leads');
+      await submitLead(normalizedLead);
+      
+      res.json({ 
+        success: true, 
+        message: 'Lead submitted successfully and professionals are being matched' 
+      });
+    } catch (error) {
+      console.error('Lead submission error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Internal server error' 
+      });
+    }
+  });
+
   // Enhanced lead matching endpoint
   app.post('/api/lead/match', async (req: Request, res: Response) => {
     try {
@@ -1531,7 +1576,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/customer/leads', async (req: Request, res: Response) => {
     try {
       const customerId = req.query.customerId as string || 'current-customer';
-      const leads = []; // Placeholder - implement with Firebase queries
+      
+      // Get leads with matched professionals from Firebase
+      const { getLeadsWithMatches } = await import('./lead-matching');
+      const leads = await getLeadsWithMatches(customerId);
+      
       res.json({ leads });
     } catch (error) {
       console.error('Error getting customer leads:', error);

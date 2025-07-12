@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, 
@@ -128,13 +129,35 @@ const CustomerDashboard: React.FC = () => {
     
     const formData = new FormData(e.target as HTMLFormElement);
     const leadData = {
-      zipCode: formData.get('zipCode') as string,
+      // Contact Information
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      phone: formData.get('phone') as string,
+      customerType: formData.get('customerType') as string,
+      
+      // Location Information
+      address: formData.get('address') as string,
+      city: formData.get('city') as string,
+      state: formData.get('state') as string,
+      zip: formData.get('zip') as string,
+      zipCode: formData.get('zip') as string,
+      
+      // Project Information
       materialCategory: formData.get('materialCategory') as string,
       projectType: formData.get('projectType') as string,
       budget: formData.get('budget') ? parseInt(formData.get('budget') as string) : undefined,
       timeline: formData.get('timeline') as string,
-      description: formData.get('description') as string,
-      isLookingForPro: true
+      projectDetails: formData.get('projectDetails') as string,
+      description: formData.get('projectDetails') as string,
+      message: formData.get('projectDetails') as string,
+      
+      // Professional Preference
+      isLookingForPro: formData.has('isLookingForPro'),
+      
+      // System fields
+      customerEmail: formData.get('email') as string,
+      customerName: formData.get('name') as string,
+      source: 'customer-dashboard'
     };
 
     try {
@@ -148,8 +171,8 @@ const CustomerDashboard: React.FC = () => {
 
       if (response.ok) {
         toast({
-          title: "Lead Created Successfully",
-          description: "We're matching you with qualified professionals in your area.",
+          title: "Success!",
+          description: "We're finding professionals for you and you'll see who got connected.",
         });
         setIsCreateModalOpen(false);
         fetchCustomerData(); // Refresh leads
@@ -370,18 +393,75 @@ const CustomerDashboard: React.FC = () => {
                 Create New Lead
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Create New Project Lead</DialogTitle>
+                <DialogTitle>Find a Pro or Supplier</DialogTitle>
+                <p className="text-sm text-gray-600 mt-1">
+                  Get quotes from verified installers and vendors for your project
+                </p>
               </DialogHeader>
               <form onSubmit={handleCreateLead} className="space-y-4">
+                {/* Contact Information */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="zipCode">ZIP Code</Label>
-                    <Input id="zipCode" name="zipCode" required placeholder="e.g., 10001" />
+                    <Label htmlFor="name">Full Name *</Label>
+                    <Input id="name" name="name" required placeholder="Enter your full name" />
                   </div>
                   <div>
-                    <Label htmlFor="materialCategory">Material Category</Label>
+                    <Label htmlFor="email">Email *</Label>
+                    <Input id="email" name="email" type="email" required placeholder="Enter your email" />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="phone">Phone Number *</Label>
+                    <Input id="phone" name="phone" type="tel" required placeholder="Enter your phone number" />
+                  </div>
+                  <div>
+                    <Label htmlFor="customerType">Customer Type *</Label>
+                    <Select name="customerType" required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select customer type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="homeowner">Homeowner</SelectItem>
+                        <SelectItem value="designer">Designer</SelectItem>
+                        <SelectItem value="architect">Architect</SelectItem>
+                        <SelectItem value="trade">Trade Professional</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                {/* Location Information */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="address">Address *</Label>
+                    <Input id="address" name="address" required placeholder="Enter your address" />
+                  </div>
+                  <div>
+                    <Label htmlFor="city">City *</Label>
+                    <Input id="city" name="city" required placeholder="Enter your city" />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="state">State *</Label>
+                    <Input id="state" name="state" required placeholder="Enter your state" />
+                  </div>
+                  <div>
+                    <Label htmlFor="zip">ZIP Code *</Label>
+                    <Input id="zip" name="zip" required placeholder="Enter your ZIP code" />
+                  </div>
+                </div>
+                
+                {/* Project Information */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="materialCategory">Material Category *</Label>
                     <Select name="materialCategory" required>
                       <SelectTrigger>
                         <SelectValue placeholder="Select material" />
@@ -397,11 +477,8 @@ const CustomerDashboard: React.FC = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="projectType">Project Type</Label>
+                    <Label htmlFor="projectType">Project Type *</Label>
                     <Select name="projectType" required>
                       <SelectTrigger>
                         <SelectValue placeholder="Select project type" />
@@ -411,47 +488,59 @@ const CustomerDashboard: React.FC = () => {
                         <SelectItem value="renovation">Renovation</SelectItem>
                         <SelectItem value="repair">Repair</SelectItem>
                         <SelectItem value="consultation">Consultation</SelectItem>
+                        <SelectItem value="new-construction">New Construction</SelectItem>
+                        <SelectItem value="remodel">Remodel</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="budget">Budget (optional)</Label>
-                    <Input id="budget" name="budget" type="number" placeholder="e.g., 5000" />
+                    <Input id="budget" name="budget" type="number" placeholder="Enter your budget" />
+                  </div>
+                  <div>
+                    <Label htmlFor="timeline">Timeline</Label>
+                    <Select name="timeline">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select timeline" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="immediate">Immediate (within 1 week)</SelectItem>
+                        <SelectItem value="1-2weeks">1-2 weeks</SelectItem>
+                        <SelectItem value="1month">Within 1 month</SelectItem>
+                        <SelectItem value="2-3months">2-3 months</SelectItem>
+                        <SelectItem value="flexible">Flexible</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 
                 <div>
-                  <Label htmlFor="timeline">Timeline</Label>
-                  <Select name="timeline">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select timeline" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="immediate">Immediate (within 1 week)</SelectItem>
-                      <SelectItem value="1-2weeks">1-2 weeks</SelectItem>
-                      <SelectItem value="1month">Within 1 month</SelectItem>
-                      <SelectItem value="2-3months">2-3 months</SelectItem>
-                      <SelectItem value="flexible">Flexible</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="description">Project Description</Label>
+                  <Label htmlFor="projectDetails">Project Details</Label>
                   <Textarea
-                    id="description"
-                    name="description"
+                    id="projectDetails"
+                    name="projectDetails"
                     placeholder="Describe your project, specific requirements, and any other details..."
                     rows={3}
                   />
+                </div>
+                
+                {/* Professional Preference */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="isLookingForPro" name="isLookingForPro" />
+                  <Label htmlFor="isLookingForPro" className="text-sm">
+                    I'm looking for trade professionals (contractors, installers) rather than material suppliers
+                  </Label>
                 </div>
                 
                 <div className="flex justify-end space-x-2">
                   <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Creating...' : 'Create Lead'}
+                  <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700">
+                    {isSubmitting ? 'Finding Professionals...' : 'Get Matched Now'}
                   </Button>
                 </div>
               </form>

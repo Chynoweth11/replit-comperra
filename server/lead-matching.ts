@@ -649,3 +649,30 @@ export async function analyzeUnderperformingMaterials(): Promise<any> {
     throw error;
   }
 }
+
+/**
+ * Get leads for a specific professional by email
+ */
+export function getLeadsForProfessionalByEmail(email: string): any[] {
+  if (!professionalLeads.has(email)) {
+    return [];
+  }
+  
+  return professionalLeads.get(email) || [];
+}
+
+/**
+ * Get all leads with matched professionals for a customer
+ */
+export function getLeadsWithMatches(customerId: string): any[] {
+  // Get all leads from storage that could match this customer
+  const allLeads = Array.from(leadStorage.values());
+  
+  // Filter leads for this customer (using email as customer ID for now)
+  const customerLeads = allLeads.filter(lead => 
+    lead.customerEmail === customerId || 
+    lead.customerName === customerId
+  );
+  
+  return customerLeads;
+}
