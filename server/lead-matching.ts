@@ -650,16 +650,7 @@ export async function analyzeUnderperformingMaterials(): Promise<any> {
   }
 }
 
-/**
- * Get leads for a specific professional by email
- */
-export function getLeadsForProfessionalByEmail(email: string): any[] {
-  if (!professionalLeads.has(email)) {
-    return [];
-  }
-  
-  return professionalLeads.get(email) || [];
-}
+
 
 /**
  * Get all leads with matched professionals for a customer

@@ -152,7 +152,8 @@ const CustomerDashboard: React.FC = () => {
       message: formData.get('projectDetails') as string,
       
       // Professional Preference
-      isLookingForPro: formData.has('isLookingForPro'),
+      professionalType: formData.get('professionalType') as string,
+      isLookingForPro: formData.get('professionalType') === 'trade' || formData.get('professionalType') === 'both',
       
       // System fields
       customerEmail: formData.get('email') as string,
@@ -528,11 +529,20 @@ const CustomerDashboard: React.FC = () => {
                 </div>
                 
                 {/* Professional Preference */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="isLookingForPro" name="isLookingForPro" />
-                  <Label htmlFor="isLookingForPro" className="text-sm">
-                    I'm looking for trade professionals (contractors, installers) rather than material suppliers
+                <div>
+                  <Label htmlFor="professionalType" className="text-sm font-medium mb-2 block">
+                    I'm looking for a:
                   </Label>
+                  <Select name="professionalType" defaultValue="vendor">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select professional type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="vendor">Vendor (Material Supplier)</SelectItem>
+                      <SelectItem value="trade">Trade Professional (Contractor/Installer)</SelectItem>
+                      <SelectItem value="both">Both Vendors and Trade Professionals</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <div className="flex justify-end space-x-2">

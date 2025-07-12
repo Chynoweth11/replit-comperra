@@ -31,6 +31,7 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
     projectDetails: "",
     message: "",
     isLookingForPro: false,
+    professionalType: "vendor",
     materialCategory: "",
     source: "pricing-request"
   });
@@ -69,7 +70,8 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
           projectType: formData.projectType,
           timeline: formData.timeline,
           budget: formData.budget,
-          isLookingForPro: formData.isLookingForPro,
+          professionalType: formData.professionalType,
+          isLookingForPro: formData.professionalType === 'trade' || formData.professionalType === 'both',
           customerType: formData.customerType,
           address: formData.address,
           city: formData.city,
@@ -101,6 +103,7 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
           projectDetails: "",
           message: "",
           isLookingForPro: false,
+          professionalType: "vendor",
           materialCategory: "",
           source: "pricing-request"
         });
@@ -344,15 +347,20 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
             />
           </div>
           
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="isLookingForPro"
-              checked={formData.isLookingForPro}
-              onCheckedChange={(checked) => handleInputChange("isLookingForPro", checked.toString())}
-            />
-            <Label htmlFor="isLookingForPro" className="text-sm">
-              I'm looking for professional installation/trade services
+          <div>
+            <Label htmlFor="professionalType" className="text-sm font-medium mb-2 block">
+              I'm looking for a:
             </Label>
+            <Select value={formData.professionalType || 'vendor'} onValueChange={(value) => handleInputChange("professionalType", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select professional type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="vendor">Vendor (Material Supplier)</SelectItem>
+                <SelectItem value="trade">Trade Professional (Contractor/Installer)</SelectItem>
+                <SelectItem value="both">Both Vendors and Trade Professionals</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex gap-3 pt-4">
