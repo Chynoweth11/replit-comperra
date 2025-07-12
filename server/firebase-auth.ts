@@ -19,6 +19,33 @@ let db: any = null;
 // Simple in-memory user store for fallback authentication
 export const fallbackUsers = new Map<string, { email: string; role: string; name?: string; password: string }>();
 
+// Initialize default test accounts on server start
+function initializeTestAccounts() {
+  fallbackUsers.set('testvendor@comperra.com', {
+    email: 'testvendor@comperra.com',
+    role: 'vendor',
+    name: 'Test Vendor',
+    password: 'VendorTest123'
+  });
+  
+  fallbackUsers.set('testtrade@comperra.com', {
+    email: 'testtrade@comperra.com',
+    role: 'trade',
+    name: 'Test Trade Professional',
+    password: 'TradeTest123'
+  });
+  
+  fallbackUsers.set('ochynoweth@luxsurfacesgroup.com', {
+    email: 'ochynoweth@luxsurfacesgroup.com',
+    role: 'vendor',
+    name: 'Owen Chynoweth',
+    password: 'test123'
+  });
+}
+
+// Initialize test accounts
+initializeTestAccounts();
+
 // Track current logged-in user - simple session storage
 const userSessions = new Map<string, any>();
 
@@ -282,13 +309,31 @@ export async function signInUser(signInData: SignInData): Promise<any> {
         name: fallbackUser.name || 'Test User'
       };
     } else {
-      // Create generic fallback user if not found
-      userToReturn = {
-        email: signInData.email,
-        uid: 'fallback-uid-' + Date.now(),
-        role: 'customer',
-        name: 'Professional User'
-      };
+      // For known test accounts, assign proper roles
+      if (signInData.email === 'testvendor@comperra.com' || signInData.email === 'ochynoweth@luxsurfacesgroup.com') {
+        userToReturn = {
+          email: signInData.email,
+          uid: 'fallback-uid-' + Date.now(),
+          role: 'vendor',
+          name: signInData.email === 'testvendor@comperra.com' ? 'Test Vendor' : 'Owen Chynoweth'
+        };
+      } else if (signInData.email === 'testtrade@comperra.com') {
+        userToReturn = {
+          email: signInData.email,
+          uid: 'fallback-uid-' + Date.now(),
+          role: 'trade',
+          name: 'Test Trade Professional'
+        };
+      } else {
+        // For unknown users, try to determine role from email domain or default to customer
+        const isBusinessEmail = signInData.email.includes('@') && !signInData.email.includes('gmail.com') && !signInData.email.includes('yahoo.com');
+        userToReturn = {
+          email: signInData.email,
+          uid: 'fallback-uid-' + Date.now(),
+          role: isBusinessEmail ? 'vendor' : 'customer',
+          name: 'Professional User'
+        };
+      }
     }
     
     // Store user session for getCurrentUser() function
