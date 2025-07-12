@@ -212,14 +212,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setUserProfile(userProfile);
         localStorage.setItem('comperra-user', JSON.stringify(userProfile));
         console.log('✅ Firebase user profile set:', userProfile);
-        
-        // Check if customer should be redirected to dashboard
-        if (userRole === 'customer' && (window.location.pathname === '/' || window.location.pathname === '/auth')) {
-          console.log('✅ Customer detected, redirecting to dashboard');
-          setTimeout(() => {
-            window.location.href = '/dashboard';
-          }, 500);
-        }
       } else if (!firebaseUser && !isSigningOut) {
         // Only clear state if no stored session exists
         if (!localStorage.getItem('comperra-user')) {
