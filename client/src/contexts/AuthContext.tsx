@@ -95,6 +95,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<CompanyUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   useEffect(() => {
     // First check for existing session in localStorage
@@ -117,13 +118,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     const hasExistingSession = checkExistingSession();
     
-    // Only check server for current user if no existing session
-    if (!hasExistingSession) {
+    // Only check server for current user if no existing session and not signing out
+    if (!hasExistingSession && !isSigningOut) {
       const checkCurrentUser = async () => {
         try {
           const response = await fetch('/api/auth/current-user');
           const data = await response.json();
-          if (data.success && data.user) {
+          if (data.success && data.user && !isSigningOut) {
             setUser(data.user);
             setUserProfile(data.user);
             localStorage.setItem('comperra-user', JSON.stringify(data.user));
@@ -346,9 +347,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   async function signOut() {
     try {
+      setIsSigningOut(true);
+      
+      // Clear server session first
+      try {
+        await fetch('/api/auth/signout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+      } catch (serverError) {
+        console.warn('Server signout failed, continuing with client signout:', serverError);
+      }
+      
       // Sign out with Firebase Auth
       await firebaseSignOut(auth);
       
+      // Clear local storage and state
       localStorage.removeItem('comperra-user');
       setUser(null);
       setUserProfile(null);
@@ -357,6 +373,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       window.location.href = '/';
     } catch (error: any) {
       console.error('Sign out error:', error);
+      setIsSigningOut(false);
       throw error;
     }
   }
