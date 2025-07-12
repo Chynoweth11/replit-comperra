@@ -120,7 +120,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           'testtrade@comperra.com': 'trade',
           'testcustomer@comperra.com': 'customer',
           'ochynoweth@luxsurfacesgroup.com': 'vendor',
-          'owenchynoweth2003@gmail.com': 'customer'
+          'owenchynoweth2003@gmail.com': 'customer',
+          'customer@comperra.com': 'customer'
         };
         
         const expectedRole = knownAccounts[userData.email];
@@ -377,9 +378,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             } else if (result.user.role === 'trade') {
               console.log('✅ Redirecting to trade dashboard');
               window.location.href = '/trade-dashboard';
-            } else {
+            } else if (result.user.role === 'customer' || result.user.role === 'homeowner') {
               console.log('✅ Redirecting to customer dashboard');
               window.location.href = '/dashboard';
+            } else {
+              console.log('✅ Redirecting to homepage (unknown role)');
+              window.location.href = '/';
             }
           }, 750); // Longer delay to ensure state is fully committed
         } else {

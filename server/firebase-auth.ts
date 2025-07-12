@@ -50,6 +50,14 @@ function initializeTestAccounts() {
     password: 'test123'
   });
   
+  // Add another customer account for testing
+  fallbackUsers.set('customer@comperra.com', {
+    email: 'customer@comperra.com',
+    role: 'customer',
+    name: 'Owen Customer',
+    password: 'test123'
+  });
+  
   fallbackUsers.set('ochynoweth@luxsurfacesgroup.com', {
     email: 'ochynoweth@luxsurfacesgroup.com',
     role: 'vendor',
