@@ -97,32 +97,54 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Clear localStorage and fetch fresh user data on app start
-    localStorage.removeItem('comperra-user');
-    
-    // Check current user from server
-    const checkCurrentUser = async () => {
+    // First check for existing session in localStorage
+    const checkExistingSession = () => {
       try {
-        const response = await fetch('/api/auth/current-user');
-        const data = await response.json();
-        if (data.success && data.user) {
-          setUser(data.user);
-          setUserProfile(data.user);
-          localStorage.setItem('comperra-user', JSON.stringify(data.user));
+        const storedUser = localStorage.getItem('comperra-user');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+          setUserProfile(userData);
+          console.log('✅ Restored user session from localStorage:', userData);
+          return true;
         }
       } catch (error) {
-        console.error('Error fetching current user:', error);
+        console.error('Error restoring session from localStorage:', error);
+        localStorage.removeItem('comperra-user');
       }
-      setLoading(false);
+      return false;
     };
+
+    const hasExistingSession = checkExistingSession();
     
-    checkCurrentUser();
+    // Only check server for current user if no existing session
+    if (!hasExistingSession) {
+      const checkCurrentUser = async () => {
+        try {
+          const response = await fetch('/api/auth/current-user');
+          const data = await response.json();
+          if (data.success && data.user) {
+            setUser(data.user);
+            setUserProfile(data.user);
+            localStorage.setItem('comperra-user', JSON.stringify(data.user));
+            console.log('✅ Loaded user session from server:', data.user);
+          }
+        } catch (error) {
+          console.error('Error fetching current user:', error);
+        }
+        setLoading(false);
+      };
+      
+      checkCurrentUser();
+    } else {
+      setLoading(false);
+    }
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-      
       if (firebaseUser) {
-        // First try to get user data from Firestore
+        setUser(firebaseUser);
+        
+        // Try to get user data from Firestore
         try {
           const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
           
@@ -130,6 +152,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             const userData = userDoc.data() as CompanyUser;
             setUserProfile(userData);
             localStorage.setItem('comperra-user', JSON.stringify(userData));
+            console.log('✅ Firebase user profile loaded:', userData);
           } else {
             // Fallback to API endpoint if no Firestore data
             const response = await fetch('/api/auth/current-user');
@@ -137,17 +160,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             if (data.success && data.user) {
               setUserProfile(data.user);
               localStorage.setItem('comperra-user', JSON.stringify(data.user));
+              console.log('✅ API user profile loaded:', data.user);
             }
           }
         } catch (error) {
           console.error('Error fetching user profile:', error);
         }
       } else {
-        setUserProfile(null);
-        localStorage.removeItem('comperra-user');
+        // Only clear state if no stored session exists
+        if (!localStorage.getItem('comperra-user')) {
+          setUser(null);
+          setUserProfile(null);
+        }
       }
-      
-      setLoading(false);
     });
 
     return unsubscribe;
@@ -216,16 +241,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           setUserProfile(result.user);
           localStorage.setItem('comperra-user', JSON.stringify(result.user));
           
-          console.log('✅ Fallback sign up successful');
+          console.log('✅ Fallback sign up successful, user:', result.user);
           
-          // Redirect based on user role
-          if (result.user.role === 'vendor') {
-            window.location.href = '/vendor-dashboard';
-          } else if (result.user.role === 'trade') {
-            window.location.href = '/trade-dashboard';
-          } else {
-            window.location.href = '/';
-          }
+          // Small delay to ensure state is set before redirect
+          setTimeout(() => {
+            // Redirect based on user role
+            if (result.user.role === 'vendor') {
+              window.location.href = '/vendor-dashboard';
+            } else if (result.user.role === 'trade') {
+              window.location.href = '/trade-dashboard';
+            } else {
+              window.location.href = '/';
+            }
+          }, 100);
         } else {
           throw new Error(result.message || 'Account creation failed');
         }
@@ -293,16 +321,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           setUserProfile(result.user);
           localStorage.setItem('comperra-user', JSON.stringify(result.user));
           
-          console.log('✅ Fallback sign in successful');
+          console.log('✅ Fallback sign in successful, user:', result.user);
           
-          // Redirect based on user role
-          if (result.user.role === 'vendor') {
-            window.location.href = '/vendor-dashboard';
-          } else if (result.user.role === 'trade') {
-            window.location.href = '/trade-dashboard';
-          } else {
-            window.location.href = '/';
-          }
+          // Small delay to ensure state is set before redirect
+          setTimeout(() => {
+            // Redirect based on user role
+            if (result.user.role === 'vendor') {
+              window.location.href = '/vendor-dashboard';
+            } else if (result.user.role === 'trade') {
+              window.location.href = '/trade-dashboard';
+            } else {
+              window.location.href = '/';
+            }
+          }, 100);
         } else {
           throw new Error(result.message || 'Authentication failed');
         }

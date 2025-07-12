@@ -272,27 +272,32 @@ export async function signInUser(signInData: SignInData): Promise<any> {
     
     // Check fallback user store for correct role
     const fallbackUser = fallbackUsers.get(signInData.email);
-    if (fallbackUser) {
-      return {
-        success: true,
-        user: {
-          email: signInData.email,
-          uid: 'fallback-uid-' + Date.now(),
-          role: fallbackUser.role,
-          name: fallbackUser.name || 'Test User'
-        }
-      };
-    }
+    let userToReturn;
     
-    // Create generic fallback user if not found
-    return {
-      success: true,
-      user: {
+    if (fallbackUser) {
+      userToReturn = {
+        email: signInData.email,
+        uid: 'fallback-uid-' + Date.now(),
+        role: fallbackUser.role,
+        name: fallbackUser.name || 'Test User'
+      };
+    } else {
+      // Create generic fallback user if not found
+      userToReturn = {
         email: signInData.email,
         uid: 'fallback-uid-' + Date.now(),
         role: 'customer',
         name: 'Professional User'
-      }
+      };
+    }
+    
+    // Store user session for getCurrentUser() function
+    userSessions.set(signInData.email, userToReturn);
+    console.log(`✅ User session stored for: ${signInData.email}, role: ${userToReturn.role}`);
+    
+    return {
+      success: true,
+      user: userToReturn
     };
     
     const userCredential = await signInWithEmailAndPassword(auth, signInData.email, signInData.password);
@@ -407,6 +412,9 @@ export async function getCurrentUser(): Promise<any> {
   try {
     // Check for most recent session user (simple approach)
     const mostRecentUser = Array.from(userSessions.values()).pop();
+    console.log('🔍 getCurrentUser - checking userSessions:', userSessions.size, 'users');
+    console.log('🔍 getCurrentUser - mostRecentUser:', mostRecentUser);
+    
     if (mostRecentUser) {
       return mostRecentUser;
     }
@@ -417,20 +425,36 @@ export async function getCurrentUser(): Promise<any> {
         unsubscribe();
         if (user) {
           // Get user role from Firestore
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          const userData = userDoc.exists() ? userDoc.data() : null;
-          
-          resolve({
-            uid: user.uid,
-            email: user.email,
-            role: userData?.role || 'customer'
-          });
+          try {
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            const userData = userDoc.exists() ? userDoc.data() : null;
+            
+            const firebaseUser = {
+              uid: user.uid,
+              email: user.email,
+              role: userData?.role || 'customer',
+              name: userData?.name || user.displayName || 'User'
+            };
+            
+            console.log('🔍 getCurrentUser - Firebase user found:', firebaseUser);
+            resolve(firebaseUser);
+          } catch (error) {
+            console.error('🔍 getCurrentUser - Firebase error:', error);
+            resolve({
+              uid: user.uid,
+              email: user.email,
+              role: 'customer',
+              name: user.displayName || 'User'
+            });
+          }
         } else {
+          console.log('🔍 getCurrentUser - No Firebase user found');
           resolve(null);
         }
       });
     });
   } catch (error) {
+    console.error('🔍 getCurrentUser - Error:', error);
     // Return fallback user or null
     const mostRecentUser = Array.from(userSessions.values()).pop();
     return mostRecentUser || null;
