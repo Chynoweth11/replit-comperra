@@ -381,7 +381,22 @@ function Dashboard() {
 }
 
 function SubmitLeadForm({ onBack }) {
-    const initialFormState = { name: '', email: '', phone: '', zipCode: '', projectType: 'Residential', timeline: 'Flexible', serviceType: 'Tiles', leadType: 'pro', details: '' };
+    const initialFormState = { 
+        name: '', 
+        email: '', 
+        phone: '', 
+        customerType: '',
+        address: '',
+        city: '',
+        state: '',
+        zipCode: '', 
+        materialCategory: '',
+        projectType: '',
+        budget: '',
+        timeline: '',
+        projectDetails: '',
+        professionalType: 'vendor'
+    };
     const [formData, setFormData] = useState(initialFormState);
     const toast = useToast();
     const [loading, setLoading] = useState(false);
@@ -391,7 +406,7 @@ function SubmitLeadForm({ onBack }) {
         toast.toast({ title: 'Finding your match...', description: 'Searching for professionals in your area.' });
         try { 
             // Use backend API for lead submission with proper matching
-            const response = await fetch('/api/save-lead', {
+            const response = await fetch('/api/lead/submit', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -400,13 +415,20 @@ function SubmitLeadForm({ onBack }) {
                     name: formData.name,
                     email: formData.email,
                     phone: formData.phone,
-                    zip: formData.zipCode,
-                    product: formData.serviceType,
-                    message: formData.details,
-                    isLookingForPro: formData.leadType === 'pro',
-                    customerType: 'homeowner',
+                    customerType: formData.customerType,
+                    address: formData.address,
+                    city: formData.city,
+                    state: formData.state,
+                    zipCode: formData.zipCode,
+                    materialCategory: formData.materialCategory,
                     projectType: formData.projectType,
-                    timeline: formData.timeline
+                    budget: formData.budget,
+                    timeline: formData.timeline,
+                    projectDetails: formData.projectDetails,
+                    description: formData.projectDetails,
+                    professionalType: formData.professionalType,
+                    isLookingForPro: formData.professionalType === 'trade' || formData.professionalType === 'both',
+                    source: 'professional-network'
                 })
             });
             
@@ -440,27 +462,67 @@ function SubmitLeadForm({ onBack }) {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <h2 className="text-2xl font-bold text-center text-slate-900">Tell Us About Your Project</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <Input id="name" value={formData.name} onChange={handleChange} placeholder="Your Name" />
-                                <Input id="email" type="email" value={formData.email} onChange={handleChange} placeholder="Your Email" />
-                                <Input id="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="Phone Number" />
-                                <Input id="zipCode" value={formData.zipCode} onChange={handleChange} placeholder="Project ZIP Code" />
+                                <Input id="name" value={formData.name} onChange={handleChange} placeholder="Full Name *" />
+                                <Input id="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email *" />
+                                <Input id="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="Phone Number *" />
+                                <Select id="customerType" name="customerType" value={formData.customerType} onChange={handleChange} label="Customer Type *">
+                                    <option value="">Select customer type</option>
+                                    <option value="homeowner">Homeowner</option>
+                                    <option value="designer">Designer</option>
+                                    <option value="architect">Architect</option>
+                                    <option value="contractor">Contractor</option>
+                                    <option value="other">Other</option>
+                                </Select>
                             </div>
-                            <Select id="leadType" name="leadType" value={formData.leadType} onChange={handleChange} label="I'm looking for a:">
-                                <option value="pro">Professional (for installation)</option>
-                                <option value="vendor">Supplier (for materials)</option>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <Input id="address" value={formData.address} onChange={handleChange} placeholder="Address *" />
+                                <Input id="city" value={formData.city} onChange={handleChange} placeholder="City *" />
+                                <Input id="state" value={formData.state} onChange={handleChange} placeholder="State *" />
+                            </div>
+                            <Input id="zipCode" value={formData.zipCode} onChange={handleChange} placeholder="ZIP Code *" />
+                            <Select id="materialCategory" name="materialCategory" value={formData.materialCategory} onChange={handleChange} label="Material Category *">
+                                <option value="">Select material category</option>
+                                <option value="tiles">Tiles</option>
+                                <option value="stone-slabs">Stone & Slabs</option>
+                                <option value="vinyl-lvt">Vinyl & LVT</option>
+                                <option value="hardwood">Hardwood</option>
+                                <option value="carpet">Carpet</option>
+                                <option value="heating">Heating Systems</option>
+                                <option value="thermostats">Thermostats</option>
                             </Select>
-                            <Select id="serviceType" name="serviceType" value={formData.serviceType} onChange={handleChange} label="What service do you need?">
-                                 <option>Tiles</option><option>Stone & Slabs</option><option>Vinyl & LVT</option>
-                                 <option>Hardwood</option><option>Carpet</option><option>Heating & Thermostats</option>
+                            <Select id="projectType" name="projectType" value={formData.projectType} onChange={handleChange} label="Project Type *">
+                                <option value="">Select project type</option>
+                                <option value="residential">Residential</option>
+                                <option value="commercial">Commercial</option>
+                                <option value="remodel">Remodel</option>
+                                <option value="new-build">New Build</option>
+                                <option value="repair">Repair</option>
+                                <option value="upgrade">Upgrade</option>
                             </Select>
-                            <Select id="projectType" name="projectType" value={formData.projectType} onChange={handleChange} label="Project Type">
-                                <option>Residential</option><option>Commercial</option><option>Remodel</option><option>New Build</option>
+                            <Select id="budget" name="budget" value={formData.budget} onChange={handleChange} label="Budget (optional)">
+                                <option value="">Enter your budget</option>
+                                <option value="under-1000">Under $1,000</option>
+                                <option value="1000-5000">$1,000 - $5,000</option>
+                                <option value="5000-10000">$5,000 - $10,000</option>
+                                <option value="10000-25000">$10,000 - $25,000</option>
+                                <option value="25000-50000">$25,000 - $50,000</option>
+                                <option value="over-50000">Over $50,000</option>
                             </Select>
-                            <Select id="timeline" name="timeline" value={formData.timeline} onChange={handleChange} label="Project Timeline">
-                                <option>ASAP</option><option>2–4 weeks</option><option>1–3 months</option><option>Flexible</option>
+                            <Select id="timeline" name="timeline" value={formData.timeline} onChange={handleChange} label="Timeline">
+                                <option value="">Select timeline</option>
+                                <option value="immediately">Immediately</option>
+                                <option value="within-1-month">Within 1 Month</option>
+                                <option value="within-3-months">Within 3 Months</option>
+                                <option value="within-6-months">Within 6 Months</option>
+                                <option value="planning-stage">Still Planning</option>
                             </Select>
-                            <Textarea id="details" name="details" value={formData.details} onChange={handleChange} label="Additional Details"
-                                description="(e.g., kitchen backsplash, ~80 sq ft)" placeholder="Please provide any other relevant information..."/>
+                            <Textarea id="projectDetails" name="projectDetails" value={formData.projectDetails} onChange={handleChange} label="Project Details"
+                                placeholder="Describe your project, specific requirements, and any other details..."/>
+                            <Select id="professionalType" name="professionalType" value={formData.professionalType} onChange={handleChange} label="I'm looking for a:">
+                                <option value="vendor">Vendor (Material Supplier)</option>
+                                <option value="trade">Trade Professional (Contractor/Installer)</option>
+                                <option value="both">Both Vendors and Trade Professionals</option>
+                            </Select>
                             <Button type="submit" disabled={loading}><FilePlus size={20}/> {loading ? 'Submitting...' : 'Get Matched Now'}</Button>
                         </form>
                     </Card>
