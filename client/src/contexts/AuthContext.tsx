@@ -118,6 +118,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           const knownAccounts = {
             'testvendor@comperra.com': 'vendor',
             'testtrade@comperra.com': 'trade',
+            'testcustomer@comperra.com': 'customer',
             'ochynoweth@luxsurfacesgroup.com': 'vendor'
           };
           
@@ -292,7 +293,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             } else if (result.user.role === 'trade') {
               window.location.href = '/trade-dashboard';
             } else {
-              window.location.href = '/';
+              window.location.href = '/dashboard';
             }
           }, 100);
         } else {
@@ -339,7 +340,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         } else if (userRole === 'trade') {
           window.location.href = '/trade-dashboard';
         } else {
-          window.location.href = '/';
+          window.location.href = '/dashboard';
         }
         return;
       } catch (firebaseError: any) {
@@ -372,7 +373,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             } else if (result.user.role === 'trade') {
               window.location.href = '/trade-dashboard';
             } else {
-              window.location.href = '/';
+              window.location.href = '/dashboard';
             }
           }, 100);
         } else {

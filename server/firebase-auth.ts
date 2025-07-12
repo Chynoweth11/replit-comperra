@@ -35,6 +35,13 @@ function initializeTestAccounts() {
     password: 'TradeTest123'
   });
   
+  fallbackUsers.set('testcustomer@comperra.com', {
+    email: 'testcustomer@comperra.com',
+    role: 'customer',
+    name: 'Test Customer',
+    password: 'CustomerTest123'
+  });
+  
   fallbackUsers.set('ochynoweth@luxsurfacesgroup.com', {
     email: 'ochynoweth@luxsurfacesgroup.com',
     role: 'vendor',
@@ -323,6 +330,13 @@ export async function signInUser(signInData: SignInData): Promise<any> {
           uid: 'fallback-uid-' + Date.now(),
           role: 'trade',
           name: 'Test Trade Professional'
+        };
+      } else if (signInData.email === 'testcustomer@comperra.com') {
+        userToReturn = {
+          email: signInData.email,
+          uid: 'fallback-uid-' + Date.now(),
+          role: 'customer',
+          name: 'Test Customer'
         };
       } else {
         // For unknown users, try to determine role from email domain or default to customer
