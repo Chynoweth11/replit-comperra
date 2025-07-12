@@ -54,7 +54,7 @@ export class SimulationScraper {
     console.log(`Full text for analysis: ${fullText.substring(0, 200)}...`);
     
     // PRIORITY 1: URL-based detection (most reliable)
-    if (urlLower.includes('/ceramic-tiles/') || urlLower.includes('/porcelain-tiles/') || urlLower.includes('/tile/')) {
+    if (urlLower.includes('/ceramic-tiles/') || urlLower.includes('/porcelain-tiles/') || urlLower.includes('/tile/') || urlLower.includes('/porcelain/')) {
       console.log(`URL PATH DETECTION: tiles for URL: ${url}`);
       return 'tiles';
     }
@@ -97,15 +97,23 @@ export class SimulationScraper {
       }
     }
     
+    // PRIORITY 2.5: PORCELAIN DETECTION (before compound keywords)
+    if (urlLower.includes('porcelain') || fullText.includes('porcelain')) {
+      console.log(`IMMEDIATE PORCELAIN DETECTION for URL: ${url}`);
+      return 'tiles';
+    }
+    
     const compoundCategoryMap = {
+      "porcelain tile": "tiles",
+      "porcelain tiles": "tiles",
+      "ceramic tile": "tiles",
+      "ceramic tiles": "tiles",
       "marble tile": "tiles",
       "marble tiles": "tiles",
       "granite tile": "tiles",
       "granite tiles": "tiles",
       "travertine tile": "tiles",
       "travertine tiles": "tiles",
-      "ceramic tile": "tiles",
-      "porcelain tile": "tiles",
       "marble systems": "tiles",
       "nero marquina": "tiles", 
       "carpet tile": "carpet",
@@ -129,6 +137,12 @@ export class SimulationScraper {
     }
 
     // FALLBACK SIMPLE KEYWORD RULES (only if no compound matches found)
+    // Prioritize tiles for ceramic/porcelain FIRST before other categories
+    if (fullText.includes("porcelain") || fullText.includes("ceramic")) {
+      console.log(`PRIORITY PORCELAIN/CERAMIC DETECTION for: ${url}`);
+      return 'tiles';
+    }
+    
     if (fullText.includes("carpet") || fullText.includes("rug")) {
       console.log(`SIMPLE CARPET KEYWORD DETECTED for: ${url}`);
       return 'carpet';
@@ -146,8 +160,8 @@ export class SimulationScraper {
       return 'heat';
     }
     
-    // Prioritize tiles over slabs for marble/granite products unless explicitly "slab"
-    if (fullText.includes("tile") || fullText.includes("ceramic") || fullText.includes("porcelain")) {
+    // General tile keyword detection last
+    if (fullText.includes("tile")) {
       console.log(`FALLBACK TILE KEYWORD for: ${url}`);
       return 'tiles';
     }
