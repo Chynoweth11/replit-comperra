@@ -15,7 +15,6 @@ interface UserProfile {
   displayName: string;
   email: string;
   zipCode: string;
-  customerType: string;
   phoneNumber: string;
   companyName: string;
   preferences: {
@@ -32,7 +31,6 @@ export default function ProfilePage() {
     displayName: '',
     email: '',
     zipCode: '',
-    customerType: '',
     phoneNumber: '',
     companyName: '',
     preferences: {
@@ -226,25 +224,6 @@ export default function ProfilePage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="customerType">Customer Type</Label>
-                    <Select
-                      value={profile.customerType}
-                      onValueChange={(value) => handleInputChange('customerType', value)}
-                      disabled={!isEditing}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select customer type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="homeowner">Homeowner</SelectItem>
-                        <SelectItem value="designer">Interior Designer</SelectItem>
-                        <SelectItem value="architect">Architect</SelectItem>
-                        <SelectItem value="trade">Trade Professional</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
                     <Label htmlFor="companyName">Company Name (Optional)</Label>
                     <Input
                       id="companyName"
@@ -328,12 +307,6 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="border-t pt-4 space-y-3">
-                  <div className="flex items-center gap-3 text-sm">
-                    <Mail className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-600">
-                      {profile.customerType || 'Not specified'}
-                    </span>
-                  </div>
                   <div className="flex items-center gap-3 text-sm">
                     <MapPin className="h-4 w-4 text-gray-400" />
                     <span className="text-gray-600">
