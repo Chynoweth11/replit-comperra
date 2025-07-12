@@ -110,10 +110,13 @@ export default function EnhancedAuthForm({ mode, onToggleMode }: EnhancedAuthFor
     setLoading(true);
     try {
       await signIn(formData.email, formData.password);
-      showMessage('Signed in successfully!', 'success');
+      showMessage('Signed in successfully! Redirecting...', 'success');
+      // Keep loading state until redirect completes
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000);
     } catch (error: any) {
       showMessage(parseFirebaseError(error));
-    } finally {
       setLoading(false);
     }
   };

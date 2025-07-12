@@ -197,7 +197,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             console.log('✅ Firebase user profile loaded:', userData);
             
             // Check if customer should be redirected to dashboard
-            if (userData.role === 'customer' && window.location.pathname === '/') {
+            if (userData.role === 'customer' && (window.location.pathname === '/' || window.location.pathname === '/auth')) {
               console.log('✅ Customer detected, redirecting to dashboard');
               setTimeout(() => {
                 window.location.href = '/dashboard';
@@ -230,7 +230,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             console.log('✅ Firebase user profile created:', userProfile);
             
             // Check if customer should be redirected to dashboard
-            if (userRole === 'customer' && window.location.pathname === '/') {
+            if (userRole === 'customer' && (window.location.pathname === '/' || window.location.pathname === '/auth')) {
               console.log('✅ Customer detected, redirecting to dashboard');
               setTimeout(() => {
                 window.location.href = '/dashboard';
@@ -419,7 +419,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             console.log('✅ Redirecting to customer dashboard');
             window.location.href = '/dashboard';
           }
-        }, 100);
+        }, 500);
         return;
       } catch (firebaseError: any) {
         console.warn('Firebase signin failed, trying fallback:', firebaseError);
