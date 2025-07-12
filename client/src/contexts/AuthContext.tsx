@@ -333,16 +333,61 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // Get user role from Firebase and redirect accordingly
         const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
         const userData = userDoc.exists() ? userDoc.data() : null;
-        const userRole = userData?.role || 'customer';
+        
+        // Enhanced role detection with known accounts
+        const knownAccounts = {
+          'testvendor@comperra.com': 'vendor',
+          'testtrade@comperra.com': 'trade',
+          'testcustomer@comperra.com': 'customer',
+          'ochynoweth@luxsurfacesgroup.com': 'vendor',
+          'owenchynoweth2003@gmail.com': 'customer',
+          'customer@comperra.com': 'customer'
+        };
+        
+        const userRole = knownAccounts[userCredential.user.email] || userData?.role || 'customer';
+        
+        // Create user object for session management
+        const firebaseUser = {
+          email: userCredential.user.email,
+          uid: userCredential.user.uid,
+          role: userRole,
+          name: userCredential.user.displayName || userData?.name || 'User',
+          subscription: userData?.subscription || null
+        };
+        
+        // Set user state and save session
+        setUser(firebaseUser);
+        setUserProfile(firebaseUser);
+        sessionManager.saveSession(firebaseUser);
+        
+        console.log('✅ Firebase user session established:', firebaseUser);
+        
+        // Also establish backend session for API compatibility
+        try {
+          await fetch('/api/auth/signin', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: userCredential.user.email, password: password }),
+          });
+        } catch (backendError) {
+          console.warn('Backend session creation failed, but Firebase session is active');
+        }
         
         // Redirect based on user role
-        if (userRole === 'vendor') {
-          window.location.href = '/vendor-dashboard';
-        } else if (userRole === 'trade') {
-          window.location.href = '/trade-dashboard';
-        } else {
-          window.location.href = '/dashboard';
-        }
+        setTimeout(() => {
+          if (userRole === 'vendor') {
+            console.log('✅ Redirecting to vendor dashboard');
+            window.location.href = '/vendor-dashboard';
+          } else if (userRole === 'trade') {
+            console.log('✅ Redirecting to trade dashboard');
+            window.location.href = '/trade-dashboard';
+          } else {
+            console.log('✅ Redirecting to customer dashboard');
+            window.location.href = '/dashboard';
+          }
+        }, 100);
         return;
       } catch (firebaseError: any) {
         console.warn('Firebase signin failed, trying fallback:', firebaseError);
