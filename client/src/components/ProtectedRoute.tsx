@@ -15,7 +15,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
   // Always call useEffect hook to maintain consistent hook order
   React.useEffect(() => {
     if (!loading && !userProfile) {
-      navigate('/login');
+      navigate('/auth');
     }
   }, [loading, userProfile, navigate]);
 
