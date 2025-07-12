@@ -19,8 +19,12 @@ if (!getApps().length) {
 const db = getFirestore();
 
 export interface LeadFormData {
+  name?: string;
   email: string;
   phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
   zip?: string;
   zipCode?: string;
   message?: string;
@@ -30,10 +34,11 @@ export interface LeadFormData {
   source?: string;
   materialCategory?: string;
   projectType?: string;
-  budget?: number;
+  budget?: number | string;
   timeline?: string;
   projectDetails?: string;
   description?: string;
+  product?: string;
 }
 
 export async function submitLead(formData: LeadFormData): Promise<void> {
@@ -42,21 +47,26 @@ export async function submitLead(formData: LeadFormData): Promise<void> {
     let leadType = formData.isLookingForPro ? "trade" : "vendor";
 
     const leadData = {
+      name: formData.name || "Anonymous",
       email: formData.email,
       phone: formData.phone || null,
+      address: formData.address || null,
+      city: formData.city || null,
+      state: formData.state || null,
       zip: formData.zip || null,
       zipCode: formData.zipCode || formData.zip || null,
       requestDetails: formData.message || formData.description || null,
       type: leadType, // "vendor" or "trade"
       source: formData.source || "customer-request",
       customerType: formData.customerType || "homeowner",
-      interest: formData.interest || null,
-      materialCategory: (formData.materialCategory || formData.interest || "General").toLowerCase(),
+      interest: formData.interest || formData.product || null,
+      materialCategory: (formData.materialCategory || formData.interest || formData.product || "General").toLowerCase(),
       projectType: formData.projectType || "General Inquiry",
       budget: formData.budget || null,
       timeline: formData.timeline || null,
-      projectDetails: formData.projectDetails || null,
+      projectDetails: formData.projectDetails || formData.message || null,
       description: formData.description || formData.message || "",
+      isLookingForPro: formData.isLookingForPro || false,
       status: "new",
       intentScore: calculateIntentScore(formData),
       createdAt: new Date().toISOString(),

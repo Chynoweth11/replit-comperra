@@ -591,7 +591,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Fast lead capture endpoint (no Firebase dependencies)
   app.post("/api/save-lead", async (req, res) => {
     try {
-      const { name, email, zip, product, phone, message, isLookingForPro, customerType } = req.body;
+      const { 
+        name, 
+        email, 
+        phone, 
+        address, 
+        city, 
+        state, 
+        zip, 
+        product, 
+        customerType, 
+        projectType, 
+        timeline, 
+        budget, 
+        message, 
+        isLookingForPro 
+      } = req.body;
       
       if (!email) {
         return res.status(400).json({ success: false, error: "Email is required" });
@@ -608,8 +623,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: 'Lead submitted successfully! We will connect you with qualified professionals in your area.'
       });
       
-      // Log the lead data for debugging
-      console.log(`📧 Lead captured: ${name} (${email}) in ${zip} interested in ${product}`);
+      // Log the comprehensive lead data for debugging
+      console.log(`📧 Lead captured: ${name} (${email}) at ${address}, ${city}, ${state} ${zip}`);
+      console.log(`📋 Project details: ${projectType || 'Not specified'} | Timeline: ${timeline || 'Not specified'} | Budget: ${budget || 'Not specified'}`);
+      console.log(`📞 Contact: ${phone} | Customer Type: ${customerType || 'Not specified'} | Looking for Pro: ${isLookingForPro ? 'Yes' : 'No'}`);
+      console.log(`💬 Message: ${message || 'No additional details provided'}`);
       
       // Background processing (non-blocking)
       setTimeout(() => {

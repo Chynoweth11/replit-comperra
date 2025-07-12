@@ -16,9 +16,18 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
     zip: "",
     product: productName || "",
-    customerType: ""
+    customerType: "",
+    projectType: "",
+    timeline: "",
+    budget: "",
+    message: "",
+    isLookingForPro: false
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -26,10 +35,10 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.email) {
+    if (!formData.name || !formData.email || !formData.phone || !formData.address || !formData.city || !formData.state || !formData.zip) {
       toast({
         title: "Required fields missing",
-        description: "Please fill in your name and email",
+        description: "Please fill in all required fields marked with *",
         variant: "destructive"
       });
       return;
@@ -53,7 +62,22 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
           title: "Thank you!",
           description: "We'll be in touch with pricing and availability information soon.",
         });
-        setFormData({ name: "", email: "", zip: "", product: productName || "", customerType: "" });
+        setFormData({ 
+          name: "", 
+          email: "", 
+          phone: "",
+          address: "",
+          city: "",
+          state: "",
+          zip: "", 
+          product: productName || "", 
+          customerType: "",
+          projectType: "",
+          timeline: "",
+          budget: "",
+          message: "",
+          isLookingForPro: false
+        });
         onClose();
       } else {
         throw new Error(result.error || 'Failed to save lead');
@@ -76,7 +100,7 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Get Pricing Information</DialogTitle>
         </DialogHeader>
@@ -115,13 +139,63 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
           </div>
           
           <div>
-            <Label htmlFor="zip">ZIP Code</Label>
+            <Label htmlFor="phone">Phone Number *</Label>
+            <Input
+              id="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => handleInputChange("phone", e.target.value)}
+              placeholder="(555) 123-4567"
+              required
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="address">Street Address *</Label>
+            <Input
+              id="address"
+              type="text"
+              value={formData.address}
+              onChange={(e) => handleInputChange("address", e.target.value)}
+              placeholder="123 Main Street"
+              required
+            />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="city">City *</Label>
+              <Input
+                id="city"
+                type="text"
+                value={formData.city}
+                onChange={(e) => handleInputChange("city", e.target.value)}
+                placeholder="Denver"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="state">State *</Label>
+              <Input
+                id="state"
+                type="text"
+                value={formData.state}
+                onChange={(e) => handleInputChange("state", e.target.value)}
+                placeholder="CO"
+                required
+              />
+            </div>
+          </div>
+          
+          <div>
+            <Label htmlFor="zip">ZIP Code *</Label>
             <Input
               id="zip"
               type="text"
               value={formData.zip}
               onChange={(e) => handleInputChange("zip", e.target.value)}
-              placeholder="Enter your ZIP code"
+              placeholder="80202"
+              required
             />
           </div>
           
@@ -150,6 +224,81 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="projectType">Project Type</Label>
+            <Select value={formData.projectType} onValueChange={(value) => handleInputChange("projectType", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select project type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="new-construction">New Construction</SelectItem>
+                <SelectItem value="renovation">Renovation</SelectItem>
+                <SelectItem value="repair">Repair</SelectItem>
+                <SelectItem value="upgrade">Upgrade</SelectItem>
+                <SelectItem value="commercial">Commercial</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="timeline">Project Timeline</Label>
+            <Select value={formData.timeline} onValueChange={(value) => handleInputChange("timeline", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="When do you need this completed?" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="immediately">Immediately</SelectItem>
+                <SelectItem value="within-1-month">Within 1 Month</SelectItem>
+                <SelectItem value="within-3-months">Within 3 Months</SelectItem>
+                <SelectItem value="within-6-months">Within 6 Months</SelectItem>
+                <SelectItem value="planning-stage">Still Planning</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="budget">Estimated Budget</Label>
+            <Select value={formData.budget} onValueChange={(value) => handleInputChange("budget", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select budget range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="under-1000">Under $1,000</SelectItem>
+                <SelectItem value="1000-5000">$1,000 - $5,000</SelectItem>
+                <SelectItem value="5000-10000">$5,000 - $10,000</SelectItem>
+                <SelectItem value="10000-25000">$10,000 - $25,000</SelectItem>
+                <SelectItem value="25000-50000">$25,000 - $50,000</SelectItem>
+                <SelectItem value="over-50000">Over $50,000</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="message">Project Details</Label>
+            <textarea
+              id="message"
+              value={formData.message}
+              onChange={(e) => handleInputChange("message", e.target.value)}
+              placeholder="Tell us about your project, specific requirements, or any questions you have..."
+              className="w-full p-3 border border-gray-300 rounded-md resize-none"
+              rows={3}
+            />
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="isLookingForPro"
+              checked={formData.isLookingForPro}
+              onChange={(e) => handleInputChange("isLookingForPro", e.target.checked.toString())}
+              className="rounded border-gray-300"
+            />
+            <Label htmlFor="isLookingForPro" className="text-sm">
+              I'm looking for professional installation/trade services
+            </Label>
           </div>
 
           <div className="flex gap-3 pt-4">
