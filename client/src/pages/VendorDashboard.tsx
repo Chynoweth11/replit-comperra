@@ -23,7 +23,7 @@ import {
   Home,
   LogOut
 } from 'lucide-react';
-import SmartMatchAI from '@/components/SmartMatchAI';
+
 import GoogleMap from '@/components/GoogleMap';
 
 interface LeadData {
@@ -212,10 +212,9 @@ const VendorDashboard: React.FC = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="leads">Leads</TabsTrigger>
-            <TabsTrigger value="smart-match">Smart Match AI</TabsTrigger>
             <TabsTrigger value="subscription">Subscription</TabsTrigger>
           </TabsList>
 
