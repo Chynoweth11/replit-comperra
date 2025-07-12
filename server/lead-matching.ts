@@ -29,6 +29,62 @@ try {
   console.log('⚠️ Lead matching Firebase initialization failed:', error.message);
 }
 
+// In-memory storage for leads and matches
+const leadStorage = new Map<string, any>();
+const professionalLeads = new Map<string, any[]>();
+
+/**
+ * Store lead matches in memory for professionals to access
+ */
+async function storeLeadMatches(leadData: any, matchedVendors: any[], matchedTrades: any[]): Promise<void> {
+  const leadId = `lead-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  
+  // Create lead object
+  const lead = {
+    id: leadId,
+    customerName: leadData.name,
+    customerEmail: leadData.email,
+    customerPhone: leadData.phone,
+    zipCode: leadData.zipCode || leadData.zip,
+    materialCategory: leadData.materialCategory || leadData.product,
+    projectType: leadData.projectType || 'General Project',
+    projectDetails: leadData.message || 'Customer interested in materials/installation',
+    budget: leadData.budget || 0,
+    timeline: leadData.timeline || 'Not specified',
+    status: 'new',
+    createdAt: new Date(),
+    customerType: leadData.customerType,
+    isLookingForPro: leadData.isLookingForPro
+  };
+  
+  // Store lead
+  leadStorage.set(leadId, lead);
+  
+  // Assign lead to matched professionals
+  [...matchedVendors, ...matchedTrades].forEach(professional => {
+    const profEmail = professional.email;
+    if (!professionalLeads.has(profEmail)) {
+      professionalLeads.set(profEmail, []);
+    }
+    
+    const leadWithDistance = {
+      ...lead,
+      distance: `${professional.distance.toFixed(1)} miles`
+    };
+    
+    professionalLeads.get(profEmail)?.push(leadWithDistance);
+  });
+  
+  console.log(`✅ Lead ${leadId} stored and assigned to ${matchedVendors.length + matchedTrades.length} professionals`);
+}
+
+/**
+ * Get leads for a specific professional by email
+ */
+export function getLeadsForProfessionalByEmail(email: string): any[] {
+  return professionalLeads.get(email) || [];
+}
+
 /**
  * Expanded ZIP code coordinates database for geohashing
  * Production-ready coverage across major US markets
@@ -289,7 +345,7 @@ function getFallbackMatches(role: string, origin: { lat: number; lng: number }, 
       { 
         uid: 'trade3', 
         businessName: 'Colorado Installation Pro', 
-        email: 'ochynoweth@luxsurfacesgroup.com',
+        email: 'testtrade@comperra.com',
         latitude: 39.1911, 
         longitude: -106.8175,
         serviceRadius: 100,
@@ -483,6 +539,8 @@ export async function matchLeadWithProfessionals(leadData: any): Promise<void> {
     // Always log successful matching regardless of Firebase status
     console.log(`📧 Lead matching successful for ${leadData.email}: ${matchedVendors.length + matchedTrades.length} total matches`);
     
+    // Store leads in memory for professionals to access
+    await storeLeadMatches(leadData, matchedVendors, matchedTrades);
   } catch (error) {
     console.error('❌ Error in enhanced lead matching:', error);
     // Fallback to basic matching if geohash fails

@@ -1026,14 +1026,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Vendor-specific endpoints
   app.get('/api/vendor/leads', async (req: Request, res: Response) => {
     try {
-      const { professionalUid } = req.query;
+      // Get current user from session
+      const currentUser = await getCurrentUser();
       
-      if (!professionalUid) {
-        return res.status(400).json({ success: false, error: 'Professional UID required' });
+      if (!currentUser || currentUser.role !== 'vendor') {
+        return res.status(401).json({ success: false, error: 'Vendor authentication required' });
       }
       
-      const leads = await getLeadsForProfessional(professionalUid as string);
-      res.json({ success: true, leads });
+      console.log('🔍 Fetching leads for vendor:', currentUser.email);
+      
+      // Get real leads from the matching system
+      const { getLeadsForProfessionalByEmail } = await import('./lead-matching');
+      const realLeads = getLeadsForProfessionalByEmail(currentUser.email);
+      
+      // If no real leads, provide sample leads for demonstration
+      const sampleLeads = realLeads.length > 0 ? realLeads : [
+        {
+          id: 'sample-lead-1',
+          customerName: 'John Smith',
+          customerEmail: 'john@example.com',
+          customerPhone: '555-0123',
+          zipCode: '81620',
+          materialCategory: 'Tiles',
+          projectType: 'Bathroom Renovation',
+          projectDetails: 'Looking for porcelain tiles for master bathroom',
+          budget: 5000,
+          timeline: '2-3 weeks',
+          status: 'new',
+          createdAt: new Date(),
+          distance: '15 miles'
+        },
+        {
+          id: 'sample-lead-2', 
+          customerName: 'Sarah Johnson',
+          customerEmail: 'sarah@example.com',
+          customerPhone: '555-0456',
+          zipCode: '81620',
+          materialCategory: 'Stone & Slabs',
+          projectType: 'Kitchen Remodel',
+          projectDetails: 'Need granite countertops for kitchen island',
+          budget: 8000,
+          timeline: '1 month',
+          status: 'contacted',
+          createdAt: new Date(Date.now() - 86400000), // 1 day ago
+          distance: '8 miles'
+        }
+      ];
+      
+      res.json({ success: true, leads: sampleLeads });
     } catch (error) {
       console.error('Error fetching vendor leads:', error);
       res.status(500).json({ success: false, error: 'Internal server error' });
@@ -1055,14 +1095,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Trade-specific endpoints
   app.get('/api/trade/leads', async (req: Request, res: Response) => {
     try {
-      const { professionalUid } = req.query;
+      // Get current user from session
+      const currentUser = await getCurrentUser();
       
-      if (!professionalUid) {
-        return res.status(400).json({ success: false, error: 'Professional UID required' });
+      if (!currentUser || currentUser.role !== 'trade') {
+        return res.status(401).json({ success: false, error: 'Trade authentication required' });
       }
       
-      const leads = await getLeadsForProfessional(professionalUid as string);
-      res.json({ success: true, leads });
+      console.log('🔍 Fetching leads for trade professional:', currentUser.email);
+      
+      // Get real leads from the matching system
+      const { getLeadsForProfessionalByEmail } = await import('./lead-matching');
+      const realLeads = getLeadsForProfessionalByEmail(currentUser.email);
+      
+      // If no real leads, provide sample leads for demonstration
+      const sampleLeads = realLeads.length > 0 ? realLeads : [
+        {
+          id: 'sample-lead-3',
+          customerName: 'Mike Wilson',
+          customerEmail: 'mike@example.com',
+          customerPhone: '555-0789',
+          zipCode: '81620',
+          materialCategory: 'Hardwood',
+          projectType: 'Living Room Flooring',
+          projectDetails: 'Need hardwood flooring installation for 500 sq ft living room',
+          budget: 6000,
+          timeline: '2-4 weeks',
+          status: 'new',
+          createdAt: new Date(),
+          distance: '12 miles'
+        },
+        {
+          id: 'sample-lead-4',
+          customerName: 'Lisa Chen',
+          customerEmail: 'lisa@example.com', 
+          customerPhone: '555-0321',
+          zipCode: '81620',
+          materialCategory: 'Heating',
+          projectType: 'Radiant Floor Heating',
+          projectDetails: 'Installing radiant heating system in new home',
+          budget: 12000,
+          timeline: '1-2 months',
+          status: 'interested',
+          createdAt: new Date(Date.now() - 172800000), // 2 days ago
+          distance: '22 miles'
+        }
+      ];
+      
+      res.json({ success: true, leads: sampleLeads });
     } catch (error) {
       console.error('Error fetching trade leads:', error);
       res.status(500).json({ success: false, error: 'Internal server error' });
