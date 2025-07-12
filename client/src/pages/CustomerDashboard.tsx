@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'wouter';
+import { sessionManager } from '@/utils/sessionManager';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -65,15 +66,36 @@ const CustomerDashboard: React.FC = () => {
 
   // Redirect if not authenticated or not a customer
   useEffect(() => {
-    if (!loading && (!userProfile || userProfile.role !== 'customer')) {
-      navigate('/');
+    // Use sessionManager for more reliable authentication
+    const sessionUser = sessionManager.getSession();
+    
+    if (!sessionUser) {
+      console.log('⚠️ No valid session found, redirecting to signin');
+      navigate('/auth?tab=signin');
       return;
     }
     
-    if (userProfile) {
-      fetchCustomerData();
+    // Check if user is a customer
+    if (sessionUser.role !== 'customer' && sessionUser.role !== 'homeowner') {
+      console.log('⚠️ User is not a customer, redirecting to appropriate dashboard');
+      if (sessionUser.role === 'vendor') {
+        navigate('/vendor-dashboard');
+      } else if (sessionUser.role === 'trade') {
+        navigate('/trade-dashboard');
+      } else {
+        navigate('/');
+      }
+      return;
     }
-  }, [userProfile, loading, navigate]);
+    
+    console.log('✅ Customer session validated:', sessionUser.email);
+    
+    // Update activity timestamp
+    sessionManager.updateLastActivity();
+    
+    // Fetch customer data
+    fetchCustomerData();
+  }, [navigate]);
 
   const fetchCustomerData = async () => {
     try {

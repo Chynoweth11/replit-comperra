@@ -42,6 +42,14 @@ function initializeTestAccounts() {
     password: 'CustomerTest123'
   });
   
+  // Add the user's email as a customer account
+  fallbackUsers.set('owenchynoweth2003@gmail.com', {
+    email: 'owenchynoweth2003@gmail.com',
+    role: 'customer',
+    name: 'Owen Chynoweth',
+    password: 'test123'
+  });
+  
   fallbackUsers.set('ochynoweth@luxsurfacesgroup.com', {
     email: 'ochynoweth@luxsurfacesgroup.com',
     role: 'vendor',
