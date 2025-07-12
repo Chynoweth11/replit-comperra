@@ -1,6 +1,7 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, collection, addDoc, connectFirestoreEmulator } from 'firebase/firestore';
 
+// Initialize Firebase app if not already initialized
 const firebaseConfig = {
   apiKey: process.env.VITE_FIREBASE_API_KEY,
   authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -11,6 +12,9 @@ const firebaseConfig = {
   measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+export const db = getFirestore(app);
+
 export async function initializeFirebaseCollections() {
   try {
     // Skip Firebase initialization if not properly configured
@@ -18,10 +22,6 @@ export async function initializeFirebaseCollections() {
       console.log('⚠️  Firebase configuration missing, skipping initialization');
       return false;
     }
-
-    // Initialize Firebase app if not already initialized
-    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-    const db = getFirestore(app);
     
     console.log('🔄 Initializing Firebase collections...');
     
