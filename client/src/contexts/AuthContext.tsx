@@ -120,7 +120,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           'testtrade@comperra.com': 'trade',
           'testcustomer@comperra.com': 'customer',
           'ochynoweth@luxsurfacesgroup.com': 'vendor',
-          'owenchynoweth2003@gmail.com': 'vendor'
+          'owenchynoweth2003@gmail.com': 'customer'
         };
         
         const expectedRole = knownAccounts[userData.email];
@@ -366,15 +366,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           sessionManager.saveSession(result.user);
           
           console.log('✅ Fallback sign in successful, user:', result.user);
+          console.log('✅ User role for redirect:', result.user.role);
           
           // Use a more reliable redirect approach
           setTimeout(() => {
             // Redirect based on user role
             if (result.user.role === 'vendor') {
+              console.log('✅ Redirecting to vendor dashboard');
               window.location.href = '/vendor-dashboard';
             } else if (result.user.role === 'trade') {
+              console.log('✅ Redirecting to trade dashboard');
               window.location.href = '/trade-dashboard';
             } else {
+              console.log('✅ Redirecting to customer dashboard');
               window.location.href = '/dashboard';
             }
           }, 750); // Longer delay to ensure state is fully committed

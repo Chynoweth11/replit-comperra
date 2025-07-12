@@ -66,8 +66,12 @@ const CustomerDashboard: React.FC = () => {
 
   // Redirect if not authenticated or not a customer
   useEffect(() => {
+    console.log('🔍 CustomerDashboard - checking authentication');
+    
     // Use sessionManager for more reliable authentication
     const sessionUser = sessionManager.getSession();
+    
+    console.log('🔍 CustomerDashboard - sessionUser:', sessionUser);
     
     if (!sessionUser) {
       console.log('⚠️ No valid session found, redirecting to signin');
@@ -75,20 +79,21 @@ const CustomerDashboard: React.FC = () => {
       return;
     }
     
-    // Check if user is a customer
-    if (sessionUser.role !== 'customer' && sessionUser.role !== 'homeowner') {
-      console.log('⚠️ User is not a customer, redirecting to appropriate dashboard');
-      if (sessionUser.role === 'vendor') {
-        navigate('/vendor-dashboard');
-      } else if (sessionUser.role === 'trade') {
-        navigate('/trade-dashboard');
-      } else {
-        navigate('/');
-      }
+    console.log('🔍 CustomerDashboard - user role:', sessionUser.role);
+    
+    // Check if user is a customer (more flexible check)
+    if (sessionUser.role === 'vendor') {
+      console.log('⚠️ User is a vendor, redirecting to vendor dashboard');
+      navigate('/vendor-dashboard');
+      return;
+    } else if (sessionUser.role === 'trade') {
+      console.log('⚠️ User is a trade, redirecting to trade dashboard');
+      navigate('/trade-dashboard');
       return;
     }
     
-    console.log('✅ Customer session validated:', sessionUser.email);
+    // If we reach here, user is customer or homeowner
+    console.log('✅ Customer session validated:', sessionUser.email, 'role:', sessionUser.role);
     
     // Update activity timestamp
     sessionManager.updateLastActivity();
