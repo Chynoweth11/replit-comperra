@@ -49,6 +49,14 @@ const VendorDashboard: React.FC = () => {
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
   const [leads, setLeads] = useState<LeadData[]>([]);
+  const [subscription, setSubscription] = useState({
+    planId: 'basic',
+    planName: 'Basic Plan',
+    price: 0,
+    billingCycle: 'monthly',
+    status: 'active',
+    features: []
+  });
   const [metrics, setMetrics] = useState({
     totalLeads: 0,
     activeLeads: 0,
@@ -76,7 +84,12 @@ const VendorDashboard: React.FC = () => {
         setLeads(leadsData.leads || []);
       }
 
-
+      // Fetch subscription info
+      const subscriptionResponse = await fetch('/api/vendor/subscription');
+      if (subscriptionResponse.ok) {
+        const subscriptionData = await subscriptionResponse.json();
+        setSubscription(subscriptionData.subscription || subscription);
+      }
 
       // Calculate metrics
       const totalLeads = leads.length;
@@ -389,15 +402,69 @@ const VendorDashboard: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="subscription" className="space-y-6">
+            {/* Current Subscription Status */}
             <Card>
               <CardHeader>
-                <CardTitle>Subscription Plans</CardTitle>
-                <CardDescription>Choose the right plan for your business</CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  Current Subscription
+                </CardTitle>
+                <CardDescription>Your active subscription plan and features</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-gradient-to-r from-emerald-50 to-blue-50 p-6 rounded-lg border-2 border-emerald-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-2xl font-bold text-emerald-800">{subscription.planName}</h3>
+                      <p className="text-emerald-600 capitalize">{subscription.billingCycle} billing</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-3xl font-bold text-emerald-800">
+                        ${subscription.price}
+                        <span className="text-sm font-normal">
+                          /{subscription.billingCycle === 'yearly' ? 'yr' : 'mo'}
+                        </span>
+                      </div>
+                      <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
+                        {subscription.status}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-emerald-800">Included Features:</h4>
+                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {subscription.features.map((feature, index) => (
+                        <li key={index} className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-emerald-600" />
+                          <span className="text-sm text-emerald-700">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  <div className="mt-6 flex gap-4">
+                    <Button variant="outline" className="flex-1">
+                      Manage Subscription
+                    </Button>
+                    <Button variant="outline" className="flex-1">
+                      View Billing History
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Available Plans */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Available Plans</CardTitle>
+                <CardDescription>Upgrade or change your subscription plan</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Pay-as-you-go Plan */}
-                  <div className="border rounded-lg p-6 text-center">
+                  <div className={`border rounded-lg p-6 text-center ${subscription.planId === 'pay-as-you-go' ? 'border-blue-500 bg-blue-50' : ''}`}>
                     <h3 className="text-lg font-semibold mb-2">Pay-as-you-go</h3>
                     <div className="text-3xl font-bold mb-4">$15<span className="text-sm font-normal">/lead</span></div>
                     <p className="text-sm text-gray-600 mb-4">For single projects or leads.</p>
@@ -407,11 +474,13 @@ const VendorDashboard: React.FC = () => {
                       <li>• 50 mile matching radius</li>
                       <li>• Limited support or visibility</li>
                     </ul>
-                    <Button className="w-full">Get Started</Button>
+                    <Button className="w-full" variant={subscription.planId === 'pay-as-you-go' ? 'outline' : 'default'}>
+                      {subscription.planId === 'pay-as-you-go' ? 'Current Plan' : 'Get Started'}
+                    </Button>
                   </div>
 
                   {/* Pro Plan Monthly */}
-                  <div className="border-2 border-indigo-500 rounded-lg p-6 text-center relative">
+                  <div className={`border-2 border-indigo-500 rounded-lg p-6 text-center relative ${subscription.planId === 'pro-monthly' ? 'bg-indigo-50' : ''}`}>
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                       <span className="bg-indigo-500 text-white px-4 py-1 rounded-full text-sm">Most Popular</span>
                     </div>
@@ -424,13 +493,17 @@ const VendorDashboard: React.FC = () => {
                       <li>• 50 mile matching radius</li>
                       <li>• Unlimited lead claims</li>
                     </ul>
-                    <Button className="w-full">Upgrade Now</Button>
+                    <Button className="w-full" variant={subscription.planId === 'pro-monthly' ? 'outline' : 'default'}>
+                      {subscription.planId === 'pro-monthly' ? 'Current Plan' : 'Upgrade Now'}
+                    </Button>
                   </div>
 
                   {/* Pro Plan Yearly */}
-                  <div className="border-2 border-emerald-500 rounded-lg p-6 text-center relative">
+                  <div className={`border-2 border-emerald-500 rounded-lg p-6 text-center relative ${subscription.planId === 'pro-yearly' ? 'bg-emerald-50' : ''}`}>
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-emerald-500 text-white px-4 py-1 rounded-full text-sm">Save 15%</span>
+                      <span className="bg-emerald-500 text-white px-4 py-1 rounded-full text-sm">
+                        {subscription.planId === 'pro-yearly' ? 'Your Plan' : 'Save 15%'}
+                      </span>
                     </div>
                     <h3 className="text-lg font-semibold mb-2">Pro Plan</h3>
                     <div className="text-3xl font-bold mb-4">$490<span className="text-sm font-normal">/yr</span></div>
@@ -438,10 +511,12 @@ const VendorDashboard: React.FC = () => {
                     <ul className="text-sm space-y-2 mb-6">
                       <li>• All Pro features</li>
                       <li>• Priority Support</li>
-                      <li>• 50 mile matching radius</li>
-                      <li>• Unlimited lead claims</li>
+                      <li>• 100 mile matching radius</li>
+                      <li>• Advanced analytics</li>
                     </ul>
-                    <Button className="w-full">Contact Sales</Button>
+                    <Button className="w-full" variant={subscription.planId === 'pro-yearly' ? 'outline' : 'default'}>
+                      {subscription.planId === 'pro-yearly' ? 'Current Plan' : 'Contact Sales'}
+                    </Button>
                   </div>
                 </div>
               </CardContent>

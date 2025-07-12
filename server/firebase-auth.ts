@@ -46,7 +46,15 @@ function initializeTestAccounts() {
     email: 'ochynoweth@luxsurfacesgroup.com',
     role: 'vendor',
     name: 'Owen Chynoweth',
-    password: 'test123'
+    password: 'test123',
+    subscription: {
+      planId: 'pro-yearly',
+      planName: 'Pro Plan',
+      price: 490,
+      billingCycle: 'yearly',
+      status: 'active',
+      features: ['Unlimited leads', 'Priority support', '100 mile radius', 'Advanced analytics', 'Lead quality insights']
+    }
   });
 }
 
@@ -313,7 +321,8 @@ export async function signInUser(signInData: SignInData): Promise<any> {
         email: signInData.email,
         uid: 'fallback-uid-' + Date.now(),
         role: fallbackUser.role,
-        name: fallbackUser.name || 'Test User'
+        name: fallbackUser.name || 'Test User',
+        subscription: fallbackUser.subscription || null
       };
     } else {
       // For known test accounts, assign proper roles
@@ -337,6 +346,21 @@ export async function signInUser(signInData: SignInData): Promise<any> {
           uid: 'fallback-uid-' + Date.now(),
           role: 'customer',
           name: 'Test Customer'
+        };
+      } else if (signInData.email === 'ochynoweth@luxsurfacesgroup.com') {
+        userToReturn = {
+          email: signInData.email,
+          uid: 'fallback-uid-' + Date.now(),
+          role: 'vendor',
+          name: 'Owen Chynoweth',
+          subscription: {
+            planId: 'pro-yearly',
+            planName: 'Pro Plan',
+            price: 490,
+            billingCycle: 'yearly',
+            status: 'active',
+            features: ['Unlimited leads', 'Priority support', '100 mile radius', 'Advanced analytics', 'Lead quality insights']
+          }
         };
       } else {
         // For unknown users, try to determine role from email domain or default to customer

@@ -1023,6 +1023,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Vendor subscription info route
+  app.get('/api/vendor/subscription', async (req: Request, res: Response) => {
+    try {
+      const currentUser = await getCurrentUser();
+      if (!currentUser || currentUser.role !== 'vendor') {
+        return res.status(401).json({ success: false, error: 'Vendor authentication required' });
+      }
+
+      // Return subscription information from the authenticated user
+      const subscriptionInfo = currentUser.subscription || {
+        planId: 'basic',
+        planName: 'Basic Plan',
+        price: 0,
+        billingCycle: 'monthly',
+        status: 'active',
+        features: ['Basic leads', 'Standard support', '25 mile radius']
+      };
+
+      res.json({
+        success: true,
+        subscription: subscriptionInfo
+      });
+    } catch (error) {
+      console.error('Vendor subscription error:', error);
+      res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+  });
+
   // Vendor-specific endpoints
   app.get('/api/vendor/leads', async (req: Request, res: Response) => {
     try {
