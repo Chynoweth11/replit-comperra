@@ -1651,6 +1651,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get lead details with matched professionals for customer transparency
+  app.get('/api/lead/:leadId/details', async (req: Request, res: Response) => {
+    try {
+      const { leadId } = req.params;
+      const { leadStorage } = await import('./lead-matching');
+      
+      const lead = leadStorage.get(leadId);
+      
+      if (!lead) {
+        return res.status(404).json({ error: 'Lead not found' });
+      }
+      
+      res.json({ lead });
+    } catch (error) {
+      console.error('Error getting lead details:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Get all leads for a customer by email
+  app.get('/api/customer/:email/leads', async (req: Request, res: Response) => {
+    try {
+      const { email } = req.params;
+      const { leadStorage } = await import('./lead-matching');
+      
+      // Get all leads and filter by customer email
+      const customerLeads = Array.from(leadStorage.values()).filter(lead => 
+        lead.customerEmail === email
+      );
+      
+      res.json({ leads: customerLeads });
+    } catch (error) {
+      console.error('Error getting customer leads:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

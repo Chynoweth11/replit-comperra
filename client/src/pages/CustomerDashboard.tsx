@@ -505,6 +505,14 @@ const CustomerDashboard: React.FC = () => {
                       <Clock className="h-4 w-4 mr-1" />
                       {new Date(lead.createdAt).toLocaleDateString()}
                     </div>
+                    
+                    {/* Show matched professionals count */}
+                    {lead.matchedProfessionals && lead.matchedProfessionals.length > 0 && (
+                      <div className="flex items-center text-sm text-blue-600">
+                        <Users className="h-4 w-4 mr-1" />
+                        {lead.matchedProfessionals.length} professionals matched
+                      </div>
+                    )}
                   </div>
                   
                   {lead.description && (

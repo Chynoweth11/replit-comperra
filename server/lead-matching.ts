@@ -33,6 +33,9 @@ try {
 const leadStorage = new Map<string, any>();
 const professionalLeads = new Map<string, any[]>();
 
+// Export leadStorage for API access
+export { leadStorage };
+
 /**
  * Store lead matches in memory for professionals to access
  */
@@ -57,8 +60,31 @@ async function storeLeadMatches(leadData: any, matchedVendors: any[], matchedTra
     isLookingForPro: leadData.isLookingForPro
   };
   
-  // Store lead
-  leadStorage.set(leadId, lead);
+  // Store lead with detailed professional information
+  const leadWithProfessionals = {
+    ...lead,
+    matchedProfessionals: [...matchedVendors, ...matchedTrades].map(prof => ({
+      uid: prof.uid,
+      businessName: prof.businessName,
+      fullName: prof.fullName,
+      email: prof.email,
+      phone: prof.phone,
+      role: prof.role,
+      rating: prof.rating,
+      totalReviews: prof.totalReviews,
+      yearsExperience: prof.yearsExperience,
+      specialties: prof.specialties,
+      certifications: prof.certifications,
+      licenseNumber: prof.licenseNumber,
+      businessDescription: prof.businessDescription,
+      zipCode: prof.zipCode,
+      distance: parseFloat(prof.distance.toFixed(1)),
+      tier: prof.tier,
+      profileImageUrl: prof.profileImageUrl
+    }))
+  };
+  
+  leadStorage.set(leadId, leadWithProfessionals);
   
   // Assign lead to matched professionals
   [...matchedVendors, ...matchedTrades].forEach(professional => {
@@ -266,11 +292,23 @@ async function matchUsersByGeohash(role: string, origin: { lat: number; lng: num
               uid: user.uid || doc.id,
               distance: distanceInMi,
               businessName: user.businessName || user.name,
+              fullName: user.fullName || user.name,
               email: user.email,
+              phone: user.phone,
               serviceRadius: user.serviceRadius,
               role: user.role,
               productCategories: user.productCategories,
-              tradeCategories: user.tradeCategories
+              tradeCategories: user.tradeCategories,
+              rating: user.ratingAverage || 0,
+              totalReviews: user.totalReviews || 0,
+              yearsExperience: user.yearsExperience || 0,
+              specialties: user.specialties || [],
+              certifications: user.certifications || [],
+              licenseNumber: user.licenseNumber,
+              businessDescription: user.businessDescription,
+              zipCode: user.zipCode,
+              tier: user.tier || 'free',
+              profileImageUrl: user.profileImageUrl
             });
           }
         }

@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Star, Heart, Ban, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Star, Heart, Ban, Clock, CheckCircle, AlertCircle, Mail, Phone, MapPin } from 'lucide-react';
 
 interface LeadDetailModalProps {
   lead: any;
@@ -36,6 +36,14 @@ const LeadDetailModal: React.FC<LeadDetailModalProps> = ({
 
   const fetchMatchedVendors = async () => {
     try {
+      // First check if we have matchedProfessionals data directly in the lead
+      if (lead.matchedProfessionals) {
+        setMatchedVendors(lead.matchedProfessionals);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Fallback to API call
       const response = await fetch(`/api/lead/${lead.id}/vendors`);
       if (response.ok) {
         const data = await response.json();
@@ -159,33 +167,81 @@ const LeadDetailModal: React.FC<LeadDetailModalProps> = ({
                 {matchedVendors.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">Finding professionals for your project...</p>
                 ) : (
-                  matchedVendors.map((vendor: any) => (
-                    <Card key={vendor.id} className="border-l-4 border-blue-500">
+                  matchedVendors.map((vendor: any, index: number) => (
+                    <Card key={vendor.uid || index} className={`border-l-4 ${vendor.role === 'vendor' ? 'border-blue-500' : 'border-green-500'}`}>
                       <CardContent className="pt-6">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-semibold text-lg">{vendor.name}</h4>
-                              <Badge className={`${getStatusColor(vendor.status)} flex items-center gap-1`}>
-                                {getStatusIcon(vendor.status)}
-                                {vendor.status}
+                              <h4 className="font-semibold text-lg">
+                                {vendor.businessName || vendor.fullName}
+                              </h4>
+                              <Badge className={`${vendor.role === 'vendor' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                                {vendor.role}
                               </Badge>
+                              {vendor.tier && (
+                                <Badge variant="outline" className="text-xs">
+                                  {vendor.tier}
+                                </Badge>
+                              )}
                             </div>
                             
-                            {vendor.rating && (
+                            {/* Contact Information */}
+                            <div className="bg-gray-50 p-3 rounded-lg mb-3">
+                              <h5 className="font-medium text-gray-900 mb-2">Contact Information</h5>
+                              <div className="space-y-1 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-gray-600">Email:</span>
+                                  <a href={`mailto:${vendor.email}`} className="text-blue-600 hover:underline">
+                                    {vendor.email}
+                                  </a>
+                                </div>
+                                {vendor.phone && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-gray-600">Phone:</span>
+                                    <a href={`tel:${vendor.phone}`} className="text-blue-600 hover:underline">
+                                      {vendor.phone}
+                                    </a>
+                                  </div>
+                                )}
+                                {vendor.zipCode && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-gray-600">ZIP Code:</span>
+                                    <span className="text-gray-900">{vendor.zipCode}</span>
+                                  </div>
+                                )}
+                                <div className="flex items-center gap-2">
+                                  <span className="text-gray-600">Distance:</span>
+                                  <span className="text-gray-900">{vendor.distance} miles away</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Rating and Experience */}
+                            {vendor.rating > 0 && (
                               <div className="flex items-center gap-2 mb-2">
                                 <div className="flex">{renderStars(vendor.rating)}</div>
                                 <span className="text-sm text-gray-600">
-                                  {vendor.rating.toFixed(1)} ({vendor.reviewCount} reviews)
+                                  {vendor.rating.toFixed(1)} ({vendor.totalReviews || 0} reviews)
                                 </span>
                               </div>
                             )}
                             
                             <div className="text-sm text-gray-600 space-y-1">
-                              <p>Specialties: {vendor.specialties?.join(', ') || 'General'}</p>
-                              <p>Service Areas: {vendor.serviceAreas?.join(', ') || 'Local'}</p>
-                              {vendor.yearsExperience && (
-                                <p>Experience: {vendor.yearsExperience} years</p>
+                              {vendor.specialties && vendor.specialties.length > 0 && (
+                                <p><strong>Specialties:</strong> {vendor.specialties.join(', ')}</p>
+                              )}
+                              {vendor.yearsExperience > 0 && (
+                                <p><strong>Experience:</strong> {vendor.yearsExperience} years</p>
+                              )}
+                              {vendor.certifications && vendor.certifications.length > 0 && (
+                                <p><strong>Certifications:</strong> {vendor.certifications.join(', ')}</p>
+                              )}
+                              {vendor.licenseNumber && (
+                                <p><strong>License:</strong> {vendor.licenseNumber}</p>
+                              )}
+                              {vendor.businessDescription && (
+                                <p className="mt-2"><strong>About:</strong> {vendor.businessDescription}</p>
                               )}
                             </div>
                           </div>
@@ -194,15 +250,15 @@ const LeadDetailModal: React.FC<LeadDetailModalProps> = ({
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => onFavorite(vendor.id)}
-                              className={userData?.favoriteVendors?.includes(vendor.id) ? 'text-red-500' : ''}
+                              onClick={() => onFavorite(vendor.uid)}
+                              className={userData?.favoriteVendors?.includes(vendor.uid) ? 'text-red-500' : ''}
                             >
-                              <Heart className={`h-4 w-4 ${userData?.favoriteVendors?.includes(vendor.id) ? 'fill-red-500' : ''}`} />
+                              <Heart className={`h-4 w-4 ${userData?.favoriteVendors?.includes(vendor.uid) ? 'fill-red-500' : ''}`} />
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => onBlock(vendor.id)}
+                              onClick={() => onBlock(vendor.uid)}
                               className="text-red-500 hover:text-red-700"
                             >
                               <Ban className="h-4 w-4" />
@@ -212,15 +268,12 @@ const LeadDetailModal: React.FC<LeadDetailModalProps> = ({
                         
                         <div className="mt-4 flex justify-between items-center">
                           <div className="text-sm text-gray-500">
-                            {vendor.assignedAt && (
-                              <p>Assigned: {new Date(vendor.assignedAt).toLocaleDateString()}</p>
-                            )}
+                            <p>Lead sent to this professional</p>
                           </div>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setShowReviewForm(vendor.id)}
-                            disabled={vendor.status !== 'contacted'}
+                            onClick={() => setShowReviewForm(vendor.uid)}
                           >
                             Leave Review
                           </Button>
