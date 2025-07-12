@@ -26,6 +26,7 @@ import {
 import SmartMatchAI from '@/components/SmartMatchAI';
 import GoogleMap from '@/components/GoogleMap';
 import { useSessionPersistence } from '@/hooks/useSessionPersistence';
+import { sessionManager } from '@/utils/sessionManager';
 
 interface LeadData {
   id: string;
@@ -67,29 +68,34 @@ const VendorDashboard: React.FC = () => {
   });
 
   useEffect(() => {
-    if (!loading) {
-      // Check authentication and session
-      if (!userProfile || !sessionActive) {
-        console.log('⚠️ Authentication failed, redirecting to signin');
-        navigate('/auth?tab=signin');
-        return;
-      }
-      
-      // Check role
-      if (userProfile.role !== 'vendor') {
-        console.log('⚠️ User is not a vendor, redirecting to appropriate dashboard');
-        if (userProfile.role === 'trade') {
-          navigate('/trade-dashboard');
-        } else {
-          navigate('/dashboard');
-        }
-        return;
-      }
-      
-      // Fetch dashboard data if authenticated
-      fetchDashboardData();
+    // Use sessionManager for more reliable authentication
+    const sessionUser = sessionManager.getSession();
+    
+    if (!sessionUser) {
+      console.log('⚠️ No valid session found, redirecting to signin');
+      navigate('/auth?tab=signin');
+      return;
     }
-  }, [userProfile, loading, navigate, sessionActive]);
+    
+    // Check if user is a vendor
+    if (sessionUser.role !== 'vendor') {
+      console.log('⚠️ User is not a vendor, redirecting to appropriate dashboard');
+      if (sessionUser.role === 'trade') {
+        navigate('/trade-dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+      return;
+    }
+    
+    console.log('✅ Vendor session validated:', sessionUser.email);
+    
+    // Update activity timestamp
+    sessionManager.updateLastActivity();
+    
+    // Fetch dashboard data
+    fetchDashboardData();
+  }, [navigate]);
 
   const fetchDashboardData = async () => {
     try {

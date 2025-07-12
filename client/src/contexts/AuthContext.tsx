@@ -17,6 +17,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
+import { sessionManager } from '@/utils/sessionManager';
 
 interface CompanyUser {
   uid: string;
@@ -101,8 +102,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Function to clear localStorage and force fresh auth
   const clearAuthCache = () => {
-    localStorage.removeItem('comperra-user');
-    localStorage.removeItem('comperra-session-time');
+    sessionManager.clearSession();
     localStorage.removeItem('comperra-last-check');
     setUser(null);
     setUserProfile(null);
@@ -111,39 +111,29 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Enhanced session restoration with timeout checks
   const restoreSession = () => {
     try {
-      const storedUser = localStorage.getItem('comperra-user');
-      const sessionTime = localStorage.getItem('comperra-session-time');
+      const userData = sessionManager.getSession();
       
-      if (storedUser && sessionTime) {
-        const userData = JSON.parse(storedUser);
-        const sessionAge = Date.now() - parseInt(sessionTime);
+      if (userData) {
+        // Check for known accounts with correct roles
+        const knownAccounts = {
+          'testvendor@comperra.com': 'vendor',
+          'testtrade@comperra.com': 'trade',
+          'testcustomer@comperra.com': 'customer',
+          'ochynoweth@luxsurfacesgroup.com': 'vendor',
+          'owenchynoweth2003@gmail.com': 'vendor'
+        };
         
-        // Session valid for 24 hours
-        if (sessionAge < 24 * 60 * 60 * 1000) {
-          // Check for known accounts with correct roles
-          const knownAccounts = {
-            'testvendor@comperra.com': 'vendor',
-            'testtrade@comperra.com': 'trade',
-            'testcustomer@comperra.com': 'customer',
-            'ochynoweth@luxsurfacesgroup.com': 'vendor',
-            'owenchynoweth2003@gmail.com': 'vendor'
-          };
-          
-          const expectedRole = knownAccounts[userData.email];
-          if (expectedRole && userData.role !== expectedRole) {
-            console.log('⚠️ Role mismatch detected, clearing cache');
-            clearAuthCache();
-            return false;
-          }
-          
-          setUser(userData);
-          setUserProfile(userData);
-          console.log('✅ Restored user session from localStorage:', userData);
-          return true;
-        } else {
-          console.log('⚠️ Session expired, clearing cache');
+        const expectedRole = knownAccounts[userData.email];
+        if (expectedRole && userData.role !== expectedRole) {
+          console.log('⚠️ Role mismatch detected, clearing cache');
           clearAuthCache();
+          return false;
         }
+        
+        setUser(userData);
+        setUserProfile(userData);
+        console.log('✅ Restored user session from sessionManager:', userData);
+        return true;
       }
     } catch (error) {
       console.error('Error restoring session:', error);
@@ -371,12 +361,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           // Set user state from API response
           setUser(result.user);
           setUserProfile(result.user);
-          localStorage.setItem('comperra-user', JSON.stringify(result.user));
-          localStorage.setItem('comperra-session-time', Date.now().toString());
+          
+          // Use sessionManager for reliable session management
+          sessionManager.saveSession(result.user);
           
           console.log('✅ Fallback sign in successful, user:', result.user);
           
-          // Small delay to ensure state is set before redirect
+          // Use a more reliable redirect approach
           setTimeout(() => {
             // Redirect based on user role
             if (result.user.role === 'vendor') {
@@ -386,7 +377,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             } else {
               window.location.href = '/dashboard';
             }
-          }, 100);
+          }, 750); // Longer delay to ensure state is fully committed
         } else {
           throw new Error(result.message || 'Authentication failed');
         }
@@ -421,6 +412,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
       
       // Clear all local storage and state
+      sessionManager.clearSession();
       clearAuthCache();
       setUser(null);
       setUserProfile(null);
