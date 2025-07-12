@@ -168,32 +168,62 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         throw new Error('Password must contain at least one letter and one number');
       }
 
-      // Create user with Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, signUpData.email, signUpData.password);
-      
-      // Save user profile to Firestore (with error handling)
+      // Try Firebase Auth first
       try {
-        await saveUserToFirestore(userCredential.user, {
-          role: signUpData.role,
-          name: signUpData.name,
-          phone: signUpData.phone,
-          companyName: signUpData.companyName,
-          customerType: signUpData.customerType,
-          signInMethod: 'email',
-          createdAt: serverTimestamp()
+        const userCredential = await createUserWithEmailAndPassword(auth, signUpData.email, signUpData.password);
+        
+        // Save user profile to Firestore (with error handling)
+        try {
+          await saveUserToFirestore(userCredential.user, {
+            role: signUpData.role,
+            name: signUpData.name,
+            phone: signUpData.phone,
+            companyName: signUpData.companyName,
+            customerType: signUpData.customerType,
+            signInMethod: 'email',
+            createdAt: serverTimestamp()
+          });
+        } catch (firestoreError) {
+          console.warn('Firestore save failed, user still created:', firestoreError);
+          // Continue with signup even if Firestore fails
+        }
+        
+        // Send email verification
+        await sendEmailVerification(userCredential.user);
+        
+        console.log('✅ Firebase sign up successful');
+        
+        // Redirect to homepage after signup
+        window.location.href = '/';
+        return;
+      } catch (firebaseError: any) {
+        console.warn('Firebase signup failed, trying fallback:', firebaseError);
+        
+        // Fallback to API-based authentication
+        const response = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(signUpData),
         });
-      } catch (firestoreError) {
-        console.warn('Firestore save failed, user still created:', firestoreError);
-        // Continue with signup even if Firestore fails
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // Set user state from API response
+          setUser(result.user);
+          setUserProfile(result.user);
+          localStorage.setItem('comperra-user', JSON.stringify(result.user));
+          
+          console.log('✅ Fallback sign up successful');
+          
+          // Redirect to homepage after signup
+          window.location.href = '/';
+        } else {
+          throw new Error(result.message || 'Account creation failed');
+        }
       }
-      
-      // Send email verification
-      await sendEmailVerification(userCredential.user);
-      
-      console.log('✅ Sign up successful');
-      
-      // Redirect to homepage after signup
-      window.location.href = '/';
     } catch (error: any) {
       console.error('Sign up error:', error);
       throw error;
@@ -207,23 +237,53 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         throw new Error('Email and password are required');
       }
 
-      // Sign in with Firebase Auth
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      
-      // Update user profile in Firestore (with error handling)
+      // Try Firebase Auth first
       try {
-        await saveUserToFirestore(userCredential.user, {
-          signInMethod: 'email'
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        
+        // Update user profile in Firestore (with error handling)
+        try {
+          await saveUserToFirestore(userCredential.user, {
+            signInMethod: 'email'
+          });
+        } catch (firestoreError) {
+          console.warn('Firestore update failed, signin still successful:', firestoreError);
+          // Continue with signin even if Firestore fails
+        }
+        
+        console.log('✅ Firebase sign in successful');
+        
+        // Redirect to homepage after signin
+        window.location.href = '/';
+        return;
+      } catch (firebaseError: any) {
+        console.warn('Firebase signin failed, trying fallback:', firebaseError);
+        
+        // Fallback to API-based authentication
+        const response = await fetch('/api/auth/signin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
         });
-      } catch (firestoreError) {
-        console.warn('Firestore update failed, signin still successful:', firestoreError);
-        // Continue with signin even if Firestore fails
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // Set user state from API response
+          setUser(result.user);
+          setUserProfile(result.user);
+          localStorage.setItem('comperra-user', JSON.stringify(result.user));
+          
+          console.log('✅ Fallback sign in successful');
+          
+          // Redirect to homepage after signin
+          window.location.href = '/';
+        } else {
+          throw new Error(result.message || 'Authentication failed');
+        }
       }
-      
-      console.log('✅ Sign in successful');
-      
-      // Redirect to homepage after signin
-      window.location.href = '/';
     } catch (error: any) {
       console.error('Sign in error:', error);
       throw error;

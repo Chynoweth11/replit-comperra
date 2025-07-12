@@ -12,13 +12,13 @@ import { getStorage } from "firebase/storage";
 // Support email: ochynoweth@luxsurfacesgroup.com
 // Auth handler: https://comperra-done.firebaseapp.com/__/auth/handler
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyC7zXxEiPi77xZt2bPY1jcxt9fJcYxKk94",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "comperra-done.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "comperra-done",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "comperra-done.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "636329572028",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:636329572028:web:aa3a66f248e5b320c142b9",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-QMBYGHYWRW"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase app (singleton pattern)
