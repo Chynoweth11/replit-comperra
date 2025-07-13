@@ -26,7 +26,9 @@ import {
   CheckCircle,
   AlertCircle,
   Home,
-  LogOut
+  LogOut,
+  X,
+  Users
 } from 'lucide-react';
 import LeadDetailModal from '@/components/LeadDetailModal';
 import { ProfessionalNetwork } from '@/components/ProfessionalNetwork';
@@ -474,6 +476,26 @@ const CustomerDashboard: React.FC = () => {
         onFavorite={handleFavoriteVendor}
         onBlock={handleBlockVendor}
       />
+
+      {/* Professional Network Modal */}
+      {showProfessionalNetwork && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-full max-h-full w-full h-full overflow-auto">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="text-xl font-semibold">Comperra Connect</h2>
+              <button
+                onClick={() => setShowProfessionalNetwork(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="p-4">
+              <ProfessionalNetwork skipToCustomer={true} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

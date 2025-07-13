@@ -562,8 +562,8 @@ function ProfessionalAuthPage({ onBack }) {
     );
 }
 
-function LandingPage() {
-    const [view, setView] = useState('landing'); 
+function LandingPage({ skipToCustomer = false }) {
+    const [view, setView] = useState(skipToCustomer ? 'customer' : 'landing'); 
 
     if (view === 'customer') {
         return <SubmitLeadForm onBack={() => setView('landing')} />;
@@ -616,16 +616,16 @@ function AdminPanel() {
     );
 }
 
-function AppContent() {
+function AppContent({ skipToCustomer = false }) {
     const { user, loading } = useContext(AuthContext);
     if (loading) { return <div className="text-center mt-10"><SkeletonLoader className="h-48 w-full max-w-2xl mx-auto" /></div>; }
     if (user?.isAdmin) return <AdminPanel />;
     // Always show LandingPage for professionals route regardless of login status
-    return <LandingPage />;
+    return <LandingPage skipToCustomer={skipToCustomer} />;
 }
 
 // Main App Component
-export const ProfessionalNetwork = () => {
+export const ProfessionalNetwork = ({ skipToCustomer = false }) => {
     return (
         <div className="min-h-screen bg-gray-50">
             <Header />
@@ -635,7 +635,7 @@ export const ProfessionalNetwork = () => {
                     <div className="flex items-center justify-center gap-3"><ShieldCheck className="h-10 w-10 text-blue-600" /><h1 className="text-5xl font-bold text-slate-900">Comperra Connect</h1></div>
                 </header>
                 <main className="w-full max-w-6xl mx-auto flex-grow flex items-center justify-center">
-                    <AppContent />
+                    <AppContent skipToCustomer={skipToCustomer} />
                 </main>
                  <footer className="text-center mt-12 text-sm text-slate-500 pb-8">
                     <p>&copy; {new Date().getFullYear()} Comperra Connect. All rights reserved.</p>
