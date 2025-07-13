@@ -74,6 +74,9 @@ function Router() {
         <Route path="/brands" component={Brands} />
         <Route path="/vendors" component={Vendors} />
         <Route path="/professionals" component={ProfessionalNetwork} />
+        <Route path="/professionals/customer">
+          {() => <ProfessionalNetwork skipToCustomer={true} />}
+        </Route>
         <Route path="/professional-network" component={ProfessionalNetwork} />
         <Route path="/firebase-demo" component={FirebaseDemo} />
         <Route path="/auth" component={AuthPage} />
