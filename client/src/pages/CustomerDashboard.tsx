@@ -29,6 +29,7 @@ import {
   LogOut
 } from 'lucide-react';
 import LeadDetailModal from '@/components/LeadDetailModal';
+import { ProfessionalNetwork } from '@/components/ProfessionalNetwork';
 
 interface Lead {
   id: string;
@@ -61,9 +62,9 @@ const CustomerDashboard: React.FC = () => {
   // State
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [showProfessionalNetwork, setShowProfessionalNetwork] = useState(false);
 
   // Redirect if not authenticated or not a customer
   useEffect(() => {
@@ -290,6 +291,11 @@ const CustomerDashboard: React.FC = () => {
     );
   }
 
+  // Show ProfessionalNetwork component when user wants to create a lead
+  if (showProfessionalNetwork) {
+    return <ProfessionalNetwork />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -387,175 +393,10 @@ const CustomerDashboard: React.FC = () => {
         {/* Leads Section */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-gray-900">My Project Leads</h2>
-          <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create New Lead
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Find a Pro or Supplier</DialogTitle>
-                <p className="text-sm text-gray-600 mt-1">
-                  Get quotes from verified installers and vendors for your project
-                </p>
-              </DialogHeader>
-              <form onSubmit={handleCreateLead} className="space-y-4">
-                {/* Contact Information */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name">Full Name *</Label>
-                    <Input id="name" name="name" required placeholder="Enter your full name" />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input id="email" name="email" type="email" required placeholder="Enter your email" />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="phone">Phone Number *</Label>
-                    <Input id="phone" name="phone" type="tel" required placeholder="Enter your phone number" />
-                  </div>
-                  <div>
-                    <Label htmlFor="customerType">Customer Type *</Label>
-                    <Select name="customerType" required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select customer type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="homeowner">Homeowner</SelectItem>
-                        <SelectItem value="designer">Designer</SelectItem>
-                        <SelectItem value="architect">Architect</SelectItem>
-                        <SelectItem value="trade">Trade Professional</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                {/* Location Information */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="address">Address *</Label>
-                    <Input id="address" name="address" required placeholder="Enter your address" />
-                  </div>
-                  <div>
-                    <Label htmlFor="city">City *</Label>
-                    <Input id="city" name="city" required placeholder="Enter your city" />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="state">State *</Label>
-                    <Input id="state" name="state" required placeholder="Enter your state" />
-                  </div>
-                  <div>
-                    <Label htmlFor="zip">ZIP Code *</Label>
-                    <Input id="zip" name="zip" required placeholder="Enter your ZIP code" />
-                  </div>
-                </div>
-                
-                {/* Project Information */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="materialCategory">Material Category *</Label>
-                    <Select name="materialCategory" required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select material" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="tiles">Tiles</SelectItem>
-                        <SelectItem value="slabs">Stone & Slabs</SelectItem>
-                        <SelectItem value="lvt">Vinyl & LVT</SelectItem>
-                        <SelectItem value="hardwood">Hardwood</SelectItem>
-                        <SelectItem value="carpet">Carpet</SelectItem>
-                        <SelectItem value="heat">Heating</SelectItem>
-                        <SelectItem value="thermostats">Thermostats</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="projectType">Project Type *</Label>
-                    <Select name="projectType" required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select project type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="installation">Installation</SelectItem>
-                        <SelectItem value="renovation">Renovation</SelectItem>
-                        <SelectItem value="repair">Repair</SelectItem>
-                        <SelectItem value="consultation">Consultation</SelectItem>
-                        <SelectItem value="new-construction">New Construction</SelectItem>
-                        <SelectItem value="remodel">Remodel</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="budget">Budget (optional)</Label>
-                    <Input id="budget" name="budget" type="number" placeholder="Enter your budget" />
-                  </div>
-                  <div>
-                    <Label htmlFor="timeline">Timeline</Label>
-                    <Select name="timeline">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select timeline" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="immediate">Immediate (within 1 week)</SelectItem>
-                        <SelectItem value="1-2weeks">1-2 weeks</SelectItem>
-                        <SelectItem value="1month">Within 1 month</SelectItem>
-                        <SelectItem value="2-3months">2-3 months</SelectItem>
-                        <SelectItem value="flexible">Flexible</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div>
-                  <Label htmlFor="projectDetails">Project Details</Label>
-                  <Textarea
-                    id="projectDetails"
-                    name="projectDetails"
-                    placeholder="Describe your project, specific requirements, and any other details..."
-                    rows={3}
-                  />
-                </div>
-                
-                {/* Professional Preference */}
-                <div>
-                  <Label htmlFor="professionalType" className="text-sm font-medium mb-2 block">
-                    I'm looking for a:
-                  </Label>
-                  <Select name="professionalType" defaultValue="vendor">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select professional type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="vendor">Vendor (Material Supplier)</SelectItem>
-                      <SelectItem value="trade">Trade Professional (Contractor/Installer)</SelectItem>
-                      <SelectItem value="both">Both Vendors and Trade Professionals</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="flex justify-end space-x-2">
-                  <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700">
-                    {isSubmitting ? 'Finding Professionals...' : 'Get Matched Now'}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => setShowProfessionalNetwork(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create New Lead
+          </Button>
         </div>
 
         {/* Leads Grid */}
@@ -567,7 +408,7 @@ const CustomerDashboard: React.FC = () => {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No leads yet</h3>
               <p className="text-gray-500 mb-4">Create your first project lead to connect with professionals</p>
-              <Button onClick={() => setIsCreateModalOpen(true)}>
+              <Button onClick={() => setShowProfessionalNetwork(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create Lead
               </Button>
