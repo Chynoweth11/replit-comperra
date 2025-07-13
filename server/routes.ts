@@ -438,27 +438,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "No URLs provided" });
       }
 
-      // Validate all URLs before processing
-      const supportedDomains = [
-        'msisurfaces.com', 'daltile.com', 'arizonatile.com', 'floridatile.com',
-        'emser.com', 'marazziusa.com', 'cambriasurfaces.com', 'shawfloors.com',
-        'mohawkflooring.com', 'coretecfloors.com', 'grainger.com'
-      ];
-      
+      // Validate URLs are properly formatted (but allow any domain)
       const invalidUrls = [];
       const validUrls = [];
       
       for (const url of urls) {
         try {
-          const urlObj = new URL(url);
-          const urlDomain = urlObj.hostname.toLowerCase();
-          const isSupported = supportedDomains.some(domain => urlDomain.includes(domain));
-          
-          if (isSupported) {
-            validUrls.push(url);
-          } else {
-            invalidUrls.push(url);
-          }
+          new URL(url); // Just validate URL format, don't restrict domains
+          validUrls.push(url);
         } catch (urlError) {
           invalidUrls.push(url);
         }
@@ -466,7 +453,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (validUrls.length === 0) {
         return res.status(400).json({
-          error: "No valid manufacturer URLs found. Please use URLs from MSI, Daltile, Arizona Tile, Shaw, Mohawk, Cambria, or other major building material manufacturers.",
+          error: "No valid URLs found. Please ensure URLs are properly formatted (e.g., https://example.com/product).",
           invalidUrls: invalidUrls
         });
       }
@@ -483,11 +470,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const url = validUrls[i];
         try {
           console.log(`Processing URL ${i + 1}/${validUrls.length}: ${url}`);
-          const scrapedProduct = await simulationScraper.scrapeAndSaveFromURL(url);
+          const scrapedProduct = await simulationScraper.scrapeRealProductFromURL(url);
           
           if (scrapedProduct) {
             scrapedProducts.push(scrapedProduct);
-            const material = simulationScraper.convertToMaterial(scrapedProduct);
+            // Convert to material format and save to storage
+            const material = {
+              name: scrapedProduct.name,
+              brand: scrapedProduct.brand,
+              category: scrapedProduct.category,
+              price: scrapedProduct.price,
+              imageUrl: scrapedProduct.imageUrl,
+              description: scrapedProduct.description,
+              specifications: scrapedProduct.specifications,
+              dimensions: scrapedProduct.dimensions,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            };
             await storage.createMaterial(material);
             savedCount++;
             console.log(`✅ Successfully scraped and saved: ${scrapedProduct.name}`);
@@ -554,10 +553,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process URLs sequentially
       for (const url of urls) {
         try {
-          const scrapedProduct = await simulationScraper.scrapeAndSaveFromURL(url);
+          const scrapedProduct = await simulationScraper.scrapeRealProductFromURL(url);
           if (scrapedProduct) {
             scrapedProducts.push(scrapedProduct);
-            const material = simulationScraper.convertToMaterial(scrapedProduct);
+            // Convert to material format and save to storage
+            const material = {
+              name: scrapedProduct.name,
+              brand: scrapedProduct.brand,
+              category: scrapedProduct.category,
+              price: scrapedProduct.price,
+              imageUrl: scrapedProduct.imageUrl,
+              description: scrapedProduct.description,
+              specifications: scrapedProduct.specifications,
+              dimensions: scrapedProduct.dimensions,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            };
             await storage.createMaterial(material);
             savedCount++;
           }
