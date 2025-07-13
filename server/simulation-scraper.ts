@@ -482,6 +482,21 @@ export class SimulationScraper {
         'th:contains("Size"), th:contains("Dimensions")'
       ];
       
+      // Enhanced size/color extraction for better product information
+      const sizeSelectors = [
+        '.size-options, .available-sizes, .product-sizes',
+        '.size-selection, .size-list, .sizes',
+        'select[name*="size"], select[id*="size"]',
+        '.size-variant, .size-choice'
+      ];
+      
+      const colorSelectors = [
+        '.color-options, .available-colors, .product-colors',
+        '.color-selection, .color-list, .colors',
+        'select[name*="color"], select[id*="color"]',
+        '.color-variant, .color-choice'
+      ];
+      
       let extractedDimensions = '';
       
       // First, try to find dimensions in table cells and structured data
@@ -543,18 +558,63 @@ export class SimulationScraper {
         }
       }
       
+      // Extract size and color information (separate from dimensions)
+      let extractedSizes = [];
+      let extractedColors = [];
+      
+      // Extract available sizes
+      for (const selector of sizeSelectors) {
+        const sizeElements = $(selector);
+        if (sizeElements.length) {
+          sizeElements.find('option, .size-option, .size-item').each((_, el) => {
+            const sizeText = $(el).text().trim();
+            if (sizeText && sizeText.length > 1 && sizeText.length < 50 && !sizeText.includes('{{')) {
+              extractedSizes.push(sizeText);
+            }
+          });
+          if (extractedSizes.length > 0) break;
+        }
+      }
+      
+      // Extract available colors
+      for (const selector of colorSelectors) {
+        const colorElements = $(selector);
+        if (colorElements.length) {
+          colorElements.find('option, .color-option, .color-item').each((_, el) => {
+            const colorText = $(el).text().trim();
+            if (colorText && colorText.length > 1 && colorText.length < 50 && !colorText.includes('{{')) {
+              extractedColors.push(colorText);
+            }
+          });
+          if (extractedColors.length > 0) break;
+        }
+      }
+      
       // Store extracted dimensions with validation and category awareness
-      if (extractedDimensions && !extractedDimensions.includes('{{')) {
+      if (extractedDimensions && !extractedDimensions.includes('{{') && extractedDimensions.length > 1) {
         // For slabs, use Slab Dimensions instead of Dimensions to avoid confusion
         if (category === 'slabs') {
           specs['Slab Dimensions'] = extractedDimensions;
           console.log(`✅ Successfully extracted slab dimensions: ${extractedDimensions}`);
         } else {
           specs['Dimensions'] = extractedDimensions;
+          // Also set Size field with proper validation
+          specs['Size'] = extractedDimensions;
           console.log(`✅ Successfully extracted dimensions: ${extractedDimensions}`);
         }
       } else {
         console.log(`❌ No valid dimensions found, using category default`);
+      }
+      
+      // Store extracted sizes and colors if found
+      if (extractedSizes.length > 0) {
+        specs['Available Sizes'] = extractedSizes.slice(0, 5).join(', '); // Limit to 5 sizes
+        console.log(`✅ Successfully extracted sizes: ${extractedSizes.join(', ')}`);
+      }
+      
+      if (extractedColors.length > 0) {
+        specs['Available Colors'] = extractedColors.slice(0, 5).join(', '); // Limit to 5 colors
+        console.log(`✅ Successfully extracted colors: ${extractedColors.join(', ')}`);
       }
       
       // Real specification extraction is now handled by extractRealSpecifications method
@@ -1507,11 +1567,72 @@ export class SimulationScraper {
     finalSpecs['Product URL'] = finalSpecs['Product URL'] || url;
     finalSpecs['Image URL'] = finalSpecs['Image URL'] || imageUrl;
     
-    // Clean up any template variables from all specifications
+    // Ensure Size and Dimensions fields are properly set for each category
+    if (category !== 'slabs') {
+      const categoryDimensions = {
+        tiles: '12" x 12"',
+        lvt: '6" x 48"',
+        hardwood: '3.25" x Random Length',
+        carpet: '12\' Width',
+        heat: '10 sq ft coverage',
+        thermostats: '3.5" x 5.5" x 1.2"'
+      };
+      
+      if (!finalSpecs['Dimensions'] || finalSpecs['Dimensions'].length < 3) {
+        finalSpecs['Dimensions'] = categoryDimensions[category as keyof typeof categoryDimensions] || '12" x 12"';
+      }
+      
+      if (!finalSpecs['Size'] || finalSpecs['Size'].length < 3) {
+        finalSpecs['Size'] = finalSpecs['Dimensions'];
+      }
+    } else {
+      // For slabs, use Slab Dimensions instead of Size/Dimensions
+      if (!finalSpecs['Slab Dimensions'] || finalSpecs['Slab Dimensions'].length < 3) {
+        finalSpecs['Slab Dimensions'] = '120" x 60"';
+      }
+      // Remove Size and Dimensions fields for slabs to avoid confusion
+      delete finalSpecs['Size'];
+      delete finalSpecs['Dimensions'];
+    }
+    
+    // Clean up any template variables and invalid data from all specifications
     Object.keys(finalSpecs).forEach(key => {
-      if (typeof finalSpecs[key] === 'string' && finalSpecs[key].includes('{{')) {
-        console.log(`❌ Removing template variable from ${key}: ${finalSpecs[key]}`);
-        delete finalSpecs[key];
+      const value = finalSpecs[key];
+      if (typeof value === 'string') {
+        // Remove template variables
+        if (value.includes('{{') || value.includes('}}')) {
+          console.log(`❌ Removing template variable from ${key}: ${value}`);
+          delete finalSpecs[key];
+          return;
+        }
+        
+        // Remove single character values (except for valid ones like "A", "B" grades)
+        if (value.length === 1 && !['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'].includes(value.toUpperCase())) {
+          console.log(`❌ Removing single character value from ${key}: ${value}`);
+          delete finalSpecs[key];
+          return;
+        }
+        
+        // Remove values that are just numbers without context (except for valid fields)
+        if (/^\d+$/.test(value.trim()) && !['PEI Rating', 'Janka Hardness', 'Thickness', 'Width', 'Coverage', 'Load Capacity', 'Voltage'].includes(key)) {
+          console.log(`❌ Removing context-less number from ${key}: ${value}`);
+          delete finalSpecs[key];
+          return;
+        }
+        
+        // Remove values that are too long (likely scraped incorrectly)
+        if (value.length > 200) {
+          console.log(`❌ Removing overly long value from ${key}: ${value.substring(0, 50)}...`);
+          delete finalSpecs[key];
+          return;
+        }
+        
+        // Validate Size and Dimensions fields specifically
+        if ((key === 'Size' || key === 'Dimensions') && value.length < 3) {
+          console.log(`❌ Removing invalid size/dimension value from ${key}: ${value}`);
+          delete finalSpecs[key];
+          return;
+        }
       }
     });
     
@@ -1524,8 +1645,16 @@ export class SimulationScraper {
         delete finalSpecs['Dimensions'];
       } else {
         finalSpecs['Dimensions'] = defaultDimensions;
+        // Ensure Size field is populated with same value as Dimensions
+        finalSpecs['Size'] = defaultDimensions;
       }
       console.log(`✅ Using fallback dimensions for ${category}: ${defaultDimensions}`);
+    }
+    
+    // Ensure Size field is populated for non-slab categories
+    if (category !== 'slabs' && !finalSpecs['Size'] && finalSpecs['Dimensions']) {
+      finalSpecs['Size'] = finalSpecs['Dimensions'];
+      console.log(`✅ Setting Size field to match Dimensions: ${finalSpecs['Dimensions']}`);
     }
     
     // For slabs, ensure consistency between dimensions fields and remove any incorrect tile dimensions
