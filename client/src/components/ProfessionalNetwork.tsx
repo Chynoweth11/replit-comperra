@@ -380,7 +380,7 @@ function Dashboard() {
     );
 }
 
-function SubmitLeadForm({ onBack }) {
+export function SubmitLeadForm({ onBack }) {
     const initialFormState = { 
         name: '', 
         email: '', 

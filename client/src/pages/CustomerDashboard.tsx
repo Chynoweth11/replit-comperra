@@ -31,7 +31,7 @@ import {
   Users
 } from 'lucide-react';
 import LeadDetailModal from '@/components/LeadDetailModal';
-import { ProfessionalNetwork } from '@/components/ProfessionalNetwork';
+import { ProfessionalNetwork, SubmitLeadForm } from '@/components/ProfessionalNetwork';
 
 interface Lead {
   id: string;
@@ -491,7 +491,7 @@ const CustomerDashboard: React.FC = () => {
               </button>
             </div>
             <div className="p-4">
-              <ProfessionalNetwork skipToCustomer={true} />
+              <SubmitLeadForm onBack={() => setShowProfessionalNetwork(false)} />
             </div>
           </div>
         </div>
