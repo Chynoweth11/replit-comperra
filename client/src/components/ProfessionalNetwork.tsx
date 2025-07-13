@@ -547,8 +547,8 @@ export function SubmitLeadForm({ onBack }) {
     );
 }
 
-function ProfessionalAuthPage({ onBack }) {
-    const [view, setView] = useState('login');
+function ProfessionalAuthPage({ onBack, defaultView = 'login' }) {
+    const [view, setView] = useState(defaultView);
     return (
         <div className="w-full max-w-md mx-auto animate-fade-in">
              <div className="mb-6">
@@ -572,7 +572,7 @@ function LandingPage({ skipToCustomer = false, skipToProfessional = false }) {
         return <SubmitLeadForm onBack={() => setView('landing')} />;
     }
     if (view === 'pro') {
-        return <ProfessionalAuthPage onBack={() => setView('landing')} />;
+        return <ProfessionalAuthPage onBack={() => setView('landing')} defaultView="register" />;
     }
 
     return (
