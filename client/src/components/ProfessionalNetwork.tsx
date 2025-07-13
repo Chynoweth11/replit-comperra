@@ -563,7 +563,9 @@ function ProfessionalAuthPage({ onBack }) {
 }
 
 function LandingPage({ skipToCustomer = false }) {
+    console.log('🔍 LandingPage skipToCustomer:', skipToCustomer);
     const [view, setView] = useState(skipToCustomer ? 'customer' : 'landing'); 
+    console.log('🔍 LandingPage initial view:', view);
 
     if (view === 'customer') {
         return <SubmitLeadForm onBack={() => setView('landing')} />;
@@ -626,6 +628,7 @@ function AppContent({ skipToCustomer = false }) {
 
 // Main App Component
 export const ProfessionalNetwork = ({ skipToCustomer = false }) => {
+    console.log('🔍 ProfessionalNetwork skipToCustomer:', skipToCustomer);
     return (
         <div className="min-h-screen bg-gray-50">
             <Header />
