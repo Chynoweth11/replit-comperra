@@ -41,7 +41,7 @@ export default function AuthPage() {
               Join our professional network to receive qualified leads and grow your business.
             </p>
             <Button
-              onClick={() => setLocation('/professional-network')}
+              onClick={() => setLocation('/professionals/register')}
               className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
             >
               <UserPlus className="mr-2 h-4 w-4" />

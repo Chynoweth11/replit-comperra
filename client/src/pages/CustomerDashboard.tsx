@@ -293,10 +293,7 @@ const CustomerDashboard: React.FC = () => {
     );
   }
 
-  // Show ProfessionalNetwork component when user wants to create a lead
-  if (showProfessionalNetwork) {
-    return <ProfessionalNetwork />;
-  }
+
 
   return (
     <div className="min-h-screen bg-gray-50">

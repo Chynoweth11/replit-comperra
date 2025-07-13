@@ -76,7 +76,7 @@ export default function Home() {
               <p className="text-slate-600 mb-6 flex-grow">
                 Join our network to receive qualified leads and grow your business
               </p>
-              <Link href="/professionals">
+              <Link href="/professionals/register">
                 <button className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 font-medium">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />

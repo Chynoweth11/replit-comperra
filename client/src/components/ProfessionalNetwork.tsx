@@ -562,9 +562,10 @@ function ProfessionalAuthPage({ onBack }) {
     );
 }
 
-function LandingPage({ skipToCustomer = false }) {
+function LandingPage({ skipToCustomer = false, skipToProfessional = false }) {
     console.log('🔍 LandingPage skipToCustomer:', skipToCustomer);
-    const [view, setView] = useState(skipToCustomer ? 'customer' : 'landing'); 
+    console.log('🔍 LandingPage skipToProfessional:', skipToProfessional);
+    const [view, setView] = useState(skipToCustomer ? 'customer' : (skipToProfessional ? 'pro' : 'landing')); 
     console.log('🔍 LandingPage initial view:', view);
 
     if (view === 'customer') {
@@ -618,17 +619,18 @@ function AdminPanel() {
     );
 }
 
-function AppContent({ skipToCustomer = false }) {
+function AppContent({ skipToCustomer = false, skipToProfessional = false }) {
     const { user, loading } = useContext(AuthContext);
     if (loading) { return <div className="text-center mt-10"><SkeletonLoader className="h-48 w-full max-w-2xl mx-auto" /></div>; }
     if (user?.isAdmin) return <AdminPanel />;
     // Always show LandingPage for professionals route regardless of login status
-    return <LandingPage skipToCustomer={skipToCustomer} />;
+    return <LandingPage skipToCustomer={skipToCustomer} skipToProfessional={skipToProfessional} />;
 }
 
 // Main App Component
-export const ProfessionalNetwork = ({ skipToCustomer = false }) => {
+export const ProfessionalNetwork = ({ skipToCustomer = false, skipToProfessional = false }) => {
     console.log('🔍 ProfessionalNetwork skipToCustomer:', skipToCustomer);
+    console.log('🔍 ProfessionalNetwork skipToProfessional:', skipToProfessional);
     return (
         <div className="min-h-screen bg-gray-50">
             <Header />
@@ -638,7 +640,7 @@ export const ProfessionalNetwork = ({ skipToCustomer = false }) => {
                     <div className="flex items-center justify-center gap-3"><ShieldCheck className="h-10 w-10 text-blue-600" /><h1 className="text-5xl font-bold text-slate-900">Comperra Connect</h1></div>
                 </header>
                 <main className="w-full max-w-6xl mx-auto flex-grow flex items-center justify-center">
-                    <AppContent skipToCustomer={skipToCustomer} />
+                    <AppContent skipToCustomer={skipToCustomer} skipToProfessional={skipToProfessional} />
                 </main>
                  <footer className="text-center mt-12 text-sm text-slate-500 pb-8">
                     <p>&copy; {new Date().getFullYear()} Comperra Connect. All rights reserved.</p>
