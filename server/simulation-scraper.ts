@@ -42,9 +42,11 @@ export class SimulationScraper {
     if (matches && matches.length >= 2) {
         const width = parseFloat(matches[0]);
         const height = parseFloat(matches[1]);
-        const SLAB_THRESHOLD_INCHES = 48;
-        if (width > SLAB_THRESHOLD_INCHES || height > SLAB_THRESHOLD_INCHES) {
-            console.log(`📏 Dimension check: ${dimensions} classified as SLAB.`);
+        // Slabs are typically 60+ inches in at least one dimension
+        // 24x48 tiles should remain as tiles, not slabs
+        const SLAB_THRESHOLD_INCHES = 60;
+        if (width >= SLAB_THRESHOLD_INCHES || height >= SLAB_THRESHOLD_INCHES) {
+            console.log(`📏 Dimension check: ${dimensions} classified as SLAB (≥60" threshold).`);
             return true;
         }
     }
