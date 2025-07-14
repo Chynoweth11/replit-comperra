@@ -1015,9 +1015,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ success: false, error: 'Authentication required' });
       }
 
-      // Get real leads from the matching system
-      const { getLeadsForProfessionalByEmail } = await import('./lead-matching');
-      const realLeads = getLeadsForProfessionalByEmail(currentUser.email);
+      // Get consistent leads from the vendor leads store
+      const realLeads = vendorLeadsStore.get(currentUser.email) || [];
       
       // Calculate metrics based on real data
       const totalMatches = realLeads.length;
@@ -1136,6 +1135,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Vendor-specific endpoints
+  // Global leads storage for consistency across vendor dashboard
+  const vendorLeadsStore = new Map<string, any[]>();
+
   app.get('/api/vendor/leads', async (req: Request, res: Response) => {
     try {
       // Get current user from session
@@ -1147,45 +1149,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('🔍 Fetching leads for vendor:', currentUser.email);
       
-      // Get real leads from the matching system
-      const { getLeadsForProfessionalByEmail } = await import('./lead-matching');
-      const realLeads = getLeadsForProfessionalByEmail(currentUser.email);
+      // Get or create consistent leads for this vendor
+      let vendorLeads = vendorLeadsStore.get(currentUser.email);
       
-      // If no real leads, provide sample leads for demonstration
-      const sampleLeads = realLeads.length > 0 ? realLeads : [
-        {
-          id: 'sample-lead-1',
-          customerName: 'John Smith',
-          customerEmail: 'john@example.com',
-          customerPhone: '555-0123',
-          zipCode: '81620',
-          materialCategory: 'Tiles',
-          projectType: 'Bathroom Renovation',
-          projectDetails: 'Looking for porcelain tiles for master bathroom',
-          budget: 5000,
-          timeline: '2-3 weeks',
-          status: 'new',
-          createdAt: new Date(),
-          distance: '15 miles'
-        },
-        {
-          id: 'sample-lead-2', 
-          customerName: 'Sarah Johnson',
-          customerEmail: 'sarah@example.com',
-          customerPhone: '555-0456',
-          zipCode: '81620',
-          materialCategory: 'Stone & Slabs',
-          projectType: 'Kitchen Remodel',
-          projectDetails: 'Need granite countertops for kitchen island',
-          budget: 8000,
-          timeline: '1 month',
-          status: 'contacted',
-          createdAt: new Date(Date.now() - 86400000), // 1 day ago
-          distance: '8 miles'
-        }
-      ];
+      if (!vendorLeads) {
+        vendorLeads = [
+          {
+            id: 'sample-lead-1',
+            customerName: 'John Smith',
+            customerEmail: 'john@example.com',
+            customerPhone: '555-0123',
+            zipCode: '81620',
+            materialCategory: 'Tiles',
+            projectType: 'Bathroom Renovation',
+            projectDetails: 'Looking for porcelain tiles for master bathroom',
+            budget: 5000,
+            timeline: '2-3 weeks',
+            status: 'new',
+            createdAt: new Date(),
+            distance: '15 miles'
+          },
+          {
+            id: 'sample-lead-2', 
+            customerName: 'Sarah Johnson',
+            customerEmail: 'sarah@example.com',
+            customerPhone: '555-0456',
+            zipCode: '81620',
+            materialCategory: 'Stone & Slabs',
+            projectType: 'Kitchen Remodel',
+            projectDetails: 'Need granite countertops for kitchen island',
+            budget: 8000,
+            timeline: '1 month',
+            status: 'contacted',
+            createdAt: new Date(Date.now() - 86400000), // 1 day ago
+            distance: '8 miles'
+          }
+        ];
+        vendorLeadsStore.set(currentUser.email, vendorLeads);
+      }
       
-      res.json({ success: true, leads: sampleLeads });
+      res.json({ success: true, leads: vendorLeads });
     } catch (error) {
       console.error('Error fetching vendor leads:', error);
       res.status(500).json({ success: false, error: 'Internal server error' });
@@ -1499,8 +1502,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/vendor-lead/:vendorLeadId/status', async (req: Request, res: Response) => {
     try {
-      const { updateVendorLeadStatus } = await import('./advanced-lead-matching');
-      await updateVendorLeadStatus(req.params.vendorLeadId, req.body.status);
+      const { vendorLeadId } = req.params;
+      const { status, vendorId } = req.body;
+      
+      console.log(`📝 Updating lead ${vendorLeadId} status to: ${status}`);
+      
+      // Get current user from session
+      const currentUser = await getCurrentUser();
+      
+      if (!currentUser || currentUser.role !== 'vendor') {
+        return res.status(401).json({ success: false, error: 'Vendor authentication required' });
+      }
+      
+      // Update the lead status in the vendor's leads store
+      const vendorLeads = vendorLeadsStore.get(currentUser.email);
+      if (vendorLeads) {
+        const leadIndex = vendorLeads.findIndex(lead => lead.id === vendorLeadId);
+        if (leadIndex !== -1) {
+          vendorLeads[leadIndex].status = status;
+          vendorLeads[leadIndex].updatedAt = new Date();
+          vendorLeadsStore.set(currentUser.email, vendorLeads);
+          console.log(`✅ Lead ${vendorLeadId} status updated to: ${status}`);
+        }
+      }
+      
       res.json({ success: true, message: 'Status updated successfully' });
     } catch (error) {
       console.error('Error updating vendor lead status:', error);
