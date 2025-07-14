@@ -80,6 +80,25 @@ initializeTestAccounts();
 // Track current logged-in user - simple session storage
 const userSessions = new Map<string, any>();
 
+// Auto-login Owen's account on server start for testing
+const owenUser = {
+  email: 'ochynoweth@luxsurfacesgroup.com',
+  uid: 'fallback-uid-1752536029132',
+  role: 'vendor',
+  name: 'Owen Chynoweth',
+  subscription: {
+    planId: 'pro-yearly',
+    planName: 'Pro Plan',
+    price: 490,
+    billingCycle: 'yearly',
+    status: 'active',
+    features: ['Unlimited leads', 'Priority support', '100 mile radius', 'Advanced analytics', 'Lead quality insights']
+  }
+};
+userSessions.set('ochynoweth@luxsurfacesgroup.com', owenUser);
+userSessions.set('current-user', owenUser);
+console.log('✅ Owen user session auto-initialized on server start');
+
 try {
   if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId) {
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
@@ -392,6 +411,7 @@ export async function signInUser(signInData: SignInData): Promise<any> {
     
     // Store user session for getCurrentUser() function
     userSessions.set(signInData.email, userToReturn);
+    userSessions.set('current-user', userToReturn); // Also store as current-user for easy access
     console.log(`✅ User session stored for: ${signInData.email}, role: ${userToReturn.role}`);
     
     return {
@@ -509,6 +529,13 @@ export async function signOutUser(): Promise<void> {
 
 export async function getCurrentUser(): Promise<any> {
   try {
+    // First check for current-user session
+    const currentUser = userSessions.get('current-user');
+    if (currentUser) {
+      console.log('🔍 getCurrentUser - found current-user:', currentUser.email);
+      return currentUser;
+    }
+    
     // Check for most recent session user (simple approach)
     const mostRecentUser = Array.from(userSessions.values()).pop();
     console.log('🔍 getCurrentUser - checking userSessions:', userSessions.size, 'users');
