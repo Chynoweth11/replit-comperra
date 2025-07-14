@@ -194,19 +194,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Direct scraping without any storage operations
       const { simulationScraper } = await import('./simulation-scraper');
-      const scrapedProduct = await simulationScraper.scrapeRealProductFromURL(url);
+      const scrapedProducts = await simulationScraper.scrapeRealProductFromURL(url);
       
-      if (scrapedProduct && scrapedProduct.name) {
+      if (scrapedProducts && scrapedProducts.length > 0) {
+        const scrapedProduct = scrapedProducts[0];
         res.json({
           success: true,
-          message: "✅ Scraper working perfectly!",
+          message: "✅ Enhanced scraper working perfectly!",
           extracted: {
             name: scrapedProduct.name,
             brand: scrapedProduct.brand,
             category: scrapedProduct.category,
             specifications_count: Object.keys(scrapedProduct.specifications || {}).length,
             has_image: !!scrapedProduct.imageUrl,
-            source: scrapedProduct.sourceUrl
+            source: scrapedProduct.sourceUrl,
+            price: scrapedProduct.price,
+            dimensions: scrapedProduct.dimensions,
+            total_products: scrapedProducts.length
           }
         });
       } else {
@@ -263,13 +267,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Processing scraping request for: ${url}`);
       
-      // Scrape the product 
+      // Scrape the product using enhanced system
       const { simulationScraper } = await import('./simulation-scraper');
-      const scrapedProduct = await simulationScraper.scrapeRealProductFromURL(url);
+      const scrapedProducts = await simulationScraper.scrapeRealProductFromURL(url);
       
-      console.log('Scraping result:', scrapedProduct ? { name: scrapedProduct.name, category: scrapedProduct.category, brand: scrapedProduct.brand } : 'NULL');
+      console.log('Scraping result:', scrapedProducts ? `${scrapedProducts.length} products found` : 'NULL');
       
-      if (scrapedProduct && scrapedProduct.name) {
+      if (scrapedProducts && scrapedProducts.length > 0) {
+        const scrapedProduct = scrapedProducts[0]; // Take the first product
         console.log('Scraped product successfully!');
         console.log('Product data:', { name: scrapedProduct.name, category: scrapedProduct.category });
         
@@ -283,6 +288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           description: scrapedProduct.description,
           specifications: scrapedProduct.specifications,
           dimensions: scrapedProduct.dimensions,
+          sourceUrl: scrapedProduct.sourceUrl,
           createdAt: new Date(),
           updatedAt: new Date()
         };
