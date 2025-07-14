@@ -12,9 +12,12 @@ interface LeadCaptureModalProps {
   isOpen: boolean;
   onClose: () => void;
   productName?: string;
+  requestType?: 'pricing' | 'sample';
+  productSpecs?: any;
+  productUrl?: string;
 }
 
-export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadCaptureModalProps) {
+export default function LeadCaptureModal({ isOpen, onClose, productName, requestType = 'pricing', productSpecs, productUrl }: LeadCaptureModalProps) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -32,8 +35,8 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
     message: "",
     isLookingForPro: false,
     professionalType: "vendor",
-    materialCategory: "",
-    source: "pricing-request"
+    materialCategories: [] as string[],
+    source: requestType === 'sample' ? "sample-request" : "pricing-request"
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -41,10 +44,10 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.email || !formData.phone || !formData.address || !formData.city || !formData.state || !formData.zip) {
+    if (!formData.name || !formData.email || !formData.phone || !formData.address || !formData.city || !formData.state || !formData.zip || formData.materialCategories.length === 0) {
       toast({
         title: "Required fields missing",
-        description: "Please fill in all required fields marked with *",
+        description: "Please fill in all required fields marked with * and select at least one material category",
         variant: "destructive"
       });
       return;
@@ -66,7 +69,8 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
           zipCode: formData.zip,
           projectDetails: formData.projectDetails,
           description: formData.message,
-          materialCategory: formData.materialCategory,
+          materialCategories: formData.materialCategories,
+          materialCategory: formData.materialCategories[0] || "",
           projectType: formData.projectType,
           timeline: formData.timeline,
           budget: formData.budget,
@@ -76,7 +80,10 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
           address: formData.address,
           city: formData.city,
           state: formData.state,
-          source: formData.source
+          source: formData.source,
+          requestType: requestType,
+          productSpecs: productSpecs,
+          productUrl: productUrl
         }),
       });
 
@@ -84,8 +91,10 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
 
       if (result.success) {
         toast({
-          title: "Thank you!",
-          description: "We'll be in touch with pricing and availability information soon.",
+          title: requestType === 'sample' ? "Sample request submitted!" : "Request submitted successfully!",
+          description: requestType === 'sample' 
+            ? "We'll process your sample request and contact you with availability details soon."
+            : "We'll be in touch with pricing and availability information soon.",
         });
         setFormData({ 
           name: "", 
@@ -104,7 +113,7 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
           message: "",
           isLookingForPro: false,
           professionalType: "vendor",
-          materialCategory: "",
+          materialCategories: [] as string[],
           source: "pricing-request"
         });
         onClose();
@@ -131,7 +140,9 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Get Pricing Information</DialogTitle>
+          <DialogTitle>
+            {requestType === 'sample' ? 'Request Product Samples' : 'Get Pricing Information'}
+          </DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -307,31 +318,69 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
           </div>
           
           <div>
-            <Label htmlFor="materialCategory">Material Category</Label>
-            <Select value={formData.materialCategory} onValueChange={(value) => handleInputChange("materialCategory", value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select material category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="tiles">Tiles</SelectItem>
-                <SelectItem value="stone-slabs">Stone & Slabs</SelectItem>
-                <SelectItem value="vinyl-lvt">Vinyl & LVT</SelectItem>
-                <SelectItem value="hardwood">Hardwood</SelectItem>
-                <SelectItem value="carpet">Carpet</SelectItem>
-                <SelectItem value="heating">Heating Systems</SelectItem>
-                <SelectItem value="thermostats">Thermostats</SelectItem>
-                <SelectItem value="multiple">Multiple Categories</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label>Material Categories *</Label>
+            <div className="space-y-2 mt-2">
+              {['tiles', 'stone-slabs', 'vinyl-lvt', 'hardwood', 'carpet', 'heating', 'thermostats'].map((category) => (
+                <div key={category} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={category}
+                    checked={formData.materialCategories.includes(category)}
+                    onCheckedChange={(checked) => {
+                      const newCategories = checked
+                        ? [...formData.materialCategories, category]
+                        : formData.materialCategories.filter(c => c !== category);
+                      setFormData(prev => ({ ...prev, materialCategories: newCategories }));
+                    }}
+                  />
+                  <Label htmlFor={category} className="text-sm font-normal">
+                    {category === 'stone-slabs' ? 'Stone & Slabs' : 
+                     category === 'vinyl-lvt' ? 'Vinyl & LVT' : 
+                     category.charAt(0).toUpperCase() + category.slice(1)}
+                  </Label>
+                </div>
+              ))}
+            </div>
           </div>
 
+          {/* Sample Request Specific Fields */}
+          {requestType === 'sample' && productSpecs && (
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <h3 className="font-semibold mb-2">Product Specifications</h3>
+              <div className="text-sm space-y-1">
+                {Object.entries(productSpecs).map(([key, value]) => (
+                  <div key={key} className="flex justify-between">
+                    <span className="font-medium">{key}:</span>
+                    <span>{value}</span>
+                  </div>
+                ))}
+              </div>
+              {productUrl && (
+                <div className="mt-2">
+                  <a 
+                    href={productUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline text-sm"
+                  >
+                    View Original Product →
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
+
           <div>
-            <Label htmlFor="projectDetails">Project Details</Label>
+            <Label htmlFor="projectDetails">
+              {requestType === 'sample' ? 'Sample Requirements' : 'Project Details'}
+            </Label>
             <Textarea
               id="projectDetails"
               value={formData.projectDetails}
               onChange={(e) => handleInputChange("projectDetails", e.target.value)}
-              placeholder="Describe your project requirements, measurements, specifications, or any specific needs..."
+              placeholder={requestType === 'sample' 
+                ? "Please specify sample size requirements, quantity needed, or any special requests..."
+                : "Describe your project requirements, measurements, specifications, or any specific needs..."
+              }
               rows={4}
             />
           </div>
@@ -378,7 +427,7 @@ export default function LeadCaptureModal({ isOpen, onClose, productName }: LeadC
               className="flex-1 bg-royal text-white hover:bg-royal-dark"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Submitting..." : "Get Pricing"}
+              {isSubmitting ? "Submitting..." : (requestType === 'sample' ? 'Request Samples' : 'Get Pricing')}
             </Button>
           </div>
         </form>

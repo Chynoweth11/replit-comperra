@@ -403,6 +403,9 @@ export default function ProductDetail() {
         isOpen={leadModalOpen}
         onClose={() => setLeadModalOpen(false)}
         productName={selectedProduct}
+        requestType={requestType}
+        productSpecs={material?.specifications}
+        productUrl={material?.productUrl}
       />
 
       <Footer />
