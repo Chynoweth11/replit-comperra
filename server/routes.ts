@@ -13,8 +13,8 @@ import {
 } from './professional-matching.js';
 import { createAccount, signInUser, resetPassword, signOutUser, getCurrentUser, SignUpData, SignInData, sendSignInLink, isEmailSignInLink, completeEmailSignIn } from "./firebase-auth.js";
 
-// Initialize memory storage (primary) for immediate functionality
-const storage = new MemStorage();
+// Initialize database storage for user profiles
+import { storage } from './storage.js';
 // Initialize Firebase storage for background persistence when available
 const firebaseStorage = new FirebaseStorage();
 import { productScraper } from "./scraper.js";
@@ -1779,6 +1779,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error getting customer leads:', error);
       res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // User Profile Management Routes
+  app.get('/api/user/profile/:uid', async (req: Request, res: Response) => {
+    try {
+      const { uid } = req.params;
+      const user = await storage.getUserByUid(uid);
+      
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      res.json({ user });
+    } catch (error) {
+      console.error('Error getting user profile:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.put('/api/user/profile/:uid', async (req: Request, res: Response) => {
+    try {
+      const { uid } = req.params;
+      const updates = req.body;
+      
+      // Validate required fields
+      if (!updates.name || !updates.email) {
+        return res.status(400).json({ error: 'Name and email are required' });
+      }
+      
+      // Update user profile
+      const updatedUser = await storage.updateUserByUid(uid, updates);
+      
+      res.json({ 
+        success: true, 
+        message: 'Profile updated successfully',
+        user: updatedUser 
+      });
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      res.status(500).json({ error: 'Failed to update profile' });
+    }
+  });
+
+  app.post('/api/user/profile', async (req: Request, res: Response) => {
+    try {
+      const userData = req.body;
+      
+      // Validate required fields
+      if (!userData.uid || !userData.email || !userData.role) {
+        return res.status(400).json({ error: 'UID, email, and role are required' });
+      }
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByUid(userData.uid);
+      if (existingUser) {
+        // Update existing user
+        const updatedUser = await storage.updateUserByUid(userData.uid, userData);
+        return res.json({ 
+          success: true, 
+          message: 'Profile updated successfully',
+          user: updatedUser 
+        });
+      }
+      
+      // Create new user
+      const newUser = await storage.createUser(userData);
+      
+      res.json({ 
+        success: true, 
+        message: 'Profile created successfully',
+        user: newUser 
+      });
+    } catch (error) {
+      console.error('Error creating/updating user profile:', error);
+      res.status(500).json({ error: 'Failed to create/update profile' });
     }
   });
 

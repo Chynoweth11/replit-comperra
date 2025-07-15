@@ -45,18 +45,79 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (user) {
-      // Load profile from localStorage or use user data
-      const savedProfile = localStorage.getItem(`profile_${user.uid}`);
-      if (savedProfile) {
-        setProfile(JSON.parse(savedProfile));
-      } else {
-        // Initialize with basic user info
-        setProfile(prev => ({
-          ...prev,
-          displayName: user.displayName || '',
-          email: user.email || ''
-        }));
-      }
+      // Load profile from database
+      const loadProfile = async () => {
+        try {
+          const response = await fetch(`/api/user/profile/${user.uid}`);
+          if (response.ok) {
+            const result = await response.json();
+            const userData = result.user;
+            setProfile({
+              displayName: userData.name || user.displayName || '',
+              email: userData.email || user.email || '',
+              zipCode: userData.zipCode || '',
+              phoneNumber: userData.phone || '',
+              companyName: userData.companyName || '',
+              preferences: {
+                emailNotifications: userData.emailNotifications ?? true,
+                smsNotifications: userData.smsNotifications ?? false,
+                newsletterSubscription: userData.newsletterSubscription ?? true
+              }
+            });
+          } else {
+            // Create user profile if it doesn't exist
+            const createResponse = await fetch('/api/user/profile', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                uid: user.uid,
+                email: user.email,
+                name: user.displayName,
+                role: user.role || 'customer',
+                emailNotifications: true,
+                smsNotifications: false,
+                newsletterSubscription: true
+              }),
+            });
+            
+            if (createResponse.ok) {
+              const createResult = await createResponse.json();
+              const userData = createResult.user;
+              setProfile({
+                displayName: userData.name || user.displayName || '',
+                email: userData.email || user.email || '',
+                zipCode: userData.zipCode || '',
+                phoneNumber: userData.phone || '',
+                companyName: userData.companyName || '',
+                preferences: {
+                  emailNotifications: userData.emailNotifications ?? true,
+                  smsNotifications: userData.smsNotifications ?? false,
+                  newsletterSubscription: userData.newsletterSubscription ?? true
+                }
+              });
+            } else {
+              // Fallback to user data
+              setProfile(prev => ({
+                ...prev,
+                displayName: user.displayName || '',
+                email: user.email || ''
+              }));
+            }
+          }
+        } catch (error) {
+          console.error('Error loading profile:', error);
+          // Fallback to user data
+          setProfile(prev => ({
+            ...prev,
+            displayName: user.displayName || '',
+            email: user.email || ''
+          }));
+        }
+      };
+      
+      loadProfile();
     }
   }, [user]);
 
@@ -80,8 +141,31 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // Save to localStorage (in a real app, this would be an API call)
-      localStorage.setItem(`profile_${user?.uid}`, JSON.stringify(profile));
+      // Save to database using API
+      const response = await fetch(`/api/user/profile/${user?.uid}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: profile.displayName,
+          email: profile.email,
+          phone: profile.phoneNumber,
+          zipCode: profile.zipCode,
+          companyName: profile.companyName,
+          emailNotifications: profile.preferences.emailNotifications,
+          smsNotifications: profile.preferences.smsNotifications,
+          newsletterSubscription: profile.preferences.newsletterSubscription,
+          role: user?.role || 'customer',
+          uid: user?.uid
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save profile');
+      }
+      
+      const result = await response.json();
       
       toast({
         title: "Profile Updated",
@@ -101,11 +185,30 @@ export default function ProfilePage() {
     }
   };
 
-  const handleCancel = () => {
-    // Reload profile from storage
-    const savedProfile = localStorage.getItem(`profile_${user?.uid}`);
-    if (savedProfile) {
-      setProfile(JSON.parse(savedProfile));
+  const handleCancel = async () => {
+    // Reload profile from database
+    if (user) {
+      try {
+        const response = await fetch(`/api/user/profile/${user.uid}`);
+        if (response.ok) {
+          const result = await response.json();
+          const userData = result.user;
+          setProfile({
+            displayName: userData.name || user.displayName || '',
+            email: userData.email || user.email || '',
+            zipCode: userData.zipCode || '',
+            phoneNumber: userData.phone || '',
+            companyName: userData.companyName || '',
+            preferences: {
+              emailNotifications: userData.emailNotifications ?? true,
+              smsNotifications: userData.smsNotifications ?? false,
+              newsletterSubscription: userData.newsletterSubscription ?? true
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error reloading profile:', error);
+      }
     }
     setIsEditing(false);
   };

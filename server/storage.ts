@@ -2,12 +2,15 @@ import {
   materials, 
   articles, 
   brands,
+  users,
   type Material, 
   type InsertMaterial,
   type Article,
   type InsertArticle,
   type Brand,
-  type InsertBrand
+  type InsertBrand,
+  type User,
+  type InsertUser
 } from "@shared/schema";
 
 export interface IStorage {
@@ -31,6 +34,14 @@ export interface IStorage {
   getBrands(): Promise<Brand[]>;
   getBrand(id: number): Promise<Brand | undefined>;
   createBrand(brand: InsertBrand): Promise<Brand>;
+
+  // Users
+  getUser(id: number): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByUid(uid: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, updates: Partial<InsertUser>): Promise<User>;
+  updateUserByUid(uid: string, updates: Partial<InsertUser>): Promise<User>;
 }
 
 export class MemStorage implements IStorage {
@@ -998,7 +1009,109 @@ Choosing the right thermostat ensures your heating system performs safely, effic
 const useFirebase = true; // Always use Firebase for persistent storage
 
 // Initialize storage with fallback to memory storage
-export const storage: IStorage = new MemStorage();
+import { db } from "./db";
+import { eq } from "drizzle-orm";
+
+export class DatabaseStorage implements IStorage {
+  async getMaterials(filters?: {
+    category?: string;
+    brand?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    search?: string;
+  }): Promise<Material[]> {
+    // For now, return empty array - will implement later
+    return [];
+  }
+
+  async getMaterial(id: number): Promise<Material | undefined> {
+    const [material] = await db.select().from(materials).where(eq(materials.id, id));
+    return material || undefined;
+  }
+
+  async createMaterial(material: InsertMaterial): Promise<Material> {
+    const [newMaterial] = await db.insert(materials).values(material).returning();
+    return newMaterial;
+  }
+
+  async getArticles(): Promise<Article[]> {
+    return db.select().from(articles);
+  }
+
+  async getArticle(id: number): Promise<Article | undefined> {
+    const [article] = await db.select().from(articles).where(eq(articles.id, id));
+    return article || undefined;
+  }
+
+  async createArticle(article: InsertArticle): Promise<Article> {
+    const [newArticle] = await db.insert(articles).values(article).returning();
+    return newArticle;
+  }
+
+  async getBrands(): Promise<Brand[]> {
+    return db.select().from(brands);
+  }
+
+  async getBrand(id: number): Promise<Brand | undefined> {
+    const [brand] = await db.select().from(brands).where(eq(brands.id, id));
+    return brand || undefined;
+  }
+
+  async createBrand(brand: InsertBrand): Promise<Brand> {
+    const [newBrand] = await db.insert(brands).values(brand).returning();
+    return newBrand;
+  }
+
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async getUserByUid(uid: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.uid, uid));
+    return user || undefined;
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    const now = new Date().toISOString();
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        ...user,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning();
+    return newUser;
+  }
+
+  async updateUser(id: number, updates: Partial<InsertUser>): Promise<User> {
+    const now = new Date().toISOString();
+    const [updatedUser] = await db
+      .update(users)
+      .set({ ...updates, updatedAt: now })
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
+  }
+
+  async updateUserByUid(uid: string, updates: Partial<InsertUser>): Promise<User> {
+    const now = new Date().toISOString();
+    const [updatedUser] = await db
+      .update(users)
+      .set({ ...updates, updatedAt: now })
+      .where(eq(users.uid, uid))
+      .returning();
+    return updatedUser;
+  }
+}
+
+export const storage: IStorage = new DatabaseStorage();
 
 console.log('✅ Storage initialized with Memory Storage (Firebase integration available via separate service)');
 

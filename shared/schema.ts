@@ -37,6 +37,24 @@ export const brands = pgTable("brands", {
   logoUrl: text("logo_url"),
 });
 
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  uid: text("uid").notNull().unique(),
+  email: text("email").notNull().unique(),
+  name: text("name"),
+  phone: text("phone"),
+  zipCode: text("zip_code"),
+  companyName: text("company_name"),
+  role: text("role").notNull(), // 'vendor', 'trade', 'customer', 'homeowner'
+  customerType: text("customer_type"), // 'homeowner', 'designer', 'architect', 'contractor', 'other'
+  emailNotifications: boolean("email_notifications").default(true),
+  smsNotifications: boolean("sms_notifications").default(false),
+  newsletterSubscription: boolean("newsletter_subscription").default(true),
+  profileComplete: boolean("profile_complete").default(false),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
 // Material specifications schemas for different categories
 export const tileSpecsSchema = z.object({
   peiRating: z.number().min(1).max(5),
@@ -114,12 +132,20 @@ export const insertBrandSchema = createInsertSchema(brands).omit({
   id: true,
 });
 
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type Material = typeof materials.$inferSelect;
 export type InsertMaterial = z.infer<typeof insertMaterialSchema>;
 export type Article = typeof articles.$inferSelect;
 export type InsertArticle = z.infer<typeof insertArticleSchema>;
 export type Brand = typeof brands.$inferSelect;
 export type InsertBrand = z.infer<typeof insertBrandSchema>;
+export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
 
 export type TileSpecs = z.infer<typeof tileSpecsSchema>;
 export type SlabSpecs = z.infer<typeof slabSpecsSchema>;
