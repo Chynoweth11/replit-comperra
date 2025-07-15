@@ -301,10 +301,10 @@ export default function LeadCaptureModal({ isOpen, onClose, productName, request
           </div>
           
           <div>
-            <Label htmlFor="budget">Estimated Budget</Label>
+            <Label htmlFor="budget">Estimated Budget (Optional)</Label>
             <Select value={formData.budget} onValueChange={(value) => handleInputChange("budget", value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select budget range" />
+                <SelectValue placeholder="Select budget range (optional)" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="under-1000">Under $1,000</SelectItem>

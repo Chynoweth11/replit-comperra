@@ -33,12 +33,16 @@ export interface LeadFormData {
   interest?: string;
   source?: string;
   materialCategory?: string;
+  materialCategories?: string[];
   projectType?: string;
   budget?: number | string;
   timeline?: string;
   projectDetails?: string;
   description?: string;
   product?: string;
+  requestType?: 'pricing' | 'sample';
+  productSpecs?: any;
+  productUrl?: string;
 }
 
 export async function submitLead(formData: LeadFormData): Promise<void> {
@@ -60,13 +64,17 @@ export async function submitLead(formData: LeadFormData): Promise<void> {
       source: formData.source || "customer-request",
       customerType: formData.customerType || "homeowner",
       interest: formData.interest || formData.product || null,
-      materialCategory: (formData.materialCategory || formData.interest || formData.product || "General").toLowerCase(),
+      materialCategory: (formData.materialCategory || formData.materialCategories?.[0] || formData.interest || formData.product || "General").toLowerCase(),
+      materialCategories: formData.materialCategories || [formData.materialCategory || "General"],
       projectType: formData.projectType || "General Inquiry",
       budget: formData.budget || null,
       timeline: formData.timeline || null,
       projectDetails: formData.projectDetails || formData.message || null,
       description: formData.description || formData.message || "",
       isLookingForPro: formData.isLookingForPro || false,
+      requestType: formData.requestType || 'pricing',
+      productSpecs: formData.productSpecs || null,
+      productUrl: formData.productUrl || null,
       status: "new",
       intentScore: calculateIntentScore(formData),
       createdAt: new Date().toISOString(),
@@ -88,6 +96,12 @@ export async function submitLead(formData: LeadFormData): Promise<void> {
     // Always trigger lead matching regardless of Firebase success/failure
     if (leadData.zipCode && leadData.materialCategory) {
       console.log(`🔄 Starting lead matching process for ${leadData.email} with material category: ${leadData.materialCategory}`);
+      console.log(`📋 Lead details: ${leadData.requestType} request for ${leadData.materialCategories?.join(', ') || leadData.materialCategory}`);
+      
+      if (leadData.requestType === 'sample' && leadData.productSpecs) {
+        console.log(`🎯 Sample request includes product specs: ${Object.keys(leadData.productSpecs).join(', ')}`);
+      }
+      
       try {
         // Add timeout to prevent hanging
         await Promise.race([
