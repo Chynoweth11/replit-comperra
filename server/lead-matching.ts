@@ -431,6 +431,7 @@ function getFallbackMatches(role: string, origin: { lat: number; lng: number }, 
 
 /**
  * Fallback lead matching when Firebase is not available
+ * Supports customers looking for vendors, trades, or both
  */
 async function fallbackLeadMatching(leadData: any): Promise<void> {
   console.log('🔄 Running fallback lead matching for:', leadData.email);
@@ -441,83 +442,210 @@ async function fallbackLeadMatching(leadData: any): Promise<void> {
     return;
   }
   
-  // Mock vendor data for demonstration
+  // Handle multiple material categories
+  const materialCategories = leadData.materialCategories || [leadData.materialCategory];
+  console.log(`📋 Fallback matching for categories: ${materialCategories.join(', ')}`);
+  
+  // Determine what type of professionals they're looking for
+  const professionalType = leadData.professionalType || 'vendor';
+  const isLookingForPro = leadData.isLookingForPro || professionalType === 'trade' || professionalType === 'both';
+  const isLookingForVendor = professionalType === 'vendor' || professionalType === 'both';
+  
+  console.log(`👥 Fallback matching for: ${professionalType} (vendors: ${isLookingForVendor}, trades: ${isLookingForPro})`);
+  
+  // Enhanced mock vendor data
   const mockVendors = [
     { 
-      id: 'vendor1', 
+      uid: 'vendor-1', 
       businessName: 'Arizona Tile Supply', 
+      email: 'contact@arizonatile.com',
+      phone: '(602) 555-0123',
       zipCode: '85001', 
-      productCategories: ['tiles', 'slabs'], 
-      email: 'contact@arizonatile.com' 
+      serviceRadius: 50,
+      productCategories: ['tiles', 'stone-slabs'], 
+      role: 'vendor',
+      rating: 4.5,
+      totalReviews: 150,
+      yearsExperience: 10,
+      specialties: ['Ceramic Tiles', 'Natural Stone'],
+      tier: 'pro'
     },
     { 
-      id: 'vendor2', 
+      uid: 'vendor-2', 
       businessName: 'Phoenix Flooring Pro', 
+      email: 'info@phoenixflooring.com',
+      phone: '(602) 555-0124',
       zipCode: '85301', 
-      productCategories: ['lvt', 'hardwood'], 
-      email: 'info@phoenixflooring.com' 
+      serviceRadius: 50,
+      productCategories: ['vinyl-lvt', 'hardwood', 'carpet'], 
+      role: 'vendor',
+      rating: 4.3,
+      totalReviews: 95,
+      yearsExperience: 8,
+      specialties: ['Luxury Vinyl', 'Hardwood Flooring'],
+      tier: 'pro'
+    },
+    { 
+      uid: 'vendor-3', 
+      businessName: 'Colorado Tile & Stone', 
+      email: 'ochynoweth@luxsurfacesgroup.com',
+      phone: '(970) 555-0125',
+      zipCode: '80424', 
+      serviceRadius: 100,
+      productCategories: ['tiles', 'stone-slabs', 'hardwood', 'vinyl-lvt', 'carpet'], 
+      role: 'vendor',
+      rating: 4.8,
+      totalReviews: 200,
+      yearsExperience: 15,
+      specialties: ['All Materials', 'Commercial Projects'],
+      tier: 'premium'
     }
   ];
   
-  // Mock trade data for demonstration
+  // Enhanced mock trade data
   const mockTrades = [
     { 
-      id: 'trade1', 
-      specialty: 'Tile Installation', 
+      uid: 'trade-1', 
+      businessName: 'Elite Tile Installation', 
+      email: 'installer@tilepro.com',
+      phone: '(602) 555-0126',
       zipCode: '85002', 
       serviceRadius: 50, 
-      email: 'installer@tilepro.com' 
+      specialty: 'Tile Installation',
+      tradeCategories: ['tiles', 'stone-slabs'],
+      role: 'trade',
+      rating: 4.6,
+      totalReviews: 120,
+      yearsExperience: 12,
+      specialties: ['Tile Installation', 'Stone Work'],
+      tier: 'pro'
     },
     { 
-      id: 'trade2', 
-      specialty: 'Flooring Installation', 
+      uid: 'trade-2', 
+      businessName: 'Flooring Experts LLC', 
+      email: 'contact@flooringexperts.com',
+      phone: '(602) 555-0127',
       zipCode: '85336', 
       serviceRadius: 75, 
-      email: 'contact@flooringexperts.com' 
+      specialty: 'Flooring Installation',
+      tradeCategories: ['hardwood', 'vinyl-lvt', 'carpet'],
+      role: 'trade',
+      rating: 4.4,
+      totalReviews: 85,
+      yearsExperience: 9,
+      specialties: ['Hardwood Installation', 'Vinyl Installation'],
+      tier: 'pro'
+    },
+    { 
+      uid: 'trade-3', 
+      businessName: 'Colorado Installation Pro', 
+      email: 'testtrade@comperra.com',
+      phone: '(970) 555-0128',
+      zipCode: '80424', 
+      serviceRadius: 100, 
+      specialty: 'All Materials',
+      tradeCategories: ['tiles', 'stone-slabs', 'hardwood', 'vinyl-lvt', 'carpet'],
+      role: 'trade',
+      rating: 4.7,
+      totalReviews: 180,
+      yearsExperience: 14,
+      specialties: ['All Installation Types', 'Commercial Work'],
+      tier: 'premium'
     }
   ];
   
-  const matchedVendors: string[] = [];
-  const matchedTrades: string[] = [];
+  // Track all matches across categories
+  const allMatches = new Map<string, { professional: any, categories: string[] }>();
   
-  // Match vendors within 50 miles
-  mockVendors.forEach(vendor => {
-    const vendorCoords = getCoordsFromZip(vendor.zipCode);
-    if (vendorCoords) {
-      const distance = calculateDistance(
-        leadCoords.lat, leadCoords.lng,
-        vendorCoords.lat, vendorCoords.lng
-      );
-      
-      if (distance <= 50 && vendor.productCategories.includes(leadData.materialCategory)) {
-        matchedVendors.push(vendor.id);
-        console.log(`✅ Matched vendor: ${vendor.businessName} (${distance.toFixed(1)} miles)`);
-      }
+  // Process each material category
+  for (const category of materialCategories) {
+    console.log(`🔍 Fallback processing category: ${category}`);
+    
+    // Match vendors within service radius (if customer wants vendors)
+    if (isLookingForVendor) {
+      mockVendors.forEach(vendor => {
+        const vendorCoords = getCoordsFromZip(vendor.zipCode);
+        if (vendorCoords) {
+          const distance = calculateDistance(
+            leadCoords.lat, leadCoords.lng,
+            vendorCoords.lat, vendorCoords.lng
+          );
+          
+          if (distance <= vendor.serviceRadius && vendor.productCategories.includes(category)) {
+            const key = `vendor-${vendor.uid}`;
+            if (allMatches.has(key)) {
+              allMatches.get(key)!.categories.push(category);
+            } else {
+              allMatches.set(key, {
+                professional: { ...vendor, distance },
+                categories: [category]
+              });
+            }
+            console.log(`✅ Fallback matched vendor: ${vendor.businessName} for ${category} (${distance.toFixed(1)} miles)`);
+          }
+        }
+      });
     }
-  });
-  
-  // Match trades within service radius
-  mockTrades.forEach(trade => {
-    const tradeCoords = getCoordsFromZip(trade.zipCode);
-    if (tradeCoords) {
-      const distance = calculateDistance(
-        leadCoords.lat, leadCoords.lng,
-        tradeCoords.lat, tradeCoords.lng
-      );
-      
-      const serviceRadius = trade.serviceRadius || 50;
-      if (distance <= serviceRadius) {
-        matchedTrades.push(trade.id);
-        console.log(`✅ Matched trade: ${trade.specialty} (${distance.toFixed(1)} miles)`);
-      }
+    
+    // Match trades within service radius (if customer wants trades)
+    if (isLookingForPro) {
+      mockTrades.forEach(trade => {
+        const tradeCoords = getCoordsFromZip(trade.zipCode);
+        if (tradeCoords) {
+          const distance = calculateDistance(
+            leadCoords.lat, leadCoords.lng,
+            tradeCoords.lat, tradeCoords.lng
+          );
+          
+          if (distance <= trade.serviceRadius && trade.tradeCategories.includes(category)) {
+            const key = `trade-${trade.uid}`;
+            if (allMatches.has(key)) {
+              allMatches.get(key)!.categories.push(category);
+            } else {
+              allMatches.set(key, {
+                professional: { ...trade, distance },
+                categories: [category]
+              });
+            }
+            console.log(`✅ Fallback matched trade: ${trade.businessName} for ${category} (${distance.toFixed(1)} miles)`);
+          }
+        }
+      });
     }
-  });
+  }
   
-  console.log(`🎯 Lead matching complete: ${matchedVendors.length} vendors, ${matchedTrades.length} trades`);
+  // Create leads for all matched professionals
+  const vendorMatches = Array.from(allMatches.values()).filter(m => m.professional.role === 'vendor');
+  const tradeMatches = Array.from(allMatches.values()).filter(m => m.professional.role === 'trade');
+  
+  console.log(`🎯 Fallback matching complete: ${vendorMatches.length} vendors, ${tradeMatches.length} trades`);
+  
+  // Store lead matches for each professional with their relevant categories
+  for (const match of allMatches.values()) {
+    const { professional, categories } = match;
+    
+    const customizedLead = {
+      ...leadData,
+      materialCategories: categories,
+      materialCategory: categories[0],
+      assignedTo: professional.uid,
+      assignedToName: professional.businessName,
+      assignedToRole: professional.role,
+      assignedToEmail: professional.email,
+      assignedToPhone: professional.phone,
+      relevantCategories: categories.join(', ')
+    };
+    
+    await storeLeadMatches(customizedLead, 
+      professional.role === 'vendor' ? [professional] : [],
+      professional.role === 'trade' ? [professional] : []
+    );
+  }
 }
 
 /**
  * Enhanced lead matching with intelligent multi-category distribution
+ * Supports customers looking for vendors, trades, or both
  */
 export async function matchLeadWithProfessionals(leadData: any): Promise<void> {
   console.log(`🔄 Starting intelligent lead matching for: ${leadData.email} in ZIP: ${leadData.zipCode}`);
@@ -525,6 +653,13 @@ export async function matchLeadWithProfessionals(leadData: any): Promise<void> {
   // Handle multiple material categories
   const materialCategories = leadData.materialCategories || [leadData.materialCategory];
   console.log(`📋 Material categories requested: ${materialCategories.join(', ')}`);
+  
+  // Determine what type of professionals they're looking for
+  const professionalType = leadData.professionalType || 'vendor';
+  const isLookingForPro = leadData.isLookingForPro || professionalType === 'trade' || professionalType === 'both';
+  const isLookingForVendor = professionalType === 'vendor' || professionalType === 'both';
+  
+  console.log(`👥 Customer is looking for: ${professionalType} (vendors: ${isLookingForVendor}, trades: ${isLookingForPro})`);
   
   const leadCoords = getCoordsFromZip(leadData.zipCode);
   if (!leadCoords) {
@@ -542,45 +677,57 @@ export async function matchLeadWithProfessionals(leadData: any): Promise<void> {
     for (const category of materialCategories) {
       console.log(`🔍 Processing category: ${category}`);
       
-      // Find vendors for this category
-      const vendorsForCategory = await matchUsersByGeohash(
-        "vendor", 
-        leadCoords, 
-        "productCategories", 
-        category
-      );
+      // Find vendors for this category (if customer wants vendors)
+      if (isLookingForVendor) {
+        const vendorsForCategory = await matchUsersByGeohash(
+          "vendor", 
+          leadCoords, 
+          "productCategories", 
+          category
+        );
+        
+        console.log(`🏪 Found ${vendorsForCategory.length} vendors for ${category}`);
+        
+        // Add vendors to the tracking map
+        vendorsForCategory.forEach(vendor => {
+          const key = `vendor-${vendor.uid}`;
+          if (professionalMatches.has(key)) {
+            professionalMatches.get(key)!.categories.push(category);
+          } else {
+            professionalMatches.set(key, { professional: vendor, categories: [category] });
+          }
+        });
+      }
       
-      // Find trades for this category
-      const tradesForCategory = await matchUsersByGeohash(
-        "trade", 
-        leadCoords, 
-        "tradeCategories", 
-        category
-      );
-      
-      // Add vendors to the tracking map
-      vendorsForCategory.forEach(vendor => {
-        const key = `vendor-${vendor.uid}`;
-        if (professionalMatches.has(key)) {
-          professionalMatches.get(key)!.categories.push(category);
-        } else {
-          professionalMatches.set(key, { professional: vendor, categories: [category] });
-        }
-      });
-      
-      // Add trades to the tracking map
-      tradesForCategory.forEach(trade => {
-        const key = `trade-${trade.uid}`;
-        if (professionalMatches.has(key)) {
-          professionalMatches.get(key)!.categories.push(category);
-        } else {
-          professionalMatches.set(key, { professional: trade, categories: [category] });
-        }
-      });
+      // Find trades for this category (if customer wants trades)
+      if (isLookingForPro) {
+        const tradesForCategory = await matchUsersByGeohash(
+          "trade", 
+          leadCoords, 
+          "tradeCategories", 
+          category
+        );
+        
+        console.log(`🔨 Found ${tradesForCategory.length} trades for ${category}`);
+        
+        // Add trades to the tracking map
+        tradesForCategory.forEach(trade => {
+          const key = `trade-${trade.uid}`;
+          if (professionalMatches.has(key)) {
+            professionalMatches.get(key)!.categories.push(category);
+          } else {
+            professionalMatches.set(key, { professional: trade, categories: [category] });
+          }
+        });
+      }
     }
     
     // Log the intelligent distribution results
+    const vendorCount = Array.from(professionalMatches.values()).filter(m => m.professional.role === 'vendor').length;
+    const tradeCount = Array.from(professionalMatches.values()).filter(m => m.professional.role === 'trade').length;
+    
     console.log(`✅ Intelligent matching completed: ${professionalMatches.size} unique professionals`);
+    console.log(`📊 Match breakdown: ${vendorCount} vendors, ${tradeCount} trades`);
     
     professionalMatches.forEach((match, key) => {
       const { professional, categories } = match;
@@ -603,7 +750,10 @@ export async function matchLeadWithProfessionals(leadData: any): Promise<void> {
         assignedToRole: professional.role,
         assignedToEmail: professional.email,
         assignedToPhone: professional.phone,
-        relevantCategories: categories.join(', ')
+        relevantCategories: categories.join(', '),
+        professionalType: leadData.professionalType,
+        isLookingForPro: leadData.isLookingForPro,
+        matchedProfessionalType: professional.role
       };
       
       allLeadAssignments.push({
