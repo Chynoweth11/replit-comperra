@@ -390,7 +390,7 @@ export function SubmitLeadForm({ onBack }) {
         city: '',
         state: '',
         zipCode: '', 
-        materialCategory: '',
+        materialCategories: [],
         projectType: '',
         budget: '',
         timeline: '',
@@ -420,7 +420,8 @@ export function SubmitLeadForm({ onBack }) {
                     city: formData.city,
                     state: formData.state,
                     zipCode: formData.zipCode,
-                    materialCategory: formData.materialCategory,
+                    materialCategories: formData.materialCategories,
+                    materialCategory: formData.materialCategories[0] || '',
                     projectType: formData.projectType,
                     budget: formData.budget,
                     timeline: formData.timeline,
@@ -480,16 +481,34 @@ export function SubmitLeadForm({ onBack }) {
                                 <Input id="state" value={formData.state} onChange={handleChange} placeholder="State *" />
                             </div>
                             <Input id="zipCode" value={formData.zipCode} onChange={handleChange} placeholder="ZIP Code *" />
-                            <Select id="materialCategory" name="materialCategory" value={formData.materialCategory} onChange={handleChange} label="Material Category *">
-                                <option value="">Select material category</option>
-                                <option value="tiles">Tiles</option>
-                                <option value="stone-slabs">Stone & Slabs</option>
-                                <option value="vinyl-lvt">Vinyl & LVT</option>
-                                <option value="hardwood">Hardwood</option>
-                                <option value="carpet">Carpet</option>
-                                <option value="heating">Heating Systems</option>
-                                <option value="thermostats">Thermostats</option>
-                            </Select>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2">Category *</label>
+                                <div className="space-y-2">
+                                    {['tiles', 'stone-slabs', 'vinyl-lvt', 'hardwood', 'carpet', 'heating', 'thermostats'].map((category) => (
+                                        <div key={category} className="flex items-center space-x-2">
+                                            <input
+                                                type="checkbox"
+                                                id={category}
+                                                checked={formData.materialCategories.includes(category)}
+                                                onChange={(e) => {
+                                                    const checked = e.target.checked;
+                                                    const newCategories = checked
+                                                        ? [...formData.materialCategories, category]
+                                                        : formData.materialCategories.filter(c => c !== category);
+                                                    setFormData(prev => ({ ...prev, materialCategories: newCategories }));
+                                                }}
+                                                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
+                                            />
+                                            <label htmlFor={category} className="text-sm font-normal text-slate-700">
+                                                {category === 'stone-slabs' ? 'Stone & Slabs' : 
+                                                 category === 'vinyl-lvt' ? 'Vinyl & LVT' : 
+                                                 category === 'heating' ? 'Heating Systems' :
+                                                 category.charAt(0).toUpperCase() + category.slice(1)}
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                             <Select id="projectType" name="projectType" value={formData.projectType} onChange={handleChange} label="Project Type *">
                                 <option value="">Select project type</option>
                                 <option value="residential">Residential</option>
