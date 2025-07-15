@@ -74,8 +74,11 @@ export default function ProfilePage() {
               body: JSON.stringify({
                 uid: user.uid,
                 email: user.email,
-                name: user.displayName,
+                name: user.displayName || user.name,
                 role: user.role || 'customer',
+                phone: user.phone || '',
+                zipCode: user.zipCode || '',
+                companyName: user.companyName || '',
                 emailNotifications: true,
                 smsNotifications: false,
                 newsletterSubscription: true
@@ -86,11 +89,11 @@ export default function ProfilePage() {
               const createResult = await createResponse.json();
               const userData = createResult.user;
               setProfile({
-                displayName: userData.name || user.displayName || '',
+                displayName: userData.name || user.displayName || user.name || '',
                 email: userData.email || user.email || '',
-                zipCode: userData.zipCode || '',
-                phoneNumber: userData.phone || '',
-                companyName: userData.companyName || '',
+                zipCode: userData.zipCode || user.zipCode || '',
+                phoneNumber: userData.phone || user.phone || '',
+                companyName: userData.companyName || user.companyName || '',
                 preferences: {
                   emailNotifications: userData.emailNotifications ?? true,
                   smsNotifications: userData.smsNotifications ?? false,
@@ -101,8 +104,11 @@ export default function ProfilePage() {
               // Fallback to user data
               setProfile(prev => ({
                 ...prev,
-                displayName: user.displayName || '',
-                email: user.email || ''
+                displayName: user.displayName || user.name || '',
+                email: user.email || '',
+                zipCode: user.zipCode || '',
+                phoneNumber: user.phone || '',
+                companyName: user.companyName || ''
               }));
             }
           }

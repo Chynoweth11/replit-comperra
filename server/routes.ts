@@ -1832,8 +1832,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'UID, email, and role are required' });
       }
       
-      // Check if user already exists
-      const existingUser = await storage.getUserByUid(userData.uid);
+      // Check if user already exists by UID or email
+      let existingUser = await storage.getUserByUid(userData.uid);
+      if (!existingUser) {
+        existingUser = await storage.getUserByEmail(userData.email);
+      }
+      
       if (existingUser) {
         // Update existing user
         const updatedUser = await storage.updateUserByUid(userData.uid, userData);
@@ -1854,6 +1858,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('Error creating/updating user profile:', error);
+      
+      // Handle unique constraint violations
+      if (error.code === '23505') {
+        try {
+          // Try to update the existing user instead
+          const updatedUser = await storage.updateUserByUid(userData.uid, userData);
+          return res.json({ 
+            success: true, 
+            message: 'Profile updated successfully',
+            user: updatedUser 
+          });
+        } catch (updateError) {
+          console.error('Error updating user after constraint violation:', updateError);
+        }
+      }
+      
       res.status(500).json({ error: 'Failed to create/update profile' });
     }
   });
