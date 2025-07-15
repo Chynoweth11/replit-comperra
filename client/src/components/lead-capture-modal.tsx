@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { useRecaptcha } from "@/hooks/useRecaptcha";
 
 interface LeadCaptureModalProps {
   isOpen: boolean;
@@ -40,6 +41,7 @@ export default function LeadCaptureModal({ isOpen, onClose, productName, request
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { executeRecaptcha, isLoading: recaptchaLoading } = useRecaptcha();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +58,9 @@ export default function LeadCaptureModal({ isOpen, onClose, productName, request
     setIsSubmitting(true);
 
     try {
+      // Generate reCAPTCHA token
+      const recaptchaToken = await executeRecaptcha('SUBMIT_LEAD');
+      
       const response = await fetch('/api/lead/submit', {
         method: 'POST',
         headers: {
@@ -83,7 +88,9 @@ export default function LeadCaptureModal({ isOpen, onClose, productName, request
           source: formData.source,
           requestType: requestType,
           productSpecs: productSpecs,
-          productUrl: productUrl
+          productUrl: productUrl,
+          recaptchaToken: recaptchaToken,
+          recaptchaAction: 'SUBMIT_LEAD'
         }),
       });
 
@@ -425,9 +432,9 @@ export default function LeadCaptureModal({ isOpen, onClose, productName, request
             <Button
               type="submit"
               className="flex-1 bg-royal text-white hover:bg-royal-dark"
-              disabled={isSubmitting}
+              disabled={isSubmitting || recaptchaLoading}
             >
-              {isSubmitting ? "Submitting..." : (requestType === 'sample' ? 'Request Samples' : 'Get Pricing')}
+              {isSubmitting || recaptchaLoading ? "Submitting..." : (requestType === 'sample' ? 'Request Samples' : 'Get Pricing')}
             </Button>
           </div>
         </form>
