@@ -400,6 +400,7 @@ export function SubmitLeadForm({ onBack }) {
     const [formData, setFormData] = useState(initialFormState);
     const toast = useToast();
     const [loading, setLoading] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
     const handleChange = e => setFormData(p => ({...p, [e.target.name]: e.target.value}));
     const handleSubmit = async (e) => {
         e.preventDefault(); setLoading(true); 
@@ -447,7 +448,8 @@ export function SubmitLeadForm({ onBack }) {
             
             if (result.success) {
                 toast.toast({ title: 'Success!', description: 'Lead submitted! We will connect you with a pro shortly.' }); 
-                setFormData(initialFormState); 
+                setFormData(initialFormState);
+                setSubmitted(true);
             } else {
                 throw new Error(result.message || 'Failed to submit lead');
             }
@@ -455,6 +457,61 @@ export function SubmitLeadForm({ onBack }) {
         catch(err) { toast.toast({ title: 'Error', description: err.message || 'Failed to submit lead.', variant: 'destructive' }); } 
         finally { setLoading(false); }
     };
+
+    // Show thank you message after successful submission
+    if (submitted) {
+        return (
+            <div className="w-full animate-fade-in text-center">
+                <div className="mb-6">
+                    <button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 font-semibold transition-colors">
+                        <ArrowLeft size={16} />
+                        Back
+                    </button>
+                </div>
+                <div className="max-w-2xl mx-auto">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-8 mb-6">
+                        <div className="flex items-center justify-center mb-4">
+                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                                <ShieldCheck className="w-8 h-8 text-green-600" />
+                            </div>
+                        </div>
+                        <h2 className="text-2xl font-bold text-green-800 mb-2">Thank You!</h2>
+                        <p className="text-green-700 mb-4">Your project request has been submitted successfully.</p>
+                        <div className="text-left bg-white rounded-lg p-4 border border-green-200">
+                            <h3 className="font-semibold text-slate-800 mb-2">What happens next:</h3>
+                            <ul className="space-y-2 text-sm text-slate-600">
+                                <li className="flex items-start gap-2">
+                                    <span className="text-green-600 font-bold">1.</span>
+                                    <span>We're matching you with qualified professionals in your area</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-green-600 font-bold">2.</span>
+                                    <span>You'll receive contact information for matched professionals within 24 hours</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-green-600 font-bold">3.</span>
+                                    <span>Each professional will reach out to discuss your project details</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-green-600 font-bold">4.</span>
+                                    <span>Compare quotes and choose the best fit for your project</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div className="text-center">
+                        <Button onClick={() => { setSubmitted(false); onBack(); }} className="mr-4">
+                            Submit Another Request
+                        </Button>
+                        <Button onClick={() => window.location.href = '/'} variant="outline">
+                            Return to Homepage
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="w-full animate-fade-in">
              <div className="mb-6">
