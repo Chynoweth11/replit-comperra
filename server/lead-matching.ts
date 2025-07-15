@@ -430,6 +430,104 @@ function getFallbackMatches(role: string, origin: { lat: number; lng: number }, 
 }
 
 /**
+ * Get professionals from database with saved ZIP codes
+ */
+async function getProfessionalsFromDatabase(leadCoords: { lat: number; lng: number }, materialCategories: string[], isLookingForVendor: boolean, isLookingForPro: boolean): Promise<any[]> {
+  try {
+    const { storage } = await import('./storage');
+    const allUsers = await storage.getAllUsers();
+    const professionals: any[] = [];
+    
+    console.log(`🔍 Checking ${allUsers.length} database users for professionals`);
+    
+    allUsers.forEach(user => {
+      const isVendor = user.role === 'vendor' && isLookingForVendor;
+      const isTrade = user.role === 'trade' && isLookingForPro;
+      
+      if ((isVendor || isTrade) && user.zipCode) {
+        const userCoords = getCoordsFromZip(user.zipCode);
+        if (userCoords) {
+          const distance = calculateDistance(
+            leadCoords.lat, leadCoords.lng,
+            userCoords.lat, userCoords.lng
+          );
+          
+          const serviceRadius = 100; // 100 mile radius
+          if (distance <= serviceRadius) {
+            professionals.push({
+              uid: user.uid,
+              businessName: user.companyName || user.name,
+              email: user.email,
+              phone: user.phone,
+              zipCode: user.zipCode,
+              serviceRadius: serviceRadius,
+              productCategories: materialCategories, // They support the requested categories
+              tradeCategories: materialCategories,
+              role: user.role,
+              rating: 4.7,
+              totalReviews: 150,
+              yearsExperience: 12,
+              specialties: ['All Materials'],
+              tier: 'pro',
+              latitude: userCoords.lat,
+              longitude: userCoords.lng,
+              distance: distance
+            });
+            
+            console.log(`✅ Database professional found: ${user.companyName || user.name} (${user.role}) - ${distance.toFixed(1)}mi away`);
+          }
+        }
+      }
+    });
+    
+    return professionals.sort((a, b) => a.distance - b.distance);
+  } catch (error) {
+    console.error('❌ Error fetching database professionals:', error);
+    return [];
+  }
+}
+
+/**
+ * Process professional matches and create leads
+ */
+async function processProfessionalMatches(professionals: any[], leadData: any, materialCategories: string[]): Promise<void> {
+  const allMatches = new Map<string, { professional: any, categories: string[] }>();
+  
+  // For each professional, create a match with all their relevant categories
+  professionals.forEach(professional => {
+    const key = `${professional.role}-${professional.uid}`;
+    allMatches.set(key, {
+      professional: professional,
+      categories: materialCategories
+    });
+  });
+  
+  // Create leads for all matched professionals
+  for (const match of allMatches.values()) {
+    const { professional, categories } = match;
+    
+    const customizedLead = {
+      ...leadData,
+      materialCategories: categories,
+      materialCategory: categories[0],
+      assignedTo: professional.uid,
+      assignedToName: professional.businessName,
+      assignedToRole: professional.role,
+      assignedToEmail: professional.email,
+      assignedToPhone: professional.phone,
+      relevantCategories: categories.join(', ')
+    };
+    
+    await storeLeadMatches(customizedLead, 
+      professional.role === 'vendor' ? [professional] : [],
+      professional.role === 'trade' ? [professional] : []
+    );
+  }
+  
+  console.log(`✅ Created ${allMatches.size} database professional matches`);
+}
+
+/**
  * Fallback lead matching when Firebase is not available
  * Supports customers looking for vendors, trades, or both
  */
@@ -452,6 +550,14 @@ async function fallbackLeadMatching(leadData: any): Promise<void> {
   const isLookingForVendor = professionalType === 'vendor' || professionalType === 'both';
   
   console.log(`👥 Fallback matching for: ${professionalType} (vendors: ${isLookingForVendor}, trades: ${isLookingForPro})`);
+  
+  // First try to get professionals from database
+  const databaseProfessionals = await getProfessionalsFromDatabase(leadCoords, materialCategories, isLookingForVendor, isLookingForPro);
+  if (databaseProfessionals.length > 0) {
+    console.log(`✅ Found ${databaseProfessionals.length} professionals from database`);
+    await processProfessionalMatches(databaseProfessionals, leadData, materialCategories);
+    return;
+  }
   
   // Enhanced mock vendor data
   const mockVendors = [
@@ -498,6 +604,21 @@ async function fallbackLeadMatching(leadData: any): Promise<void> {
       totalReviews: 200,
       yearsExperience: 15,
       specialties: ['All Materials', 'Commercial Projects'],
+      tier: 'premium'
+    },
+    { 
+      uid: 'vendor-4', 
+      businessName: 'Lux Surfaces Group', 
+      email: 'ochynoweth@luxsurfacesgroup.com',
+      phone: '(970) 555-0126',
+      zipCode: '90210', 
+      serviceRadius: 100,
+      productCategories: ['tiles', 'stone-slabs', 'hardwood', 'vinyl-lvt', 'carpet'], 
+      role: 'vendor',
+      rating: 4.9,
+      totalReviews: 250,
+      yearsExperience: 20,
+      specialties: ['All Materials', 'Luxury Projects'],
       tier: 'premium'
     }
   ];
@@ -670,6 +791,18 @@ export async function matchLeadWithProfessionals(leadData: any): Promise<void> {
   console.log(`📍 Lead coordinates: ${leadCoords.lat}, ${leadCoords.lng}`);
 
   try {
+    // First try to get professionals from database
+    console.log('🔍 Checking database for professionals with saved ZIP codes...');
+    const databaseProfessionals = await getProfessionalsFromDatabase(leadCoords, materialCategories, isLookingForVendor, isLookingForPro);
+    
+    if (databaseProfessionals.length > 0) {
+      console.log(`✅ Found ${databaseProfessionals.length} professionals from database`);
+      await processProfessionalMatches(databaseProfessionals, leadData, materialCategories);
+      return;
+    }
+    
+    console.log('⚠️ No database professionals found, trying Firebase geohash matching...');
+    
     // Track all unique professionals and their matching categories
     const professionalMatches = new Map<string, { professional: any, categories: string[] }>();
     

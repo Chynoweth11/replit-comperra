@@ -46,9 +46,12 @@ export interface LeadFormData {
 }
 
 export async function submitLead(formData: LeadFormData): Promise<void> {
+  console.log('🚀 submitLead function called with:', JSON.stringify(formData, null, 2));
+  
   try {
     // Determine lead type based on intent
     let leadType = formData.isLookingForPro ? "trade" : "vendor";
+    console.log('🎯 Lead type determined:', leadType);
 
     const leadData = {
       name: formData.name || "Anonymous",
@@ -104,12 +107,17 @@ export async function submitLead(formData: LeadFormData): Promise<void> {
       
       try {
         // Add timeout to prevent hanging
-        await Promise.race([
-          matchLeadWithProfessionals({ ...leadData, id: leadId }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Matching timeout')), 5000))
-        ]);
+        console.log('🔄 Calling matchLeadWithProfessionals with lead data:', { ...leadData, id: leadId });
+        console.log('🔄 About to call matchLeadWithProfessionals...');
+        
+        const matchingPromise = matchLeadWithProfessionals({ ...leadData, id: leadId });
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Matching timeout')), 5000));
+        
+        await Promise.race([matchingPromise, timeoutPromise]);
+        console.log('✅ Lead matching completed successfully');
       } catch (matchError) {
         console.log('⚠️ Lead matching failed or timed out:', matchError.message);
+        console.log('⚠️ Error details:', matchError);
       }
     } else {
       console.log(`⚠️ Lead matching skipped - missing zipCode: ${leadData.zipCode}, materialCategory: ${leadData.materialCategory}`);

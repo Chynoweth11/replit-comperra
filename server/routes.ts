@@ -1135,9 +1135,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Vendor-specific endpoints
-  // Global leads storage for consistency across vendor dashboard
-  const vendorLeadsStore = new Map<string, any[]>();
-
   app.get('/api/vendor/leads', async (req: Request, res: Response) => {
     try {
       // Get current user from session
@@ -1149,44 +1146,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('🔍 Fetching leads for vendor:', currentUser.email);
       
-      // Get or create consistent leads for this vendor
-      let vendorLeads = vendorLeadsStore.get(currentUser.email);
+      // Get real leads from the database matching system
+      const { getLeadsForProfessionalByEmail } = await import('./database-lead-matching');
+      const realLeads = getLeadsForProfessionalByEmail(currentUser.email);
       
-      if (!vendorLeads) {
-        vendorLeads = [
-          {
-            id: 'sample-lead-1',
-            customerName: 'John Smith',
-            customerEmail: 'john@example.com',
-            customerPhone: '555-0123',
-            zipCode: '81620',
-            materialCategory: 'Tiles',
-            projectType: 'Bathroom Renovation',
-            projectDetails: 'Looking for porcelain tiles for master bathroom',
-            budget: 5000,
-            timeline: '2-3 weeks',
-            status: 'new',
-            createdAt: new Date(),
-            distance: '15 miles'
-          },
-          {
-            id: 'sample-lead-2', 
-            customerName: 'Sarah Johnson',
-            customerEmail: 'sarah@example.com',
-            customerPhone: '555-0456',
-            zipCode: '81620',
-            materialCategory: 'Stone & Slabs',
-            projectType: 'Kitchen Remodel',
-            projectDetails: 'Need granite countertops for kitchen island',
-            budget: 8000,
-            timeline: '1 month',
-            status: 'contacted',
-            createdAt: new Date(Date.now() - 86400000), // 1 day ago
-            distance: '8 miles'
-          }
-        ];
-        vendorLeadsStore.set(currentUser.email, vendorLeads);
-      }
+      console.log(`🔍 Found ${realLeads.length} real leads for vendor ${currentUser.email}`);
+      
+      // If no real leads, provide sample leads for demonstration
+      const vendorLeads = realLeads.length > 0 ? realLeads : [
+        {
+          id: 'sample-lead-1',
+          customerName: 'John Smith',
+          customerEmail: 'john@example.com',
+          customerPhone: '555-0123',
+          zipCode: '81620',
+          materialCategory: 'Tiles',
+          projectType: 'Bathroom Renovation',
+          projectDetails: 'Looking for porcelain tiles for master bathroom',
+          budget: 5000,
+          timeline: '2-3 weeks',
+          status: 'new',
+          createdAt: new Date(),
+          distance: '15 miles'
+        },
+        {
+          id: 'sample-lead-2', 
+          customerName: 'Sarah Johnson',
+          customerEmail: 'sarah@example.com',
+          customerPhone: '555-0456',
+          zipCode: '81620',
+          materialCategory: 'Stone & Slabs',
+          projectType: 'Kitchen Remodel',
+          projectDetails: 'Need granite countertops for kitchen island',
+          budget: 8000,
+          timeline: '1 month',
+          status: 'contacted',
+          createdAt: new Date(Date.now() - 86400000), // 1 day ago
+          distance: '8 miles'
+        }
+      ];
       
       res.json({ success: true, leads: vendorLeads });
     } catch (error) {
@@ -1219,8 +1217,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('🔍 Fetching leads for trade professional:', currentUser.email);
       
-      // Get real leads from the matching system
-      const { getLeadsForProfessionalByEmail } = await import('./lead-matching');
+      // Get real leads from the database matching system
+      const { getLeadsForProfessionalByEmail } = await import('./database-lead-matching');
       const realLeads = getLeadsForProfessionalByEmail(currentUser.email);
       
       // If no real leads, provide sample leads for demonstration
@@ -1378,8 +1376,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('✅ Normalized lead data:', JSON.stringify(normalizedLead, null, 2));
       
-      // For now, skip Firebase entirely and respond immediately
-      console.log('✅ Lead data processed successfully - Firebase integration temporarily disabled');
+      // Call submitLead function which includes the matching logic
+      console.log('✅ Lead data processed successfully - calling submitLead with matching');
       console.log('📋 Lead summary:', {
         customer: normalizedLead.customerName,
         email: normalizedLead.customerEmail,
@@ -1388,17 +1386,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         professionalType: normalizedLead.professionalType
       });
       
-      // Store lead in memory for now
-      if (!global.leads) global.leads = [];
-      global.leads.push({
-        id: `lead_${Date.now()}`,
-        ...normalizedLead,
-        createdAt: new Date().toISOString()
-      });
+      // Use database-based lead matching system
+      try {
+        console.log('🔄 Starting database-based lead matching...');
+        const { matchLeadWithDatabase } = await import('./database-lead-matching');
+        await matchLeadWithDatabase(normalizedLead);
+        console.log('✅ Database lead matching completed successfully');
+      } catch (error) {
+        console.error('❌ Database lead matching failed:', error);
+        console.error('❌ Error details:', error.stack);
+      }
       
-      console.log(`✅ Lead stored in memory. Total leads: ${global.leads.length}`);
-      
-      // Always respond to the client immediately
+      // Always respond to the client after processing
       res.json({ 
         success: true, 
         message: 'Lead submitted successfully! We are connecting you with professionals in your area.' 
