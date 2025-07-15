@@ -517,10 +517,14 @@ async function fallbackLeadMatching(leadData: any): Promise<void> {
 }
 
 /**
- * Enhanced lead matching with category filtering and geographic proximity
+ * Enhanced lead matching with intelligent multi-category distribution
  */
 export async function matchLeadWithProfessionals(leadData: any): Promise<void> {
-  console.log(`🔄 Starting enhanced geohash lead matching for: ${leadData.email} (${leadData.materialCategory}) in ZIP: ${leadData.zipCode}`);
+  console.log(`🔄 Starting intelligent lead matching for: ${leadData.email} in ZIP: ${leadData.zipCode}`);
+  
+  // Handle multiple material categories
+  const materialCategories = leadData.materialCategories || [leadData.materialCategory];
+  console.log(`📋 Material categories requested: ${materialCategories.join(', ')}`);
   
   const leadCoords = getCoordsFromZip(leadData.zipCode);
   if (!leadCoords) {
@@ -531,60 +535,119 @@ export async function matchLeadWithProfessionals(leadData: any): Promise<void> {
   console.log(`📍 Lead coordinates: ${leadCoords.lat}, ${leadCoords.lng}`);
 
   try {
-    // Use enhanced geohash matching for vendors
-    const matchedVendors = await matchUsersByGeohash(
-      "vendor", 
-      leadCoords, 
-      "productCategories", 
-      leadData.materialCategory
-    );
-
-    // Use enhanced geohash matching for trades
-    const matchedTrades = await matchUsersByGeohash(
-      "trade", 
-      leadCoords, 
-      "tradeCategories", 
-      leadData.materialCategory
-    );
-
-    console.log(`✅ Geohash matching completed: ${matchedVendors.length} vendors, ${matchedTrades.length} trades`);
+    // Track all unique professionals and their matching categories
+    const professionalMatches = new Map<string, { professional: any, categories: string[] }>();
     
-    // Log detailed match results
-    if (matchedVendors.length > 0) {
-      console.log(`📍 Matched vendors:`, matchedVendors.map(v => `${v.businessName} (${v.distance.toFixed(1)}mi)`));
-    } else {
-      console.log(`⚠️ No vendors matched for category: ${leadData.materialCategory}`);
+    // For each material category, find matching professionals
+    for (const category of materialCategories) {
+      console.log(`🔍 Processing category: ${category}`);
+      
+      // Find vendors for this category
+      const vendorsForCategory = await matchUsersByGeohash(
+        "vendor", 
+        leadCoords, 
+        "productCategories", 
+        category
+      );
+      
+      // Find trades for this category
+      const tradesForCategory = await matchUsersByGeohash(
+        "trade", 
+        leadCoords, 
+        "tradeCategories", 
+        category
+      );
+      
+      // Add vendors to the tracking map
+      vendorsForCategory.forEach(vendor => {
+        const key = `vendor-${vendor.uid}`;
+        if (professionalMatches.has(key)) {
+          professionalMatches.get(key)!.categories.push(category);
+        } else {
+          professionalMatches.set(key, { professional: vendor, categories: [category] });
+        }
+      });
+      
+      // Add trades to the tracking map
+      tradesForCategory.forEach(trade => {
+        const key = `trade-${trade.uid}`;
+        if (professionalMatches.has(key)) {
+          professionalMatches.get(key)!.categories.push(category);
+        } else {
+          professionalMatches.set(key, { professional: trade, categories: [category] });
+        }
+      });
     }
-    if (matchedTrades.length > 0) {
-      console.log(`📍 Matched trades:`, matchedTrades.map(t => `${t.businessName} (${t.distance.toFixed(1)}mi)`));
-    } else {
-      console.log(`⚠️ No trades matched for category: ${leadData.materialCategory}`);
+    
+    // Log the intelligent distribution results
+    console.log(`✅ Intelligent matching completed: ${professionalMatches.size} unique professionals`);
+    
+    professionalMatches.forEach((match, key) => {
+      const { professional, categories } = match;
+      console.log(`📋 ${professional.businessName} (${professional.role}) matched for: ${categories.join(', ')}`);
+    });
+    
+    // Create separate leads for each professional based on their matching categories
+    const allLeadAssignments: any[] = [];
+    
+    professionalMatches.forEach((match, key) => {
+      const { professional, categories } = match;
+      
+      // Create a customized lead for this professional containing only their relevant categories
+      const customizedLead = {
+        ...leadData,
+        materialCategories: categories,
+        materialCategory: categories[0], // Primary category
+        assignedTo: professional.uid,
+        assignedToName: professional.businessName,
+        assignedToRole: professional.role,
+        assignedToEmail: professional.email,
+        assignedToPhone: professional.phone,
+        relevantCategories: categories.join(', ')
+      };
+      
+      allLeadAssignments.push({
+        professional,
+        lead: customizedLead,
+        categories
+      });
+    });
+    
+    // Store all the intelligent lead assignments
+    for (const assignment of allLeadAssignments) {
+      await storeLeadMatches(assignment.lead, 
+        assignment.professional.role === 'vendor' ? [assignment.professional] : [],
+        assignment.professional.role === 'trade' ? [assignment.professional] : []
+      );
     }
-
-    // Update lead with matched professionals (if Firebase is available)
+    
+    console.log(`🎯 Intelligent lead distribution complete: ${allLeadAssignments.length} customized leads created`);
+    
+    // Update the main lead record with all matches (if Firebase is available)
     if (db && leadData.id) {
       try {
+        const allProfessionals = Array.from(professionalMatches.values()).map(m => m.professional);
+        const allVendors = allProfessionals.filter(p => p.role === 'vendor');
+        const allTrades = allProfessionals.filter(p => p.role === 'trade');
+        
         await updateDoc(doc(db, "leads", leadData.id), {
-          matchedVendors: matchedVendors.map(v => v.uid),
-          matchedTrades: matchedTrades.map(t => t.uid),
-          vendorDistances: matchedVendors,
-          tradeDistances: matchedTrades,
+          matchedVendors: allVendors.map(v => v.uid),
+          matchedTrades: allTrades.map(t => t.uid),
+          vendorDistances: allVendors,
+          tradeDistances: allTrades,
+          intelligentDistribution: true,
+          categoryDistribution: Object.fromEntries(professionalMatches),
           status: "matched",
           lastUpdated: new Date().toISOString()
         });
-        console.log(`✅ Lead ${leadData.id} updated with ${matchedVendors.length + matchedTrades.length} matches`);
+        console.log(`✅ Lead ${leadData.id} updated with intelligent distribution`);
       } catch (updateError) {
         console.log(`⚠️ Lead update failed, but matching completed: ${updateError.message}`);
       }
     }
-
-    // Always log successful matching regardless of Firebase status
-    console.log(`📧 Lead matching successful for ${leadData.email}: ${matchedVendors.length + matchedTrades.length} total matches`);
     
-    // Store leads in memory for professionals to access
-    await storeLeadMatches(leadData, matchedVendors, matchedTrades);
   } catch (error) {
-    console.error('❌ Error in enhanced lead matching:', error);
+    console.error('❌ Error in intelligent lead matching:', error);
     // Fallback to basic matching if geohash fails
     return await fallbackLeadMatching(leadData);
   }
