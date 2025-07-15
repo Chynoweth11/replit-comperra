@@ -406,6 +406,9 @@ export function SubmitLeadForm({ onBack }) {
         toast.toast({ title: 'Finding your match...', description: 'Searching for professionals in your area.' });
         try { 
             // Use backend API for lead submission with proper matching
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+            
             const response = await fetch('/api/lead/submit', {
                 method: 'POST',
                 headers: {
@@ -430,8 +433,15 @@ export function SubmitLeadForm({ onBack }) {
                     professionalType: formData.professionalType,
                     isLookingForPro: formData.professionalType === 'trade' || formData.professionalType === 'both',
                     source: 'professional-network'
-                })
+                }),
+                signal: controller.signal
             });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             
             const result = await response.json();
             
