@@ -55,6 +55,34 @@ export const users = pgTable("users", {
   updatedAt: text("updated_at").notNull(),
 });
 
+export const leads = pgTable("leads", {
+  id: text("id").primaryKey(),
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email").notNull(),
+  customerPhone: text("customer_phone"),
+  zipCode: text("zip_code").notNull(),
+  materialCategory: text("material_category").notNull(),
+  materialCategories: json("material_categories").notNull(),
+  projectType: text("project_type"),
+  projectDetails: text("project_details"),
+  budget: integer("budget"),
+  timeline: text("timeline"),
+  requestType: text("request_type"), // 'pricing', 'sample'
+  productSpecs: json("product_specs"),
+  productUrl: text("product_url"),
+  status: text("status").notNull().default('new'), // 'new', 'contacted', 'declined', 'completed'
+  customerType: text("customer_type"),
+  isLookingForPro: boolean("is_looking_for_pro"),
+  professionalType: text("professional_type"), // 'vendor', 'trade', 'both'
+  assignedTo: text("assigned_to").notNull(), // professional email
+  professionalRole: text("professional_role").notNull(), // 'vendor', 'trade'
+  distance: text("distance"),
+  matchScore: integer("match_score"),
+  matchedProfessionals: json("matched_professionals"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
 // Material specifications schemas for different categories
 export const tileSpecsSchema = z.object({
   peiRating: z.number().min(1).max(5),
@@ -124,18 +152,23 @@ export const insertMaterialSchema = createInsertSchema(materials).omit({
   updatedAt: true,
 });
 
-export const insertArticleSchema = createInsertSchema(articles).omit({
-  id: true,
-});
-
-export const insertBrandSchema = createInsertSchema(brands).omit({
-  id: true,
+export const insertLeadSchema = createInsertSchema(leads).omit({
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+});
+
+export const insertArticleSchema = createInsertSchema(articles).omit({
+  id: true,
+});
+
+export const insertBrandSchema = createInsertSchema(brands).omit({
+  id: true,
 });
 
 export type Material = typeof materials.$inferSelect;
@@ -146,6 +179,8 @@ export type Brand = typeof brands.$inferSelect;
 export type InsertBrand = z.infer<typeof insertBrandSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type Lead = typeof leads.$inferSelect;
+export type InsertLead = z.infer<typeof insertLeadSchema>;
 
 export type TileSpecs = z.infer<typeof tileSpecsSchema>;
 export type SlabSpecs = z.infer<typeof slabSpecsSchema>;

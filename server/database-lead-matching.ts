@@ -1,9 +1,6 @@
 import { db } from './db';
-import { users } from '../shared/schema';
+import { users, leads, type InsertLead } from '../shared/schema';
 import { eq, and } from 'drizzle-orm';
-
-// In-memory storage for lead matches
-const leadMatches = new Map<string, any[]>();
 
 export interface LeadMatchData {
   id?: string;
@@ -148,23 +145,39 @@ export async function matchLeadWithDatabase(leadData: LeadMatchData): Promise<vo
       matchedProfessionals: matchedProfessionals
     };
     
-    // Store lead for each matched professional
+    // Store lead for each matched professional in database
     for (const professional of matchedProfessionals) {
       // Create customized lead for this professional
-      const customizedLead = {
-        ...leadWithMatches,
-        // Filter material categories to only include those relevant to this professional
-        materialCategories: leadData.materialCategories, // For now, include all categories
+      const leadToInsert: InsertLead = {
+        id: `${leadId}-${professional.email}`,
+        customerName: leadData.name,
+        customerEmail: leadData.email,
+        customerPhone: leadData.phone,
+        zipCode: leadData.zipCode,
+        materialCategory: leadData.materialCategory,
+        materialCategories: leadData.materialCategories,
+        projectType: leadData.projectType || 'General Project',
+        projectDetails: leadData.projectDetails || 'Customer interested in materials/installation',
+        budget: leadData.budget || null,
+        timeline: leadData.timeline || 'Not specified',
+        requestType: leadData.requestType || 'pricing',
+        productSpecs: leadData.productSpecs || null,
+        productUrl: leadData.productUrl || null,
+        status: 'new',
+        customerType: leadData.customerType,
+        isLookingForPro: leadData.isLookingForPro,
+        professionalType: leadData.professionalType,
         assignedTo: professional.email,
         professionalRole: professional.role,
         distance: professional.distance,
-        matchScore: professional.matchScore
+        matchScore: professional.matchScore,
+        matchedProfessionals: matchedProfessionals,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
       
-      // Store in professional's lead list
-      const existingLeads = leadMatches.get(professional.email) || [];
-      existingLeads.push(customizedLead);
-      leadMatches.set(professional.email, existingLeads);
+      // Insert into database
+      await db.insert(leads).values(leadToInsert);
       
       console.log(`📬 Assigned lead ${leadId} to ${professional.role} ${professional.email}`);
     }
@@ -178,25 +191,44 @@ export async function matchLeadWithDatabase(leadData: LeadMatchData): Promise<vo
 }
 
 /**
- * Get leads for a specific professional by email
+ * Get leads for a specific professional by email from database
  */
-export function getLeadsForProfessionalByEmail(email: string): any[] {
-  const leads = leadMatches.get(email) || [];
-  console.log(`🔍 Retrieved ${leads.length} leads for ${email}`);
-  return leads;
+export async function getLeadsForProfessionalByEmail(email: string): Promise<any[]> {
+  try {
+    const professionalLeads = await db.select()
+      .from(leads)
+      .where(eq(leads.assignedTo, email))
+      .orderBy(leads.createdAt);
+    
+    console.log(`🔍 Retrieved ${professionalLeads.length} leads for ${email}`);
+    return professionalLeads;
+  } catch (error) {
+    console.error('❌ Error retrieving leads from database:', error);
+    return [];
+  }
 }
 
 /**
  * Get all lead matches for debugging
  */
-export function getAllLeadMatches(): Map<string, any[]> {
-  return leadMatches;
+export async function getAllLeadMatches(): Promise<any[]> {
+  try {
+    const allLeads = await db.select().from(leads);
+    return allLeads;
+  } catch (error) {
+    console.error('❌ Error retrieving all leads:', error);
+    return [];
+  }
 }
 
 /**
  * Clear all lead matches (for testing)
  */
-export function clearAllLeadMatches(): void {
-  leadMatches.clear();
-  console.log('🧹 Cleared all lead matches');
+export async function clearAllLeadMatches(): Promise<void> {
+  try {
+    await db.delete(leads);
+    console.log('🧹 Cleared all lead matches from database');
+  } catch (error) {
+    console.error('❌ Error clearing leads:', error);
+  }
 }

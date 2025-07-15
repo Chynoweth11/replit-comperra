@@ -1148,7 +1148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get real leads from the database matching system
       const { getLeadsForProfessionalByEmail } = await import('./database-lead-matching');
-      const realLeads = getLeadsForProfessionalByEmail(currentUser.email);
+      const realLeads = await getLeadsForProfessionalByEmail(currentUser.email);
       
       console.log(`🔍 Found ${realLeads.length} real leads for vendor ${currentUser.email}`);
       
@@ -1219,7 +1219,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get real leads from the database matching system
       const { getLeadsForProfessionalByEmail } = await import('./database-lead-matching');
-      const realLeads = getLeadsForProfessionalByEmail(currentUser.email);
+      const realLeads = await getLeadsForProfessionalByEmail(currentUser.email);
       
       // If no real leads, provide sample leads for demonstration
       const sampleLeads = realLeads.length > 0 ? realLeads : [
