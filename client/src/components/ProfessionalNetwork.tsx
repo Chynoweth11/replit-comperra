@@ -518,7 +518,7 @@ export function SubmitLeadForm({ onBack }) {
                                 <option value="repair">Repair</option>
                                 <option value="upgrade">Upgrade</option>
                             </Select>
-                            <Select id="budget" name="budget" value={formData.budget} onChange={handleChange} label="Budget (optional)">
+                            <Select id="budget" name="budget" value={formData.budget} onChange={handleChange} label="Budget (optional)" required={false}>
                                 <option value="">Enter your budget</option>
                                 <option value="under-1000">Under $1,000</option>
                                 <option value="1000-5000">$1,000 - $5,000</option>
@@ -527,7 +527,7 @@ export function SubmitLeadForm({ onBack }) {
                                 <option value="25000-50000">$25,000 - $50,000</option>
                                 <option value="over-50000">Over $50,000</option>
                             </Select>
-                            <Select id="timeline" name="timeline" value={formData.timeline} onChange={handleChange} label="Timeline">
+                            <Select id="timeline" name="timeline" value={formData.timeline} onChange={handleChange} label="Timeline *">
                                 <option value="">Select timeline</option>
                                 <option value="immediately">Immediately</option>
                                 <option value="within-1-month">Within 1 Month</option>
@@ -537,7 +537,7 @@ export function SubmitLeadForm({ onBack }) {
                             </Select>
                             <Textarea id="projectDetails" name="projectDetails" value={formData.projectDetails} onChange={handleChange} label="Project Details"
                                 placeholder="Describe your project, specific requirements, and any other details..."/>
-                            <Select id="professionalType" name="professionalType" value={formData.professionalType} onChange={handleChange} label="I'm looking for a:">
+                            <Select id="professionalType" name="professionalType" value={formData.professionalType} onChange={handleChange} label="I'm looking for a: *">
                                 <option value="vendor">Vendor (Material Supplier)</option>
                                 <option value="trade">Trade Professional (Contractor/Installer)</option>
                                 <option value="both">Both Vendors and Trade Professionals</option>

@@ -1345,16 +1345,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/lead/submit', async (req: Request, res: Response) => {
     try {
       const leadData = req.body;
+      console.log('📋 Lead submission received:', JSON.stringify(leadData, null, 2));
       
       // Validate required fields (handle both form field names)
       const email = leadData.email || leadData.customerEmail;
       const zipCode = leadData.zip || leadData.zipCode;
       const materialCategory = leadData.materialCategory;
+      const materialCategories = leadData.materialCategories || [];
       
-      if (!email || !zipCode || !materialCategory) {
+      if (!email || !zipCode || (!materialCategory && materialCategories.length === 0)) {
+        console.log('❌ Missing required fields:', { email, zipCode, materialCategory, materialCategories });
         return res.status(400).json({ 
           success: false, 
-          error: 'Missing required fields: email, zipCode, and materialCategory' 
+          error: 'Missing required fields: email, zipCode, and at least one material category' 
         });
       }
       
@@ -1366,8 +1369,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         zipCode: zipCode,
         projectDetails: leadData.projectDetails || leadData.description || leadData.message,
         description: leadData.projectDetails || leadData.description || leadData.message,
-        message: leadData.projectDetails || leadData.description || leadData.message
+        message: leadData.projectDetails || leadData.description || leadData.message,
+        // Ensure materialCategories is always an array
+        materialCategories: materialCategories.length > 0 ? materialCategories : [materialCategory],
+        // Keep materialCategory for backward compatibility
+        materialCategory: materialCategory || materialCategories[0]
       };
+      
+      console.log('✅ Normalized lead data:', JSON.stringify(normalizedLead, null, 2));
       
       // Submit the lead with professional matching
       const { submitLead } = await import('./firebase-leads');
@@ -1378,7 +1387,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: 'Lead submitted successfully and professionals are being matched' 
       });
     } catch (error) {
-      console.error('Lead submission error:', error);
+      console.error('❌ Lead submission error:', error);
       res.status(500).json({ 
         success: false, 
         error: 'Internal server error' 
@@ -1665,30 +1674,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Enhanced Lead Submission with Smart Matching
-  app.post('/api/lead/submit', async (req: Request, res: Response) => {
-    try {
-      const { smartMatchVendors } = await import('./advanced-lead-matching');
-      const leadData = req.body;
-      
-      // Create lead in Firebase
-      const leadId = Date.now().toString(); // In real app, use Firebase doc ID
-      
-      // Run smart matching
-      const matches = await smartMatchVendors(leadId, leadData);
-      
-      res.json({ 
-        success: true, 
-        message: 'Lead submitted successfully',
-        leadId,
-        matches: matches.length,
-        matchedVendors: matches
-      });
-    } catch (error) {
-      console.error('Error submitting lead:', error);
-      res.status(500).json({ error: 'Failed to submit lead' });
-    }
-  });
+  // This duplicate endpoint has been removed - using the main lead submission endpoint above
 
   // Process Expired Leads (called by cron job)
   app.post('/api/admin/process-expired-leads', async (req: Request, res: Response) => {
