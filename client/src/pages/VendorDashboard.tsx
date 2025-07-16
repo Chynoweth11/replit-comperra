@@ -23,7 +23,9 @@ import {
   Brain,
   ArrowLeft,
   Home,
-  LogOut
+  LogOut,
+  Star,
+  BarChart3
 } from 'lucide-react';
 import SmartMatchAI from '@/components/SmartMatchAI';
 import SmartMatchAIEnhanced from '@/components/SmartMatchAIEnhanced';
@@ -326,10 +328,13 @@ const VendorDashboard: React.FC = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="leads">Leads</TabsTrigger>
             <TabsTrigger value="smart-match">Smart Match AI</TabsTrigger>
+            <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="subscription">Subscription</TabsTrigger>
           </TabsList>
 
@@ -511,7 +516,284 @@ const VendorDashboard: React.FC = () => {
 
 
           <TabsContent value="smart-match" className="space-y-6">
-            <SmartMatchAISimple userRole="vendor" userId={userProfile.uid} />
+            <SmartMatchAIEnhanced userRole="vendor" userId={userProfile.uid} />
+          </TabsContent>
+
+          <TabsContent value="reviews" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-yellow-500" />
+                  Customer Reviews & Ratings
+                </CardTitle>
+                <CardDescription>Manage your customer feedback and ratings</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">Average Rating</p>
+                          <p className="text-2xl font-bold">4.8</p>
+                        </div>
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className="w-4 h-4 text-yellow-500 fill-current" />
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">Total Reviews</p>
+                          <p className="text-2xl font-bold">127</p>
+                        </div>
+                        <Users className="h-8 w-8 text-blue-500" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">Response Rate</p>
+                          <p className="text-2xl font-bold">96%</p>
+                        </div>
+                        <CheckCircle className="h-8 w-8 text-green-500" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <div className="space-y-4">
+                  <h4 className="font-medium">Recent Reviews</h4>
+                  {[
+                    {
+                      id: 1,
+                      customer: "Sarah Johnson",
+                      rating: 5,
+                      comment: "Excellent service! Very professional and completed the project on time.",
+                      date: "2 days ago",
+                      project: "Kitchen Tile Installation"
+                    },
+                    {
+                      id: 2,
+                      customer: "Mike Chen",
+                      rating: 4,
+                      comment: "Quality work, would recommend to others.",
+                      date: "1 week ago",
+                      project: "Bathroom Renovation"
+                    },
+                    {
+                      id: 3,
+                      customer: "Lisa Rodriguez",
+                      rating: 5,
+                      comment: "Outstanding craftsmanship and attention to detail.",
+                      date: "2 weeks ago",
+                      project: "Hardwood Flooring"
+                    }
+                  ].map((review) => (
+                    <div key={review.id} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-medium text-blue-600">
+                              {review.customer.charAt(0)}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-medium">{review.customer}</p>
+                            <p className="text-sm text-gray-600">{review.project}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center space-x-1">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-4 h-4 ${
+                                  i < review.rating ? 'text-yellow-500 fill-current' : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <p className="text-sm text-gray-500">{review.date}</p>
+                        </div>
+                      </div>
+                      <p className="text-sm">{review.comment}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-blue-500" />
+                  Performance Analytics
+                </CardTitle>
+                <CardDescription>Track your business performance and growth</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">Monthly Revenue</p>
+                          <p className="text-2xl font-bold">$12,450</p>
+                        </div>
+                        <DollarSign className="h-8 w-8 text-green-500" />
+                      </div>
+                      <p className="text-sm text-green-600">+15% from last month</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">Leads This Month</p>
+                          <p className="text-2xl font-bold">23</p>
+                        </div>
+                        <Users className="h-8 w-8 text-blue-500" />
+                      </div>
+                      <p className="text-sm text-blue-600">+8% from last month</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">Conversion Rate</p>
+                          <p className="text-2xl font-bold">68%</p>
+                        </div>
+                        <Target className="h-8 w-8 text-orange-500" />
+                      </div>
+                      <p className="text-sm text-orange-600">+5% from last month</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">Avg Response Time</p>
+                          <p className="text-2xl font-bold">2.3h</p>
+                        </div>
+                        <Clock className="h-8 w-8 text-purple-500" />
+                      </div>
+                      <p className="text-sm text-purple-600">-12% from last month</p>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Lead Trends</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <p className="text-gray-500">Lead trends chart placeholder</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Revenue Growth</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <p className="text-gray-500">Revenue growth chart placeholder</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="profile" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-blue-500" />
+                  Vendor Profile Management
+                </CardTitle>
+                <CardDescription>Manage your professional profile and service areas</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Business Name</label>
+                      <input
+                        type="text"
+                        className="w-full p-2 border rounded-md"
+                        placeholder="Your business name"
+                        defaultValue="Luxury Surfaces Group"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Service Radius (miles)</label>
+                      <input
+                        type="number"
+                        className="w-full p-2 border rounded-md"
+                        placeholder="Service radius"
+                        defaultValue="50"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Material Specialties</label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {['Tiles', 'Stone & Slabs', 'Hardwood', 'Vinyl & LVT', 'Carpet', 'Heating Systems'].map((material) => (
+                        <label key={material} className="flex items-center space-x-2">
+                          <input type="checkbox" className="rounded" defaultChecked />
+                          <span className="text-sm">{material}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Service Areas (ZIP Codes)</label>
+                    <textarea
+                      className="w-full p-2 border rounded-md"
+                      rows={3}
+                      placeholder="Enter ZIP codes separated by commas"
+                      defaultValue="90210, 90211, 90212, 90213, 90214"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">About Your Business</label>
+                    <textarea
+                      className="w-full p-2 border rounded-md"
+                      rows={4}
+                      placeholder="Tell customers about your expertise and services"
+                      defaultValue="Premium flooring and surface solutions with over 15 years of experience. We specialize in luxury tile installations, natural stone work, and custom hardwood flooring."
+                    />
+                  </div>
+                  
+                  <div className="flex space-x-4">
+                    <Button className="bg-blue-600 hover:bg-blue-700">
+                      Save Profile
+                    </Button>
+                    <Button variant="outline">
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="subscription" className="space-y-6">

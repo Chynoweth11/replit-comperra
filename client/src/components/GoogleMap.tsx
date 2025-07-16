@@ -22,10 +22,10 @@ const GoogleMap: React.FC<GoogleMapProps> = ({ leads, height = '400px', classNam
   useEffect(() => {
     const initMap = async () => {
       try {
-        // Use a demo API key or show message to configure
-        const apiKey = 'DEMO_KEY'; // Replace with actual Google Maps API key
+        // Use the configured Google Maps API key from environment
+        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
         
-        if (!apiKey || apiKey === 'DEMO_KEY') {
+        if (!apiKey) {
           setError('Google Maps API key not configured. Please add your API key to enable map features.');
           return;
         }

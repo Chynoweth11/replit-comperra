@@ -70,8 +70,8 @@ export const SmartMatchAIEnhanced: React.FC<SmartMatchAIEnhancedProps> = ({ user
   
   const [insights, setInsights] = useState<GeographicInsight[]>([]);
   const [recentMatches, setRecentMatches] = useState<LeadMatch[]>([]);
-  const [leadTrends, setLeadTrends] = useState<any>({});
-  const [geographicInsights, setGeographicInsights] = useState<any>({});
+  const [leadTrends, setLeadTrends] = useState<any>({ daily: [], weekly: [], monthly: [] });
+  const [geographicInsights, setGeographicInsights] = useState<any>({ topZipCodes: [] });
   const [loading, setLoading] = useState(true);
   const [optimizing, setOptimizing] = useState(false);
 
@@ -87,14 +87,34 @@ export const SmartMatchAIEnhanced: React.FC<SmartMatchAIEnhancedProps> = ({ user
       const response = await fetch(`/api/smart-match/metrics?role=${userRole}&userId=${userId}`);
       if (response.ok) {
         const data = await response.json();
-        setMetrics(data.metrics || {});
+        setMetrics(data.metrics || {
+          totalMatches: 0,
+          successRate: 0,
+          avgResponseTime: 0,
+          geographicCoverage: 0,
+          intentAccuracy: 0,
+          customerSatisfaction: 0
+        });
         setInsights(data.insights || []);
         setRecentMatches(data.recentMatches || []);
-        setLeadTrends(data.leadTrends || {});
-        setGeographicInsights(data.geographicInsights || {});
+        setLeadTrends(data.leadTrends || { daily: [], weekly: [], monthly: [] });
+        setGeographicInsights(data.geographicInsights || { topZipCodes: [] });
       }
     } catch (error) {
       console.error('Error fetching smart match data:', error);
+      // Set default values on error
+      setMetrics({
+        totalMatches: 0,
+        successRate: 0,
+        avgResponseTime: 0,
+        geographicCoverage: 0,
+        intentAccuracy: 0,
+        customerSatisfaction: 0
+      });
+      setInsights([]);
+      setRecentMatches([]);
+      setLeadTrends({ daily: [], weekly: [], monthly: [] });
+      setGeographicInsights({ topZipCodes: [] });
     } finally {
       setLoading(false);
     }
@@ -138,22 +158,28 @@ export const SmartMatchAIEnhanced: React.FC<SmartMatchAIEnhancedProps> = ({ user
     }
   };
 
-  // Generate chart data
-  const dailyTrendData = leadTrends.daily?.map((value: number, index: number) => ({
-    day: `Day ${index + 1}`,
-    leads: value
-  })) || [];
+  // Generate chart data with safety checks
+  const dailyTrendData = Array.isArray(leadTrends.daily) 
+    ? leadTrends.daily.map((value: number, index: number) => ({
+        day: `Day ${index + 1}`,
+        leads: value
+      })) 
+    : [];
 
-  const weeklyTrendData = leadTrends.weekly?.map((value: number, index: number) => ({
-    week: `Week ${index + 1}`,
-    leads: value
-  })) || [];
+  const weeklyTrendData = Array.isArray(leadTrends.weekly) 
+    ? leadTrends.weekly.map((value: number, index: number) => ({
+        week: `Week ${index + 1}`,
+        leads: value
+      })) 
+    : [];
 
-  const categoryData = recentMatches.reduce((acc: any, match) => {
-    const category = match.materialCategory || 'Other';
-    acc[category] = (acc[category] || 0) + 1;
-    return acc;
-  }, {});
+  const categoryData = Array.isArray(recentMatches) 
+    ? recentMatches.reduce((acc: any, match) => {
+        const category = match.materialCategory || 'Other';
+        acc[category] = (acc[category] || 0) + 1;
+        return acc;
+      }, {})
+    : {};
 
   const pieData = Object.entries(categoryData).map(([name, value]) => ({
     name,
@@ -214,10 +240,10 @@ export const SmartMatchAIEnhanced: React.FC<SmartMatchAIEnhancedProps> = ({ user
             <Target className="w-4 h-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.successRate}%</div>
-            <Progress value={metrics.successRate} className="mt-2" />
+            <div className="text-2xl font-bold">{metrics.successRate || 0}%</div>
+            <Progress value={metrics.successRate || 0} className="mt-2" />
             <p className="text-xs text-muted-foreground mt-1">
-              {metrics.totalMatches > 0 ? `${metrics.totalMatches} total matches` : 'No matches yet'}
+              {(metrics.totalMatches || 0) > 0 ? `${metrics.totalMatches} total matches` : 'No matches yet'}
             </p>
           </CardContent>
         </Card>
@@ -228,8 +254,8 @@ export const SmartMatchAIEnhanced: React.FC<SmartMatchAIEnhancedProps> = ({ user
             <Clock className="w-4 h-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.avgResponseTime}h</div>
-            <Progress value={Math.max(0, 100 - (metrics.avgResponseTime * 8))} className="mt-2" />
+            <div className="text-2xl font-bold">{metrics.avgResponseTime || 0}h</div>
+            <Progress value={Math.max(0, 100 - ((metrics.avgResponseTime || 0) * 8))} className="mt-2" />
             <p className="text-xs text-muted-foreground mt-1">
               Industry average: 6-8 hours
             </p>
@@ -242,8 +268,8 @@ export const SmartMatchAIEnhanced: React.FC<SmartMatchAIEnhancedProps> = ({ user
             <Brain className="w-4 h-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.intentAccuracy}%</div>
-            <Progress value={metrics.intentAccuracy} className="mt-2" />
+            <div className="text-2xl font-bold">{metrics.intentAccuracy || 0}%</div>
+            <Progress value={metrics.intentAccuracy || 0} className="mt-2" />
             <p className="text-xs text-muted-foreground mt-1">
               AI-powered lead scoring
             </p>
@@ -256,8 +282,8 @@ export const SmartMatchAIEnhanced: React.FC<SmartMatchAIEnhancedProps> = ({ user
             <MapPin className="w-4 h-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.geographicCoverage}</div>
-            <Progress value={Math.min(100, metrics.geographicCoverage * 10)} className="mt-2" />
+            <div className="text-2xl font-bold">{metrics.geographicCoverage || 0}</div>
+            <Progress value={Math.min(100, (metrics.geographicCoverage || 0) * 10)} className="mt-2" />
             <p className="text-xs text-muted-foreground mt-1">
               ZIP codes served
             </p>
@@ -270,8 +296,8 @@ export const SmartMatchAIEnhanced: React.FC<SmartMatchAIEnhancedProps> = ({ user
             <Star className="w-4 h-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.customerSatisfaction}%</div>
-            <Progress value={metrics.customerSatisfaction} className="mt-2" />
+            <div className="text-2xl font-bold">{metrics.customerSatisfaction || 0}%</div>
+            <Progress value={metrics.customerSatisfaction || 0} className="mt-2" />
             <p className="text-xs text-muted-foreground mt-1">
               Based on feedback
             </p>
