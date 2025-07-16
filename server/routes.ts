@@ -18,6 +18,10 @@ import { storage } from './storage.js';
 // Initialize Firebase storage for background persistence when available
 const firebaseStorage = new FirebaseStorage();
 import { productScraper } from "./scraper.js";
+// Import database connection and schema
+import { db } from './db.js';
+import { leads } from '../shared/schema.js';
+import { eq } from 'drizzle-orm';
 import { z } from "zod";
 import multer from "multer";
 import csvParser from "csv-parser";
@@ -1132,12 +1136,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ success: false, error: 'Authentication required' });
       }
 
-      // Get consistent leads from the database
-      const realLeads = await db
-        .select()
-        .from(leads)
-        .where(eq(leads.assignedTo, currentUser.email))
-        .limit(100);
+      // Get consistent leads from the database-lead-matching system
+      const { getLeadsForProfessionalByEmail } = await import('./database-lead-matching');
+      const realLeads = await getLeadsForProfessionalByEmail(currentUser.email);
       
       // Calculate metrics based on real data
       const totalMatches = realLeads.length;
