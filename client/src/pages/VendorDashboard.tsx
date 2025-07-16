@@ -642,19 +642,7 @@ const VendorDashboard: React.FC = () => {
                 <CardDescription>Track your business performance and growth</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium">Monthly Revenue</p>
-                          <p className="text-2xl font-bold">$12,450</p>
-                        </div>
-                        <DollarSign className="h-8 w-8 text-green-500" />
-                      </div>
-                      <p className="text-sm text-green-600">+15% from last month</p>
-                    </CardContent>
-                  </Card>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   <Card>
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
@@ -741,13 +729,11 @@ const VendorDashboard: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">Service Radius (miles)</label>
-                      <input
-                        type="number"
-                        className="w-full p-2 border rounded-md"
-                        placeholder="Service radius"
-                        defaultValue="50"
-                      />
+                      <label className="block text-sm font-medium mb-2">Service Radius</label>
+                      <div className="w-full p-2 border rounded-md bg-gray-100">
+                        <span className="text-gray-700">50 miles (fixed)</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Service radius is fixed at 50 miles for all professionals</p>
                     </div>
                   </div>
                   
@@ -765,12 +751,25 @@ const VendorDashboard: React.FC = () => {
                   
                   <div>
                     <label className="block text-sm font-medium mb-2">Service Areas (ZIP Codes)</label>
-                    <textarea
-                      className="w-full p-2 border rounded-md"
-                      rows={3}
-                      placeholder="Enter ZIP codes separated by commas"
-                      defaultValue="90210, 90211, 90212, 90213, 90214"
-                    />
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        className="w-full p-2 border rounded-md"
+                        placeholder="Primary ZIP code (e.g., 90210)"
+                        defaultValue="90210"
+                        maxLength={5}
+                      />
+                      <input
+                        type="text"
+                        className="w-full p-2 border rounded-md"
+                        placeholder="Secondary ZIP code (e.g., 90211)"
+                        defaultValue="90211"
+                        maxLength={5}
+                      />
+                      <p className="text-xs text-gray-500">
+                        Maximum 2 ZIP codes allowed. Each ZIP code covers a 50-mile radius.
+                      </p>
+                    </div>
                   </div>
                   
                   <div>
