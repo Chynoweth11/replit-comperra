@@ -729,6 +729,24 @@ const VendorDashboard: React.FC = () => {
                       />
                     </div>
                     <div>
+                      <label className="block text-sm font-medium mb-2">Email Address</label>
+                      <input
+                        type="email"
+                        className="w-full p-2 border rounded-md"
+                        placeholder="Your email address"
+                        defaultValue="ochynoweth@luxsurfacesgroup.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Phone Number</label>
+                      <input
+                        type="tel"
+                        className="w-full p-2 border rounded-md"
+                        placeholder="Your phone number"
+                        defaultValue="(555) 123-4567"
+                      />
+                    </div>
+                    <div>
                       <label className="block text-sm font-medium mb-2">Service Radius</label>
                       <div className="w-full p-2 border rounded-md bg-gray-100">
                         <span className="text-gray-700">50 miles (fixed)</span>

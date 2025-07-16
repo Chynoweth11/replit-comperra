@@ -219,10 +219,13 @@ const TradeDashboard: React.FC = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="leads">Leads</TabsTrigger>
             <TabsTrigger value="smart-match">Smart Match AI</TabsTrigger>
+            <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="subscription">Subscription</TabsTrigger>
           </TabsList>
 
@@ -264,12 +267,12 @@ const TradeDashboard: React.FC = () => {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium">Avg Response Time</CardTitle>
+                  <Clock className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">${metrics.monthlyRevenue.toLocaleString()}</div>
-                  <p className="text-xs text-muted-foreground">+12.5% from last month</p>
+                  <div className="text-2xl font-bold">{metrics.responseTime}h</div>
+                  <p className="text-xs text-muted-foreground">Industry avg: 6-8 hours</p>
                 </CardContent>
               </Card>
             </div>
@@ -467,6 +470,238 @@ const TradeDashboard: React.FC = () => {
 
           <TabsContent value="smart-match" className="space-y-6">
             <SmartMatchAIEnhanced userRole="trade" userId={userProfile.uid} />
+          </TabsContent>
+
+          <TabsContent value="reviews" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Customer Reviews</CardTitle>
+                <CardDescription>Manage your reviews and customer feedback</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-yellow-500">4.8</div>
+                      <div className="flex justify-center space-x-1 mt-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="h-4 w-4 text-yellow-500 fill-current" />
+                        ))}
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">Average Rating</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">47</div>
+                      <p className="text-sm text-gray-600">Total Reviews</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">96%</div>
+                      <p className="text-sm text-gray-600">Positive Reviews</p>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium mb-4">Recent Reviews</h4>
+                    <div className="space-y-4">
+                      {[
+                        {
+                          customer: "Sarah Johnson",
+                          rating: 5,
+                          date: "2 days ago",
+                          comment: "Excellent work on our kitchen renovation. Very professional and completed on time.",
+                          project: "Kitchen Renovation"
+                        },
+                        {
+                          customer: "Mike Chen",
+                          rating: 4,
+                          date: "1 week ago",
+                          comment: "Quality work and good communication throughout the project.",
+                          project: "Bathroom Remodel"
+                        },
+                        {
+                          customer: "Lisa Rodriguez",
+                          rating: 5,
+                          date: "2 weeks ago",
+                          comment: "Outstanding craftsmanship and attention to detail. Highly recommend!",
+                          project: "Hardwood Installation"
+                        }
+                      ].map((review, index) => (
+                        <div key={index} className="border rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center space-x-2">
+                              <span className="font-medium">{review.customer}</span>
+                              <div className="flex space-x-1">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star key={i} className={`h-4 w-4 ${i < review.rating ? 'text-yellow-500 fill-current' : 'text-gray-300'}`} />
+                                ))}
+                              </div>
+                            </div>
+                            <span className="text-sm text-gray-500">{review.date}</span>
+                          </div>
+                          <p className="text-sm text-gray-700 mb-2">{review.comment}</p>
+                          <p className="text-xs text-gray-500">Project: {review.project}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Performance Analytics</CardTitle>
+                <CardDescription>Track your business performance and growth</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">Leads This Month</p>
+                          <p className="text-2xl font-bold">18</p>
+                        </div>
+                        <Users className="h-8 w-8 text-blue-500" />
+                      </div>
+                      <p className="text-sm text-blue-600">+12% from last month</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">Conversion Rate</p>
+                          <p className="text-2xl font-bold">72%</p>
+                        </div>
+                        <Target className="h-8 w-8 text-orange-500" />
+                      </div>
+                      <p className="text-sm text-orange-600">+8% from last month</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">Avg Response Time</p>
+                          <p className="text-2xl font-bold">1.8h</p>
+                        </div>
+                        <Clock className="h-8 w-8 text-purple-500" />
+                      </div>
+                      <p className="text-sm text-purple-600">-18% from last month</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="profile" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Trade Profile Management</CardTitle>
+                <CardDescription>Manage your professional profile and service areas</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Business Name</label>
+                      <input
+                        type="text"
+                        className="w-full p-2 border rounded-md"
+                        placeholder="Your business name"
+                        defaultValue="Professional Trade Services"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Email Address</label>
+                      <input
+                        type="email"
+                        className="w-full p-2 border rounded-md"
+                        placeholder="Your email address"
+                        defaultValue="tradepro@example.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Phone Number</label>
+                      <input
+                        type="tel"
+                        className="w-full p-2 border rounded-md"
+                        placeholder="Your phone number"
+                        defaultValue="(555) 987-6543"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Service Radius</label>
+                      <div className="w-full p-2 border rounded-md bg-gray-100">
+                        <span className="text-gray-700">50 miles (fixed)</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Service radius is fixed at 50 miles for all professionals</p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Trade Specialties</label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {['Plumbing', 'Electrical', 'HVAC', 'Carpentry', 'Painting', 'Flooring', 'Roofing', 'Drywall', 'Tiling'].map((specialty) => (
+                        <label key={specialty} className="flex items-center space-x-2">
+                          <input type="checkbox" className="rounded" defaultChecked={['Plumbing', 'HVAC', 'Flooring'].includes(specialty)} />
+                          <span className="text-sm">{specialty}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Service Areas (ZIP Codes)</label>
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        className="w-full p-2 border rounded-md"
+                        placeholder="Primary ZIP code (e.g., 90210)"
+                        defaultValue="90210"
+                        maxLength={5}
+                      />
+                      <input
+                        type="text"
+                        className="w-full p-2 border rounded-md"
+                        placeholder="Secondary ZIP code (e.g., 90211)"
+                        defaultValue="90211"
+                        maxLength={5}
+                      />
+                      <p className="text-xs text-gray-500">
+                        Maximum 2 ZIP codes allowed. Each ZIP code covers a 50-mile radius.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Years of Experience</label>
+                    <input
+                      type="number"
+                      className="w-full p-2 border rounded-md"
+                      placeholder="Years of experience"
+                      defaultValue="8"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Certifications</label>
+                    <textarea
+                      className="w-full p-2 border rounded-md"
+                      rows={3}
+                      placeholder="List your certifications and licenses"
+                      defaultValue="Licensed Contractor, HVAC Certified, Plumbing License #12345"
+                    />
+                  </div>
+                  
+                  <Button className="w-full">Save Profile Changes</Button>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="subscription" className="space-y-6">
