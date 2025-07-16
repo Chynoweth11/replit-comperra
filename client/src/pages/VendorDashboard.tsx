@@ -877,14 +877,14 @@ const VendorDashboard: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Pay-as-you-go Plan */}
                   <div className={`border rounded-lg p-6 text-center ${subscription.planId === 'pay-as-you-go' ? 'border-blue-500 bg-blue-50' : ''}`}>
-                    <h3 className="text-lg font-semibold mb-2">Pay-as-you-go</h3>
+                    <h3 className="text-lg font-semibold mb-3">Pay-as-you-go</h3>
                     <div className="text-3xl font-bold mb-4">$15<span className="text-sm font-normal">/lead</span></div>
-                    <p className="text-sm text-gray-600 mb-4">For single projects or leads.</p>
-                    <ul className="text-sm space-y-2 mb-6">
-                      <li>• One-time payment</li>
-                      <li>• Standard feature access</li>
-                      <li>• 50 mile matching radius</li>
-                      <li>• Limited support or visibility</li>
+                    <p className="text-sm text-gray-600 mb-6">For single projects or leads.</p>
+                    <ul className="text-sm space-y-3 mb-8 text-left">
+                      <li className="flex items-center"><span className="text-gray-500 mr-2">•</span> One-time payment</li>
+                      <li className="flex items-center"><span className="text-gray-500 mr-2">•</span> Standard feature access</li>
+                      <li className="flex items-center"><span className="text-gray-500 mr-2">•</span> 50 mile matching radius</li>
+                      <li className="flex items-center"><span className="text-gray-500 mr-2">•</span> Limited support or visibility</li>
                     </ul>
                     <Button className="w-full" variant={subscription.planId === 'pay-as-you-go' ? 'outline' : 'default'}>
                       {subscription.planId === 'pay-as-you-go' ? 'Current Plan' : 'Get Started'}
@@ -893,42 +893,46 @@ const VendorDashboard: React.FC = () => {
 
                   {/* Pro Plan Monthly */}
                   <div className={`border-2 border-indigo-500 rounded-lg p-6 text-center relative ${subscription.planId === 'pro-monthly' ? 'bg-indigo-50' : ''}`}>
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-indigo-500 text-white px-4 py-1 rounded-full text-sm">Most Popular</span>
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
+                      <span className="bg-indigo-500 text-white px-3 py-1 rounded-full text-xs font-medium">Most Popular</span>
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">Pro Plan</h3>
-                    <div className="text-3xl font-bold mb-4">$49<span className="text-sm font-normal">/mo</span></div>
-                    <p className="text-sm text-gray-600 mb-4">For professionals and small teams.</p>
-                    <ul className="text-sm space-y-2 mb-6">
-                      <li>• All Pro features</li>
-                      <li>• Priority Support</li>
-                      <li>• 50 mile matching radius</li>
-                      <li>• Unlimited lead claims</li>
-                    </ul>
-                    <Button className="w-full" variant={subscription.planId === 'pro-monthly' ? 'outline' : 'default'}>
-                      {subscription.planId === 'pro-monthly' ? 'Current Plan' : 'Upgrade Now'}
-                    </Button>
+                    <div className="mt-2">
+                      <h3 className="text-lg font-semibold mb-3">Pro Plan</h3>
+                      <div className="text-3xl font-bold mb-4">$49<span className="text-sm font-normal">/mo</span></div>
+                      <p className="text-sm text-gray-600 mb-6">For professionals and small teams.</p>
+                      <ul className="text-sm space-y-3 mb-8 text-left">
+                        <li className="flex items-center"><span className="text-indigo-500 mr-2">•</span> All Pro features</li>
+                        <li className="flex items-center"><span className="text-indigo-500 mr-2">•</span> Priority Support</li>
+                        <li className="flex items-center"><span className="text-indigo-500 mr-2">•</span> 50 mile matching radius</li>
+                        <li className="flex items-center"><span className="text-indigo-500 mr-2">•</span> Unlimited lead claims</li>
+                      </ul>
+                      <Button className="w-full" variant={subscription.planId === 'pro-monthly' ? 'outline' : 'default'}>
+                        {subscription.planId === 'pro-monthly' ? 'Current Plan' : 'Upgrade Now'}
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Pro Plan Yearly */}
                   <div className={`border-2 border-emerald-500 rounded-lg p-6 text-center relative ${subscription.planId === 'pro-yearly' ? 'bg-emerald-50' : ''}`}>
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-emerald-500 text-white px-4 py-1 rounded-full text-sm">
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
+                      <span className="bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-medium">
                         {subscription.planId === 'pro-yearly' ? 'Your Plan' : 'Save 15%'}
                       </span>
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">Pro Plan</h3>
-                    <div className="text-3xl font-bold mb-4">$490<span className="text-sm font-normal">/yr</span></div>
-                    <p className="text-sm text-gray-600 mb-4">Best value for long-term projects.</p>
-                    <ul className="text-sm space-y-2 mb-6">
-                      <li>• All Pro features</li>
-                      <li>• Priority Support</li>
-                      <li>• 100 mile matching radius</li>
-                      <li>• Advanced analytics</li>
-                    </ul>
-                    <Button className="w-full" variant={subscription.planId === 'pro-yearly' ? 'outline' : 'default'}>
-                      {subscription.planId === 'pro-yearly' ? 'Current Plan' : 'Contact Sales'}
-                    </Button>
+                    <div className="mt-2">
+                      <h3 className="text-lg font-semibold mb-3">Pro Plan</h3>
+                      <div className="text-3xl font-bold mb-4">$490<span className="text-sm font-normal">/yr</span></div>
+                      <p className="text-sm text-gray-600 mb-6">Best value for long-term projects.</p>
+                      <ul className="text-sm space-y-3 mb-8 text-left">
+                        <li className="flex items-center"><span className="text-emerald-500 mr-2">•</span> All Pro features</li>
+                        <li className="flex items-center"><span className="text-emerald-500 mr-2">•</span> Priority Support</li>
+                        <li className="flex items-center"><span className="text-emerald-500 mr-2">•</span> 50 mile matching radius</li>
+                        <li className="flex items-center"><span className="text-emerald-500 mr-2">•</span> Advanced analytics</li>
+                      </ul>
+                      <Button className="w-full" variant={subscription.planId === 'pro-yearly' ? 'outline' : 'default'}>
+                        {subscription.planId === 'pro-yearly' ? 'Current Plan' : 'Contact Sales'}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>
