@@ -9,12 +9,18 @@ import { getCategoryDisplayName } from "@/lib/category-schemas";
 
 export default function Comparison() {
   const { category } = useParams<{ category?: string }>();
+  const [, setLocation] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState(category || "tiles");
-  const [filters, setFilters] = useState({
-    brand: "",
-    minPrice: "",
-    maxPrice: "",
-    search: "",
+  
+  // Enhanced filter state with URL persistence
+  const [filters, setFilters] = useState(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return {
+      brand: urlParams.get('brand') || "",
+      minPrice: urlParams.get('minPrice') || "",
+      maxPrice: urlParams.get('maxPrice') || "",
+      search: urlParams.get('search') || "",
+    };
   });
 
   const categories = [
@@ -26,6 +32,27 @@ export default function Comparison() {
     { id: "carpet", name: "Carpet", icon: "fas fa-grip-lines" },
     { id: "thermostats", name: "Thermostats", icon: "fas fa-temperature-low" },
   ];
+
+  // Enhanced filter state persistence to URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams();
+    
+    // Add non-empty filters to URL
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value && value.trim() !== '') {
+        urlParams.set(key, value);
+      }
+    });
+    
+    // Update URL without page reload
+    const newUrl = `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`;
+    window.history.replaceState({}, '', newUrl);
+  }, [filters]);
+
+  // Enhanced filter change handler
+  const handleFiltersChange = (newFilters: typeof filters) => {
+    setFilters(newFilters);
+  };
 
   // Load the comparison enhancement script
   useEffect(() => {
@@ -86,7 +113,7 @@ export default function Comparison() {
             <CategoryFilterPanel 
               category={selectedCategory}
               filters={filters} 
-              onFiltersChange={setFilters} 
+              onFiltersChange={handleFiltersChange} 
             />
             
             <ComparisonTable 

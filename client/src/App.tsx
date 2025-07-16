@@ -56,6 +56,7 @@ import EmailSignInComplete from "@/pages/EmailSignInComplete";
 import EmailSignInDemo from "@/pages/EmailSignInDemo";
 import FirebaseAuthDemo from "@/pages/FirebaseAuthDemo";
 import AuthPage from "@/pages/AuthPage";
+import EnhancedAdminDashboard from "@/pages/enhanced-admin-dashboard";
 import { ToastProvider } from "@/context/ToastContext";
 import { AuthProvider as NetworkAuthProvider } from "@/context/AuthNetworkContext";
 
@@ -70,6 +71,7 @@ function Router() {
         <Route path="/compare" component={ProductCompare} />
         <Route path="/product-compare" component={ProductCompare} />
         <Route path="/admin/import" component={DataImport} />
+        <Route path="/admin/enhanced" component={EnhancedAdminDashboard} />
         <Route path="/categories" component={Categories} />
         <Route path="/brands" component={Brands} />
         <Route path="/vendors" component={Vendors} />

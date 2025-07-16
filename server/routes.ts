@@ -21,6 +21,10 @@ import { productScraper } from "./scraper.js";
 import { z } from "zod";
 import multer from "multer";
 import csvParser from "csv-parser";
+import { validateMaterial, validateLead, generateProductHash, validateAndCleanSpecifications, ScrapingValidationSchema, ValidationError } from "@shared/validation";
+import { automatedLeadProcessor } from "./automated-lead-processing";
+import cheerio from "cheerio";
+import axios from "axios";
 
 // Configure multer for file uploads
 const upload = multer({ dest: '/tmp/uploads/' });
@@ -182,17 +186,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // NEW: Fixed scraper endpoint that bypasses Vite middleware
+  // Enhanced scraper endpoint with validation and duplicate detection
   app.post("/api/scrape-product", async (req, res) => {
     try {
       const { url } = req.body;
-      if (!url) {
-        return res.status(400).json({ success: false, error: "URL is required" });
+      console.log(`🔧 Enhanced scraper processing: ${url}`);
+      
+      // Validate URL with enhanced validation
+      const validationResult = ScrapingValidationSchema.safeParse({ url });
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Invalid URL - must be from a supported manufacturer',
+          details: validationResult.error.errors
+        });
       }
       
-      console.log(`🔧 Fixed scraper processing: ${url}`);
-      
-      // Simple scraping with axios and cheerio - no Firebase logging
+      // Simple scraping with axios and cheerio
       const axios = await import('axios');
       const cheerio = await import('cheerio');
       
@@ -203,14 +213,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const $ = cheerio.load(response.data);
       
-      // Extract basic product information
+      // Enhanced product extraction with better validation
       const name = $('h1, .product-title, .product-name').first().text().trim() || 'Unknown Product';
       const brand = url.includes('daltile') ? 'Daltile' : 
                    url.includes('msi') ? 'MSI' : 
                    url.includes('bedrosians') ? 'Bedrosians' : 
                    url.includes('shaw') ? 'Shaw' : 'Unknown';
       
-      // Simple category detection
+      // Enhanced category detection
       const urlLower = url.toLowerCase();
       const category = urlLower.includes('tile') ? 'tiles' :
                       urlLower.includes('slab') ? 'slabs' :
@@ -219,38 +229,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       urlLower.includes('carpet') ? 'carpet' :
                       urlLower.includes('heat') ? 'heat' : 'tiles';
       
-      // Extract image
+      // Check for duplicates
+      const existingMaterials = await storage.getMaterials({ search: name });
+      const isDuplicate = existingMaterials.some(mat => 
+        mat.name.toLowerCase() === name.toLowerCase() && 
+        mat.brand.toLowerCase() === brand.toLowerCase() && 
+        mat.category === category
+      );
+      
+      if (isDuplicate) {
+        return res.status(409).json({
+          success: false,
+          error: 'Product already exists in database',
+          duplicate: true
+        });
+      }
+      
+      // Enhanced image extraction
       const imageUrl = $('img').filter((_, img) => {
         const src = $(img).attr('src') || $(img).attr('data-src') || '';
         return src && !src.includes('logo') && !src.includes('icon') && 
                (src.includes('.jpg') || src.includes('.jpeg') || src.includes('.png'));
       }).first().attr('src') || '';
       
-      // Create material and save to storage
-      const material = {
+      // Enhanced specifications with validation
+      const rawSpecs = { 'Product URL': url, 'Brand': brand };
+      const cleanSpecs = validateAndCleanSpecifications(rawSpecs, category);
+      
+      // Create material with enhanced validation
+      const materialData = {
         name,
         brand,
         category,
-        price: "0.00", // Fixed: Use string format for decimal field
+        price: "0.00",
         imageUrl,
         description: `${brand} ${name}`,
-        specifications: { 'Product URL': url, 'Brand': brand },
+        specifications: cleanSpecs,
         dimensions: '12" x 12"',
         sourceUrl: url,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
       
-      const savedMaterial = await storage.createMaterial(material);
-      console.log(`✅ Simple scraper saved: ${savedMaterial.name} (ID: ${savedMaterial.id})`);
+      // Validate material data
+      const validatedMaterial = validateMaterial(materialData);
+      
+      const savedMaterial = await storage.createMaterial(validatedMaterial);
+      console.log(`✅ Enhanced scraper saved: ${savedMaterial.name} (ID: ${savedMaterial.id})`);
       
       res.json({
         success: true,
         message: 'Product scraped and saved successfully',
-        product: savedMaterial
+        product: savedMaterial,
+        validationPassed: true
       });
     } catch (error) {
-      console.error("Simple scraper error:", error);
+      console.error("Enhanced scraper error:", error);
+      
+      if (error instanceof ValidationError) {
+        return res.status(400).json({ 
+          success: false, 
+          error: `Validation failed: ${error.message}`,
+          field: error.field
+        });
+      }
+      
       res.status(500).json({ success: false, error: "Scraping failed" });
     }
   });
@@ -2007,6 +2050,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.status(500).json({ error: 'Failed to create/update profile' });
+    }
+  });
+
+  // Enhanced admin analytics endpoints
+  app.get("/api/admin/analytics", async (req, res) => {
+    try {
+      const stats = await automatedLeadProcessor.getProcessingStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching analytics:", error);
+      res.status(500).json({ error: "Failed to fetch analytics data" });
+    }
+  });
+
+  app.post("/api/admin/process-leads", async (req, res) => {
+    try {
+      await automatedLeadProcessor.processLeads();
+      res.json({ message: "Lead processing completed successfully" });
+    } catch (error) {
+      console.error("Error processing leads:", error);
+      res.status(500).json({ error: "Failed to process leads" });
+    }
+  });
+
+  app.get("/api/admin/system-status", async (req, res) => {
+    try {
+      const stats = await automatedLeadProcessor.getProcessingStats();
+      res.json({
+        status: "operational",
+        services: {
+          database: "connected",
+          leadProcessing: stats?.isProcessing ? "active" : "idle",
+          automation: "enabled"
+        },
+        stats
+      });
+    } catch (error) {
+      console.error("Error getting system status:", error);
+      res.status(500).json({ error: "Failed to get system status" });
     }
   });
 
