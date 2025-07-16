@@ -1877,6 +1877,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/user/profile', async (req: Request, res: Response) => {
     try {
       const userData = req.body;
+      console.log('👤 Creating/updating user profile:', userData);
       
       // Validate required fields
       if (!userData.uid || !userData.email || !userData.role) {
@@ -1891,6 +1892,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (existingUser) {
         // Update existing user
+        console.log('✅ Updating existing user:', existingUser.id);
         const updatedUser = await storage.updateUserByUid(userData.uid, userData);
         return res.json({ 
           success: true, 
@@ -1900,7 +1902,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Create new user
+      console.log('✅ Creating new user in database');
       const newUser = await storage.createUser(userData);
+      console.log('✅ New user created:', newUser.id);
       
       res.json({ 
         success: true, 
@@ -1914,6 +1918,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error.code === '23505') {
         try {
           // Try to update the existing user instead
+          console.log('🔄 Unique constraint violation, trying update');
           const updatedUser = await storage.updateUserByUid(userData.uid, userData);
           return res.json({ 
             success: true, 
@@ -1922,6 +1927,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         } catch (updateError) {
           console.error('Error updating user after constraint violation:', updateError);
+          return res.status(500).json({ error: 'Failed to update profile' });
         }
       }
       

@@ -351,10 +351,19 @@ export async function signInUser(signInData: SignInData): Promise<any> {
     const fallbackUser = fallbackUsers.get(signInData.email);
     let userToReturn;
     
+    // Create consistent UIDs for the same user
+    const generateConsistentUid = (email: string) => {
+      const hash = email.split('').reduce((a, b) => {
+        a = ((a << 5) - a) + b.charCodeAt(0);
+        return a & a;
+      }, 0);
+      return `fallback-uid-${Math.abs(hash)}`;
+    };
+
     if (fallbackUser) {
       userToReturn = {
         email: signInData.email,
-        uid: 'fallback-uid-' + Date.now(),
+        uid: generateConsistentUid(signInData.email),
         role: fallbackUser.role,
         name: fallbackUser.name || 'Test User',
         subscription: fallbackUser.subscription || null
@@ -364,28 +373,28 @@ export async function signInUser(signInData: SignInData): Promise<any> {
       if (signInData.email === 'testvendor@comperra.com' || signInData.email === 'ochynoweth@luxsurfacesgroup.com') {
         userToReturn = {
           email: signInData.email,
-          uid: 'fallback-uid-' + Date.now(),
+          uid: generateConsistentUid(signInData.email),
           role: 'vendor',
           name: signInData.email === 'testvendor@comperra.com' ? 'Test Vendor' : 'Owen Chynoweth'
         };
       } else if (signInData.email === 'testtrade@comperra.com') {
         userToReturn = {
           email: signInData.email,
-          uid: 'fallback-uid-' + Date.now(),
+          uid: generateConsistentUid(signInData.email),
           role: 'trade',
           name: 'Test Trade Professional'
         };
       } else if (signInData.email === 'testcustomer@comperra.com') {
         userToReturn = {
           email: signInData.email,
-          uid: 'fallback-uid-' + Date.now(),
+          uid: generateConsistentUid(signInData.email),
           role: 'customer',
           name: 'Test Customer'
         };
       } else if (signInData.email === 'ochynoweth@luxsurfacesgroup.com') {
         userToReturn = {
           email: signInData.email,
-          uid: 'fallback-uid-' + Date.now(),
+          uid: generateConsistentUid(signInData.email),
           role: 'vendor',
           name: 'Owen Chynoweth',
           subscription: {
@@ -402,7 +411,7 @@ export async function signInUser(signInData: SignInData): Promise<any> {
         const isBusinessEmail = signInData.email.includes('@') && !signInData.email.includes('gmail.com') && !signInData.email.includes('yahoo.com');
         userToReturn = {
           email: signInData.email,
-          uid: 'fallback-uid-' + Date.now(),
+          uid: generateConsistentUid(signInData.email),
           role: isBusinessEmail ? 'vendor' : 'customer',
           name: 'Professional User'
         };
@@ -413,6 +422,37 @@ export async function signInUser(signInData: SignInData): Promise<any> {
     userSessions.set(signInData.email, userToReturn);
     userSessions.set('current-user', userToReturn); // Also store as current-user for easy access
     console.log(`✅ User session stored for: ${signInData.email}, role: ${userToReturn.role}`);
+    
+    // Ensure user profile exists in database
+    try {
+      const { storage } = await import('./storage');
+      const userData = {
+        uid: userToReturn.uid,
+        email: userToReturn.email,
+        role: userToReturn.role,
+        name: userToReturn.name || 'User',
+        phone: userToReturn.phone || '',
+        companyName: userToReturn.companyName || '',
+        zipCode: userToReturn.zipCode || '',
+        customerType: userToReturn.customerType || ''
+      };
+      
+      // Check if user exists in database by email first
+      let dbUser = await storage.getUserByEmail(userToReturn.email);
+      if (!dbUser) {
+        // Create new user in database
+        console.log('🆕 Creating new user profile in database');
+        dbUser = await storage.createUser(userData);
+      } else {
+        // Update existing user to ensure consistency (including updating the UID)
+        console.log('🔄 Updating existing user profile in database');
+        dbUser = await storage.updateUser(dbUser.id, userData);
+      }
+      console.log('✅ User database profile synced:', dbUser.id);
+    } catch (dbError) {
+      console.error('Database profile sync error:', dbError);
+      // Continue with signin even if database sync fails
+    }
     
     return {
       success: true,
