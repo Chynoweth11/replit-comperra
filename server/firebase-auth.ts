@@ -80,10 +80,19 @@ initializeTestAccounts();
 // Track current logged-in user - simple session storage
 const userSessions = new Map<string, any>();
 
+// Create consistent UIDs for the same user
+const generateConsistentUid = (email: string) => {
+  const hash = email.split('').reduce((a, b) => {
+    a = ((a << 5) - a) + b.charCodeAt(0);
+    return a & a;
+  }, 0);
+  return `fallback-uid-${Math.abs(hash)}`;
+};
+
 // Auto-login Owen's account on server start for testing
 const owenUser = {
   email: 'ochynoweth@luxsurfacesgroup.com',
-  uid: 'fallback-uid-1752536029132',
+  uid: generateConsistentUid('ochynoweth@luxsurfacesgroup.com'),
   role: 'vendor',
   name: 'Owen Chynoweth',
   subscription: {
@@ -152,7 +161,7 @@ function createFallbackUser(signUpData: SignUpData): any {
   });
   
   const fallbackUser = {
-    uid: 'fallback-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+    uid: generateConsistentUid(signUpData.email),
     email: signUpData.email,
     role: signUpData.role,
     name: signUpData.name || 'User',
@@ -351,14 +360,7 @@ export async function signInUser(signInData: SignInData): Promise<any> {
     const fallbackUser = fallbackUsers.get(signInData.email);
     let userToReturn;
     
-    // Create consistent UIDs for the same user
-    const generateConsistentUid = (email: string) => {
-      const hash = email.split('').reduce((a, b) => {
-        a = ((a << 5) - a) + b.charCodeAt(0);
-        return a & a;
-      }, 0);
-      return `fallback-uid-${Math.abs(hash)}`;
-    };
+    // Use the centralized UID generation function
 
     if (fallbackUser) {
       userToReturn = {

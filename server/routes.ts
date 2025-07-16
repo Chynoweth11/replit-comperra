@@ -767,6 +767,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         timeoutPromise
       ]);
       
+      // Auto-create user profile with registration data
+      if (result.success && result.user) {
+        try {
+          const profileData = {
+            uid: result.user.uid,
+            email: result.user.email,
+            name: signUpData.name || '',
+            phone: signUpData.phone || '',
+            zipCode: req.body.zipCode || '',
+            companyName: signUpData.companyName || '',
+            role: signUpData.role,
+            customerType: signUpData.customerType || '',
+            emailNotifications: true,
+            smsNotifications: false,
+            newsletterSubscription: true
+          };
+          
+          // Check if user already exists, if so update, otherwise create
+          const existingUser = await storage.getUserByEmail(result.user.email);
+          if (existingUser) {
+            await storage.updateUser(existingUser.id, profileData);
+            console.log('✅ User profile updated during registration');
+          } else {
+            await storage.createUser(profileData);
+            console.log('✅ User profile created during registration');
+          }
+        } catch (profileError) {
+          console.error('Profile creation error during registration:', profileError);
+          // Don't fail the registration if profile creation fails
+        }
+      }
+      
       res.json(result);
     } catch (error: any) {
       console.error('Signup error:', error);
@@ -774,8 +806,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If timeout or connection error, use immediate fallback
       if (error.message === 'Request timeout' || error.code === 'ETIMEDOUT') {
         console.log('⚠️ Request timeout, using immediate fallback');
+        // Generate consistent UID for fallback user
+        const generateConsistentUid = (email: string) => {
+          const hash = email.split('').reduce((a, b) => {
+            a = ((a << 5) - a) + b.charCodeAt(0);
+            return a & a;
+          }, 0);
+          return `fallback-uid-${Math.abs(hash)}`;
+        };
+        
         const fallbackUser = {
-          uid: 'fallback-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+          uid: generateConsistentUid(req.body.email),
           email: req.body.email,
           role: req.body.role,
           name: req.body.name || 'User',
@@ -1855,12 +1896,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { uid } = req.params;
       const updates = req.body;
       
-      // Validate required fields
-      if (!updates.name || !updates.email) {
-        return res.status(400).json({ error: 'Name and email are required' });
+      // Check if user exists
+      const existingUser = await storage.getUserByUid(uid);
+      if (!existingUser) {
+        return res.status(404).json({ error: 'User not found' });
       }
       
-      // Update user profile
+      // Update user profile with partial updates
       const updatedUser = await storage.updateUserByUid(uid, updates);
       
       res.json({ 
