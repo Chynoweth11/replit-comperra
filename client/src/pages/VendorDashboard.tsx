@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import SmartMatchAI from '@/components/SmartMatchAI';
 import SmartMatchAIEnhanced from '@/components/SmartMatchAIEnhanced';
+import SmartMatchAISimple from '@/components/SmartMatchAISimple';
 import GoogleMap from '@/components/GoogleMap';
 import { useSessionPersistence } from '@/hooks/useSessionPersistence';
 import { sessionManager } from '@/utils/sessionManager';
@@ -510,7 +511,7 @@ const VendorDashboard: React.FC = () => {
 
 
           <TabsContent value="smart-match" className="space-y-6">
-            <SmartMatchAIEnhanced userRole="vendor" userId={userProfile.uid} />
+            <SmartMatchAISimple userRole="vendor" userId={userProfile.uid} />
           </TabsContent>
 
           <TabsContent value="subscription" className="space-y-6">
