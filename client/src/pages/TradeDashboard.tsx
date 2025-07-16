@@ -26,6 +26,7 @@ import {
   LogOut
 } from 'lucide-react';
 import SmartMatchAI from '@/components/SmartMatchAI';
+import SmartMatchAIEnhanced from '@/components/SmartMatchAIEnhanced';
 import GoogleMap from '@/components/GoogleMap';
 
 interface LeadData {
@@ -465,7 +466,7 @@ const TradeDashboard: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="smart-match" className="space-y-6">
-            <SmartMatchAI userRole="trade" userId={userProfile.uid} />
+            <SmartMatchAIEnhanced userRole="trade" userId={userProfile.uid} />
           </TabsContent>
 
           <TabsContent value="subscription" className="space-y-6">
