@@ -182,43 +182,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // NEW: Working scraper endpoint
-  app.post("/api/scrape/test", async (req, res) => {
+  // NEW: Fixed scraper endpoint that bypasses Vite middleware
+  app.post("/api/scrape-product", async (req, res) => {
     try {
       const { url } = req.body;
       if (!url) {
-        return res.status(400).json({ message: "URL is required" });
+        return res.status(400).json({ success: false, error: "URL is required" });
       }
       
-      console.log(`Testing working scraper for: ${url}`);
+      console.log(`🔧 Fixed scraper processing: ${url}`);
       
-      // Direct scraping without any storage operations
-      const { simulationScraper } = await import('./simulation-scraper');
-      const scrapedProducts = await simulationScraper.scrapeRealProductFromURL(url);
+      // Simple scraping with axios and cheerio - no Firebase logging
+      const axios = await import('axios');
+      const cheerio = await import('cheerio');
       
-      if (scrapedProducts && scrapedProducts.length > 0) {
-        const scrapedProduct = scrapedProducts[0];
-        res.json({
-          success: true,
-          message: "✅ Enhanced scraper working perfectly!",
-          extracted: {
-            name: scrapedProduct.name,
-            brand: scrapedProduct.brand,
-            category: scrapedProduct.category,
-            specifications_count: Object.keys(scrapedProduct.specifications || {}).length,
-            has_image: !!scrapedProduct.imageUrl,
-            source: scrapedProduct.sourceUrl,
-            price: scrapedProduct.price,
-            dimensions: scrapedProduct.dimensions,
-            total_products: scrapedProducts.length
-          }
-        });
-      } else {
-        res.status(404).json({ success: false, message: "No data extracted" });
-      }
+      const response = await axios.default.get(url, { 
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+        timeout: 8000
+      });
+      
+      const $ = cheerio.load(response.data);
+      
+      // Extract basic product information
+      const name = $('h1, .product-title, .product-name').first().text().trim() || 'Unknown Product';
+      const brand = url.includes('daltile') ? 'Daltile' : 
+                   url.includes('msi') ? 'MSI' : 
+                   url.includes('bedrosians') ? 'Bedrosians' : 
+                   url.includes('shaw') ? 'Shaw' : 'Unknown';
+      
+      // Simple category detection
+      const urlLower = url.toLowerCase();
+      const category = urlLower.includes('tile') ? 'tiles' :
+                      urlLower.includes('slab') ? 'slabs' :
+                      urlLower.includes('vinyl') || urlLower.includes('lvt') ? 'lvt' :
+                      urlLower.includes('hardwood') || urlLower.includes('wood') ? 'hardwood' :
+                      urlLower.includes('carpet') ? 'carpet' :
+                      urlLower.includes('heat') ? 'heat' : 'tiles';
+      
+      // Extract image
+      const imageUrl = $('img').filter((_, img) => {
+        const src = $(img).attr('src') || $(img).attr('data-src') || '';
+        return src && !src.includes('logo') && !src.includes('icon') && 
+               (src.includes('.jpg') || src.includes('.jpeg') || src.includes('.png'));
+      }).first().attr('src') || '';
+      
+      // Create material and save to storage
+      const material = {
+        name,
+        brand,
+        category,
+        price: "0.00", // Fixed: Use string format for decimal field
+        imageUrl,
+        description: `${brand} ${name}`,
+        specifications: { 'Product URL': url, 'Brand': brand },
+        dimensions: '12" x 12"',
+        sourceUrl: url,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      const savedMaterial = await storage.createMaterial(material);
+      console.log(`✅ Simple scraper saved: ${savedMaterial.name} (ID: ${savedMaterial.id})`);
+      
+      res.json({
+        success: true,
+        message: 'Product scraped and saved successfully',
+        product: savedMaterial
+      });
     } catch (error) {
-      console.error("Test scraper error:", error);
-      res.status(500).json({ success: false, message: "Scraper test failed" });
+      console.error("Simple scraper error:", error);
+      res.status(500).json({ success: false, error: "Scraping failed" });
     }
   });
 

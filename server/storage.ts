@@ -1011,7 +1011,7 @@ const useFirebase = true; // Always use Firebase for persistent storage
 
 // Initialize storage with fallback to memory storage
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export class DatabaseStorage implements IStorage {
   async getMaterials(filters?: {
@@ -1021,8 +1021,25 @@ export class DatabaseStorage implements IStorage {
     maxPrice?: number;
     search?: string;
   }): Promise<Material[]> {
-    // For now, return empty array - will implement later
-    return [];
+    let query = db.select().from(materials);
+    
+    // Apply filters
+    if (filters?.category && filters.category !== 'all') {
+      query = query.where(eq(materials.category, filters.category));
+    }
+    
+    if (filters?.brand) {
+      query = query.where(eq(materials.brand, filters.brand));
+    }
+    
+    if (filters?.search) {
+      // Simple search implementation - can be enhanced with full text search
+      query = query.where(
+        sql`${materials.name} ILIKE ${'%' + filters.search + '%'} OR ${materials.description} ILIKE ${'%' + filters.search + '%'}`
+      );
+    }
+    
+    return await query;
   }
 
   async getMaterial(id: number): Promise<Material | undefined> {
