@@ -64,6 +64,19 @@ textarea:focus, input:focus {
   text-align: left !important;
 }
 
+/* Fix first character cursor positioning */
+textarea:empty:focus::before {
+  content: '';
+  position: absolute;
+  left: 0;
+}
+
+/* Force text direction on empty state */
+textarea:empty {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
 .dark {
   --background: hsl(240, 10%, 3.9%);
   --foreground: hsl(0, 0%, 98%);

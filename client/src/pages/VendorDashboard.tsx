@@ -797,9 +797,20 @@ const VendorDashboard: React.FC = () => {
                       onFocus={(e) => {
                         e.target.style.direction = 'ltr';
                         e.target.setAttribute('dir', 'ltr');
+                        // Force cursor to start position
+                        setTimeout(() => {
+                          e.target.setSelectionRange(0, 0);
+                        }, 0);
                       }}
                       onInput={(e) => {
                         e.target.style.direction = 'ltr';
+                      }}
+                      onKeyDown={(e) => {
+                        // Ensure proper cursor behavior on first character
+                        if (e.target.value.length === 0 && e.key.length === 1) {
+                          e.target.style.direction = 'ltr';
+                          e.target.setAttribute('dir', 'ltr');
+                        }
                       }}
                     />
                   </div>
