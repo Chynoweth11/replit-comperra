@@ -54,7 +54,7 @@
 textarea, input[type="text"], input[type="email"], input[type="number"] {
   direction: ltr !important;
   text-align: left !important;
-  unicode-bidi: embed !important;
+  unicode-bidi: bidi-override !important;
   writing-mode: lr-tb !important;
 }
 

@@ -78,6 +78,7 @@ const VendorDashboard: React.FC = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [contactMessage, setContactMessage] = useState('');
   const [newStatus, setNewStatus] = useState('');
+  const [businessDescription, setBusinessDescription] = useState('');
 
   useEffect(() => {
     // Use sessionManager for more reliable authentication
@@ -786,31 +787,14 @@ const VendorDashboard: React.FC = () => {
                       className="w-full p-2 border rounded-md"
                       rows={4}
                       placeholder="Tell customers about your expertise and services"
-                      defaultValue=""
+                      value={businessDescription}
+                      onChange={(e) => setBusinessDescription(e.target.value)}
                       dir="ltr"
                       style={{ 
                         textAlign: 'left', 
                         direction: 'ltr',
-                        unicodeBidi: 'embed',
+                        unicodeBidi: 'bidi-override',
                         writingMode: 'lr-tb'
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.direction = 'ltr';
-                        e.target.setAttribute('dir', 'ltr');
-                        // Force cursor to start position
-                        setTimeout(() => {
-                          e.target.setSelectionRange(0, 0);
-                        }, 0);
-                      }}
-                      onInput={(e) => {
-                        e.target.style.direction = 'ltr';
-                      }}
-                      onKeyDown={(e) => {
-                        // Ensure proper cursor behavior on first character
-                        if (e.target.value.length === 0 && e.key.length === 1) {
-                          e.target.style.direction = 'ltr';
-                          e.target.setAttribute('dir', 'ltr');
-                        }
                       }}
                     />
                   </div>

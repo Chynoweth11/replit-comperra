@@ -50,6 +50,7 @@ const TradeDashboard: React.FC = () => {
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
   const [leads, setLeads] = useState<LeadData[]>([]);
+  const [businessDescription, setBusinessDescription] = useState('');
   const [metrics, setMetrics] = useState({
     totalLeads: 0,
     activeLeads: 0,
@@ -706,31 +707,14 @@ const TradeDashboard: React.FC = () => {
                       className="w-full p-2 border rounded-md"
                       rows={4}
                       placeholder="Tell customers about your expertise and services"
-                      defaultValue=""
+                      value={businessDescription}
+                      onChange={(e) => setBusinessDescription(e.target.value)}
                       dir="ltr"
                       style={{ 
                         textAlign: 'left', 
                         direction: 'ltr',
-                        unicodeBidi: 'embed',
+                        unicodeBidi: 'bidi-override',
                         writingMode: 'lr-tb'
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.direction = 'ltr';
-                        e.target.setAttribute('dir', 'ltr');
-                        // Force cursor to start position
-                        setTimeout(() => {
-                          e.target.setSelectionRange(0, 0);
-                        }, 0);
-                      }}
-                      onInput={(e) => {
-                        e.target.style.direction = 'ltr';
-                      }}
-                      onKeyDown={(e) => {
-                        // Ensure proper cursor behavior on first character
-                        if (e.target.value.length === 0 && e.key.length === 1) {
-                          e.target.style.direction = 'ltr';
-                          e.target.setAttribute('dir', 'ltr');
-                        }
                       }}
                     />
                   </div>
