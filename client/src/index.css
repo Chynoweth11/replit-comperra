@@ -50,17 +50,10 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
-/* Reset all text direction issues */
-* {
-  direction: ltr !important;
-  unicode-bidi: normal !important;
-}
-
-/* Force proper text direction for all inputs */
+/* Fix text direction for inputs only */
 input, textarea {
-  direction: ltr !important;
-  text-align: left !important;
-  unicode-bidi: normal !important;
+  direction: ltr;
+  text-align: left;
 }
 
 .dark {
