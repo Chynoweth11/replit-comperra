@@ -786,9 +786,21 @@ const VendorDashboard: React.FC = () => {
                       className="w-full p-2 border rounded-md"
                       rows={4}
                       placeholder="Tell customers about your expertise and services"
-                      defaultValue="Premium flooring and surface solutions with over 15 years of experience. We specialize in luxury tile installations, natural stone work, and custom hardwood flooring."
+                      defaultValue=""
                       dir="ltr"
-                      style={{ textAlign: 'left', direction: 'ltr' }}
+                      style={{ 
+                        textAlign: 'left', 
+                        direction: 'ltr',
+                        unicodeBidi: 'embed',
+                        writingMode: 'lr-tb'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.direction = 'ltr';
+                        e.target.setAttribute('dir', 'ltr');
+                      }}
+                      onInput={(e) => {
+                        e.target.style.direction = 'ltr';
+                      }}
                     />
                   </div>
                   

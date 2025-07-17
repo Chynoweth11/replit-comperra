@@ -50,6 +50,20 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
+/* Force proper text direction for all text inputs */
+textarea, input[type="text"], input[type="email"], input[type="number"] {
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: embed !important;
+  writing-mode: lr-tb !important;
+}
+
+/* Ensure proper cursor behavior */
+textarea:focus, input:focus {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
 .dark {
   --background: hsl(240, 10%, 3.9%);
   --foreground: hsl(0, 0%, 98%);

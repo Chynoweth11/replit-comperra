@@ -706,9 +706,21 @@ const TradeDashboard: React.FC = () => {
                       className="w-full p-2 border rounded-md"
                       rows={4}
                       placeholder="Tell customers about your expertise and services"
-                      defaultValue="Professional trade services with specialized expertise in plumbing, electrical, and HVAC systems. Licensed and insured with 8+ years of experience serving residential and commercial clients."
+                      defaultValue=""
                       dir="ltr"
-                      style={{ textAlign: 'left', direction: 'ltr' }}
+                      style={{ 
+                        textAlign: 'left', 
+                        direction: 'ltr',
+                        unicodeBidi: 'embed',
+                        writingMode: 'lr-tb'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.direction = 'ltr';
+                        e.target.setAttribute('dir', 'ltr');
+                      }}
+                      onInput={(e) => {
+                        e.target.style.direction = 'ltr';
+                      }}
                     />
                   </div>
                   
