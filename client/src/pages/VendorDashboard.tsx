@@ -681,7 +681,7 @@ const VendorDashboard: React.FC = () => {
                   </Card>
                 </div>
                 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-lg">Lead Trends</CardTitle>
@@ -689,16 +689,6 @@ const VendorDashboard: React.FC = () => {
                     <CardContent>
                       <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
                         <p className="text-gray-500">Lead trends chart placeholder</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Revenue Growth</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <p className="text-gray-500">Revenue growth chart placeholder</p>
                       </div>
                     </CardContent>
                   </Card>
