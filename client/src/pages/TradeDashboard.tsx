@@ -705,7 +705,15 @@ const TradeDashboard: React.FC = () => {
                     <label className="block text-sm font-medium mb-2">About Your Business</label>
                     <input
                       type="text"
-                      className="w-full p-2 border rounded-md"
+                      style={{
+                        width: '100%',
+                        padding: '8px',
+                        border: '1px solid #ccc',
+                        borderRadius: '4px',
+                        direction: 'ltr',
+                        textAlign: 'left',
+                        unicodeBidi: 'normal'
+                      }}
                       placeholder="Tell customers about your expertise and services"
                       value={businessDescription}
                       onChange={(e) => setBusinessDescription(e.target.value)}

@@ -50,31 +50,17 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
-/* Force proper text direction for all text inputs */
-textarea, input[type="text"], input[type="email"], input[type="number"] {
+/* Reset all text direction issues */
+* {
   direction: ltr !important;
-  text-align: left !important;
-  unicode-bidi: bidi-override !important;
-  writing-mode: lr-tb !important;
+  unicode-bidi: normal !important;
 }
 
-/* Ensure proper cursor behavior */
-textarea:focus, input:focus {
+/* Force proper text direction for all inputs */
+input, textarea {
   direction: ltr !important;
   text-align: left !important;
-}
-
-/* Fix first character cursor positioning */
-textarea:empty:focus::before {
-  content: '';
-  position: absolute;
-  left: 0;
-}
-
-/* Force text direction on empty state */
-textarea:empty {
-  direction: ltr !important;
-  text-align: left !important;
+  unicode-bidi: normal !important;
 }
 
 .dark {
