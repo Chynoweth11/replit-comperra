@@ -50,7 +50,13 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
-/* Fix text direction for inputs only */
+/* Global text direction fix */
+html, body {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Force proper text direction for all inputs */
 input, textarea {
   direction: ltr;
   text-align: left;

@@ -710,6 +710,9 @@ const TradeDashboard: React.FC = () => {
                       value={businessDescription}
                       onChange={(e) => setBusinessDescription(e.target.value)}
                       dir="ltr"
+                      lang="en"
+                      autoCorrect="off"
+                      autoCapitalize="off"
                     />
                   </div>
                   
