@@ -236,8 +236,10 @@ function App() {
         <AuthProvider>
           <NetworkAuthProvider>
             <TooltipProvider>
-              <Toaster />
-              <Router />
+              <div style={{ direction: 'ltr', textAlign: 'left' }}>
+                <Toaster />
+                <Router />
+              </div>
             </TooltipProvider>
           </NetworkAuthProvider>
         </AuthProvider>

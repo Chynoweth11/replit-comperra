@@ -785,12 +785,14 @@ const VendorDashboard: React.FC = () => {
                     <label className="block text-sm font-medium mb-2">About Your Business</label>
                     <input
                       type="text"
-                      className="text-left w-full px-3 py-2 border rounded"
+                      className="w-full px-3 py-2 border rounded text-left"
                       placeholder="Tell customers about your expertise and services"
                       value={businessDescription}
                       onChange={(e) => setBusinessDescription(e.target.value)}
                       dir="ltr"
                       lang="en"
+                      inputMode="text"
+                      autoComplete="off"
                       autoCorrect="off"
                       autoCapitalize="off"
                     />

@@ -50,16 +50,10 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
-/* Global text direction fix */
-html, body {
-  direction: ltr;
-  text-align: left;
-}
-
-/* Force proper text direction for all inputs */
-input, textarea {
-  direction: ltr;
-  text-align: left;
+/* Emergency RTL fix - most aggressive */
+html, body, input, textarea {
+  direction: ltr !important;
+  text-align: left !important;
 }
 
 .dark {
