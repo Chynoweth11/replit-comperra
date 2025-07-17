@@ -695,6 +695,20 @@ const TradeDashboard: React.FC = () => {
                       rows={3}
                       placeholder="List your certifications and licenses"
                       defaultValue="Licensed Contractor, HVAC Certified, Plumbing License #12345"
+                      dir="ltr"
+                      style={{ textAlign: 'left', direction: 'ltr' }}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">About Your Business</label>
+                    <textarea
+                      className="w-full p-2 border rounded-md"
+                      rows={4}
+                      placeholder="Tell customers about your expertise and services"
+                      defaultValue="Professional trade services with specialized expertise in plumbing, electrical, and HVAC systems. Licensed and insured with 8+ years of experience serving residential and commercial clients."
+                      dir="ltr"
+                      style={{ textAlign: 'left', direction: 'ltr' }}
                     />
                   </div>
                   

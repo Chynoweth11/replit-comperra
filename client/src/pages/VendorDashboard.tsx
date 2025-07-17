@@ -787,6 +787,8 @@ const VendorDashboard: React.FC = () => {
                       rows={4}
                       placeholder="Tell customers about your expertise and services"
                       defaultValue="Premium flooring and surface solutions with over 15 years of experience. We specialize in luxury tile installations, natural stone work, and custom hardwood flooring."
+                      dir="ltr"
+                      style={{ textAlign: 'left', direction: 'ltr' }}
                     />
                   </div>
                   
