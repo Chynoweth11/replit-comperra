@@ -703,20 +703,38 @@ const TradeDashboard: React.FC = () => {
                   
                   <div>
                     <label className="block text-sm font-medium mb-2">About Your Business</label>
-                    <textarea
-                      className="w-full p-2 border rounded-md"
-                      rows={4}
-                      placeholder="Tell customers about your expertise and services"
-                      value={businessDescription}
-                      onChange={(e) => setBusinessDescription(e.target.value)}
-                      dir="ltr"
+                    <div
+                      contentEditable
+                      className="w-full p-2 border rounded-md min-h-[100px] bg-white"
                       style={{ 
                         textAlign: 'left', 
                         direction: 'ltr',
                         unicodeBidi: 'bidi-override',
-                        writingMode: 'lr-tb'
+                        writingMode: 'lr-tb',
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word'
                       }}
-                    />
+                      onInput={(e) => {
+                        setBusinessDescription(e.currentTarget.textContent || '');
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const selection = window.getSelection();
+                          const range = selection?.getRangeAt(0);
+                          if (range) {
+                            range.deleteContents();
+                            range.insertNode(document.createTextNode('\n'));
+                            range.collapse(false);
+                            selection?.removeAllRanges();
+                            selection?.addRange(range);
+                          }
+                        }
+                      }}
+                      suppressContentEditableWarning={true}
+                    >
+                      {businessDescription || 'Tell customers about your expertise and services'}
+                    </div>
                   </div>
                   
                   <Button className="w-full">Save Profile Changes</Button>
