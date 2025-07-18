@@ -728,30 +728,52 @@ export class EnhancedScraper {
   }
 
   private extractProductNameFromURL(url: string): string {
-    // Extract product name from URL path
-    const pathParts = url.split('/');
-    const lastPart = pathParts[pathParts.length - 1];
+    // Remove query parameters first
+    const cleanUrl = url.split('?')[0];
+    const pathParts = cleanUrl.split('/');
     
-    // Clean up the URL segment
-    const cleanName = lastPart
-      .replace(/[-_]/g, ' ')
-      .replace(/\.(html|htm|php|asp|aspx)$/i, '')
-      .trim();
+    // Look for meaningful product names in URL path
+    let productName = '';
     
-    if (cleanName && cleanName.length > 1) {
-      // Special handling for granite names
-      if (cleanName.includes('satin') || cleanName.includes('polished') || cleanName.includes('honed')) {
-        return cleanName.split(' ').map(word => 
-          word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-        ).join(' ');
+    // Check URL path segments for product names
+    for (let i = pathParts.length - 1; i >= 0; i--) {
+      const part = pathParts[i];
+      if (part && 
+          part.length > 3 && 
+          !part.includes('.') && 
+          !['product', 'detail', 'slabs', 'marble', 'granite', 'quartzite', 'en'].includes(part.toLowerCase())) {
+        
+        productName = part
+          .replace(/[-_]/g, ' ')
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
+        break;
       }
-      
-      return cleanName.split(' ').map(word => 
-        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-      ).join(' ');
     }
     
-    return 'Unknown Product';
+    // If no good name found, try to construct from multiple relevant parts
+    if (!productName) {
+      const relevantParts = pathParts.filter(part => 
+        part && 
+        part.length > 2 && 
+        !part.includes('.') && 
+        !['product', 'detail', 'en', 'www'].includes(part.toLowerCase())
+      );
+      
+      if (relevantParts.length > 0) {
+        // Take the last 2-3 relevant parts for product name
+        const nameParts = relevantParts.slice(-3);
+        productName = nameParts
+          .map(part => part.replace(/[-_]/g, ' '))
+          .join(' ')
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
+      }
+    }
+    
+    return productName || 'Unknown Product';
   }
 
   private extractMaterialTypeFromURL(url: string): string | null {
@@ -1119,10 +1141,26 @@ export class EnhancedScraper {
 
         const $ = cheerio.load(response.data);
         
-        // Extract basic product information
-        const name = this.cleanText(
-          $('h1.product-title, h1[itemprop="name"], h1.product-name, .product-title h1, h1').first().text()
-        ) || this.extractProductNameFromURL(url);
+        // Extract basic product information with comprehensive selectors
+        let name = this.cleanText(
+          $('h1.product-title, h1[itemprop="name"], h1.product-name, .product-title h1, h1, .page-title h1, .product-details h1, .product-info h1, .hero-title, .main-title, .product-header h1, .item-title, .product-name h1, .title h1').first().text()
+        );
+        
+        // If no proper name found in HTML, try meta tags
+        if (!name || name.length < 3) {
+          name = this.cleanText(
+            $('meta[property="og:title"]').attr('content') ||
+            $('meta[name="title"]').attr('content') ||
+            $('title').text()
+          );
+        }
+        
+        // Finally fallback to URL extraction if still no good name
+        if (!name || name.length < 3) {
+          name = this.extractProductNameFromURL(url);
+        }
+        
+        console.log(`🏷️  Extracted product name: "${name}"`)
 
         const brand = this.extractBrandFromURL(url);
         const category = this.detectCategoryFromURL(url);
