@@ -579,7 +579,7 @@ export class EnhancedScraper {
     return null;
   }
 
-  private extractProductImages($: cheerio.CheerioAPI, url: string, limit: number = 5): string[] {
+  private extractProductImages($: cheerio.CheerioAPI, url: string, limit: number = 8): string[] {
     const imageSelectors = [
       'img.product-image',
       '.product-gallery img',
@@ -587,10 +587,23 @@ export class EnhancedScraper {
       'img[data-src]',
       '.hero-image img',
       '.product-photos img',
-      '.zoom-image'
+      '.zoom-image',
+      '.product-slider img',
+      '.carousel img',
+      '.thumbnail img',
+      '.gallery-item img',
+      '.product-images img',
+      '.image-gallery img',
+      '.product-showcase img',
+      '.slideshow img',
+      '.photos img',
+      '.room-scene img',
+      '.application-image img',
+      '.bedrosians-gallery img'  // Bedrosians-specific
     ];
 
     const images: string[] = [];
+    console.log(`🖼️  Searching for product images with ${imageSelectors.length} selectors...`);
     
     for (const selector of imageSelectors) {
       if (images.length >= limit) break;
@@ -599,7 +612,9 @@ export class EnhancedScraper {
         if (images.length >= limit) return false;
         
         const $img = $(img);
-        let imgSrc = $img.attr('data-src') || $img.attr('src') || $img.attr('data-lazy-src');
+        let imgSrc = $img.attr('data-src') || $img.attr('src') || $img.attr('data-lazy-src') || 
+                     $img.attr('data-original') || $img.attr('data-zoom-image') ||
+                     $img.attr('data-large') || $img.attr('data-full');
         
         if (imgSrc) {
           // Convert relative URLs to absolute
@@ -612,18 +627,24 @@ export class EnhancedScraper {
             imgSrc = new URL(imgSrc, url).href;
           }
           
-          // Filter out logos, icons, and placeholder images
+          // Filter out logos, icons, and placeholder images but be more permissive
           const imgName = imgSrc.toLowerCase();
           if (!imgName.includes('logo') && !imgName.includes('icon') && 
               !imgName.includes('placeholder') && !imgName.includes('spinner') &&
-              !imgName.includes('loading') && imgSrc.length > 20) {
+              !imgName.includes('loading') && !imgName.includes('favicon') &&
+              !imgName.includes('banner') && imgSrc.length > 25 &&
+              (imgName.includes('jpg') || imgName.includes('jpeg') || 
+               imgName.includes('png') || imgName.includes('webp'))) {
             images.push(imgSrc);
+            console.log(`📸 Found image ${images.length}: ${imgSrc.substring(0, 80)}...`);
           }
         }
       });
     }
 
-    return [...new Set(images)]; // Remove duplicates
+    const uniqueImages = [...new Set(images)]; // Remove duplicates
+    console.log(`🖼️  Total unique images found: ${uniqueImages.length}`);
+    return uniqueImages;
   }
 
   private extractColorFromNameAndURL(name: string, url: string): string {
@@ -1317,26 +1338,69 @@ export class EnhancedScraper {
 
         const $ = cheerio.load(response.data);
         
-        // Extract basic product information with comprehensive selectors
-        let name = this.cleanText(
-          $('h1.product-title, h1[itemprop="name"], h1.product-name, .product-title h1, h1, .page-title h1, .product-details h1, .product-info h1, .hero-title, .main-title, .product-header h1, .item-title, .product-name h1, .title h1').first().text()
-        );
+        // CRITICAL: Extract genuine URL-specific product information with comprehensive debugging
+        console.log(`🔍 DEBUGGING: Starting genuine product extraction for URL: ${url}`);
         
-        // If no proper name found in HTML, try meta tags
-        if (!name || name.length < 3) {
-          name = this.cleanText(
-            $('meta[property="og:title"]').attr('content') ||
-            $('meta[name="title"]').attr('content') ||
-            $('title').text()
-          );
+        const nameSelectors = [
+          'h1.product-title', 'h1[itemprop="name"]', 'h1.product-name', 
+          '.product-title h1', '.page-title h1', '.product-details h1', 
+          '.product-info h1', '.hero-title', '.main-title', '.product-header h1',
+          '.item-title', '.product-name h1', '.title h1', 'h1'
+        ];
+        
+        let name = '';
+        console.log(`🔍 DEBUGGING: Testing ${nameSelectors.length} product name selectors...`);
+        
+        // Test each selector individually with debugging
+        for (let i = 0; i < nameSelectors.length; i++) {
+          const selector = nameSelectors[i];
+          const element = $(selector).first();
+          if (element.length) {
+            const text = this.cleanText(element.text());
+            console.log(`🔍 DEBUGGING: Selector ${i+1} "${selector}" found: "${text}" (length: ${text.length})`);
+            if (text && text.length > 2 && !text.includes('Search') && 
+                text !== 'Product' && text !== 'Results' && text !== 'undefined') {
+              name = text;
+              console.log(`✅ DEBUGGING: Selected product name from selector ${i+1}: "${name}"`);
+              break;
+            }
+          } else {
+            console.log(`🔍 DEBUGGING: Selector ${i+1} "${selector}" - no elements found`);
+          }
         }
         
-        // Finally fallback to URL extraction if still no good name
-        if (!name || name.length < 3) {
+        // Enhanced meta tag extraction with debugging
+        if (!name || name.length < 3 || name === 'Product') {
+          console.log(`🔍 DEBUGGING: Product name not found in selectors, trying meta tags...`);
+          
+          const ogTitle = $('meta[property="og:title"]').attr('content');
+          const metaTitle = $('meta[name="title"]').attr('content');
+          const titleTag = $('title').text();
+          
+          console.log(`🔍 DEBUGGING: OG Title: "${ogTitle}"`);
+          console.log(`🔍 DEBUGGING: Meta Title: "${metaTitle}"`);
+          console.log(`🔍 DEBUGGING: Title Tag: "${titleTag}"`);
+          
+          const metaName = this.cleanText(ogTitle || metaTitle || titleTag || '');
+          if (metaName && metaName.length > 3) {
+            // Clean meta title by removing common site suffixes
+            name = metaName
+              .replace(/\s*\|\s*.*$/g, '') // Remove "| Site Name"
+              .replace(/\s*-\s*.*$/g, '')  // Remove "- Site Name"
+              .replace(/\s*·\s*.*$/g, '')  // Remove "· Site Name"
+              .trim();
+            console.log(`✅ DEBUGGING: Cleaned meta name: "${name}"`);
+          }
+        }
+        
+        // URL-based extraction as final fallback
+        if (!name || name.length < 3 || name === 'Product') {
+          console.log(`🔍 DEBUGGING: No valid name from DOM, extracting from URL...`);
           name = this.extractProductNameFromURL(url);
+          console.log(`🔍 DEBUGGING: URL-based name: "${name}"`);
         }
         
-        console.log(`🏷️  Extracted product name: "${name}"`)
+        console.log(`🏷️  FINAL EXTRACTED PRODUCT NAME: "${name}" (Source: ${name === this.extractProductNameFromURL(url) ? 'URL' : 'DOM'})`)
 
         const brand = this.extractBrandFromURL(url);
         const category = this.detectCategoryFromURL(url);
@@ -1392,11 +1456,11 @@ export class EnhancedScraper {
           console.log(`🎨 No detailed color pattern found for: "${name}"`);
         }
 
-        // Enhance specifications with category-specific defaults
-        this.enhanceSpecifications(specifications, category, brand);
+        // Enhance specifications with category-specific defaults and DOM access
+        this.enhanceSpecifications(specifications, category, brand, $, url, name);
 
-        // Enhanced image extraction (do this first)
-        const productImages = this.extractProductImages($, url, 5);
+        // Enhanced multiple image extraction (do this first)
+        const productImages = this.extractProductImages($, url, 8); // Get up to 8 images
         let extractedImageUrls = productImages.length > 0 ? productImages : [];
         
         // Fallback to original image extraction if enhanced didn't work
@@ -1405,8 +1469,19 @@ export class EnhancedScraper {
           extractedImageUrls = fallbackImages;
         }
         
+        // Store multiple images in specifications
         const imageUrl = extractedImageUrls.length > 0 ? extractedImageUrls[0] : '';
         specifications['Image URL'] = imageUrl;
+        
+        // Add multiple image URLs if available
+        if (extractedImageUrls.length > 1) {
+          specifications['Additional Images'] = extractedImageUrls.slice(1, 5).join(', '); // Up to 4 additional images
+          console.log(`🖼️  Captured ${extractedImageUrls.length} images for: ${name}`);
+        } else if (extractedImageUrls.length === 1) {
+          console.log(`🖼️  Captured 1 image for: ${name}`);
+        } else {
+          console.log(`🖼️  No images captured for: ${name}`);
+        }
 
         // Extract dimensions with enhanced fallback logic
         let dimensions = specifications['Dimensions'] || specifications['Size'] || 
@@ -1696,7 +1771,7 @@ export class EnhancedScraper {
     return specs;
   }
 
-  private enhanceSpecifications(specifications: Record<string, string>, category: string, brand: string): void {
+  private enhanceSpecifications(specifications: Record<string, string>, category: string, brand: string, $?: any, url?: string, productName?: string): void {
     // Save material type if it was set from URL (highest priority)
     const urlBasedMaterialType = specifications['Material Type'];
     // First, clean up existing specifications
@@ -1879,27 +1954,40 @@ export class EnhancedScraper {
       console.log(`🎯 Final restoration of URL-based material type: ${urlBasedMaterialType}`);
     }
 
-    // Extract product options using DOM parsing
-    try {
-      const productOptions = this.extractProductOptions($);
-      console.log(`🔧 Product options extracted:`, productOptions);
-      
-      if (productOptions.finishOptions.length > 0) {
-        specifications['Available Finishes'] = productOptions.finishOptions.join(', ');
-        console.log(`🔧 Added finish options: ${productOptions.finishOptions.join(', ')}`);
+    // Extract product options using DOM parsing if DOM is available
+    if ($ && url && productName && typeof $ === 'function') {
+      try {
+        console.log(`🔧 Extracting product options from DOM for: ${productName}`);
+        const productOptions = this.extractProductOptions($);
+        console.log(`🔧 Product options extracted:`, productOptions);
+        
+        if (productOptions.finishOptions.length > 0) {
+          specifications['Available Finishes'] = productOptions.finishOptions.join(', ');
+          console.log(`🔧 Added finish options: ${productOptions.finishOptions.join(', ')}`);
+        }
+        
+        if (productOptions.thicknessOptions.length > 0) {
+          specifications['Available Thickness'] = productOptions.thicknessOptions.join(', ');
+          console.log(`🔧 Added thickness options: ${productOptions.thicknessOptions.join(', ')}`);
+        }
+        
+        if (productOptions.suitability) {
+          specifications['Suitability'] = productOptions.suitability;
+          console.log(`🔧 Added suitability information`);
+        }
+
+        // Extract and summarize product description from DOM
+        const rawDescription = this.extractAndSummarizeDescription($, productName);
+        if (rawDescription && rawDescription.length > 10 && rawDescription !== specifications['Description'] && rawDescription !== 'Results') {
+          specifications['Product Description'] = rawDescription;
+          console.log(`📝 Added summarized description: ${rawDescription.substring(0, 100)}...`);
+        } else {
+          console.log(`📝 Description extraction issue: "${rawDescription}" - length: ${rawDescription?.length || 0}`);
+        }
+        
+      } catch (error) {
+        console.error('Error extracting product options:', error);
       }
-      
-      if (productOptions.thicknessOptions.length > 0) {
-        specifications['Available Thickness'] = productOptions.thicknessOptions.join(', ');
-        console.log(`🔧 Added thickness options: ${productOptions.thicknessOptions.join(', ')}`);
-      }
-      
-      if (productOptions.suitability) {
-        specifications['Suitability'] = productOptions.suitability;
-        console.log(`🔧 Added suitability information`);
-      }
-    } catch (error) {
-      console.error('Error extracting product options:', error);
     }
   }
 
@@ -1944,6 +2032,71 @@ export class EnhancedScraper {
         message: `Error during scraping: ${error}`
       };
     }
+  }
+
+  private extractAndSummarizeDescription($: any, productName: string): string {
+    console.log(`📝 Extracting and summarizing description for: ${productName}`);
+    
+    // Multiple selectors for product descriptions
+    const descriptionSelectors = [
+      '.product-description',
+      '.description', 
+      '[itemprop="description"]',
+      '.product-details',
+      '.product-info',
+      '.overview',
+      '.product-overview',
+      '.product-summary',
+      '.content',
+      '.specifications',
+      '.features',
+      '.product-features',
+      '.about',
+      '.details'
+    ];
+    
+    let rawDescription = '';
+    
+    // Try each selector to find description content
+    for (const selector of descriptionSelectors) {
+      const element = $(selector);
+      if (element.length) {
+        const text = this.cleanText(element.text());
+        if (text && text.length > rawDescription.length) {
+          rawDescription = text;
+        }
+      }
+    }
+    
+    // If no description found, try meta tags
+    if (!rawDescription) {
+      rawDescription = this.cleanText(
+        $('meta[name="description"]').attr('content') ||
+        $('meta[property="og:description"]').attr('content') ||
+        ''
+      );
+    }
+    
+    // Clean and summarize the description
+    if (rawDescription && rawDescription.length > 50) {
+      // Remove common filler words and marketing speak
+      let cleanDesc = rawDescription
+        .replace(/\b(shop|buy|purchase|order|contact|call|visit|click|browse|explore|discover|find|get)\b/gi, '')
+        .replace(/\b(today|now|here|this|that|these|those)\b/gi, '')
+        .replace(/\bfor\s+(more|additional)\s+(information|details|info)\b/gi, '')
+        .replace(/\b(please|thank\s+you|thanks)\b/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      // Extract key product information (first 2-3 sentences)
+      const sentences = cleanDesc.split(/[.!?]+/).filter(s => s.trim().length > 10);
+      if (sentences.length > 0) {
+        const summary = sentences.slice(0, 3).join('. ').trim();
+        return summary.length > 20 ? summary : rawDescription.substring(0, 200).trim();
+      }
+    }
+    
+    return rawDescription.substring(0, 200).trim();
   }
 
   private extractProductOptions($: cheerio.CheerioAPI): { finishOptions: string[], thicknessOptions: string[], suitability: string } {
