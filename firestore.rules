@@ -1,112 +1,64 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Public read access for products, articles, and brands
-    match /comperra-products/{document} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
     
-    // New products collection with deduplication support
-    match /products/{document} {
+    // Products collection - public read, admin write
+    match /comperra-products/{productId} {
       allow read: if true;
-      allow create: if true; // Allow product creation during scraping
-      allow update, delete: if false; // Prevent overwriting
+      allow write: if request.auth != null && request.auth.token.admin == true;
     }
-    
+
+    // Lead submissions - public write for forms, admin read
+    match /leads/{leadId} {
+      allow write: if true;
+      allow read: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    // Vendor profiles - UID-based access
+    match /vendors/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Trade professional profiles - UID-based access
+    match /trades/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Customer profiles - UID-based access
+    match /customers/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Optional shared user info
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Legacy collections for backward compatibility
     match /comperra-articles/{document} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.admin == true;
     }
     
     match /comperra-brands/{document} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.admin == true;
     }
     
-    // Vendor applications
-    match /vendorApps/{document} {
-      allow read: if request.auth != null;
-      allow create: if true; // Allow anonymous vendor applications
-      allow update, delete: if request.auth != null;
-    }
-    
-    // User comparisons
+    // User comparisons - personal data
     match /comparisons/{userId}/entries/{compId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Authenticated users can read/write their own data
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Lead capture - authenticated users can create leads
-    match /leads/{document} {
-      allow read: if request.auth != null;
-      allow create: if true; // Allow anonymous lead submission
-      allow update, delete: if request.auth != null;
-    }
-    
-    // Sample requests - authenticated users can create sample requests
+    // Sample and pricing requests - public submission
     match /sample_requests/{document} {
-      allow read: if request.auth != null;
-      allow create: if true; // Allow anonymous sample requests
-      allow update, delete: if request.auth != null;
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow create: if true;
     }
     
-    // Pricing requests - authenticated users can create pricing requests
     match /pricing_requests/{document} {
-      allow read: if request.auth != null;
-      allow create: if true; // Allow anonymous pricing requests
-      allow update, delete: if request.auth != null;
-    }
-    
-    // Additional collections for auto-creation
-    match /vendors/{document} {
-      allow read: if request.auth != null;
-      allow create: if true; // Allow vendor creation
-      allow update, delete: if request.auth != null;
-    }
-    
-    match /trades/{document} {
-      allow read: if request.auth != null;
-      allow create: if true; // Allow trade professional creation
-      allow update, delete: if request.auth != null;
-    }
-    
-    match /customers/{document} {
-      allow read: if request.auth != null;
-      allow create: if true; // Allow customer creation
-      allow update, delete: if request.auth != null;
-    }
-    
-    // User profiles with role-based access
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      allow read: if request.auth != null; // Allow reading other user profiles for admin purposes
-    }
-    
-    // Role-based collection access
-    match /vendors/{document} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null && 
-        (request.auth.uid == resource.data.uid || request.auth.token.role == "admin");
-    }
-    
-    match /trades/{document} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null && 
-        (request.auth.uid == resource.data.uid || request.auth.token.role == "admin");
-    }
-    
-    match /customers/{document} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null && 
-        (request.auth.uid == resource.data.uid || request.auth.token.role == "admin");
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow create: if true;
     }
   }
 }
