@@ -101,8 +101,12 @@ export class SimulationScraper {
       }
     }
     
-    // Slab category distinctions
+    // Slab category distinctions - QUARTZITE FIRST to avoid misclassification
     if (category === 'slabs') {
+      // CRITICAL: Check quartzite before quartz to prevent Blue Tahoe Satin misclassification
+      if (nameLower.includes('quartzite')) {
+        return 'Natural Quartzite';
+      }
       if (nameLower.includes('natural granite')) {
         return 'Natural Granite';
       }
@@ -111,9 +115,6 @@ export class SimulationScraper {
       }
       if (nameLower.includes('engineered quartz') || nameLower.includes('quartz')) {
         return 'Engineered Quartz';
-      }
-      if (nameLower.includes('quartzite')) {
-        return 'Natural Quartzite';
       }
       if (nameLower.includes('porcelain slab')) {
         return 'Porcelain Slab';
@@ -1180,7 +1181,7 @@ export class SimulationScraper {
     if (urlLower.includes('carpet')) return 'carpet';
     if (urlLower.includes('coretec') || urlLower.includes('vinyl') || urlLower.includes('lvt') || urlLower.includes('plank')) return 'lvt';
     if (urlLower.includes('hardwood') || urlLower.includes('wood') || urlLower.includes('oak') || urlLower.includes('maple')) return 'hardwood';
-    if (urlLower.includes('quartz') || urlLower.includes('countertop') || urlLower.includes('granite') || urlLower.includes('marble')) return 'slabs';
+    if (urlLower.includes('quartzite') || urlLower.includes('quartz') || urlLower.includes('countertop') || urlLower.includes('granite') || urlLower.includes('marble')) return 'slabs';
     if (urlLower.includes('slab')) return 'slabs';
     if (urlLower.includes('tile')) return 'tiles';
     

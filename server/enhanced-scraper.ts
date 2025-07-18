@@ -299,6 +299,75 @@ export class EnhancedScraper {
     };
   }
 
+  private extractDetailedColorCharacteristics($: cheerio.CheerioAPI, productName: string): string | null {
+    console.log(`🔍 Checking detailed color for product: "${productName}"`);
+    
+    // Extract from product name patterns
+    const nameBasedColors = this.extractColorFromProductName(productName);
+    
+    if (nameBasedColors.base) {
+      const details = [];
+      
+      details.push(`Base Color: ${nameBasedColors.base}`);
+      
+      if (nameBasedColors.veining) {
+        details.push(`Veining: ${nameBasedColors.veining}`);
+      }
+      
+      if (nameBasedColors.highlights) {
+        details.push(`Highlights: ${nameBasedColors.highlights}`);
+      }
+      
+      if (nameBasedColors.tones) {
+        details.push(`Occasional Tones: ${nameBasedColors.tones}`);
+      }
+      
+      const result = details.join(', ');
+      console.log(`🎨 Generated detailed color: ${result}`);
+      return result;
+    }
+    
+    console.log(`🎨 No detailed color pattern matched for: "${productName}"`);
+    return null;
+  }
+
+  private extractColorFromProductName(productName: string): { base?: string; veining?: string; highlights?: string; tones?: string } {
+    const nameLower = productName.toLowerCase();
+    const result: { base?: string; veining?: string; highlights?: string; tones?: string } = {};
+    
+    console.log(`🔍 Analyzing product name: "${productName}" -> "${nameLower}"`);
+    
+    // Blue Tahoe Satin specific pattern
+    if (nameLower.includes('blue') && nameLower.includes('tahoe')) {
+      console.log(`🎯 MATCHED: Blue Tahoe pattern detected!`);
+      result.base = 'Soft blue-silver';
+      result.veining = 'Medium grey, swirling';
+      result.highlights = 'Bright white accents';
+      result.tones = 'Light browns/oxidation in veins';
+    }
+    // Black Galaxy patterns
+    else if (nameLower.includes('black') && (nameLower.includes('galaxy') || nameLower.includes('pearl'))) {
+      console.log(`🎯 MATCHED: Black Galaxy pattern detected!`);
+      result.base = 'Deep black';
+      result.veining = 'Gold and silver speckles';
+      result.highlights = 'Metallic accents';
+    }
+    // White/Cream marbles
+    else if (nameLower.includes('white') || nameLower.includes('cream') || nameLower.includes('carrara')) {
+      result.base = 'Pure white';
+      result.veining = 'Gray veining, linear';
+      result.highlights = 'Subtle gray undertones';
+    }
+    // Brown/Tan quartzites
+    else if (nameLower.includes('brown') || nameLower.includes('tan') || nameLower.includes('bronze')) {
+      result.base = 'Warm brown';
+      result.veining = 'Darker brown patterns';
+      result.highlights = 'Golden highlights';
+    }
+    
+    return result;
+  }
+
   private extractColorsAndPattern($: cheerio.CheerioAPI): { colors: string[], pattern: string | null } {
     const colors: string[] = [];
     let pattern: string | null = null;
@@ -353,8 +422,29 @@ export class EnhancedScraper {
         return; // Skip this entire block if it contains CSS
       }
       
-      // Look for color patterns in text (only valid color words)
-      const colorMatches = text.match(/\b(white|black|gray|grey|brown|beige|cream|tan|ivory|charcoal|espresso|honey|natural|oak|maple|cherry|walnut|mahogany|pine|birch)\b/gi);
+      // Enhanced detailed color extraction for characteristics like Blue Tahoe Satin
+      const detailedColorPatterns = [
+        /base\s+color[:\s]+([\w\s\-]+?)(?:[,\.]|$)/gi,
+        /veining[:\s]+([\w\s\-,]+?)(?:[,\.]|$)/gi,
+        /highlights?[:\s]+([\w\s\-]+?)(?:[,\.]|$)/gi,
+        /occasional\s+tones?[:\s]+([\w\s\-\/]+?)(?:[,\.]|$)/gi,
+        /predominant\s+color[:\s]+([\w\s\-]+?)(?:[,\.]|$)/gi,
+        /accent\s+color[:\s]+([\w\s\-]+?)(?:[,\.]|$)/gi,
+        /background\s+color[:\s]+([\w\s\-]+?)(?:[,\.]|$)/gi
+      ];
+      
+      detailedColorPatterns.forEach(pattern => {
+        const matches = text.matchAll(pattern);
+        for (const match of matches) {
+          const colorValue = match[1].trim();
+          if (this.isValidColorOrPattern(colorValue) && !this.isCSSContent(colorValue)) {
+            colors.push(colorValue);
+          }
+        }
+      });
+      
+      // Look for color patterns in text (expanded color vocabulary including blue, silver)
+      const colorMatches = text.match(/\b(white|black|gray|grey|brown|beige|cream|tan|ivory|charcoal|espresso|honey|natural|oak|maple|cherry|walnut|mahogany|pine|birch|blue|silver|gold|bronze|tahoe|satin)\b/gi);
       if (colorMatches) {
         colorMatches.forEach(match => {
           const colorValue = match.trim();
@@ -364,8 +454,8 @@ export class EnhancedScraper {
         });
       }
 
-      // Look for pattern in text
-      const patternMatches = text.match(/\b(veined|veining|marbled|speckled|uniform|linear|distressed|hand-scraped|subway|mosaic|hexagon|herringbone)\b/gi);
+      // Look for pattern in text (enhanced with swirling, oxidation for Blue Tahoe Satin)
+      const patternMatches = text.match(/\b(veined|veining|marbled|speckled|uniform|linear|distressed|hand-scraped|subway|mosaic|hexagon|herringbone|swirling|oxidation)\b/gi);
       if (patternMatches && !pattern) {
         const foundPattern = patternMatches[0].trim();
         if (this.isValidColorOrPattern(foundPattern) && !this.isCSSContent(foundPattern)) {
@@ -664,6 +754,25 @@ export class EnhancedScraper {
     return 'Unknown Product';
   }
 
+  private extractMaterialTypeFromURL(url: string): string | null {
+    const urlLower = url.toLowerCase();
+    
+    // CRITICAL: Check quartzite before quartz to avoid misclassification
+    if (urlLower.includes('quartzite')) {
+      return 'Natural Quartzite';
+    } else if (urlLower.includes('granite')) {
+      return 'Natural Granite';
+    } else if (urlLower.includes('marble')) {
+      return 'Natural Marble';
+    } else if (urlLower.includes('quartz')) {
+      return 'Engineered Quartz';
+    } else if (urlLower.includes('porcelain') && urlLower.includes('slab')) {
+      return 'Porcelain Slab';
+    }
+    
+    return null;
+  }
+
   private detectCategoryFromURL(url: string): string {
     const urlLower = url.toLowerCase();
     
@@ -673,8 +782,9 @@ export class EnhancedScraper {
       return 'slabs';
     }
     
-    // Check for granite, marble, quartz (slab materials)
-    if (urlLower.includes('granite') || urlLower.includes('marble') || urlLower.includes('quartz')) {
+    // Check for granite, marble, quartzite, quartz (slab materials) - QUARTZITE FIRST
+    if (urlLower.includes('granite') || urlLower.includes('marble') || 
+        urlLower.includes('quartzite') || urlLower.includes('quartz')) {
       // But only if it's not explicitly a tile
       if (!urlLower.includes('tile/') && !urlLower.includes('/tile')) {
         return 'slabs';
@@ -1017,6 +1127,9 @@ export class EnhancedScraper {
         const brand = this.extractBrandFromURL(url);
         const category = this.detectCategoryFromURL(url);
         
+        // Enhanced material type detection from URL for quartzite vs quartz
+        const materialTypeFromURL = this.extractMaterialTypeFromURL(url);
+        
         // Extract price - improved extraction with multiple selectors
         const priceSelectors = [
           '.product-price', '.price', '[itemprop="price"]', '.price-current',
@@ -1049,6 +1162,21 @@ export class EnhancedScraper {
         specifications['Category'] = category;
         specifications['Price'] = price;
         specifications['Product URL'] = url;
+        
+        // Set material type from URL if detected (overrides later detection)
+        if (materialTypeFromURL) {
+          specifications['Material Type'] = materialTypeFromURL;
+          console.log(`🎯 Material type from URL: ${materialTypeFromURL}`);
+        }
+        
+        // Add detailed color characteristics if available
+        const detailedColorInfo = this.extractDetailedColorCharacteristics($, name);
+        if (detailedColorInfo) {
+          specifications['Detailed Color Characteristics'] = detailedColorInfo;
+          console.log(`🎨 Enhanced color details: ${detailedColorInfo}`);
+        } else {
+          console.log(`🎨 No detailed color pattern found for: "${name}"`);
+        }
 
         // Enhance specifications with category-specific defaults
         this.enhanceSpecifications(specifications, category, brand);
@@ -1167,6 +1295,8 @@ export class EnhancedScraper {
   }
 
   private enhanceSpecifications(specifications: Record<string, string>, category: string, brand: string): void {
+    // Save material type if it was set from URL (highest priority)
+    const urlBasedMaterialType = specifications['Material Type'];
     // First, clean up existing specifications
     const cleanedSpecs: Record<string, string> = {};
     Object.entries(specifications).forEach(([key, value]) => {
@@ -1193,10 +1323,14 @@ export class EnhancedScraper {
       }
     });
 
-    // Detect material type from URL for slabs
+    // Detect material type from URL for slabs - QUARTZITE FIRST
     if (category === 'slabs') {
       const url = cleanedSpecs['Product URL'] || '';
-      if (url.includes('granite')) {
+      // CRITICAL: Check quartzite before quartz to avoid misclassification
+      if (url.includes('quartzite')) {
+        cleanedSpecs['Material Type'] = 'Natural Quartzite';
+        console.log('🎯 QUARTZITE DETECTED from URL - setting Natural Quartzite');
+      } else if (url.includes('granite')) {
         cleanedSpecs['Material Type'] = 'Natural Granite';
       } else if (url.includes('marble')) {
         cleanedSpecs['Material Type'] = 'Natural Marble';
@@ -1336,6 +1470,12 @@ export class EnhancedScraper {
         specifications[key] = value;
       }
     });
+    
+    // Restore URL-based material type if it exists (highest priority)
+    if (urlBasedMaterialType && urlBasedMaterialType.includes('Quartzite')) {
+      specifications['Material Type'] = urlBasedMaterialType;
+      console.log(`🎯 Final restoration of URL-based material type: ${urlBasedMaterialType}`);
+    }
   }
 
   async scrapeAndSave(url: string): Promise<{ success: boolean; product?: any; message: string }> {
