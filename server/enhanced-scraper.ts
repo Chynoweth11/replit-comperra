@@ -90,23 +90,79 @@ export class EnhancedScraper {
     return text.trim().replace(/\s+/g, ' ');
   }
 
+  private cleanColorPattern(text: string): string {
+    if (!text) return '';
+    
+    // Remove CSS variables and styling artifacts
+    if (text.includes('--') || text.includes('css') || text.includes('var(') || 
+        text.includes('rgb(') || text.includes('hsl(') || text.includes('#') ||
+        text.includes('gradient') || text.includes('preset') || text.includes('wp-')) {
+      return '';
+    }
+    
+    // Clean up common color pattern terms
+    const cleanText = text.trim()
+      .replace(/\s+/g, ' ')
+      .replace(/[{}()]/g, '')
+      .replace(/\s*,\s*/g, ', ');
+    
+    // Only return if it looks like a real color/pattern name
+    if (cleanText.length > 2 && cleanText.length < 50 && 
+        !cleanText.includes('function') && !cleanText.includes('style')) {
+      return cleanText;
+    }
+    
+    return '';
+  }
+
+  private normalizeThickness(thickness: string): string {
+    if (!thickness) return '';
+    
+    // Convert mm to cm for better readability
+    const mmMatch = thickness.match(/(\d+\.?\d*)mm/i);
+    if (mmMatch) {
+      const mm = parseFloat(mmMatch[1]);
+      const cm = mm / 10;
+      return `${cm}cm`;
+    }
+    
+    // Keep cm as is
+    if (thickness.includes('cm')) {
+      return thickness;
+    }
+    
+    // Keep inches as is
+    if (thickness.includes('"') || thickness.includes('inch')) {
+      return thickness;
+    }
+    
+    return thickness;
+  }
+
   private sanitizePrice(priceText: string): string {
     if (!priceText) return 'Contact for pricing';
     
     // Clean up the text
     const cleanText = priceText.toLowerCase().trim();
     
-    // Check for contact indicators
+    // Check for contact indicators or invalid price data
     if (cleanText.includes('contact') || cleanText.includes('call') || 
         cleanText.includes('quote') || cleanText.includes('request') ||
         cleanText.includes('login') || cleanText.includes('sign in') ||
-        cleanText.length === 0) {
+        cleanText.includes('css') || cleanText.includes('--') ||
+        cleanText.includes('undefined') || cleanText.includes('null') ||
+        cleanText.length === 0 || cleanText.length < 2) {
       return 'Contact for pricing';
     }
     
-    // Extract numeric price with currency
+    // Extract meaningful numeric price with currency (must be reasonable)
     const priceMatch = priceText.match(/\$?(\d+\.?\d*)/);
     if (priceMatch) {
+      const price = parseFloat(priceMatch[1]);
+      // If price is suspiciously low (like $5 when there should be no price), return contact
+      if (price < 10 && !priceText.includes('per sq') && !priceText.includes('/sq')) {
+        return 'Contact for pricing';
+      }
       return priceMatch[1];
     }
     
@@ -542,9 +598,22 @@ export class EnhancedScraper {
         const brand = this.extractBrandFromURL(url);
         const category = this.detectCategoryFromURL(url);
         
-        // Extract price
-        const priceElement = $('.product-price, .price, [itemprop="price"], .price-current').first();
-        const rawPrice = this.cleanText(priceElement.text());
+        // Extract price - improved extraction with multiple selectors
+        const priceSelectors = [
+          '.product-price', '.price', '[itemprop="price"]', '.price-current',
+          '.pricing', '.cost', '.product-cost', '.price-value', '.price-display',
+          '.price-box', '.price-info', '.product-pricing'
+        ];
+        
+        let rawPrice = '';
+        for (const selector of priceSelectors) {
+          const element = $(selector).first();
+          if (element.length) {
+            rawPrice = this.cleanText(element.text());
+            if (rawPrice && rawPrice.length > 1) break;
+          }
+        }
+        
         const price = this.sanitizePrice(rawPrice);
 
         // Extract description
@@ -614,11 +683,25 @@ export class EnhancedScraper {
     const cleanedSpecs: Record<string, string> = {};
     Object.entries(specifications).forEach(([key, value]) => {
       if (key && value && key.length > 1 && value.length > 1) {
-        // Clean up bad values
-        if (value.includes('&') || value.includes('Tile') || value.includes('Packaging')) {
+        // Clean up bad values and CSS artifacts
+        if (value.includes('&') || value.includes('Tile') || value.includes('Packaging') ||
+            value.includes('--') || value.includes('css') || value.includes('var(') ||
+            value.includes('gradient') || value.includes('preset')) {
           return; // Skip bad values
         }
-        cleanedSpecs[key] = value;
+        
+        // Clean color patterns
+        if (key.toLowerCase().includes('color') || key.toLowerCase().includes('pattern')) {
+          const cleanColor = this.cleanColorPattern(value);
+          if (cleanColor) {
+            cleanedSpecs[key] = cleanColor;
+          }
+        } else if (key.toLowerCase().includes('thickness')) {
+          // Normalize thickness
+          cleanedSpecs[key] = this.normalizeThickness(value);
+        } else {
+          cleanedSpecs[key] = value;
+        }
       }
     });
 
@@ -665,7 +748,7 @@ export class EnhancedScraper {
         'Material Type': cleanedSpecs['Material Type'] || 'Natural Stone',
         'Color / Pattern': cleanedSpecs['Color / Pattern'] || cleanedSpecs['Color'] || 'Natural',
         'Finish': cleanedSpecs['Finish'] || 'Polished',
-        'Thickness': cleanedSpecs['Thickness'] || '20mm',
+        'Thickness': this.normalizeThickness(cleanedSpecs['Thickness']) || '2cm',
         'Slab Dimensions': cleanedSpecs['Slab Dimensions'] || cleanedSpecs['Dimensions'] || '120" x 60"',
         'Edge Type': cleanedSpecs['Edge Type'] || 'Straight',
         'Applications': cleanedSpecs['Applications'] || 'Countertops, Backsplashes, Flooring',
@@ -740,25 +823,24 @@ export class EnhancedScraper {
         'Color': cleanedSpecs['Color'] || 'White',
         'Dimensions': cleanedSpecs['Dimensions'] || '4.5" x 3.5"',
         'Applications': cleanedSpecs['Applications'] || 'Radiant Floor Heating',
-        'Warranty': cleanedSpecs['Warranty'] || '3 years'
+        'Warranty': cleanedSpecs['Warranty'] || '10 years'
       }
     };
 
+    // Apply enhancements based on category
     const categoryEnhancements = enhancements[category as keyof typeof enhancements] || enhancements.tiles;
     
-    // Clear original specifications and add enhanced ones
-    Object.keys(specifications).forEach(key => delete specifications[key]);
+    // Update specifications with enhanced values
     Object.entries(categoryEnhancements).forEach(([key, value]) => {
       specifications[key] = value;
     });
-    
-    // Add back the essential fields
-    specifications['Product Name'] = cleanedSpecs['Product Name'] || 'Unknown Product';
-    specifications['Brand / Manufacturer'] = cleanedSpecs['Brand / Manufacturer'] || brand;
-    specifications['Category'] = category;
-    specifications['Price'] = cleanedSpecs['Price'] || 'Contact for pricing';
-    specifications['Product URL'] = cleanedSpecs['Product URL'] || '';
-    specifications['Image URL'] = cleanedSpecs['Image URL'] || '';
+
+    // Copy over any cleaned specs that weren't enhanced
+    Object.entries(cleanedSpecs).forEach(([key, value]) => {
+      if (!specifications[key] && value) {
+        specifications[key] = value;
+      }
+    });
   }
 
   async scrapeAndSave(url: string): Promise<{ success: boolean; product?: any; message: string }> {

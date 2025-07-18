@@ -431,15 +431,23 @@ export class SimulationScraper {
         
         const imageUrl = images.length > 0 ? images[0] : '';
         
-        // COMPREHENSIVE PRICE EXTRACTION WITH MAXIMUM POTENTIAL
+        // COMPREHENSIVE PRICE EXTRACTION WITH ACCURACY IMPROVEMENTS
         const priceText = $('.price, .product-price, [class*="price"], .price-current, .price-value, .cost, .retail-price, .price-per-sqft, .price-display, .pdp-price').first().text().trim();
         const priceMatch = priceText.match(/\$?([\d,]+\.?\d*)/);
-        let price = priceMatch ? priceMatch[1].replace(',', '') : 'N/A';
+        let price = priceMatch ? priceMatch[1].replace(',', '') : 'Contact for pricing';
         
         // Fallback price search in page content if not found
-        if (price === 'N/A') {
+        if (price === 'Contact for pricing') {
             const fallbackPriceMatch = htmlContent.match(/\$\s?([\d,]+\.?\d*)\s?\/?\s?(?:SF|sq\.?\s?ft|per\s?sq|square)/i);
             if (fallbackPriceMatch) price = fallbackPriceMatch[1].replace(',', '');
+        }
+        
+        // Accuracy check: if price is suspiciously low, return contact for pricing
+        if (price !== 'Contact for pricing') {
+            const numericPrice = parseFloat(price);
+            if (numericPrice < 10 && !priceText.includes('per sq') && !priceText.includes('/sq')) {
+                price = 'Contact for pricing';
+            }
         }
         
         // COMPREHENSIVE SPECIFICATION ENHANCEMENT - USE ALL ADVANCED FEATURES
@@ -579,7 +587,7 @@ export class SimulationScraper {
         
       case 'slabs':
         enhanced['Material Type'] = enhanced['materialType'] || enhanced['Material Type'] || (url.toLowerCase().includes('granite') ? 'Natural Granite' : url.toLowerCase().includes('marble') ? 'Natural Marble' : url.toLowerCase().includes('quartz') ? 'Engineered Quartz' : 'Natural Stone');
-        enhanced['Thickness'] = enhanced['thickness'] || enhanced['Thickness'] || '20mm';
+        enhanced['Thickness'] = enhanced['thickness'] || enhanced['Thickness'] || '2cm';
         enhanced['Slab Dimensions'] = enhanced['slabDimensions'] || enhanced['Slab Dimensions'] || '120" x 60"';
         enhanced['Finish'] = enhanced['finish'] || enhanced['Finish'] || (url.toLowerCase().includes('honed') ? 'Honed' : 'Polished');
         enhanced['Color / Pattern'] = enhanced['color'] || enhanced['Color'] || (url.toLowerCase().includes('black') ? 'Black' : url.toLowerCase().includes('white') ? 'White' : 'Natural');
