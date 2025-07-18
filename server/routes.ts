@@ -18,6 +18,7 @@ import { storage } from './storage.js';
 // Initialize Firebase storage for background persistence when available
 const firebaseStorage = new FirebaseStorage();
 import { productScraper } from "./scraper.js";
+import { simulationScraper } from "./simulation-scraper.js";
 // Import database connection and schema
 import { db } from './db.js';
 import { leads } from '../shared/schema.js';
@@ -302,7 +303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Single URL scraping endpoint (fast response)
+  // Advanced single URL scraping endpoint with full capabilities
   app.post("/api/scrape/single", async (req, res) => {
     try {
       const { url } = req.body;
@@ -320,77 +321,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Check if URL contains manufacturer domains (expanded list + fallback)
-      const supportedDomains = [
-        'msisurfaces.com', 'daltile.com', 'arizonatile.com', 'floridatile.com',
-        'emser.com', 'marazziusa.com', 'cambriasurfaces.com', 'shawfloors.com',
-        'mohawkflooring.com', 'coretecfloors.com', 'grainger.com', 'homedepot.com',
-        'lowes.com', 'bedrosians.com', 'anatolia.com', 'centurytile.com',
-        'interceramic.com', 'stonepeak.com', 'crossville.com', 'eleganzatiles.com',
-        'flooranddecor.com', 'tileshop.com', 'porcelanosa.com', 'caesarstone.com',
-        'silestone.com', 'viatera.com', 'hanstone.com', 'zodiaq.com',
-        'corian.com', 'wilsonart.com', 'formica.com', 'armstrong.com',
-        'mannington.com', 'tarkett.com', 'karndean.com', 'luxuryvinyl.com',
-        'lumber.com', 'buildersdirect.com', 'tileoutlet.com', 'tilesensation.com'
-      ];
-      
-      const urlDomain = new URL(url).hostname.toLowerCase();
-      const isSupported = supportedDomains.some(domain => urlDomain.includes(domain));
-      
-      // Allow all URLs for now - removed restrictive validation
-      // if (!isSupported) {
-      //   return res.status(400).json({
-      //     success: false,
-      //     message: "URL not from a supported manufacturer. Please use URLs from MSI, Daltile, Arizona Tile, Shaw, Mohawk, Cambria, or other major building material manufacturers."
-      //   });
-      // }
-
       console.log(`Processing scraping request for: ${url}`);
       
-      // Create a product with improved URL parsing
-      const urlPath = new URL(url).pathname;
-      const productName = urlPath.split('/').pop()?.replace(/\.(html?|php|aspx?)$/, '').replace(/[-_]/g, ' ') || 'Product';
-      
-      // Extract brand from URL
-      const brandFromUrl = url.includes('daltile') ? 'Daltile' : 
-                          url.includes('msi') ? 'MSI' : 
-                          url.includes('arizonatile') ? 'Arizona Tile' : 
-                          url.includes('shaw') ? 'Shaw' : 
-                          url.includes('mohawk') ? 'Mohawk' : 
-                          url.includes('bedrosians') ? 'Bedrosians' : 
-                          url.includes('cambria') ? 'Cambria' : 'Unknown';
-      
-      // Determine category from URL
-      const categoryFromUrl = url.includes('tile') ? 'tiles' :
-                             url.includes('slab') ? 'slabs' :
-                             url.includes('vinyl') || url.includes('lvt') ? 'lvt' :
-                             url.includes('hardwood') || url.includes('wood') ? 'hardwood' :
-                             url.includes('carpet') ? 'carpet' :
-                             url.includes('heat') ? 'heat' : 'tiles';
-      
-      // Create product with extracted information
-      const quickProduct = {
-        name: productName.charAt(0).toUpperCase() + productName.slice(1),
-        brand: brandFromUrl,
-        category: categoryFromUrl,
-        price: '0.00', // Use numeric price for database compatibility
-        imageUrl: '',
-        description: `${brandFromUrl} ${productName}`,
-        specifications: { 
-          'Product URL': url,
-          'Brand': brandFromUrl,
-          'Category': categoryFromUrl,
-          'Price': 'Contact for pricing'
-        },
-        dimensions: 'Contact for details',
-        sourceUrl: url,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      
-      // Save to memory storage for immediate functionality
+      // Use the advanced simulation scraper with full capabilities
       try {
-        const savedMaterial = await storage.createMaterial(quickProduct);
+        const scrapedProducts = await simulationScraper.scrapeRealProductFromURL(url);
+        
+        if (!scrapedProducts || scrapedProducts.length === 0) {
+          return res.status(404).json({
+            success: false,
+            message: "No product data found at this URL"
+          });
+        }
+
+        // Convert the first scraped product to material format
+        const product = scrapedProducts[0];
+        const materialData = {
+          name: product.name,
+          brand: product.brand,
+          category: product.category,
+          price: product.price === 'N/A' ? '0.00' : product.price,
+          imageUrl: product.imageUrl,
+          description: product.description,
+          specifications: product.specifications,
+          dimensions: product.dimensions,
+          sourceUrl: product.sourceUrl,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        // Save to storage
+        const savedMaterial = await storage.createMaterial(materialData);
         console.log('✅ Saved product to storage with ID:', savedMaterial.id);
         
         res.json({
@@ -398,26 +359,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Product saved successfully - now visible in category listings",
           product: {
             id: savedMaterial.id,
-            name: quickProduct.name,
-            brand: quickProduct.brand,
-            category: quickProduct.category,
-            price: quickProduct.price,
-            imageUrl: quickProduct.imageUrl,
-            description: quickProduct.description,
-            specifications: quickProduct.specifications,
-            dimensions: quickProduct.dimensions,
-            sourceUrl: quickProduct.sourceUrl
+            name: materialData.name,
+            brand: materialData.brand,
+            category: materialData.category,
+            price: materialData.price,
+            imageUrl: materialData.imageUrl,
+            description: materialData.description,
+            specifications: materialData.specifications,
+            dimensions: materialData.dimensions,
+            sourceUrl: materialData.sourceUrl
           }
         });
         
-        // Background scraping disabled due to network timeouts
-        console.log('✅ Product saved successfully - full scraping available when network issues resolved');
+        console.log('✅ Product saved successfully with full scraping capabilities');
         
-      } catch (storageError) {
-        console.log('Storage failed:', storageError);
-        res.status(500).json({
-          success: false,
-          message: "Failed to save product to storage."
+      } catch (scrapingError) {
+        console.error('Advanced scraping failed:', scrapingError);
+        
+        // Fallback to basic scraping if advanced fails
+        const urlPath = new URL(url).pathname;
+        const productName = urlPath.split('/').pop()?.replace(/\.(html?|php|aspx?)$/, '').replace(/[-_]/g, ' ') || 'Product';
+        
+        const brandFromUrl = url.includes('daltile') ? 'Daltile' : 
+                            url.includes('msi') ? 'MSI' : 
+                            url.includes('arizonatile') ? 'Arizona Tile' : 
+                            url.includes('shaw') ? 'Shaw' : 
+                            url.includes('mohawk') ? 'Mohawk' : 
+                            url.includes('bedrosians') ? 'Bedrosians' : 
+                            url.includes('cambria') ? 'Cambria' : 
+                            url.includes('coretec') ? 'COREtec' : 
+                            url.includes('suntouch') ? 'SunTouch' : 
+                            url.includes('honeywell') ? 'Honeywell' : 'Unknown';
+        
+        const categoryFromUrl = url.includes('thermostat') ? 'thermostats' :
+                               url.includes('heating') || url.includes('radiant') || url.includes('warmwire') || url.includes('suntouch') ? 'heat' :
+                               url.includes('carpet') ? 'carpet' :
+                               url.includes('coretec') || url.includes('vinyl') || url.includes('lvt') || url.includes('plank') ? 'lvt' :
+                               url.includes('hardwood') || url.includes('wood') || url.includes('oak') || url.includes('maple') ? 'hardwood' :
+                               url.includes('quartz') || url.includes('countertop') || url.includes('granite') || url.includes('marble') ? 'slabs' :
+                               url.includes('slab') ? 'slabs' :
+                               url.includes('tile') ? 'tiles' : 'tiles';
+        
+        const fallbackProduct = {
+          name: productName.charAt(0).toUpperCase() + productName.slice(1),
+          brand: brandFromUrl,
+          category: categoryFromUrl,
+          price: '0.00',
+          imageUrl: '',
+          description: `${brandFromUrl} ${productName}`,
+          specifications: { 
+            'Product URL': url,
+            'Brand': brandFromUrl,
+            'Category': categoryFromUrl,
+            'Price': 'Contact for pricing'
+          },
+          dimensions: 'Contact for details',
+          sourceUrl: url,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        
+        const savedMaterial = await storage.createMaterial(fallbackProduct);
+        console.log('✅ Saved fallback product to storage with ID:', savedMaterial.id);
+        
+        res.json({
+          success: true,
+          message: "Product saved successfully - full scraping available when network issues resolved",
+          product: {
+            id: savedMaterial.id,
+            name: fallbackProduct.name,
+            brand: fallbackProduct.brand,
+            category: fallbackProduct.category,
+            price: fallbackProduct.price,
+            imageUrl: fallbackProduct.imageUrl,
+            description: fallbackProduct.description,
+            specifications: fallbackProduct.specifications,
+            dimensions: fallbackProduct.dimensions,
+            sourceUrl: fallbackProduct.sourceUrl
+          }
         });
       }
       

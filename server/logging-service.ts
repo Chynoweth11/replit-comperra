@@ -1,8 +1,6 @@
 // ===================================================================
 // COMPERRA SCRAPING SYSTEM - LOGGING SERVICE
 // ===================================================================
-import { db } from './firebase-init.js';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export enum LogStatus { 
     Success = 'SUCCESS', 
@@ -19,16 +17,15 @@ export interface LogEntry {
 }
 
 class LoggingService {
-    private logsCollection = collection(db, 'scraping-logs');
-    
     async log(entry: Omit<LogEntry, 'timestamp'>): Promise<void> {
         try { 
-            await addDoc(this.logsCollection, { 
-                ...entry, 
-                timestamp: serverTimestamp() 
-            }); 
+            // Console logging for now - Firebase logging optional
+            console.log(`📝 Scraping Log: ${entry.status} - ${entry.message} - ${entry.url}`);
+            if (entry.durationMs) {
+                console.log(`⏱️  Duration: ${entry.durationMs}ms`);
+            }
         } catch (error) { 
-            console.error("🔥 Firestore logging failed:", error); 
+            console.error("🔥 Logging failed:", error); 
         }
     }
 }

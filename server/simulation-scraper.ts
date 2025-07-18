@@ -128,21 +128,32 @@ export class SimulationScraper {
     const text = (url + ' ' + htmlContent).toLowerCase();
     
     // Enhanced compound detection with priority ordering
-    if (text.includes('mosaic')) return 'mosaics';
-    if (text.includes('backsplash')) return 'backsplash';
-    if (text.includes('trim')) return 'trim';
     if (text.includes('thermostat')) return 'thermostats';
-    if (text.includes('heating')) return 'heat';
+    if (text.includes('heating') || text.includes('radiant')) return 'heat';
+    
+    // Carpet detection (including carpet tiles)
     if (text.includes('carpet')) return 'carpet';
-    if (text.includes('lvt')) return 'lvt';
-    if (text.includes('hardwood')) return 'hardwood';
+    
+    // LVT/Vinyl detection
+    if (text.includes('lvt') || text.includes('luxury vinyl')) return 'lvt';
+    if (text.includes('vinyl plank') || text.includes('vinyl tile')) return 'lvt';
+    
+    // Hardwood detection
+    if (text.includes('hardwood') || text.includes('engineered wood')) return 'hardwood';
+    if (text.includes('oak flooring') || text.includes('maple flooring')) return 'hardwood';
 
-    // Enhanced slab detection
+    // Enhanced slab detection - prioritize quartz countertops
     const slabCompounds = ['porcelain slab', 'marble slab', 'quartzite slab', 'granite slab', 'stone slab'];
     if (slabCompounds.some(compound => text.includes(compound))) return 'slabs';
-    if (text.includes('slab') || text.includes('countertop')) return 'slabs';
+    if (text.includes('quartz') || text.includes('countertop')) return 'slabs';
+    if (text.includes('slab')) return 'slabs';
+    if (text.includes('granite') || text.includes('marble') || text.includes('quartzite')) return 'slabs';
+    
+    // Tile detection (should be after slab detection)
     if (text.includes('tile') || text.includes('porcelain') || text.includes('ceramic')) return 'tiles';
+    if (text.includes('mosaic')) return 'tiles';
 
+    // Fallback detections
     if (text.includes('vinyl')) return 'lvt';
     if (text.includes('wood')) return 'hardwood';
     if (text.includes('stone')) return 'slabs';
