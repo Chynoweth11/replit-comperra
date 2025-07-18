@@ -61,6 +61,95 @@ export class SimulationScraper {
       .replace(/^(.)/, (match, group1) => group1.toLowerCase());
   };
 
+  private categorizeMaterial(rawMaterialName: string, category: string): string {
+    if (!rawMaterialName) return "Unknown";
+    
+    const nameLower = rawMaterialName.toLowerCase();
+    
+    // LVT/Vinyl category distinctions
+    if (category === 'lvt') {
+      if (nameLower.includes('lvt') || nameLower.includes('luxury vinyl')) {
+        return 'LVT (Luxury Vinyl Tile)';
+      }
+      if (nameLower.includes('spc') || nameLower.includes('stone plastic')) {
+        return 'SPC (Stone Plastic Composite)';
+      }
+      if (nameLower.includes('wpc') || nameLower.includes('wood plastic')) {
+        return 'WPC (Wood Plastic Composite)';
+      }
+      if (nameLower.includes('vinyl') && !nameLower.includes('luxury')) {
+        return 'Vinyl (General)';
+      }
+    }
+    
+    // Tile category distinctions
+    if (category === 'tiles') {
+      if (nameLower.includes('porcelain')) {
+        return 'Porcelain Tile';
+      }
+      if (nameLower.includes('ceramic')) {
+        return 'Ceramic Tile';
+      }
+      if (nameLower.includes('natural stone') || nameLower.includes('travertine') || nameLower.includes('marble')) {
+        return 'Natural Stone Tile';
+      }
+      if (nameLower.includes('glass')) {
+        return 'Glass Tile';
+      }
+      if (nameLower.includes('mosaic')) {
+        return 'Mosaic Tile';
+      }
+    }
+    
+    // Slab category distinctions
+    if (category === 'slabs') {
+      if (nameLower.includes('natural granite')) {
+        return 'Natural Granite';
+      }
+      if (nameLower.includes('natural marble')) {
+        return 'Natural Marble';
+      }
+      if (nameLower.includes('engineered quartz') || nameLower.includes('quartz')) {
+        return 'Engineered Quartz';
+      }
+      if (nameLower.includes('quartzite')) {
+        return 'Natural Quartzite';
+      }
+      if (nameLower.includes('porcelain slab')) {
+        return 'Porcelain Slab';
+      }
+    }
+    
+    // Hardwood category distinctions
+    if (category === 'hardwood') {
+      if (nameLower.includes('engineered')) {
+        return 'Engineered Hardwood';
+      }
+      if (nameLower.includes('solid')) {
+        return 'Solid Hardwood';
+      }
+      if (nameLower.includes('bamboo')) {
+        return 'Bamboo Flooring';
+      }
+    }
+    
+    // Carpet category distinctions
+    if (category === 'carpet') {
+      if (nameLower.includes('carpet tile')) {
+        return 'Carpet Tile';
+      }
+      if (nameLower.includes('broadloom')) {
+        return 'Broadloom Carpet';
+      }
+      if (nameLower.includes('area rug')) {
+        return 'Area Rug';
+      }
+    }
+    
+    // Return original if no specific rule matches
+    return rawMaterialName;
+  }
+
   // COMPREHENSIVE SPECIFICATION EXTRACTION WITH MAXIMUM POTENTIAL
   private extractScopedSpecifications($container: cheerio.CheerioAPI): Record<string, string | boolean> {
     const specs: Record<string, string | boolean> = {};
@@ -588,7 +677,7 @@ export class SimulationScraper {
       case 'slabs':
         enhanced['Material Type'] = enhanced['materialType'] || enhanced['Material Type'] || (url.toLowerCase().includes('granite') ? 'Natural Granite' : url.toLowerCase().includes('marble') ? 'Natural Marble' : url.toLowerCase().includes('quartz') ? 'Engineered Quartz' : 'Natural Stone');
         enhanced['Thickness'] = enhanced['thickness'] || enhanced['Thickness'] || '2cm';
-        enhanced['Slab Dimensions'] = enhanced['slabDimensions'] || enhanced['Slab Dimensions'] || '120" x 60"';
+        enhanced['Slab Dimensions'] = enhanced['slabDimensions'] || enhanced['Slab Dimensions'] || 'Standard size of the slab material, could vary';
         enhanced['Finish'] = enhanced['finish'] || enhanced['Finish'] || (url.toLowerCase().includes('honed') ? 'Honed' : 'Polished');
         enhanced['Color / Pattern'] = enhanced['color'] || enhanced['Color'] || (url.toLowerCase().includes('black') ? 'Black' : url.toLowerCase().includes('white') ? 'White' : 'Natural');
         enhanced['Edge Type'] = enhanced['edgeType'] || enhanced['Edge Type'] || 'Straight';
@@ -711,6 +800,13 @@ export class SimulationScraper {
         enhancedSpecs['Brand / Manufacturer'] = brand;
       }
       
+      // Apply material categorization for better identification
+      if (enhancedSpecs['Material Type']) {
+        const categorizedMaterial = this.categorizeMaterial(enhancedSpecs['Material Type'], category);
+        enhancedSpecs['Material Type'] = categorizedMaterial;
+        console.log(`🔍 Material categorized: ${enhancedSpecs['Material Type']}`);
+      }
+      
       // Generate realistic dimensions based on category
       const dimensions = this.generateCategoryDimensions(category);
       
@@ -743,7 +839,7 @@ export class SimulationScraper {
       case 'tiles':
         return '12" x 24"';
       case 'slabs':
-        return '120" x 60"';
+        return 'Standard size of the slab material, could vary';
       case 'hardwood':
         return '5" x 48"';
       case 'carpet':

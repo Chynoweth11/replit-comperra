@@ -93,11 +93,15 @@ export class EnhancedScraper {
   private cleanColorPattern(text: string): string {
     if (!text) return '';
     
-    // Remove CSS variables and styling artifacts
+    // Remove CSS variables and styling artifacts - MORE AGGRESSIVE CLEANING
     if (text.includes('--') || text.includes('css') || text.includes('var(') || 
         text.includes('rgb(') || text.includes('hsl(') || text.includes('#') ||
-        text.includes('gradient') || text.includes('preset') || text.includes('wp-')) {
-      return '';
+        text.includes('gradient') || text.includes('preset') || text.includes('wp-') ||
+        text.includes('preset-color') || text.includes('bluish-gray') ||
+        text.includes('vivid-red') || text.includes('linear-gradient') ||
+        text.includes('color-') || text.includes('000;') || text.includes('fff;') ||
+        text.length > 100) {
+      return 'Natural';
     }
     
     // Clean up common color pattern terms
@@ -113,6 +117,95 @@ export class EnhancedScraper {
     }
     
     return '';
+  }
+
+  private categorizeMaterial(rawMaterialName: string, category: string): string {
+    if (!rawMaterialName) return "Unknown";
+    
+    const nameLower = rawMaterialName.toLowerCase();
+    
+    // LVT/Vinyl category distinctions
+    if (category === 'lvt') {
+      if (nameLower.includes('lvt') || nameLower.includes('luxury vinyl')) {
+        return 'LVT (Luxury Vinyl Tile)';
+      }
+      if (nameLower.includes('spc') || nameLower.includes('stone plastic')) {
+        return 'SPC (Stone Plastic Composite)';
+      }
+      if (nameLower.includes('wpc') || nameLower.includes('wood plastic')) {
+        return 'WPC (Wood Plastic Composite)';
+      }
+      if (nameLower.includes('vinyl') && !nameLower.includes('luxury')) {
+        return 'Vinyl (General)';
+      }
+    }
+    
+    // Tile category distinctions
+    if (category === 'tiles') {
+      if (nameLower.includes('porcelain')) {
+        return 'Porcelain Tile';
+      }
+      if (nameLower.includes('ceramic')) {
+        return 'Ceramic Tile';
+      }
+      if (nameLower.includes('natural stone') || nameLower.includes('travertine') || nameLower.includes('marble')) {
+        return 'Natural Stone Tile';
+      }
+      if (nameLower.includes('glass')) {
+        return 'Glass Tile';
+      }
+      if (nameLower.includes('mosaic')) {
+        return 'Mosaic Tile';
+      }
+    }
+    
+    // Slab category distinctions
+    if (category === 'slabs') {
+      if (nameLower.includes('natural granite')) {
+        return 'Natural Granite';
+      }
+      if (nameLower.includes('natural marble')) {
+        return 'Natural Marble';
+      }
+      if (nameLower.includes('engineered quartz') || nameLower.includes('quartz')) {
+        return 'Engineered Quartz';
+      }
+      if (nameLower.includes('quartzite')) {
+        return 'Natural Quartzite';
+      }
+      if (nameLower.includes('porcelain slab')) {
+        return 'Porcelain Slab';
+      }
+    }
+    
+    // Hardwood category distinctions
+    if (category === 'hardwood') {
+      if (nameLower.includes('engineered')) {
+        return 'Engineered Hardwood';
+      }
+      if (nameLower.includes('solid')) {
+        return 'Solid Hardwood';
+      }
+      if (nameLower.includes('bamboo')) {
+        return 'Bamboo Flooring';
+      }
+    }
+    
+    // Carpet category distinctions
+    if (category === 'carpet') {
+      if (nameLower.includes('carpet tile')) {
+        return 'Carpet Tile';
+      }
+      if (nameLower.includes('broadloom')) {
+        return 'Broadloom Carpet';
+      }
+      if (nameLower.includes('area rug')) {
+        return 'Area Rug';
+      }
+    }
+    
+    // Return original if no specific rule matches
+    return rawMaterialName;
   }
 
   private normalizeThickness(thickness: string): string {
@@ -163,7 +256,7 @@ export class EnhancedScraper {
       if (price < 10 && !priceText.includes('per sq') && !priceText.includes('/sq')) {
         return 'Contact for pricing';
       }
-      return priceMatch[1];
+      return priceMatch[1]; // Return just the number, $ symbol handled in display
     }
     
     // Extract price range
@@ -749,7 +842,7 @@ export class EnhancedScraper {
         'Color / Pattern': cleanedSpecs['Color / Pattern'] || cleanedSpecs['Color'] || 'Natural',
         'Finish': cleanedSpecs['Finish'] || 'Polished',
         'Thickness': this.normalizeThickness(cleanedSpecs['Thickness']) || '2cm',
-        'Slab Dimensions': cleanedSpecs['Slab Dimensions'] || cleanedSpecs['Dimensions'] || '120" x 60"',
+        'Slab Dimensions': cleanedSpecs['Slab Dimensions'] || cleanedSpecs['Dimensions'] || 'Standard size of the slab material, could vary',
         'Edge Type': cleanedSpecs['Edge Type'] || 'Straight',
         'Applications': cleanedSpecs['Applications'] || 'Countertops, Backsplashes, Flooring',
         'Water Absorption': cleanedSpecs['Water Absorption'] || '<0.5%',
@@ -834,6 +927,13 @@ export class EnhancedScraper {
     Object.entries(categoryEnhancements).forEach(([key, value]) => {
       specifications[key] = value;
     });
+
+    // Apply material categorization for better identification
+    if (specifications['Material Type']) {
+      const categorizedMaterial = this.categorizeMaterial(specifications['Material Type'], category);
+      specifications['Material Type'] = categorizedMaterial;
+      console.log(`🔍 Material categorized: ${specifications['Material Type']}`);
+    }
 
     // Copy over any cleaned specs that weren't enhanced
     Object.entries(cleanedSpecs).forEach(([key, value]) => {
