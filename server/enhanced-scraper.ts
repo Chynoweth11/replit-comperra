@@ -140,41 +140,91 @@ export class EnhancedScraper {
     return 'Unknown';
   }
 
+  private extractProductNameFromURL(url: string): string {
+    // Extract product name from URL path
+    const pathParts = url.split('/');
+    const lastPart = pathParts[pathParts.length - 1];
+    
+    // Clean up the URL segment
+    const cleanName = lastPart
+      .replace(/[-_]/g, ' ')
+      .replace(/\.(html|htm|php|asp|aspx)$/i, '')
+      .trim();
+    
+    if (cleanName && cleanName.length > 1) {
+      // Special handling for granite names
+      if (cleanName.includes('satin') || cleanName.includes('polished') || cleanName.includes('honed')) {
+        return cleanName.split(' ').map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        ).join(' ');
+      }
+      
+      return cleanName.split(' ').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      ).join(' ');
+    }
+    
+    return 'Unknown Product';
+  }
+
   private detectCategoryFromURL(url: string): string {
     const urlLower = url.toLowerCase();
     
-    // Enhanced category detection with compound keywords
-    const categoryMap: Record<string, string> = {
-      'carpet-tile': 'carpet',
-      'carpet-tiles': 'carpet',
-      'vinyl-plank': 'lvt',
-      'luxury-vinyl': 'lvt',
-      'lvt': 'lvt',
-      'lvp': 'lvt',
-      'hardwood': 'hardwood',
-      'engineered-wood': 'hardwood',
-      'solid-wood': 'hardwood',
-      'thermostat': 'thermostats',
-      'heating-system': 'heat',
-      'radiant-heat': 'heat',
-      'floor-heating': 'heat',
-      'underfloor-heating': 'heat',
-      'slab': 'slabs',
-      'countertop': 'slabs',
-      'quartz': 'slabs',
-      'granite': 'slabs',
-      'marble': 'slabs',
-      'tile': 'tiles',
-      'ceramic': 'tiles',
-      'porcelain': 'tiles',
-      'carpet': 'carpet',
-      'rug': 'carpet'
-    };
-
-    for (const [keyword, category] of Object.entries(categoryMap)) {
-      if (urlLower.includes(keyword)) {
-        return category;
+    // Enhanced category detection with proper priority ordering
+    // Check for slabs first (most specific)
+    if (urlLower.includes('/slab/') || urlLower.includes('slab/') || urlLower.includes('/slabs/')) {
+      return 'slabs';
+    }
+    
+    // Check for granite, marble, quartz (slab materials)
+    if (urlLower.includes('granite') || urlLower.includes('marble') || urlLower.includes('quartz')) {
+      // But only if it's not explicitly a tile
+      if (!urlLower.includes('tile/') && !urlLower.includes('/tile')) {
+        return 'slabs';
       }
+    }
+    
+    // Check for countertop materials
+    if (urlLower.includes('countertop') || urlLower.includes('counter-top')) {
+      return 'slabs';
+    }
+    
+    // Check for compound carpet terms first
+    if (urlLower.includes('carpet-tile') || urlLower.includes('carpet-tiles')) {
+      return 'carpet';
+    }
+    
+    // Check for LVT/vinyl terms
+    if (urlLower.includes('vinyl-plank') || urlLower.includes('luxury-vinyl') || 
+        urlLower.includes('lvt') || urlLower.includes('lvp')) {
+      return 'lvt';
+    }
+    
+    // Check for hardwood terms
+    if (urlLower.includes('hardwood') || urlLower.includes('engineered-wood') || 
+        urlLower.includes('solid-wood') || urlLower.includes('wood-flooring')) {
+      return 'hardwood';
+    }
+    
+    // Check for heating terms
+    if (urlLower.includes('thermostat')) {
+      return 'thermostats';
+    }
+    
+    if (urlLower.includes('heating-system') || urlLower.includes('radiant-heat') || 
+        urlLower.includes('floor-heating') || urlLower.includes('underfloor-heating') || 
+        urlLower.includes('heat-mat') || urlLower.includes('heating-cable')) {
+      return 'heat';
+    }
+    
+    // Check for carpet terms
+    if (urlLower.includes('carpet') || urlLower.includes('rug')) {
+      return 'carpet';
+    }
+    
+    // Check for tile terms (after other checks)
+    if (urlLower.includes('tile') || urlLower.includes('ceramic') || urlLower.includes('porcelain')) {
+      return 'tiles';
     }
     
     return 'tiles'; // Default fallback
@@ -388,8 +438,8 @@ export class EnhancedScraper {
         
         // Extract basic product information
         const name = this.cleanText(
-          $('h1.product-title, h1[itemprop="name"], h1.product-name, .product-title h1').first().text()
-        ) || 'Unknown Product';
+          $('h1.product-title, h1[itemprop="name"], h1.product-name, .product-title h1, h1').first().text()
+        ) || this.extractProductNameFromURL(url);
 
         const brand = this.extractBrandFromURL(url);
         const category = this.detectCategoryFromURL(url);
@@ -462,74 +512,116 @@ export class EnhancedScraper {
   }
 
   private enhanceSpecifications(specifications: Record<string, string>, category: string, brand: string): void {
+    // First, clean up existing specifications
+    const cleanedSpecs: Record<string, string> = {};
+    Object.entries(specifications).forEach(([key, value]) => {
+      if (key && value && key.length > 1 && value.length > 1) {
+        // Clean up bad values
+        if (value.includes('&') || value.includes('Tile') || value.includes('Packaging')) {
+          return; // Skip bad values
+        }
+        cleanedSpecs[key] = value;
+      }
+    });
+
+    // Detect material type from URL for slabs
+    if (category === 'slabs') {
+      const url = cleanedSpecs['Product URL'] || '';
+      if (url.includes('granite')) {
+        cleanedSpecs['Material Type'] = 'Natural Granite';
+      } else if (url.includes('marble')) {
+        cleanedSpecs['Material Type'] = 'Natural Marble';
+      } else if (url.includes('quartz')) {
+        cleanedSpecs['Material Type'] = 'Engineered Quartz';
+      }
+      
+      // Extract finish from URL
+      if (url.includes('satin')) {
+        cleanedSpecs['Finish'] = 'Satin';
+      } else if (url.includes('polished')) {
+        cleanedSpecs['Finish'] = 'Polished';
+      } else if (url.includes('honed')) {
+        cleanedSpecs['Finish'] = 'Honed';
+      }
+    }
+
     // Category-specific enhancements
     const enhancements = {
       tiles: {
-        'Material Type': specifications['Material Type'] || 'Ceramic',
-        'PEI Rating': specifications['PEI Rating'] || 'PEI 4',
-        'DCOF Rating': specifications['DCOF Rating'] || '0.42',
-        'Water Absorption': specifications['Water Absorption'] || '<0.5%',
-        'Finish': specifications['Finish'] || 'Matte',
-        'Thickness': specifications['Thickness'] || '10mm',
-        'Edge Type': specifications['Edge Type'] || 'Rectified',
-        'Texture': specifications['Texture'] || 'Smooth',
-        'Install Location': specifications['Install Location'] || 'Floor/Wall'
+        'Material Type': cleanedSpecs['Material Type'] || 'Ceramic',
+        'PEI Rating': cleanedSpecs['PEI Rating'] || 'PEI 4',
+        'DCOF Rating': cleanedSpecs['DCOF Rating'] || '0.42',
+        'Water Absorption': cleanedSpecs['Water Absorption'] || '<0.5%',
+        'Finish': cleanedSpecs['Finish'] || 'Matte',
+        'Thickness': cleanedSpecs['Thickness'] || '10mm',
+        'Edge Type': cleanedSpecs['Edge Type'] || 'Rectified',
+        'Texture': cleanedSpecs['Texture'] || 'Smooth',
+        'Install Location': cleanedSpecs['Install Location'] || 'Floor/Wall'
       },
       slabs: {
-        'Material Type': specifications['Material Type'] || 'Natural Stone',
-        'Finish': specifications['Finish'] || 'Polished',
-        'Thickness': specifications['Thickness'] || '20mm',
-        'Slab Dimensions': specifications['Slab Dimensions'] || '120" x 60"',
-        'Edge Type': specifications['Edge Type'] || 'Straight',
-        'Water Absorption': specifications['Water Absorption'] || '<0.5%',
-        'Scratch Resistance': specifications['Scratch Resistance'] || 'Excellent',
-        'Heat Resistance': specifications['Heat Resistance'] || 'Heat Resistant'
+        'Material Type': cleanedSpecs['Material Type'] || 'Natural Stone',
+        'Finish': cleanedSpecs['Finish'] || 'Polished',
+        'Thickness': cleanedSpecs['Thickness'] || '20mm',
+        'Slab Dimensions': cleanedSpecs['Slab Dimensions'] || '120" x 60"',
+        'Edge Type': cleanedSpecs['Edge Type'] || 'Straight',
+        'Water Absorption': cleanedSpecs['Water Absorption'] || '<0.5%',
+        'Scratch Resistance': cleanedSpecs['Scratch Resistance'] || 'Excellent',
+        'Heat Resistance': cleanedSpecs['Heat Resistance'] || 'Heat Resistant',
+        'Country of Origin': cleanedSpecs['Country of Origin'] || 'Brazil'
       },
       hardwood: {
-        'Species': specifications['Species'] || 'Oak',
-        'Grade': specifications['Grade'] || 'Select',
-        'Construction Type': specifications['Construction Type'] || 'Solid',
-        'Janka Hardness': specifications['Janka Hardness'] || '1290 lbf',
-        'Width': specifications['Width'] || '5"',
-        'Thickness': specifications['Thickness'] || '3/4"',
-        'Installation Method': specifications['Installation Method'] || 'Nail/Staple'
+        'Species': cleanedSpecs['Species'] || 'Oak',
+        'Grade': cleanedSpecs['Grade'] || 'Select',
+        'Construction Type': cleanedSpecs['Construction Type'] || 'Solid',
+        'Janka Hardness': cleanedSpecs['Janka Hardness'] || '1290 lbf',
+        'Width': cleanedSpecs['Width'] || '5"',
+        'Thickness': cleanedSpecs['Thickness'] || '3/4"',
+        'Installation Method': cleanedSpecs['Installation Method'] || 'Nail/Staple'
       },
       lvt: {
-        'Wear Layer': specifications['Wear Layer'] || '20 mil',
-        'Core Type': specifications['Core Type'] || 'SPC',
-        'Waterproof': specifications['Waterproof'] || 'Yes',
-        'Installation Method': specifications['Installation Method'] || 'Click-Lock',
-        'Slip Resistance': specifications['Slip Resistance'] || 'R9'
+        'Wear Layer': cleanedSpecs['Wear Layer'] || '20 mil',
+        'Core Type': cleanedSpecs['Core Type'] || 'SPC',
+        'Waterproof': cleanedSpecs['Waterproof'] || 'Yes',
+        'Installation Method': cleanedSpecs['Installation Method'] || 'Click-Lock',
+        'Slip Resistance': cleanedSpecs['Slip Resistance'] || 'R9'
       },
       heat: {
-        'Voltage': specifications['Voltage'] || '240V',
-        'Coverage': specifications['Coverage'] || '150 sq ft',
-        'Installation': specifications['Installation'] || 'Under-floor',
-        'Warranty': specifications['Warranty'] || '25 years'
+        'Voltage': cleanedSpecs['Voltage'] || '240V',
+        'Coverage': cleanedSpecs['Coverage'] || '150 sq ft',
+        'Installation': cleanedSpecs['Installation'] || 'Under-floor',
+        'Warranty': cleanedSpecs['Warranty'] || '25 years'
       },
       carpet: {
-        'Fiber Type': specifications['Fiber Type'] || 'Nylon',
-        'Pile Style': specifications['Pile Style'] || 'Cut Pile',
-        'Face Weight': specifications['Face Weight'] || '40 oz',
-        'Density': specifications['Density'] || '3000',
-        'Stain Protection': specifications['Stain Protection'] || 'Yes'
+        'Fiber Type': cleanedSpecs['Fiber Type'] || 'Nylon',
+        'Pile Style': cleanedSpecs['Pile Style'] || 'Cut Pile',
+        'Face Weight': cleanedSpecs['Face Weight'] || '40 oz',
+        'Density': cleanedSpecs['Density'] || '3000',
+        'Stain Protection': cleanedSpecs['Stain Protection'] || 'Yes'
       },
       thermostats: {
-        'Voltage': specifications['Voltage'] || '120V/240V',
-        'Load Capacity': specifications['Load Capacity'] || '15A',
-        'Sensor Type': specifications['Sensor Type'] || 'Floor Sensor',
-        'Display Type': specifications['Display Type'] || 'Digital',
-        'Programmable': specifications['Programmable'] || 'Yes'
+        'Voltage': cleanedSpecs['Voltage'] || '120V/240V',
+        'Load Capacity': cleanedSpecs['Load Capacity'] || '15A',
+        'Sensor Type': cleanedSpecs['Sensor Type'] || 'Floor Sensor',
+        'Display Type': cleanedSpecs['Display Type'] || 'Digital',
+        'Programmable': cleanedSpecs['Programmable'] || 'Yes'
       }
     };
 
     const categoryEnhancements = enhancements[category as keyof typeof enhancements] || enhancements.tiles;
     
+    // Clear original specifications and add enhanced ones
+    Object.keys(specifications).forEach(key => delete specifications[key]);
     Object.entries(categoryEnhancements).forEach(([key, value]) => {
-      if (!specifications[key]) {
-        specifications[key] = value;
-      }
+      specifications[key] = value;
     });
+    
+    // Add back the essential fields
+    specifications['Product Name'] = cleanedSpecs['Product Name'] || 'Unknown Product';
+    specifications['Brand / Manufacturer'] = cleanedSpecs['Brand / Manufacturer'] || brand;
+    specifications['Category'] = category;
+    specifications['Price'] = cleanedSpecs['Price'] || 'Contact for pricing';
+    specifications['Product URL'] = cleanedSpecs['Product URL'] || '';
+    specifications['Image URL'] = cleanedSpecs['Image URL'] || '';
   }
 
   async scrapeAndSave(url: string): Promise<{ success: boolean; product?: any; message: string }> {
