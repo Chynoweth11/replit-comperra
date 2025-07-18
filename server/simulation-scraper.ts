@@ -899,13 +899,17 @@ export class SimulationScraper {
         console.log(`✨ Detected textures: ${enhancedSpecs['Texture Types']}`);
       }
 
-      // Enhanced color generation based on URL analysis
-      if (!enhancedSpecs['Available Colors'] && category !== 'heat' && category !== 'thermostats') {
-        const urlColors = this.extractColorsFromURL(url, productName);
-        if (urlColors.length > 0) {
-          enhancedSpecs['Available Colors'] = urlColors.join(', ');
-          console.log(`🌈 Generated colors from URL: ${enhancedSpecs['Available Colors']}`);
-        }
+      // Enhanced color generation with comprehensive accuracy
+      const colorData = this.extractColorsAndPatternFromURL(url, productName, category);
+      
+      if (colorData.colors.length > 0) {
+        enhancedSpecs['Available Colors'] = colorData.colors.join(', ');
+        console.log(`🌈 Generated colors from URL: ${enhancedSpecs['Available Colors']}`);
+      }
+      
+      if (colorData.pattern) {
+        enhancedSpecs['Pattern'] = colorData.pattern;
+        console.log(`🎨 Generated pattern: ${colorData.pattern}`);
       }
 
       // Enhanced color/pattern analysis from URL and product name
@@ -1007,6 +1011,90 @@ export class SimulationScraper {
     }
 
     return 'Natural stone coloring';
+  }
+
+  private extractColorsAndPatternFromURL(url: string, productName: string, category: string): { colors: string[], pattern: string | null } {
+    const text = (url + ' ' + productName).toLowerCase();
+    const colors: string[] = [];
+    let pattern: string | null = null;
+
+    // Category-specific color extraction patterns
+    const categoryColorPatterns: Record<string, string[]> = {
+      'tiles': ['white', 'black', 'gray', 'grey', 'brown', 'beige', 'cream', 'blue', 'green', 'red', 'charcoal', 'ivory'],
+      'slabs': ['white', 'black', 'gray', 'grey', 'brown', 'beige', 'cream', 'gold', 'silver', 'veined', 'marble', 'granite'],
+      'hardwood': ['oak', 'maple', 'cherry', 'walnut', 'pine', 'mahogany', 'hickory', 'birch', 'natural', 'honey', 'espresso'],
+      'lvt': ['oak', 'pine', 'walnut', 'stone', 'concrete', 'gray', 'grey', 'brown', 'white', 'natural'],
+      'carpet': ['beige', 'gray', 'grey', 'brown', 'charcoal', 'cream', 'navy', 'burgundy', 'tan'],
+      'heat': [],
+      'thermostats': ['white', 'black', 'silver', 'beige']
+    };
+
+    // Pattern keywords for different categories
+    const patternKeywords: Record<string, string[]> = {
+      'tiles': ['subway', 'mosaic', 'hexagon', 'herringbone', 'basketweave', 'geometric'],
+      'slabs': ['veined', 'veining', 'marbled', 'speckled', 'uniform', 'linear'],
+      'hardwood': ['plank', 'strip', 'parquet', 'distressed', 'hand-scraped', 'wire-brushed'],
+      'lvt': ['plank', 'tile', 'stone-look', 'wood-look', 'concrete-look'],
+      'carpet': ['loop', 'cut-pile', 'frieze', 'berber', 'textured'],
+      'heat': [],
+      'thermostats': []
+    };
+
+    // Extract colors based on category
+    const relevantColors = categoryColorPatterns[category] || [];
+    for (const color of relevantColors) {
+      if (text.includes(color)) {
+        colors.push(color.charAt(0).toUpperCase() + color.slice(1));
+      }
+    }
+
+    // Extract patterns based on category
+    const relevantPatterns = patternKeywords[category] || [];
+    for (const patternKeyword of relevantPatterns) {
+      if (text.includes(patternKeyword)) {
+        pattern = patternKeyword.charAt(0).toUpperCase() + patternKeyword.slice(1);
+        break;
+      }
+    }
+
+    // Comprehensive color name extraction
+    const allColorNames = [
+      'alabaster', 'arctic', 'ash', 'beige', 'black', 'blonde', 'bronze', 'brown', 'charcoal',
+      'cream', 'ebony', 'espresso', 'gold', 'gray', 'grey', 'honey', 'ivory', 'natural',
+      'onyx', 'pearl', 'platinum', 'silver', 'snow', 'tan', 'titanium', 'white'
+    ];
+
+    for (const colorName of allColorNames) {
+      if (text.includes(colorName) && !colors.includes(colorName.charAt(0).toUpperCase() + colorName.slice(1))) {
+        colors.push(colorName.charAt(0).toUpperCase() + colorName.slice(1));
+      }
+    }
+
+    return {
+      colors: colors.slice(0, 6), // Limit to 6 colors
+      pattern
+    };
+  }
+
+  private isValidColorOrPattern(text: string): boolean {
+    if (!text || text.length < 2 || text.length > 50) return false;
+    
+    // Reject CSS-like content and template variables
+    if (text.includes('--') || text.includes('linear-gradient') || 
+        text.includes('{') || text.includes('var(') || 
+        text.includes('function') || text.includes('css') ||
+        text.includes('#') || text.includes('px') ||
+        text.includes('rgb') || text.includes('hsl') ||
+        text.includes('{{') || text.includes('}}') || 
+        text.includes('${') || text.includes('%') ||
+        text.includes('currentItem') || text.includes('product.')) {
+      return false;
+    }
+    
+    // Must contain at least one letter
+    if (!/[A-Za-z]/.test(text)) return false;
+    
+    return true;
   }
 
   // Generate category-specific dimensions with enhanced logic

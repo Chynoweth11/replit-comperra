@@ -87,6 +87,14 @@ export class EnhancedScraper {
 
   private cleanText(text: string | null | undefined): string {
     if (!text) return '';
+    
+    // Skip CSS-like text and template variables
+    if (text.includes('--') || text.includes('linear-gradient') || text.includes('{') ||
+        text.includes('{{') || text.includes('}}') || text.includes('${') ||
+        text.includes('var(') || text.includes('function') || text.includes('css')) {
+      return '';
+    }
+    
     return text.trim().replace(/\s+/g, ' ');
   }
 
@@ -288,23 +296,105 @@ export class EnhancedScraper {
     };
   }
 
-  private extractCleanColors($: cheerio.CheerioAPI): string[] {
-    const colorSelectors = '.color-swatch-name, .product-color-name, .color-name, [data-color-name], .color-option, .swatch-label';
+  private extractColorsAndPattern($: cheerio.CheerioAPI): { colors: string[], pattern: string | null } {
     const colors: string[] = [];
+    let pattern: string | null = null;
+
+    // Method 1: Extract from specification tables (most reliable)
+    const specRows = $('.product-specs tr, .product-details__specifications tr, .specifications tr, .spec-table tr');
     
-    $(colorSelectors).each((_, el) => {
-      const $el = $(el);
-      let colorText = $el.attr('data-color-name') || this.cleanText($el.text());
+    specRows.each((_, row) => {
+      const $row = $(row);
+      const th = $row.find('th, .spec-label, .label');
+      const td = $row.find('td, .spec-value, .value');
       
-      // Clean and validate color text
-      if (colorText && colorText.length > 1 && colorText.length < 50 && 
-          !colorText.includes('--') && !colorText.includes('css') && 
-          !colorText.includes('var(') && !colorText.includes('function')) {
-        colors.push(colorText);
+      if (th.length && td.length) {
+        const label = this.cleanText(th.text()).toLowerCase();
+        const value = this.cleanText(td.text());
+        
+        if (value && this.isValidColorOrPattern(value)) {
+          if (label.includes('color') || label.includes('colour')) {
+            colors.push(value);
+          } else if (label.includes('pattern') || label.includes('veining') || label.includes('finish')) {
+            pattern = value;
+          }
+        }
       }
     });
 
-    return [...new Set(colors)]; // Remove duplicates
+    // Method 2: Extract from color swatches and options
+    const colorSelectors = [
+      '.color-swatch-name', '.product-color-name', '.color-name', '[data-color-name]', 
+      '.color-option', '.swatch-label', '.color-choice', '.finish-option'
+    ];
+    
+    for (const selector of colorSelectors) {
+      $(selector).each((_, el) => {
+        const $el = $(el);
+        let colorText = $el.attr('data-color-name') || $el.attr('title') || this.cleanText($el.text());
+        
+        if (colorText && this.isValidColorOrPattern(colorText)) {
+          colors.push(colorText);
+        }
+      });
+    }
+
+    // Method 3: Extract from general product detail blocks
+    const detailBlocks = $('.product-detail-info, .product-details__specifications, .product-description, .specs-section');
+    
+    detailBlocks.each((_, block) => {
+      const text = $(block).text();
+      
+      // Look for color patterns in text
+      const colorMatches = text.match(/color\s*[:\-]?\s*([A-Za-z][A-Za-z\s\-]{1,30})/gi);
+      if (colorMatches) {
+        colorMatches.forEach(match => {
+          const colorValue = match.replace(/color\s*[:\-]?\s*/i, '').trim();
+          if (this.isValidColorOrPattern(colorValue)) {
+            colors.push(colorValue);
+          }
+        });
+      }
+
+      // Look for pattern in text
+      const patternMatches = text.match(/(pattern|veining|finish)\s*[:\-]?\s*([A-Za-z][A-Za-z\s\-]{1,30})/gi);
+      if (patternMatches && !pattern) {
+        pattern = patternMatches[0].replace(/(pattern|veining|finish)\s*[:\-]?\s*/i, '').trim();
+        if (!this.isValidColorOrPattern(pattern)) {
+          pattern = null;
+        }
+      }
+    });
+
+    return {
+      colors: [...new Set(colors)].slice(0, 8), // Remove duplicates and limit
+      pattern
+    };
+  }
+
+  private isValidColorOrPattern(text: string): boolean {
+    if (!text || text.length < 2 || text.length > 50) return false;
+    
+    // Reject CSS-like content
+    if (text.includes('--') || text.includes('linear-gradient') || 
+        text.includes('{') || text.includes('var(') || 
+        text.includes('function') || text.includes('css') ||
+        text.includes('#') || text.includes('px') ||
+        text.includes('rgb') || text.includes('hsl')) {
+      return false;
+    }
+    
+    // Reject template variables
+    if (text.includes('{{') || text.includes('}}') || 
+        text.includes('${') || text.includes('%') ||
+        text.includes('currentItem') || text.includes('product.')) {
+      return false;
+    }
+    
+    // Must contain at least one letter
+    if (!/[A-Za-z]/.test(text)) return false;
+    
+    return true;
   }
 
   private extractActiveColor($: cheerio.CheerioAPI): string | null {
@@ -964,22 +1054,27 @@ export class EnhancedScraper {
           dimensions = '12" x 12"'; // Default for other categories
         }
 
-        // Extract clean colors
-        const availableColors = this.extractCleanColors($);
-        if (availableColors.length > 0) {
-          specifications['Available Colors'] = availableColors.slice(0, 10).join(', ');
+        // Extract colors and patterns using enhanced method
+        const colorData = this.extractColorsAndPattern($);
+        
+        if (colorData.colors.length > 0) {
+          specifications['Available Colors'] = colorData.colors.join(', ');
+        }
+        
+        if (colorData.pattern) {
+          specifications['Pattern'] = colorData.pattern;
         }
 
         // Extract active/selected color
         const activeColor = this.extractActiveColor($);
-        if (activeColor) {
+        if (activeColor && this.isValidColorOrPattern(activeColor)) {
           specifications['Selected Color'] = activeColor;
         }
 
-        // Enhanced color/pattern analysis from URL and product name
-        const urlBasedColors = this.extractColorFromNameAndURL(name, url);
-        if (urlBasedColors) {
-          specifications['Color / Pattern'] = urlBasedColors;
+        // Enhanced color/pattern analysis from URL and product name (fallback)
+        const urlBasedColor = this.extractColorFromNameAndURL(name, url);
+        if (urlBasedColor && (!specifications['Color / Pattern'] || specifications['Color / Pattern'] === 'Natural')) {
+          specifications['Color / Pattern'] = urlBasedColor;
         }
 
         // Analyze visual characteristics from text
