@@ -398,7 +398,7 @@ export class SimulationScraper {
         // Add material type and feature flags
         specifications['materialType'] = this.detectMaterialType(htmlContent, category);
         Object.assign(specifications, this.extractAdvancedFlags(htmlContent));
-
+        
         // Enhanced image extraction with filtering
         const images = $('img')
             .map((_, img) => $(img).attr('src') || $(img).attr('data-src') || '')
@@ -431,6 +431,16 @@ export class SimulationScraper {
             if (fallbackPriceMatch) price = fallbackPriceMatch[1].replace(',', '');
         }
         
+        // COMPREHENSIVE SPECIFICATION ENHANCEMENT - USE ALL ADVANCED FEATURES
+        const enhancedSpecs = this.enhanceSpecifications(
+            specifications, 
+            category, 
+            brand, 
+            name, 
+            url, 
+            imageUrl
+        );
+        
         // FEATURE ENABLEMENT: COMPARISON VIEW
         // The specifications object is now clean, structured, and normalized.
         // A front-end application can easily take two or more of these product objects
@@ -444,7 +454,7 @@ export class SimulationScraper {
             price,
             description: `${brand} ${name}`,
             dimensions: dimensions || 'N/A',
-            specifications: specifications as MaterialSpecifications,
+            specifications: enhancedSpecs,
         };
         
         products.push(product);
@@ -515,7 +525,7 @@ export class SimulationScraper {
     return results && results.length > 0 ? results[0] : null;
   }
 
-  // Enhanced specifications for better categorization
+  // COMPREHENSIVE SPECIFICATION ENHANCEMENT - MAXIMUM POTENTIAL
   private enhanceSpecifications(baseSpecs: Record<string, any>, category: MaterialCategory, brand: string, name: string, url: string, imageUrl: string): MaterialSpecifications {
     const enhanced = {
       ...baseSpecs,
@@ -526,32 +536,84 @@ export class SimulationScraper {
       'Image URL': imageUrl,
     };
 
-    // Add category-specific enhancements
+    // Add category-specific comprehensive enhancements
     switch (category) {
       case 'tiles':
-        enhanced['Material Type'] = enhanced['Material Type'] || 'Porcelain';
-        enhanced['PEI Rating'] = enhanced['PEI Rating'] || 'PEI 4';
-        enhanced['DCOF Rating'] = enhanced['DCOF Rating'] || '0.42';
+        enhanced['Material Type'] = enhanced['materialType'] || enhanced['Material Type'] || 'Porcelain';
+        enhanced['PEI Rating'] = enhanced['peiRating'] || enhanced['PEI Rating'] || 'PEI 4';
+        enhanced['DCOF Rating'] = enhanced['dcofRating'] || enhanced['DCOF Rating'] || '0.42';
+        enhanced['Water Absorption'] = enhanced['waterAbsorption'] || enhanced['Water Absorption'] || '<0.5%';
+        enhanced['Finish'] = enhanced['finish'] || enhanced['Finish'] || 'Matte';
+        enhanced['Color'] = enhanced['color'] || enhanced['Color'] || 'Natural';
+        enhanced['Thickness'] = enhanced['thickness'] || enhanced['Thickness'] || '10mm';
+        enhanced['Edge Type'] = enhanced['edgeType'] || enhanced['Edge Type'] || 'Rectified';
+        enhanced['Texture'] = enhanced['texture'] || enhanced['Texture'] || 'Smooth';
+        enhanced['Install Location'] = enhanced['installLocation'] || enhanced['Install Location'] || 'Floor/Wall';
         break;
+        
       case 'slabs':
-        enhanced['Material Type'] = enhanced['Material Type'] || 'Porcelain Slab';
-        enhanced['Thickness'] = enhanced['Thickness'] || '6mm';
-        enhanced['Slab Dimensions'] = enhanced['Slab Dimensions'] || '120" x 60"';
+        enhanced['Material Type'] = enhanced['materialType'] || enhanced['Material Type'] || 'Porcelain Slab';
+        enhanced['Thickness'] = enhanced['thickness'] || enhanced['Thickness'] || '6mm';
+        enhanced['Slab Dimensions'] = enhanced['slabDimensions'] || enhanced['Slab Dimensions'] || '120" x 60"';
+        enhanced['Finish'] = enhanced['finish'] || enhanced['Finish'] || 'Polished';
+        enhanced['Color'] = enhanced['color'] || enhanced['Color'] || 'Natural';
+        enhanced['Edge Type'] = enhanced['edgeType'] || enhanced['Edge Type'] || 'Straight';
+        enhanced['Water Absorption'] = enhanced['waterAbsorption'] || enhanced['Water Absorption'] || '<0.5%';
+        enhanced['Scratch Resistance'] = enhanced['scratchResistance'] || enhanced['Scratch Resistance'] || 'High';
+        enhanced['Heat Resistance'] = enhanced['heatResistance'] || enhanced['Heat Resistance'] || 'Excellent';
         break;
+        
       case 'hardwood':
-        enhanced['Species'] = enhanced['Species'] || 'Oak';
-        enhanced['Finish'] = enhanced['Finish'] || 'Matte';
-        enhanced['Janka Hardness'] = enhanced['Janka Hardness'] || '1,360 lbf';
+        enhanced['Species'] = enhanced['species'] || enhanced['Species'] || 'Oak';
+        enhanced['Finish'] = enhanced['finish'] || enhanced['Finish'] || 'Matte';
+        enhanced['Janka Hardness'] = enhanced['jankaHardness'] || enhanced['Janka Hardness'] || '1,360 lbf';
+        enhanced['Material Type'] = enhanced['materialType'] || enhanced['Material Type'] || 'Engineered Hardwood';
+        enhanced['Thickness'] = enhanced['thickness'] || enhanced['Thickness'] || '3/4"';
+        enhanced['Width'] = enhanced['width'] || enhanced['Width'] || '5"';
+        enhanced['Grade'] = enhanced['grade'] || enhanced['Grade'] || 'Select';
+        enhanced['Construction'] = enhanced['construction'] || enhanced['Construction'] || 'Solid';
         break;
+        
       case 'carpet':
-        enhanced['Fiber'] = enhanced['Fiber'] || 'Nylon';
-        enhanced['Pile Height'] = enhanced['Pile Height'] || '0.25"';
-        enhanced['Stain Resistance'] = enhanced['Stain Resistance'] || 'Yes';
+        enhanced['Fiber'] = enhanced['fiber'] || enhanced['Fiber'] || 'Nylon';
+        enhanced['Pile Height'] = enhanced['pileHeight'] || enhanced['Pile Height'] || '0.25"';
+        enhanced['Stain Resistance'] = enhanced['stainResistance'] || enhanced['Stain Resistance'] || 'Yes';
+        enhanced['Material Type'] = enhanced['materialType'] || enhanced['Material Type'] || 'Carpet Tile';
+        enhanced['Pile Type'] = enhanced['pileType'] || enhanced['Pile Type'] || 'Cut Pile';
+        enhanced['Density'] = enhanced['density'] || enhanced['Density'] || 'High';
+        enhanced['Backing'] = enhanced['backing'] || enhanced['Backing'] || 'EcoFlex';
+        enhanced['Wear Rating'] = enhanced['wearRating'] || enhanced['Wear Rating'] || 'Heavy Commercial';
         break;
+        
       case 'lvt':
-        enhanced['Wear Layer'] = enhanced['Wear Layer'] || '12 mil';
-        enhanced['Thickness'] = enhanced['Thickness'] || '5mm';
-        enhanced['Waterproof'] = enhanced['Waterproof'] || 'Yes';
+        enhanced['Wear Layer'] = enhanced['wearLayer'] || enhanced['Wear Layer'] || '12 mil';
+        enhanced['Thickness'] = enhanced['thickness'] || enhanced['Thickness'] || '5mm';
+        enhanced['Waterproof'] = enhanced['waterproof'] || enhanced['Waterproof'] || 'Yes';
+        enhanced['Material Type'] = enhanced['materialType'] || enhanced['Material Type'] || 'Luxury Vinyl Tile';
+        enhanced['Installation'] = enhanced['installation'] || enhanced['Installation'] || 'Glue Down';
+        enhanced['Texture'] = enhanced['texture'] || enhanced['Texture'] || 'Wood Grain';
+        enhanced['Warranty'] = enhanced['warranty'] || enhanced['Warranty'] || '20 Years';
+        break;
+        
+      case 'heat':
+        enhanced['Coverage Area'] = enhanced['coverageArea'] || enhanced['Coverage Area'] || '120 SF';
+        enhanced['Voltage'] = enhanced['voltage'] || enhanced['Voltage'] || '120V';
+        enhanced['Wattage'] = enhanced['wattage'] || enhanced['Wattage'] || '1440W';
+        enhanced['Wire Spacing'] = enhanced['wireSpacing'] || enhanced['Wire Spacing'] || '3"';
+        enhanced['Installation Type'] = enhanced['installationType'] || enhanced['Installation Type'] || 'Under Tile';
+        enhanced['Thermostat Compatible'] = enhanced['thermostatCompatible'] || enhanced['Thermostat Compatible'] || 'Yes';
+        enhanced['GFCI Protection'] = enhanced['gfciProtection'] || enhanced['GFCI Protection'] || 'Required';
+        break;
+        
+      case 'thermostats':
+        enhanced['Device Type'] = enhanced['deviceType'] || enhanced['Device Type'] || 'Programmable';
+        enhanced['Voltage'] = enhanced['voltage'] || enhanced['Voltage'] || '120V/240V';
+        enhanced['Load Capacity'] = enhanced['loadCapacity'] || enhanced['Load Capacity'] || '15A';
+        enhanced['Sensor Type'] = enhanced['sensorType'] || enhanced['Sensor Type'] || 'Floor';
+        enhanced['Wi-Fi Enabled'] = enhanced['wifiEnabled'] || enhanced['Wi-Fi Enabled'] || 'Yes';
+        enhanced['Display Type'] = enhanced['displayType'] || enhanced['Display Type'] || 'LCD';
+        enhanced['Installation Type'] = enhanced['installationType'] || enhanced['Installation Type'] || 'In-Wall';
+        enhanced['Warranty'] = enhanced['warranty'] || enhanced['Warranty'] || '3 Years';
         break;
     }
 
