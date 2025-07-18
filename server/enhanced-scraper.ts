@@ -88,10 +88,13 @@ export class EnhancedScraper {
   private cleanText(text: string | null | undefined): string {
     if (!text) return '';
     
-    // Skip CSS-like text and template variables
-    if (text.includes('--') || text.includes('linear-gradient') || text.includes('{') ||
+    // Skip CSS-like text, WordPress variables, and template variables
+    if (text.includes('--') || text.includes('wp--preset') || 
+        text.includes('linear-gradient') || text.includes('{') ||
         text.includes('{{') || text.includes('}}') || text.includes('${') ||
-        text.includes('var(') || text.includes('function') || text.includes('css')) {
+        text.includes('var(') || text.includes('function') || 
+        text.includes('css') || text.includes(':') || text.includes(';') ||
+        text.includes('#') || text.includes('gradient')) {
       return '';
     }
     
@@ -312,7 +315,7 @@ export class EnhancedScraper {
         const label = this.cleanText(th.text()).toLowerCase();
         const value = this.cleanText(td.text());
         
-        if (value && this.isValidColorOrPattern(value)) {
+        if (value && this.isValidColorOrPattern(value) && !this.isCSSContent(value)) {
           if (label.includes('color') || label.includes('colour')) {
             colors.push(value);
           } else if (label.includes('pattern') || label.includes('veining') || label.includes('finish')) {
@@ -333,35 +336,40 @@ export class EnhancedScraper {
         const $el = $(el);
         let colorText = $el.attr('data-color-name') || $el.attr('title') || this.cleanText($el.text());
         
-        if (colorText && this.isValidColorOrPattern(colorText)) {
+        if (colorText && this.isValidColorOrPattern(colorText) && !this.isCSSContent(colorText)) {
           colors.push(colorText);
         }
       });
     }
 
-    // Method 3: Extract from general product detail blocks
+    // Method 3: Extract from general product detail blocks (enhanced with CSS filtering)
     const detailBlocks = $('.product-detail-info, .product-details__specifications, .product-description, .specs-section');
     
     detailBlocks.each((_, block) => {
-      const text = $(block).text();
+      let text = $(block).text();
       
-      // Look for color patterns in text
-      const colorMatches = text.match(/color\s*[:\-]?\s*([A-Za-z][A-Za-z\s\-]{1,30})/gi);
+      // Pre-filter out CSS content from text blocks
+      if (this.isCSSContent(text) || text.includes('--wp--preset') || text.includes('linear-gradient')) {
+        return; // Skip this entire block if it contains CSS
+      }
+      
+      // Look for color patterns in text (only valid color words)
+      const colorMatches = text.match(/\b(white|black|gray|grey|brown|beige|cream|tan|ivory|charcoal|espresso|honey|natural|oak|maple|cherry|walnut|mahogany|pine|birch)\b/gi);
       if (colorMatches) {
         colorMatches.forEach(match => {
-          const colorValue = match.replace(/color\s*[:\-]?\s*/i, '').trim();
-          if (this.isValidColorOrPattern(colorValue)) {
-            colors.push(colorValue);
+          const colorValue = match.trim();
+          if (this.isValidColorOrPattern(colorValue) && !this.isCSSContent(colorValue)) {
+            colors.push(colorValue.charAt(0).toUpperCase() + colorValue.slice(1).toLowerCase());
           }
         });
       }
 
       // Look for pattern in text
-      const patternMatches = text.match(/(pattern|veining|finish)\s*[:\-]?\s*([A-Za-z][A-Za-z\s\-]{1,30})/gi);
+      const patternMatches = text.match(/\b(veined|veining|marbled|speckled|uniform|linear|distressed|hand-scraped|subway|mosaic|hexagon|herringbone)\b/gi);
       if (patternMatches && !pattern) {
-        pattern = patternMatches[0].replace(/(pattern|veining|finish)\s*[:\-]?\s*/i, '').trim();
-        if (!this.isValidColorOrPattern(pattern)) {
-          pattern = null;
+        const foundPattern = patternMatches[0].trim();
+        if (this.isValidColorOrPattern(foundPattern) && !this.isCSSContent(foundPattern)) {
+          pattern = foundPattern.charAt(0).toUpperCase() + foundPattern.slice(1).toLowerCase();
         }
       }
     });
@@ -375,12 +383,15 @@ export class EnhancedScraper {
   private isValidColorOrPattern(text: string): boolean {
     if (!text || text.length < 2 || text.length > 50) return false;
     
-    // Reject CSS-like content
-    if (text.includes('--') || text.includes('linear-gradient') || 
-        text.includes('{') || text.includes('var(') || 
-        text.includes('function') || text.includes('css') ||
-        text.includes('#') || text.includes('px') ||
-        text.includes('rgb') || text.includes('hsl')) {
+    // Reject CSS variables and WordPress color variables specifically
+    if (text.includes('--') || text.includes('wp--preset') || 
+        text.includes('linear-gradient') || text.includes('{') || 
+        text.includes('var(') || text.includes('function') || 
+        text.includes('css') || text.includes('#') || 
+        text.includes('px') || text.includes('rgb') || 
+        text.includes('hsl') || text.includes('rgba') ||
+        text.includes('hsla') || text.includes(':') ||
+        text.includes(';') || text.includes('gradient')) {
       return false;
     }
     
@@ -391,10 +402,33 @@ export class EnhancedScraper {
       return false;
     }
     
-    // Must contain at least one letter
-    if (!/[A-Za-z]/.test(text)) return false;
+    // Reject obvious CSS/style content
+    if (text.match(/^\s*[\-\#\.\@\$]/)) return false;
+    
+    // Must contain at least one letter and be reasonable length
+    if (!/[A-Za-z]/.test(text) || text.length > 30) return false;
     
     return true;
+  }
+
+  private isCSSContent(text: string): boolean {
+    if (!text) return false;
+    
+    // Comprehensive CSS detection patterns
+    const cssPatterns = [
+      /--[\w\-]+:/,                    // CSS variables like --black:
+      /wp--preset/,                    // WordPress color presets
+      /#[0-9a-fA-F]{3,6}/,            // Hex colors
+      /rgba?\([^)]+\)/,               // RGB/RGBA functions
+      /hsla?\([^)]+\)/,               // HSL/HSLA functions
+      /linear-gradient/,               // Gradients
+      /[\w\-]+\s*:\s*[^;]+;/,         // CSS property:value; pairs
+      /^[\s]*--/,                     // Lines starting with CSS variables
+      /;\s*--/,                       // CSS variable chains
+      /:[\w\-#]+;/                    // CSS value endings
+    ];
+    
+    return cssPatterns.some(pattern => pattern.test(text));
   }
 
   private extractActiveColor($: cheerio.CheerioAPI): string | null {
@@ -1073,9 +1107,20 @@ export class EnhancedScraper {
 
         // Enhanced color/pattern analysis from URL and product name (fallback)
         const urlBasedColor = this.extractColorFromNameAndURL(name, url);
-        if (urlBasedColor && (!specifications['Color / Pattern'] || specifications['Color / Pattern'] === 'Natural')) {
+        if (urlBasedColor && (!specifications['Color / Pattern'] || specifications['Color / Pattern'] === 'Natural') && !this.isCSSContent(urlBasedColor)) {
           specifications['Color / Pattern'] = urlBasedColor;
         }
+
+        // Final CSS cleanup check for all color-related fields
+        Object.keys(specifications).forEach(key => {
+          if (key.toLowerCase().includes('color') || key.toLowerCase().includes('pattern')) {
+            const value = specifications[key];
+            if (value && this.isCSSContent(value)) {
+              console.log(`🚫 Removing CSS content from ${key}: ${value}`);
+              delete specifications[key];
+            }
+          }
+        });
 
         // Analyze visual characteristics from text
         const visuals = this.analyzeVisualsFromText($, name);

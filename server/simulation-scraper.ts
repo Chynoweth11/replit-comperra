@@ -1079,22 +1079,52 @@ export class SimulationScraper {
   private isValidColorOrPattern(text: string): boolean {
     if (!text || text.length < 2 || text.length > 50) return false;
     
-    // Reject CSS-like content and template variables
-    if (text.includes('--') || text.includes('linear-gradient') || 
-        text.includes('{') || text.includes('var(') || 
-        text.includes('function') || text.includes('css') ||
-        text.includes('#') || text.includes('px') ||
-        text.includes('rgb') || text.includes('hsl') ||
-        text.includes('{{') || text.includes('}}') || 
+    // Reject CSS variables and WordPress color variables specifically
+    if (text.includes('--') || text.includes('wp--preset') || 
+        text.includes('linear-gradient') || text.includes('{') || 
+        text.includes('var(') || text.includes('function') || 
+        text.includes('css') || text.includes('#') || 
+        text.includes('px') || text.includes('rgb') || 
+        text.includes('hsl') || text.includes('rgba') ||
+        text.includes('hsla') || text.includes(':') ||
+        text.includes(';') || text.includes('gradient')) {
+      return false;
+    }
+    
+    // Reject template variables
+    if (text.includes('{{') || text.includes('}}') || 
         text.includes('${') || text.includes('%') ||
         text.includes('currentItem') || text.includes('product.')) {
       return false;
     }
     
-    // Must contain at least one letter
-    if (!/[A-Za-z]/.test(text)) return false;
+    // Reject obvious CSS/style content
+    if (text.match(/^\s*[\-\#\.\@\$]/)) return false;
+    
+    // Must contain at least one letter and be reasonable length
+    if (!/[A-Za-z]/.test(text) || text.length > 30) return false;
     
     return true;
+  }
+
+  private isCSSContent(text: string): boolean {
+    if (!text) return false;
+    
+    // Comprehensive CSS detection patterns
+    const cssPatterns = [
+      /--[\w\-]+:/,                    // CSS variables like --black:
+      /wp--preset/,                    // WordPress color presets
+      /#[0-9a-fA-F]{3,6}/,            // Hex colors
+      /rgba?\([^)]+\)/,               // RGB/RGBA functions
+      /hsla?\([^)]+\)/,               // HSL/HSLA functions
+      /linear-gradient/,               // Gradients
+      /[\w\-]+\s*:\s*[^;]+;/,         // CSS property:value; pairs
+      /^[\s]*--/,                     // Lines starting with CSS variables
+      /;\s*--/,                       // CSS variable chains
+      /:[\w\-#]+;/                    // CSS value endings
+    ];
+    
+    return cssPatterns.some(pattern => pattern.test(text));
   }
 
   // Generate category-specific dimensions with enhanced logic
