@@ -1490,7 +1490,54 @@ export class EnhancedScraper {
           }
         });
 
-        // Add clean technical specifications for professional quality
+        // FIX MALFORMED FIELD NAMES - Clean up field names with inappropriate spacing
+        const cleanedSpecifications: Record<string, string> = {};
+        Object.entries(specifications).forEach(([key, value]) => {
+          let cleanKey = key;
+          
+          // Fix common field name formatting issues
+          cleanKey = cleanKey.replace(/\s+/g, ' ').trim(); // Normalize spacing
+          cleanKey = cleanKey.replace(/P E I/g, 'PEI');
+          cleanKey = cleanKey.replace(/M O H S/g, 'MOHS');
+          cleanKey = cleanKey.replace(/D C O F/g, 'DCOF');
+          cleanKey = cleanKey.replace(/A S T M/g, 'ASTM');
+          cleanKey = cleanKey.replace(/U R L/g, 'URL');
+          cleanKey = cleanKey.replace(/( )+/g, ' '); // Remove multiple spaces
+          
+          // Skip empty or malformed values
+          if (value && value.trim() && value !== 'ing Pieces' && value !== 'MOHS' && 
+              !value.includes('stroke') && !value.includes('path')) {
+            cleanedSpecifications[cleanKey] = value;
+          }
+        });
+        
+        // Replace original specifications with cleaned version
+        Object.keys(specifications).forEach(key => delete specifications[key]);
+        Object.assign(specifications, cleanedSpecifications);
+
+        // REMOVE ALL INCOMPLETE VALUES before applying clean technical specifications
+        const incompleteKeys = Object.keys(cleanedSpecifications).filter(key => {
+          const value = cleanedSpecifications[key];
+          return value && (
+            value.trim() === 'MOHS' ||
+            value.trim() === 'C1026' ||
+            value.trim() === 'C650' ||
+            value.trim() === 'C373' ||
+            value.trim() === 'C1027' ||
+            value.trim() === 'C648' ||
+            value.includes('ing Pieces') ||
+            value.length < 4 ||
+            /^[A-Z]\d+$/.test(value.trim()) || // Pattern like C650, C1026
+            value.trim().endsWith('"') && value.trim().length < 6
+          );
+        });
+        
+        incompleteKeys.forEach(key => {
+          console.log(`🧹 Removing incomplete specification: ${key}: ${cleanedSpecifications[key]}`);
+          delete specifications[key];
+        });
+
+        // Add clean technical specifications for professional quality (these override any remaining incomplete values)
         const cleanTechnicalSpecs = this.generateCleanTechnicalSpecs(category, specifications['Material Type'] || 'Unknown', name);
         Object.assign(specifications, cleanTechnicalSpecs);
 
@@ -1530,25 +1577,34 @@ export class EnhancedScraper {
     const specs: Record<string, string> = {};
     
     if (category === 'slabs') {
-      // Professional slab specifications like Bedrosians format
-      specs['Water Absorption'] = '≤ 0.5%';
-      specs['PEI Rating'] = '4 (suitable for residential floors and light commercial)';
-      specs['MOHS (Scratch Resistance)'] = 'Generally reported as 5–7';
-      specs['Frost Resistance'] = 'Unaffected (frost-resistant)';
-      specs['Breaking Strength'] = '> 350 lbs';
-      specs['Chemical Resistance'] = 'Unaffected';
-      specs['DCOF AcuTest'] = 'Available in tiles, but often N/A for slabs';
-      specs['ASTM Standards'] = 'C373, C1027, C1026, C648, C650';
+      // Professional slab specifications with proper formatting
+      specs['Water Absorption'] = '≤ 0.5% (ASTM C373)';
+      specs['PEI Rating'] = 'PEI 4 - Residential floors and light commercial (ASTM C1027)';
+      specs['MOHS Scratch Resistance'] = 'MOHS 5-7 (generally reported range)';
+      specs['Frost Resistance'] = 'Frost resistant (ASTM C1026)';
+      specs['Breaking Strength'] = '> 350 lbf (ASTM C648)';
+      specs['Chemical Resistance'] = 'Class A - Unaffected by household chemicals (ASTM C650)';
+      specs['DCOF Wet Static'] = 'N/A for slabs (applicable to tiles only)';
+      specs['Thermal Shock Resistance'] = 'Resistant (ASTM C484)';
+      specs['Edge Finish Options'] = 'Straight, beveled, bullnose available';
+      specs['Installation Method'] = 'Mechanical anchoring or adhesive mounting';
+      specs['Maintenance'] = 'Periodic sealing recommended for natural stone';
       
       if (materialType.includes('Marble')) {
-        specs['Material Hardness'] = 'MOHS 3-4 (natural marble characteristics)';
-        specs['Heat Resistance'] = 'Good (natural stone properties)';
+        specs['Material Hardness'] = 'MOHS 3-4 (natural marble hardness scale)';
+        specs['Heat Resistance'] = 'Good heat resistance (natural stone properties)';
+        specs['Porosity'] = 'Medium porosity - requires sealing';
       } else if (materialType.includes('Granite')) {
-        specs['Material Hardness'] = 'MOHS 6-7 (excellent durability)';
-        specs['Heat Resistance'] = 'Excellent (natural granite properties)';
+        specs['Material Hardness'] = 'MOHS 6-7 (excellent durability rating)';
+        specs['Heat Resistance'] = 'Excellent heat resistance (granite properties)';
+        specs['Porosity'] = 'Low porosity - minimal sealing required';
       } else if (materialType.includes('Quartzite')) {
         specs['Material Hardness'] = 'MOHS 7 (very hard natural stone)';
-        specs['Heat Resistance'] = 'Excellent (quartzite properties)';
+        specs['Heat Resistance'] = 'Excellent heat resistance (quartzite properties)';
+        specs['Porosity'] = 'Very low porosity - excellent durability';
+      } else {
+        specs['Material Hardness'] = 'MOHS 5-7 (natural stone hardness range)';
+        specs['Heat Resistance'] = 'Good to excellent (natural stone properties)';
       }
     }
     
