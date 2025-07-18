@@ -208,6 +208,174 @@ export class EnhancedScraper {
     return rawMaterialName;
   }
 
+  // Enhanced dimension handling with standard slab sizes
+  private standardSlabSizes: Record<string, string> = {
+    'marble': '120" x 77"',
+    'granite': '114" x 77"',
+    'porcelain': '126" x 63"',
+    'quartz': '126" x 63"',
+    'quartzite': '130" x 77"'
+  };
+
+  private getStandardSlabSize(materialName: string): string | null {
+    if (!materialName) return null;
+    const materialLower = materialName.toLowerCase();
+    for (const [material, size] of Object.entries(this.standardSlabSizes)) {
+      if (materialLower.includes(material)) {
+        return size;
+      }
+    }
+    return null;
+  }
+
+  private applyDimensionFallback(specifications: Record<string, string>): void {
+    if (!specifications['Dimensions'] && !specifications['Slab Dimensions']) {
+      const materialType = specifications['Material Type'];
+      const standardSize = this.getStandardSlabSize(materialType);
+      if (standardSize) {
+        console.log(`📏 Applying standard size for ${materialType}: ${standardSize}`);
+        specifications['Slab Dimensions'] = standardSize;
+      }
+    }
+  }
+
+  // Pattern and texture analysis keywords
+  private patternKeywords: Record<string, string[]> = {
+    'veining': ['vein', 'veining', 'veined'],
+    'marbled': ['marbled', 'marble-look', 'marble look'],
+    'speckled': ['speckled', 'flecked', 'spotted'],
+    'linear': ['linear', 'striped', 'lines'],
+    'wood grain': ['wood grain', 'wood-look', 'wood look', 'grain'],
+    'concrete look': ['concrete look', 'cement look']
+  };
+
+  private textureKeywords: Record<string, string[]> = {
+    'polished': ['polished', 'high-gloss', 'glossy'],
+    'honed': ['honed'],
+    'matte': ['matte', 'low-sheen'],
+    'textured': ['textured', 'brushed', 'structured', 'satin']
+  };
+
+  private analyzeVisualsFromText($: cheerio.CheerioAPI, name: string): { patterns: string[], textures: string[] } {
+    const descriptionEl = $('.product-description, [itemprop="description"]').first();
+    const descriptionText = descriptionEl.length ? this.cleanText(descriptionEl.text()) : '';
+    const fullText = (name + ' ' + descriptionText).toLowerCase();
+
+    const foundPatterns = new Set<string>();
+    const foundTextures = new Set<string>();
+
+    // Find patterns
+    for (const [pattern, keywords] of Object.entries(this.patternKeywords)) {
+      for (const keyword of keywords) {
+        if (fullText.includes(keyword)) {
+          foundPatterns.add(pattern);
+        }
+      }
+    }
+
+    // Find textures
+    for (const [texture, keywords] of Object.entries(this.textureKeywords)) {
+      for (const keyword of keywords) {
+        if (fullText.includes(keyword)) {
+          foundTextures.add(texture);
+        }
+      }
+    }
+
+    return {
+      patterns: Array.from(foundPatterns),
+      textures: Array.from(foundTextures)
+    };
+  }
+
+  private extractCleanColors($: cheerio.CheerioAPI): string[] {
+    const colorSelectors = '.color-swatch-name, .product-color-name, .color-name, [data-color-name], .color-option, .swatch-label';
+    const colors: string[] = [];
+    
+    $(colorSelectors).each((_, el) => {
+      const $el = $(el);
+      let colorText = $el.attr('data-color-name') || this.cleanText($el.text());
+      
+      // Clean and validate color text
+      if (colorText && colorText.length > 1 && colorText.length < 50 && 
+          !colorText.includes('--') && !colorText.includes('css') && 
+          !colorText.includes('var(') && !colorText.includes('function')) {
+        colors.push(colorText);
+      }
+    });
+
+    return [...new Set(colors)]; // Remove duplicates
+  }
+
+  private extractActiveColor($: cheerio.CheerioAPI): string | null {
+    const activeSelectors = [
+      '.color-swatch.active .color-name',
+      '.color-option.selected .option-label',
+      'button[aria-pressed="true"] .swatch-name',
+      '[data-option-selected="true"]',
+      '.color-swatch.selected'
+    ];
+
+    for (const selector of activeSelectors) {
+      const activeEl = $(selector).first();
+      if (activeEl.length) {
+        const colorName = activeEl.attr('data-color-name') || this.cleanText(activeEl.text());
+        if (colorName) {
+          console.log(`🎨 Found active color: ${colorName}`);
+          return colorName;
+        }
+      }
+    }
+    return null;
+  }
+
+  private extractProductImages($: cheerio.CheerioAPI, url: string, limit: number = 5): string[] {
+    const imageSelectors = [
+      'img.product-image',
+      '.product-gallery img',
+      '.product-main-image img',
+      'img[data-src]',
+      '.hero-image img',
+      '.product-photos img',
+      '.zoom-image'
+    ];
+
+    const images: string[] = [];
+    
+    for (const selector of imageSelectors) {
+      if (images.length >= limit) break;
+      
+      $(selector).each((_, img) => {
+        if (images.length >= limit) return false;
+        
+        const $img = $(img);
+        let imgSrc = $img.attr('data-src') || $img.attr('src') || $img.attr('data-lazy-src');
+        
+        if (imgSrc) {
+          // Convert relative URLs to absolute
+          if (imgSrc.startsWith('//')) {
+            imgSrc = 'https:' + imgSrc;
+          } else if (imgSrc.startsWith('/')) {
+            const baseUrl = new URL(url);
+            imgSrc = `${baseUrl.protocol}//${baseUrl.host}${imgSrc}`;
+          } else if (!imgSrc.startsWith('http')) {
+            imgSrc = new URL(imgSrc, url).href;
+          }
+          
+          // Filter out logos, icons, and placeholder images
+          const imgName = imgSrc.toLowerCase();
+          if (!imgName.includes('logo') && !imgName.includes('icon') && 
+              !imgName.includes('placeholder') && !imgName.includes('spinner') &&
+              !imgName.includes('loading') && imgSrc.length > 20) {
+            images.push(imgSrc);
+          }
+        }
+      });
+    }
+
+    return [...new Set(images)]; // Remove duplicates
+  }
+
   private normalizeThickness(thickness: string): string {
     if (!thickness) return '';
     
@@ -732,9 +900,44 @@ export class EnhancedScraper {
         const imageUrl = imageUrls.length > 0 ? imageUrls[0] : '';
         specifications['Image URL'] = imageUrl;
 
-        // Extract dimensions
-        const dimensions = specifications['Dimensions'] || specifications['Size'] || 
-                         specifications['Dimension'] || '12" x 12"';
+        // Extract dimensions with enhanced fallback logic
+        let dimensions = specifications['Dimensions'] || specifications['Size'] || 
+                        specifications['Dimension'] || '';
+        
+        // Apply dimension fallback for slabs
+        this.applyDimensionFallback(specifications);
+        
+        // Use enhanced dimension extraction
+        if (!dimensions && category === 'slabs') {
+          dimensions = specifications['Slab Dimensions'] || 'Standard size of the slab material, could vary';
+        } else if (!dimensions) {
+          dimensions = '12" x 12"'; // Default for other categories
+        }
+
+        // Extract clean colors
+        const availableColors = this.extractCleanColors($);
+        if (availableColors.length > 0) {
+          specifications['Available Colors'] = availableColors.slice(0, 10).join(', ');
+        }
+
+        // Extract active/selected color
+        const activeColor = this.extractActiveColor($);
+        if (activeColor) {
+          specifications['Selected Color'] = activeColor;
+        }
+
+        // Enhanced image extraction
+        const productImages = this.extractProductImages($, url, 5);
+        imageUrls = productImages.length > 0 ? productImages : [imageUrl];
+
+        // Analyze visual characteristics from text
+        const visuals = this.analyzeVisualsFromText($, name);
+        if (visuals.patterns.length > 0) {
+          specifications['Pattern Types'] = visuals.patterns.join(', ');
+        }
+        if (visuals.textures.length > 0) {
+          specifications['Texture Types'] = visuals.textures.join(', ');
+        }
 
         // Find data sheet URL
         const dataSheetUrl = this.findDataSheetUrl($, url);

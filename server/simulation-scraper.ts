@@ -150,6 +150,84 @@ export class SimulationScraper {
     return rawMaterialName;
   }
 
+  // Enhanced dimension handling with standard slab sizes
+  private standardSlabSizes: Record<string, string> = {
+    'marble': '120" x 77"',
+    'granite': '114" x 77"',
+    'porcelain': '126" x 63"',
+    'quartz': '126" x 63"',
+    'quartzite': '130" x 77"'
+  };
+
+  private getStandardSlabSize(materialName: string): string | null {
+    if (!materialName) return null;
+    const materialLower = materialName.toLowerCase();
+    for (const [material, size] of Object.entries(this.standardSlabSizes)) {
+      if (materialLower.includes(material)) {
+        return size;
+      }
+    }
+    return null;
+  }
+
+  private applyDimensionFallback(specifications: Record<string, string>): void {
+    if (!specifications['Dimensions'] && !specifications['Slab Dimensions']) {
+      const materialType = specifications['Material Type'];
+      const standardSize = this.getStandardSlabSize(materialType);
+      if (standardSize) {
+        console.log(`📏 Applying standard size for ${materialType}: ${standardSize}`);
+        specifications['Slab Dimensions'] = standardSize;
+      }
+    }
+  }
+
+  // Pattern and texture analysis keywords
+  private patternKeywords: Record<string, string[]> = {
+    'veining': ['vein', 'veining', 'veined'],
+    'marbled': ['marbled', 'marble-look', 'marble look'],
+    'speckled': ['speckled', 'flecked', 'spotted'],
+    'linear': ['linear', 'striped', 'lines'],
+    'wood grain': ['wood grain', 'wood-look', 'wood look', 'grain'],
+    'concrete look': ['concrete look', 'cement look']
+  };
+
+  private textureKeywords: Record<string, string[]> = {
+    'polished': ['polished', 'high-gloss', 'glossy'],
+    'honed': ['honed'],
+    'matte': ['matte', 'low-sheen'],
+    'textured': ['textured', 'brushed', 'structured', 'satin']
+  };
+
+  private analyzeVisualsFromURL(url: string, productName: string): { patterns: string[], textures: string[] } {
+    const fullText = (url + ' ' + productName).toLowerCase();
+
+    const foundPatterns = new Set<string>();
+    const foundTextures = new Set<string>();
+
+    // Find patterns
+    for (const [pattern, keywords] of Object.entries(this.patternKeywords)) {
+      for (const keyword of keywords) {
+        if (fullText.includes(keyword)) {
+          foundPatterns.add(pattern);
+        }
+      }
+    }
+
+    // Find textures
+    for (const [texture, keywords] of Object.entries(this.textureKeywords)) {
+      for (const keyword of keywords) {
+        if (fullText.includes(keyword)) {
+          foundTextures.add(texture);
+        }
+      }
+    }
+
+    return {
+      patterns: Array.from(foundPatterns),
+      textures: Array.from(foundTextures)
+    };
+  }
+
   // COMPREHENSIVE SPECIFICATION EXTRACTION WITH MAXIMUM POTENTIAL
   private extractScopedSpecifications($container: cheerio.CheerioAPI): Record<string, string | boolean> {
     const specs: Record<string, string | boolean> = {};
@@ -806,6 +884,29 @@ export class SimulationScraper {
         enhancedSpecs['Material Type'] = categorizedMaterial;
         console.log(`🔍 Material categorized: ${enhancedSpecs['Material Type']}`);
       }
+
+      // Apply enhanced dimension fallback
+      this.applyDimensionFallback(enhancedSpecs);
+
+      // Analyze visual characteristics from URL and product name
+      const visuals = this.analyzeVisualsFromURL(url, productName);
+      if (visuals.patterns.length > 0) {
+        enhancedSpecs['Pattern Types'] = visuals.patterns.join(', ');
+        console.log(`🎨 Detected patterns: ${enhancedSpecs['Pattern Types']}`);
+      }
+      if (visuals.textures.length > 0) {
+        enhancedSpecs['Texture Types'] = visuals.textures.join(', ');
+        console.log(`✨ Detected textures: ${enhancedSpecs['Texture Types']}`);
+      }
+
+      // Enhanced color generation based on URL analysis
+      if (!enhancedSpecs['Available Colors'] && category !== 'heat' && category !== 'thermostats') {
+        const urlColors = this.extractColorsFromURL(url, productName);
+        if (urlColors.length > 0) {
+          enhancedSpecs['Available Colors'] = urlColors.join(', ');
+          console.log(`🌈 Generated colors from URL: ${enhancedSpecs['Available Colors']}`);
+        }
+      }
       
       // Generate realistic dimensions based on category
       const dimensions = this.generateCategoryDimensions(category);
@@ -833,7 +934,28 @@ export class SimulationScraper {
     }
   }
   
-  // Generate category-specific dimensions
+  private extractColorsFromURL(url: string, productName: string): string[] {
+    const commonColors = [
+      'white', 'black', 'gray', 'grey', 'brown', 'beige', 'cream', 'ivory',
+      'blue', 'green', 'red', 'yellow', 'gold', 'silver', 'bronze',
+      'walnut', 'oak', 'maple', 'cherry', 'mahogany', 'pine',
+      'marble', 'granite', 'slate', 'travertine', 'limestone',
+      'natural', 'dark', 'light', 'medium', 'charcoal', 'espresso'
+    ];
+
+    const fullText = (url + ' ' + productName).toLowerCase();
+    const foundColors: string[] = [];
+
+    for (const color of commonColors) {
+      if (fullText.includes(color)) {
+        foundColors.push(color.charAt(0).toUpperCase() + color.slice(1));
+      }
+    }
+
+    return foundColors.slice(0, 5); // Limit to 5 colors
+  }
+
+  // Generate category-specific dimensions with enhanced logic
   private generateCategoryDimensions(category: MaterialCategory): string {
     switch (category) {
       case 'tiles':
