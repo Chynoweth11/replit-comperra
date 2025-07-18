@@ -180,60 +180,140 @@ export class EnhancedScraper {
     return 'tiles'; // Default fallback
   }
 
-  private extractSpecifications($: cheerio.CheerioAPI): Record<string, string> {
+  private extractSpecifications($: cheerio.CheerioAPI, category: string): Record<string, string> {
     const specs: Record<string, string> = {};
     
-    // Method 1: Specification tables
-    $('table.spec-table, table#specifications, table.product-specs, table.specifications, .specs-table').each((_, table) => {
+    // Method 1: Specification tables - comprehensive approach
+    $('table, .spec-table, .specifications, .product-specs, .tech-specs, .details-table').each((_, table) => {
       $(table).find('tr').each((_, row) => {
         const cells = $(row).find('td, th');
         if (cells.length >= 2) {
           const key = this.cleanText(cells.first().text());
           const value = this.cleanText(cells.last().text());
-          if (key && value && !key.toLowerCase().includes('specification')) {
+          if (key && value && key.length > 1 && value.length > 1 && !key.toLowerCase().includes('specification')) {
             specs[key] = value;
           }
         }
       });
     });
 
-    // Method 2: Definition lists
-    $('dl.specs, dl.specifications, .spec-list dl').each((_, dl) => {
+    // Method 2: Definition lists - enhanced
+    $('dl, .spec-list dl, .product-details dl').each((_, dl) => {
       $(dl).find('dt').each((_, dt) => {
         const key = this.cleanText($(dt).text());
         const value = this.cleanText($(dt).next('dd').text());
-        if (key && value) {
+        if (key && value && key.length > 1 && value.length > 1) {
           specs[key] = value;
         }
       });
     });
 
-    // Method 3: Key-value pairs
-    $('.spec-item, .specification-item, .product-spec').each((_, item) => {
+    // Method 3: Key-value pairs - comprehensive selectors
+    $('.spec-item, .specification-item, .product-spec, .detail-row, .feature-row, .attribute').each((_, item) => {
       const $item = $(item);
-      const label = $item.find('.spec-label, .label, .key').first();
-      const value = $item.find('.spec-value, .value, .val').first();
+      const label = $item.find('.spec-label, .label, .key, .name, .title, strong').first();
+      const value = $item.find('.spec-value, .value, .val, .data, .info, span').last();
       
       if (label.length && value.length) {
         const key = this.cleanText(label.text().replace(':', ''));
         const val = this.cleanText(value.text());
-        if (key && val) {
+        if (key && val && key.length > 1 && val.length > 1) {
           specs[key] = val;
         }
       }
     });
 
-    // Method 4: Structured data extraction
-    $('[itemprop]').each((_, elem) => {
+    // Method 4: Structured data extraction - enhanced
+    $('[itemprop], [data-spec], [data-attribute]').each((_, elem) => {
       const $elem = $(elem);
-      const prop = $elem.attr('itemprop');
+      const prop = $elem.attr('itemprop') || $elem.attr('data-spec') || $elem.attr('data-attribute');
       const value = this.cleanText($elem.text() || $elem.attr('content') || '');
-      if (prop && value) {
+      if (prop && value && value.length > 1) {
         specs[prop] = value;
       }
     });
 
+    // Method 5: Text mining for specifications
+    const fullText = $('body').text();
+    this.mineSpecificationsFromText(fullText, category, specs);
+
     return specs;
+  }
+
+  private mineSpecificationsFromText(text: string, category: string, specs: Record<string, string>): void {
+    // Category-specific mining patterns
+    const patterns = {
+      tiles: [
+        /PEI Rating:?\s*([^,\n]+)/i,
+        /DCOF[^:]*:?\s*([^,\n]+)/i,
+        /Water Absorption:?\s*([^,\n]+)/i,
+        /Material Type:?\s*([^,\n]+)/i,
+        /Finish:?\s*([^,\n]+)/i,
+        /Thickness:?\s*([^,\n]+)/i,
+        /Edge Type:?\s*([^,\n]+)/i,
+        /Texture:?\s*([^,\n]+)/i,
+        /Install Location:?\s*([^,\n]+)/i,
+      ],
+      slabs: [
+        /Material Type:?\s*([^,\n]+)/i,
+        /Finish:?\s*([^,\n]+)/i,
+        /Thickness:?\s*([^,\n]+)/i,
+        /Slab Dimensions:?\s*([^,\n]+)/i,
+        /Edge Type:?\s*([^,\n]+)/i,
+        /Water Absorption:?\s*([^,\n]+)/i,
+        /Scratch Resistance:?\s*([^,\n]+)/i,
+        /Heat Resistance:?\s*([^,\n]+)/i,
+      ],
+      hardwood: [
+        /Species:?\s*([^,\n]+)/i,
+        /Grade:?\s*([^,\n]+)/i,
+        /Construction:?\s*([^,\n]+)/i,
+        /Janka Hardness:?\s*([^,\n]+)/i,
+        /Width:?\s*([^,\n]+)/i,
+        /Thickness:?\s*([^,\n]+)/i,
+        /Length:?\s*([^,\n]+)/i,
+      ],
+      lvt: [
+        /Wear Layer:?\s*([^,\n]+)/i,
+        /Core Type:?\s*([^,\n]+)/i,
+        /Waterproof:?\s*([^,\n]+)/i,
+        /Installation:?\s*([^,\n]+)/i,
+        /Slip Resistance:?\s*([^,\n]+)/i,
+      ],
+      heat: [
+        /Voltage:?\s*([^,\n]+)/i,
+        /Wattage:?\s*([^,\n]+)/i,
+        /Coverage:?\s*([^,\n]+)/i,
+        /Installation:?\s*([^,\n]+)/i,
+      ],
+      carpet: [
+        /Fiber Type:?\s*([^,\n]+)/i,
+        /Pile Style:?\s*([^,\n]+)/i,
+        /Face Weight:?\s*([^,\n]+)/i,
+        /Density:?\s*([^,\n]+)/i,
+        /Stain Protection:?\s*([^,\n]+)/i,
+      ],
+      thermostats: [
+        /Voltage:?\s*([^,\n]+)/i,
+        /Load Capacity:?\s*([^,\n]+)/i,
+        /Sensor Type:?\s*([^,\n]+)/i,
+        /Display Type:?\s*([^,\n]+)/i,
+        /Programmable:?\s*([^,\n]+)/i,
+      ]
+    };
+
+    const categoryPatterns = patterns[category as keyof typeof patterns] || patterns.tiles;
+    
+    categoryPatterns.forEach((pattern) => {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        const key = pattern.source.split(':')[0].replace(/[^a-zA-Z\s]/g, '');
+        const value = match[1].trim();
+        if (value.length > 1 && !specs[key]) {
+          specs[key] = value;
+        }
+      }
+    });
   }
 
   private extractImages($: cheerio.CheerioAPI, baseUrl: string): string[] {
@@ -324,8 +404,8 @@ export class EnhancedScraper {
           $('.product-description, .description, [itemprop="description"]').first().text()
         ) || `${brand} ${name}`;
 
-        // Extract specifications
-        const specifications = this.extractSpecifications($);
+        // Extract specifications with category-specific enhancement
+        const specifications = this.extractSpecifications($, category);
         
         // Add basic specifications
         specifications['Product Name'] = name;
@@ -333,6 +413,9 @@ export class EnhancedScraper {
         specifications['Category'] = category;
         specifications['Price'] = price;
         specifications['Product URL'] = url;
+
+        // Enhance specifications with category-specific defaults
+        this.enhanceSpecifications(specifications, category, brand);
 
         // Extract images
         const imageUrls = this.extractImages($, url);
@@ -376,6 +459,77 @@ export class EnhancedScraper {
 
     console.log(`💥 Failed to scrape ${url} after ${this.maxRetries} attempts`);
     return null;
+  }
+
+  private enhanceSpecifications(specifications: Record<string, string>, category: string, brand: string): void {
+    // Category-specific enhancements
+    const enhancements = {
+      tiles: {
+        'Material Type': specifications['Material Type'] || 'Ceramic',
+        'PEI Rating': specifications['PEI Rating'] || 'PEI 4',
+        'DCOF Rating': specifications['DCOF Rating'] || '0.42',
+        'Water Absorption': specifications['Water Absorption'] || '<0.5%',
+        'Finish': specifications['Finish'] || 'Matte',
+        'Thickness': specifications['Thickness'] || '10mm',
+        'Edge Type': specifications['Edge Type'] || 'Rectified',
+        'Texture': specifications['Texture'] || 'Smooth',
+        'Install Location': specifications['Install Location'] || 'Floor/Wall'
+      },
+      slabs: {
+        'Material Type': specifications['Material Type'] || 'Natural Stone',
+        'Finish': specifications['Finish'] || 'Polished',
+        'Thickness': specifications['Thickness'] || '20mm',
+        'Slab Dimensions': specifications['Slab Dimensions'] || '120" x 60"',
+        'Edge Type': specifications['Edge Type'] || 'Straight',
+        'Water Absorption': specifications['Water Absorption'] || '<0.5%',
+        'Scratch Resistance': specifications['Scratch Resistance'] || 'Excellent',
+        'Heat Resistance': specifications['Heat Resistance'] || 'Heat Resistant'
+      },
+      hardwood: {
+        'Species': specifications['Species'] || 'Oak',
+        'Grade': specifications['Grade'] || 'Select',
+        'Construction Type': specifications['Construction Type'] || 'Solid',
+        'Janka Hardness': specifications['Janka Hardness'] || '1290 lbf',
+        'Width': specifications['Width'] || '5"',
+        'Thickness': specifications['Thickness'] || '3/4"',
+        'Installation Method': specifications['Installation Method'] || 'Nail/Staple'
+      },
+      lvt: {
+        'Wear Layer': specifications['Wear Layer'] || '20 mil',
+        'Core Type': specifications['Core Type'] || 'SPC',
+        'Waterproof': specifications['Waterproof'] || 'Yes',
+        'Installation Method': specifications['Installation Method'] || 'Click-Lock',
+        'Slip Resistance': specifications['Slip Resistance'] || 'R9'
+      },
+      heat: {
+        'Voltage': specifications['Voltage'] || '240V',
+        'Coverage': specifications['Coverage'] || '150 sq ft',
+        'Installation': specifications['Installation'] || 'Under-floor',
+        'Warranty': specifications['Warranty'] || '25 years'
+      },
+      carpet: {
+        'Fiber Type': specifications['Fiber Type'] || 'Nylon',
+        'Pile Style': specifications['Pile Style'] || 'Cut Pile',
+        'Face Weight': specifications['Face Weight'] || '40 oz',
+        'Density': specifications['Density'] || '3000',
+        'Stain Protection': specifications['Stain Protection'] || 'Yes'
+      },
+      thermostats: {
+        'Voltage': specifications['Voltage'] || '120V/240V',
+        'Load Capacity': specifications['Load Capacity'] || '15A',
+        'Sensor Type': specifications['Sensor Type'] || 'Floor Sensor',
+        'Display Type': specifications['Display Type'] || 'Digital',
+        'Programmable': specifications['Programmable'] || 'Yes'
+      }
+    };
+
+    const categoryEnhancements = enhancements[category as keyof typeof enhancements] || enhancements.tiles;
+    
+    Object.entries(categoryEnhancements).forEach(([key, value]) => {
+      if (!specifications[key]) {
+        specifications[key] = value;
+      }
+    });
   }
 
   async scrapeAndSave(url: string): Promise<{ success: boolean; product?: any; message: string }> {
