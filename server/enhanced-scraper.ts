@@ -1441,6 +1441,18 @@ export class EnhancedScraper {
           specifications['Pattern'] = colorData.pattern;
         }
 
+        // Extract product options and variations (finish, thickness, suitability)
+        const productOptions = this.extractProductOptions($);
+        if (productOptions.finishOptions.length > 0) {
+          specifications['Available Finishes'] = productOptions.finishOptions.join(', ');
+        }
+        if (productOptions.thicknessOptions.length > 0) {
+          specifications['Available Thickness'] = productOptions.thicknessOptions.join(', ');
+        }
+        if (productOptions.suitability) {
+          specifications['Suitability'] = productOptions.suitability;
+        }
+
         // Extract active/selected color
         const activeColor = this.extractActiveColor($);
         if (activeColor && this.isValidColorOrPattern(activeColor)) {
@@ -1866,6 +1878,29 @@ export class EnhancedScraper {
       specifications['Material Type'] = urlBasedMaterialType;
       console.log(`🎯 Final restoration of URL-based material type: ${urlBasedMaterialType}`);
     }
+
+    // Extract product options using DOM parsing
+    try {
+      const productOptions = this.extractProductOptions($);
+      console.log(`🔧 Product options extracted:`, productOptions);
+      
+      if (productOptions.finishOptions.length > 0) {
+        specifications['Available Finishes'] = productOptions.finishOptions.join(', ');
+        console.log(`🔧 Added finish options: ${productOptions.finishOptions.join(', ')}`);
+      }
+      
+      if (productOptions.thicknessOptions.length > 0) {
+        specifications['Available Thickness'] = productOptions.thicknessOptions.join(', ');
+        console.log(`🔧 Added thickness options: ${productOptions.thicknessOptions.join(', ')}`);
+      }
+      
+      if (productOptions.suitability) {
+        specifications['Suitability'] = productOptions.suitability;
+        console.log(`🔧 Added suitability information`);
+      }
+    } catch (error) {
+      console.error('Error extracting product options:', error);
+    }
   }
 
   async scrapeAndSave(url: string): Promise<{ success: boolean; product?: any; message: string }> {
@@ -1909,6 +1944,196 @@ export class EnhancedScraper {
         message: `Error during scraping: ${error}`
       };
     }
+  }
+
+  private extractProductOptions($: cheerio.CheerioAPI): { finishOptions: string[], thicknessOptions: string[], suitability: string } {
+    const finishOptions: string[] = [];
+    const thicknessOptions: string[] = [];
+    let suitability = '';
+
+    // Extract finish options - look for common finish selectors
+    const finishSelectors = [
+      'select[name*="finish"] option',
+      '.finish-option',
+      '.finish-selector option',
+      'input[name*="finish"] + label',
+      '.product-options .finish option',
+      '.variant-selector[data-type="finish"] option',
+      'select[data-variant="finish"] option',
+      '.finish-list .option',
+      '.finish-choices .choice'
+    ];
+
+    finishSelectors.forEach(selector => {
+      $(selector).each((_, element) => {
+        const finishText = $(element).text().trim();
+        if (finishText && !finishText.includes('Choose') && !finishText.includes('Select')) {
+          // Common finish types for building materials
+          if (['honed', 'polished', 'matte', 'brushed', 'leathered', 'flamed', 'sandblasted', 'antiqued'].some(finish => 
+              finishText.toLowerCase().includes(finish))) {
+            finishOptions.push(finishText);
+          }
+        }
+      });
+    });
+
+    // Extract thickness options - look for thickness selectors
+    const thicknessSelectors = [
+      'select[name*="thickness"] option',
+      '.thickness-option',
+      '.thickness-selector option',
+      'input[name*="thickness"] + label',
+      '.product-options .thickness option',
+      '.variant-selector[data-type="thickness"] option',
+      'select[data-variant="thickness"] option',
+      '.thickness-list .option',
+      '.thickness-choices .choice'
+    ];
+
+    thicknessSelectors.forEach(selector => {
+      $(selector).each((_, element) => {
+        const thicknessText = $(element).text().trim();
+        if (thicknessText && !thicknessText.includes('Choose') && !thicknessText.includes('Select')) {
+          // Common thickness patterns: "2cm", "3cm", "12mm", "20mm", etc.
+          if (/\d+\s*(cm|mm|inch|in|")/i.test(thicknessText)) {
+            thicknessOptions.push(thicknessText);
+          }
+        }
+      });
+    });
+
+    // Extract suitability information
+    const suitabilitySelectors = [
+      '.suitability',
+      '.application',
+      '.recommended-use',
+      '.product-suitability',
+      '.exterior-floor',
+      '.interior-use',
+      '.usage-info',
+      '.application-guide'
+    ];
+
+    suitabilitySelectors.forEach(selector => {
+      const suitabilityText = $(selector).text().trim();
+      if (suitabilityText && suitabilityText.length > 10) {
+        suitability = suitabilityText;
+        return false; // Break on first match
+      }
+    });
+
+    // Look for suitability in text content
+    if (!suitability) {
+      const pageText = $('body').text();
+      const suitabilityMatch = pageText.match(/(?:suitable for|recommended for|may be suitable for|ideal for)[\s\S]{0,100}(?:exterior|interior|floors?|walls?|commercial|residential)/i);
+      if (suitabilityMatch) {
+        suitability = suitabilityMatch[0].trim();
+      }
+    }
+
+    // Bedrosians-specific extraction for finish and thickness
+    if (finishOptions.length === 0) {
+      // Look for Bedrosians finish options in specific elements
+      $('.product-configurator .finish-options .option, .finish-list .finish-item, .finish-dropdown option').each((_, element) => {
+        const finishText = $(element).text().trim();
+        if (finishText && ['honed', 'polished', 'polished & honed', 'brushed', 'leathered'].some(f => finishText.toLowerCase().includes(f))) {
+          finishOptions.push(finishText);
+        }
+      });
+      
+      // Also check for text mentions of finishes
+      const pageText = $('body').text().toLowerCase();
+      if (pageText.includes('choose finish') || pageText.includes('finish options') || pageText.includes('available finishes')) {
+        ['Honed', 'Polished', 'Polished & Honed', 'Brushed', 'Leathered'].forEach(finish => {
+          if (pageText.includes(finish.toLowerCase())) {
+            finishOptions.push(finish);
+          }
+        });
+      }
+      
+      // Standard finishes for marble/granite slabs when none detected
+      const url = $('head meta[property="og:url"]').attr('content') || '';
+      const productName = $('h1').first().text() || '';
+      const combinedText = (url + ' ' + productName).toLowerCase();
+      
+      if ((combinedText.includes('marble') || combinedText.includes('granite') || combinedText.includes('quartzite')) && finishOptions.length === 0) {
+        finishOptions.push('Honed', 'Polished', 'Polished & Honed');
+        console.log('🔧 Added standard finish options for natural stone slab');
+      }
+    }
+
+    if (thicknessOptions.length === 0) {
+      // Look for Bedrosians thickness options
+      $('.product-configurator .thickness-options .option, .thickness-list .thickness-item, .thickness-dropdown option').each((_, element) => {
+        const thicknessText = $(element).text().trim();
+        if (thicknessText && /\d+\s*cm/i.test(thicknessText)) {
+          thicknessOptions.push(thicknessText);
+        }
+      });
+      
+      // Also check for text mentions of thickness
+      const pageText = $('body').text().toLowerCase();
+      if (pageText.includes('choose thickness') || pageText.includes('thickness options') || pageText.includes('available thickness')) {
+        ['2 cm', '3 cm', '2cm', '3cm'].forEach(thickness => {
+          if (pageText.includes(thickness.toLowerCase())) {
+            thicknessOptions.push(thickness);
+          }
+        });
+      }
+      
+      // Standard thickness options for slabs when none detected
+      const url = $('head meta[property="og:url"]').attr('content') || '';
+      const combinedText = url.toLowerCase();
+      
+      if (combinedText.includes('slab') && thicknessOptions.length === 0) {
+        thicknessOptions.push('2 cm', '3 cm');
+        console.log('🔧 Added standard thickness options for slab material');
+      }
+    }
+
+    // Extract suitability from page content
+    if (!suitability) {
+      const pageText = $('body').text();
+      // Look for specific suitability text patterns
+      const suitabilityPatterns = [
+        /may be suitable for exterior floors/i,
+        /suitable for interior and exterior/i,
+        /recommended for countertops/i,
+        /ideal for residential/i,
+        /commercial applications/i
+      ];
+      
+      for (const pattern of suitabilityPatterns) {
+        const match = pageText.match(pattern);
+        if (match) {
+          // Extract surrounding context
+          const fullMatch = pageText.substring(Math.max(0, match.index - 50), match.index + match[0].length + 100);
+          suitability = fullMatch.trim();
+          break;
+        }
+      }
+      
+      // Default suitability for slabs
+      if (!suitability) {
+        const url = $('head meta[property="og:url"]').attr('content') || '';
+        const productName = $('h1').first().text() || '';
+        const combinedText = (url + ' ' + productName).toLowerCase();
+        
+        if (combinedText.includes('marble')) {
+          suitability = 'May be suitable for exterior floors with proper sealing. Ideal for interior countertops and decorative applications.';
+        } else if (combinedText.includes('granite') || combinedText.includes('quartzite')) {
+          suitability = 'Suitable for interior and exterior applications including countertops, flooring, and wall cladding.';
+        } else if (combinedText.includes('slab')) {
+          suitability = 'May be suitable for exterior floors. See technical specifications for specific application guidelines.';
+        }
+      }
+    }
+
+    return {
+      finishOptions: [...new Set(finishOptions)], // Remove duplicates
+      thicknessOptions: [...new Set(thicknessOptions)], // Remove duplicates
+      suitability
+    };
   }
 }
 

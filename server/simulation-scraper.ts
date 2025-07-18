@@ -579,6 +579,71 @@ export class SimulationScraper {
     return 'tiles';
   }
 
+  private generateProductOptions(name: string, url: string, category: string): { finishOptions: string[], thicknessOptions: string[], suitability: string } {
+    const finishOptions: string[] = [];
+    const thicknessOptions: string[] = [];
+    let suitability = '';
+
+    // Extract finish options from URL and product name
+    const nameAndUrl = (name + ' ' + url).toLowerCase();
+    
+    // Common finish types for stone/slab materials
+    if (category === 'slabs' || category === 'tiles') {
+      ['honed', 'polished', 'brushed', 'leathered', 'flamed', 'sandblasted'].forEach(finish => {
+        if (nameAndUrl.includes(finish)) {
+          finishOptions.push(finish.charAt(0).toUpperCase() + finish.slice(1));
+        }
+      });
+      
+      // Add standard finishes for marble and granite
+      if (nameAndUrl.includes('marble') || nameAndUrl.includes('granite') || nameAndUrl.includes('quartzite')) {
+        if (finishOptions.length === 0) {
+          finishOptions.push('Honed', 'Polished', 'Polished & Honed');
+        }
+      }
+    }
+
+    // Extract thickness options from URL and product name  
+    if (category === 'slabs') {
+      // Look for thickness mentions in URL or name
+      const thicknessMatch = nameAndUrl.match(/(\d+)\s*(cm|mm)/g);
+      if (thicknessMatch) {
+        thicknessMatch.forEach(match => {
+          const normalized = match.replace(/\s+/g, ' ').trim();
+          if (!thicknessOptions.includes(normalized)) {
+            thicknessOptions.push(normalized);
+          }
+        });
+      }
+      
+      // Add standard thickness options for slabs
+      if (thicknessOptions.length === 0) {
+        thicknessOptions.push('2 cm', '3 cm');
+      }
+    }
+
+    // Generate suitability based on material type and category
+    if (category === 'slabs') {
+      if (nameAndUrl.includes('granite') || nameAndUrl.includes('quartzite')) {
+        suitability = 'Suitable for interior and exterior applications, countertops, flooring, and wall cladding';
+      } else if (nameAndUrl.includes('marble')) {
+        suitability = 'Recommended for interior applications, countertops, and decorative features. May be suitable for exterior floors with proper sealing';
+      } else if (nameAndUrl.includes('quartz')) {
+        suitability = 'Ideal for interior countertops, vanities, and commercial surfaces. Not recommended for exterior use';
+      } else {
+        suitability = 'May be suitable for exterior floors. See technical specifications for specific applications';
+      }
+    } else if (category === 'tiles') {
+      suitability = 'Suitable for residential and light commercial floors and walls. Check PEI rating for specific traffic requirements';
+    }
+
+    return {
+      finishOptions,
+      thicknessOptions,
+      suitability
+    };
+  }
+
   private generateCleanTechnicalSpecs(category: string, materialType: string, productName: string): Record<string, string> {
     const specs: Record<string, string> = {};
     
@@ -855,6 +920,32 @@ export class SimulationScraper {
         // Add clean technical specifications for professional quality (these override any remaining incomplete values)
         const cleanTechnicalSpecs = this.generateCleanTechnicalSpecs(category, enhancedSpecs['Material Type'] || 'Unknown', name);
         Object.assign(enhancedSpecs, cleanTechnicalSpecs);
+
+        // Add product options based on URL and product name analysis
+        console.log(`🔧 Generating product options for: ${name}, URL: ${url}, Category: ${category}`);
+        const productOptions = this.generateProductOptions(name, url, category);
+        console.log(`🔧 Generated options:`, productOptions);
+        
+        if (productOptions.finishOptions.length > 0) {
+          enhancedSpecs['Available Finishes'] = productOptions.finishOptions.join(', ');
+          console.log(`🔧 Added finish options: ${productOptions.finishOptions.join(', ')}`);
+        } else {
+          console.log(`🔧 No finish options generated`);
+        }
+        
+        if (productOptions.thicknessOptions.length > 0) {
+          enhancedSpecs['Available Thickness'] = productOptions.thicknessOptions.join(', ');
+          console.log(`🔧 Added thickness options: ${productOptions.thicknessOptions.join(', ')}`);
+        } else {
+          console.log(`🔧 No thickness options generated`);
+        }
+        
+        if (productOptions.suitability) {
+          enhancedSpecs['Suitability'] = productOptions.suitability;
+          console.log(`🔧 Added suitability: ${productOptions.suitability.substring(0, 50)}...`);
+        } else {
+          console.log(`🔧 No suitability generated`);
+        }
         
         // FEATURE ENABLEMENT: COMPARISON VIEW
         // The specifications object is now clean, structured, and normalized.
