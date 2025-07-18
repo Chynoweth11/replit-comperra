@@ -1519,10 +1519,16 @@ export class EnhancedScraper {
         // Extract product options and variations (finish, thickness, suitability)
         const productOptions = this.extractProductOptions($);
         if (productOptions.finishOptions.length > 0) {
+          // Map to BOTH standard and available fields for maximum compatibility
+          specifications['Finish'] = productOptions.finishOptions[0]; // First option as default
           specifications['Available Finishes'] = productOptions.finishOptions.join(', ');
+          console.log(`🔧 Mapped finish options to standard Finish field: "${productOptions.finishOptions[0]}"`);
         }
         if (productOptions.thicknessOptions.length > 0) {
+          // Map to BOTH standard and available fields for maximum compatibility
+          specifications['Thickness'] = productOptions.thicknessOptions[0]; // First option as default
           specifications['Available Thickness'] = productOptions.thicknessOptions.join(', ');
+          console.log(`🔧 Mapped thickness options to standard Thickness field: "${productOptions.thicknessOptions[0]}"`);
         }
         if (productOptions.suitability) {
           specifications['Suitability'] = productOptions.suitability;
@@ -1602,9 +1608,16 @@ export class EnhancedScraper {
         Object.keys(specifications).forEach(key => delete specifications[key]);
         Object.assign(specifications, cleanedSpecifications);
 
-        // REMOVE ALL INCOMPLETE VALUES before applying clean technical specifications
-        const incompleteKeys = Object.keys(cleanedSpecifications).filter(key => {
-          const value = cleanedSpecifications[key];
+        // REMOVE ALL INCOMPLETE VALUES before applying clean technical specifications (PRESERVE VALID VALUES)
+        const incompleteKeys = Object.keys(specifications).filter(key => {
+          const value = specifications[key];
+          
+          // CRITICAL: Don't remove valid Finish and Thickness values that were properly extracted from options
+          if (key === 'Finish' || key === 'Thickness' || key === 'Available Finishes' || key === 'Available Thickness') {
+            console.log(`🛡️  Protecting valid configuration field: ${key} = "${value}"`);
+            return false; // Don't remove these fields
+          }
+          
           return value && (
             value.trim() === 'MOHS' ||
             value.trim() === 'C1026' ||
@@ -1613,14 +1626,14 @@ export class EnhancedScraper {
             value.trim() === 'C1027' ||
             value.trim() === 'C648' ||
             value.includes('ing Pieces') ||
-            value.length < 4 ||
+            (value.length < 4 && !key.includes('Finish') && !key.includes('Thickness') && !key.includes('Color')) ||
             /^[A-Z]\d+$/.test(value.trim()) || // Pattern like C650, C1026
-            value.trim().endsWith('"') && value.trim().length < 6
+            (value.trim().endsWith('"') && value.trim().length < 6)
           );
         });
         
         incompleteKeys.forEach(key => {
-          console.log(`🧹 Removing incomplete specification: ${key}: ${cleanedSpecifications[key]}`);
+          console.log(`🧹 Removing incomplete specification: ${key}: ${specifications[key]}`);
           delete specifications[key];
         });
 
