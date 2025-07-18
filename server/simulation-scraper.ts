@@ -907,6 +907,26 @@ export class SimulationScraper {
           console.log(`🌈 Generated colors from URL: ${enhancedSpecs['Available Colors']}`);
         }
       }
+
+      // Enhanced color/pattern analysis from URL and product name
+      const urlBasedColor = this.extractColorFromNameAndURL(productName, url);
+      if (urlBasedColor && urlBasedColor !== 'Natural stone coloring') {
+        enhancedSpecs['Color / Pattern'] = urlBasedColor;
+        console.log(`🎨 Enhanced color analysis: ${urlBasedColor}`);
+      } else if (!enhancedSpecs['Color / Pattern'] || enhancedSpecs['Color / Pattern'] === 'Natural') {
+        enhancedSpecs['Color / Pattern'] = urlBasedColor || 'Natural stone coloring';
+        console.log(`🎨 Applied default color: ${enhancedSpecs['Color / Pattern']}`);
+      }
+
+      // Enhanced dimension handling with specific standard sizes
+      if (category === 'slabs' && enhancedSpecs['Slab Dimensions']) {
+        const materialType = enhancedSpecs['Material Type'];
+        const standardSize = this.getStandardSlabSize(materialType);
+        if (standardSize) {
+          enhancedSpecs['Dimensions'] = `Standard size of the slab material, could vary (Standard: ${standardSize})`;
+          console.log(`📏 Enhanced dimensions: ${enhancedSpecs['Dimensions']}`);
+        }
+      }
       
       // Generate realistic dimensions based on category
       const dimensions = this.generateCategoryDimensions(category);
@@ -953,6 +973,40 @@ export class SimulationScraper {
     }
 
     return foundColors.slice(0, 5); // Limit to 5 colors
+  }
+
+  private extractColorFromNameAndURL(name: string, url: string): string {
+    const text = (name + ' ' + url).toLowerCase();
+    
+    // Common color patterns with their natural descriptions
+    const colorPatterns = [
+      { pattern: /white|bianco|blanco/i, color: 'White' },
+      { pattern: /black|nero|negro/i, color: 'Black' },
+      { pattern: /gray|grey|grigio/i, color: 'Gray' },
+      { pattern: /brown|marrone/i, color: 'Brown' },
+      { pattern: /beige|cream|crema/i, color: 'Beige' },
+      { pattern: /gold|oro|dorado/i, color: 'Gold' },
+      { pattern: /silver|argento/i, color: 'Silver' },
+      { pattern: /blue|blu|azul/i, color: 'Blue' },
+      { pattern: /green|verde/i, color: 'Green' },
+      { pattern: /red|rosso|rojo/i, color: 'Red' },
+      { pattern: /arabescato/i, color: 'White with gray veining' },
+      { pattern: /calacatta/i, color: 'White with dramatic veining' },
+      { pattern: /carrara/i, color: 'White with subtle gray veining' },
+      { pattern: /statuario/i, color: 'Pure white with bold veining' },
+      { pattern: /emperador/i, color: 'Brown with cream veining' },
+      { pattern: /travertine/i, color: 'Beige with natural patterns' },
+      { pattern: /absolute|nero/i, color: 'Deep black' },
+      { pattern: /pearl/i, color: 'Black with silver speckles' }
+    ];
+
+    for (const { pattern, color } of colorPatterns) {
+      if (pattern.test(text)) {
+        return color;
+      }
+    }
+
+    return 'Natural stone coloring';
   }
 
   // Generate category-specific dimensions with enhanced logic

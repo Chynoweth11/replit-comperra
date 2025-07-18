@@ -376,6 +376,40 @@ export class EnhancedScraper {
     return [...new Set(images)]; // Remove duplicates
   }
 
+  private extractColorFromNameAndURL(name: string, url: string): string {
+    const text = (name + ' ' + url).toLowerCase();
+    
+    // Common color patterns with their natural descriptions
+    const colorPatterns = [
+      { pattern: /white|bianco|blanco/i, color: 'White' },
+      { pattern: /black|nero|negro/i, color: 'Black' },
+      { pattern: /gray|grey|grigio/i, color: 'Gray' },
+      { pattern: /brown|marrone/i, color: 'Brown' },
+      { pattern: /beige|cream|crema/i, color: 'Beige' },
+      { pattern: /gold|oro|dorado/i, color: 'Gold' },
+      { pattern: /silver|argento/i, color: 'Silver' },
+      { pattern: /blue|blu|azul/i, color: 'Blue' },
+      { pattern: /green|verde/i, color: 'Green' },
+      { pattern: /red|rosso|rojo/i, color: 'Red' },
+      { pattern: /arabescato/i, color: 'White with gray veining' },
+      { pattern: /calacatta/i, color: 'White with dramatic veining' },
+      { pattern: /carrara/i, color: 'White with subtle gray veining' },
+      { pattern: /statuario/i, color: 'Pure white with bold veining' },
+      { pattern: /emperador/i, color: 'Brown with cream veining' },
+      { pattern: /travertine/i, color: 'Beige with natural patterns' },
+      { pattern: /absolute|nero/i, color: 'Deep black' },
+      { pattern: /pearl/i, color: 'Black with silver speckles' }
+    ];
+
+    for (const { pattern, color } of colorPatterns) {
+      if (pattern.test(text)) {
+        return color;
+      }
+    }
+
+    return 'Natural stone coloring';
+  }
+
   private normalizeThickness(thickness: string): string {
     if (!thickness) return '';
     
@@ -895,9 +929,17 @@ export class EnhancedScraper {
         // Enhance specifications with category-specific defaults
         this.enhanceSpecifications(specifications, category, brand);
 
-        // Extract images
-        const imageUrls = this.extractImages($, url);
-        const imageUrl = imageUrls.length > 0 ? imageUrls[0] : '';
+        // Enhanced image extraction (do this first)
+        const productImages = this.extractProductImages($, url, 5);
+        let extractedImageUrls = productImages.length > 0 ? productImages : [];
+        
+        // Fallback to original image extraction if enhanced didn't work
+        if (extractedImageUrls.length === 0) {
+          const fallbackImages = this.extractImages($, url);
+          extractedImageUrls = fallbackImages;
+        }
+        
+        const imageUrl = extractedImageUrls.length > 0 ? extractedImageUrls[0] : '';
         specifications['Image URL'] = imageUrl;
 
         // Extract dimensions with enhanced fallback logic
@@ -907,9 +949,17 @@ export class EnhancedScraper {
         // Apply dimension fallback for slabs
         this.applyDimensionFallback(specifications);
         
-        // Use enhanced dimension extraction
+        // Use enhanced dimension extraction with actual standard sizes
         if (!dimensions && category === 'slabs') {
-          dimensions = specifications['Slab Dimensions'] || 'Standard size of the slab material, could vary';
+          const materialType = specifications['Material Type'];
+          const standardSize = this.getStandardSlabSize(materialType);
+          if (standardSize) {
+            dimensions = `Standard size of the slab material, could vary (Standard: ${standardSize})`;
+            specifications['Slab Dimensions'] = standardSize;
+          } else {
+            dimensions = 'Standard size of the slab material, could vary (Standard: 120" x 77")';
+            specifications['Slab Dimensions'] = '120" x 77"';
+          }
         } else if (!dimensions) {
           dimensions = '12" x 12"'; // Default for other categories
         }
@@ -926,9 +976,11 @@ export class EnhancedScraper {
           specifications['Selected Color'] = activeColor;
         }
 
-        // Enhanced image extraction
-        const productImages = this.extractProductImages($, url, 5);
-        imageUrls = productImages.length > 0 ? productImages : [imageUrl];
+        // Enhanced color/pattern analysis from URL and product name
+        const urlBasedColors = this.extractColorFromNameAndURL(name, url);
+        if (urlBasedColors) {
+          specifications['Color / Pattern'] = urlBasedColors;
+        }
 
         // Analyze visual characteristics from text
         const visuals = this.analyzeVisualsFromText($, name);
@@ -956,7 +1008,7 @@ export class EnhancedScraper {
           specifications,
           sourceUrl: url,
           dataSheetUrl,
-          imageUrls
+          imageUrls: extractedImageUrls
         };
 
       } catch (error) {
