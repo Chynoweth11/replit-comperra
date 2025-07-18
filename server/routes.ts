@@ -19,6 +19,7 @@ import { storage } from './storage.js';
 const firebaseStorage = new FirebaseStorage();
 import { productScraper } from "./scraper.js";
 import { simulationScraper } from "./simulation-scraper.js";
+import { enhancedScraper } from "./enhanced-scraper.js";
 // Import database connection and schema
 import { db } from './db.js';
 import { leads } from '../shared/schema.js';
@@ -323,7 +324,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Processing scraping request for: ${url}`);
       
-      // Use the advanced simulation scraper with full capabilities
+      // Try enhanced scraper first, then fallback to simulation scraper
+      try {
+        console.log('🔍 Attempting enhanced scraper...');
+        const enhancedResult = await enhancedScraper.scrapeAndSave(url);
+        
+        if (enhancedResult.success) {
+          console.log('✅ Enhanced scraper successful!');
+          return res.json({
+            success: true,
+            message: "Product scraped and saved successfully with enhanced specifications",
+            product: enhancedResult.product
+          });
+        }
+        
+        console.log('⚠️  Enhanced scraper failed, falling back to simulation scraper...');
+      } catch (enhancedError) {
+        console.log('❌ Enhanced scraper error:', enhancedError);
+        console.log('🔄 Falling back to simulation scraper...');
+      }
+      
+      // Fallback to simulation scraper
       try {
         const scrapedProducts = await simulationScraper.scrapeRealProductFromURL(url);
         
