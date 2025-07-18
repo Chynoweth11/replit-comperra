@@ -13,43 +13,48 @@ const USER_AGENTS = [
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/109.0',
 ];
 
-// Enhanced category fields with comprehensive specifications
+// Enhanced category fields with comprehensive specifications including Applications, Color, and Dimensions
 const ENHANCED_CATEGORY_FIELDS = {
   tiles: [
     'Product Name', 'Brand / Manufacturer', 'Category', 'Material Type', 'PEI Rating',
     'DCOF Rating', 'Water Absorption', 'Finish', 'Color', 'Thickness', 'Edge Type',
-    'Texture', 'Install Location', 'Dimensions', 'Price per SF', 'Product URL', 'Image URL'
+    'Texture', 'Install Location', 'Dimensions', 'Applications', 'Available Colors',
+    'Available Sizes', 'Price per SF', 'Product URL', 'Image URL'
   ],
   slabs: [
     'Product Name', 'Brand / Manufacturer', 'Category', 'Material Type', 'Color / Pattern',
     'Finish', 'Thickness', 'Slab Dimensions', 'Edge Type', 'Applications', 'Water Absorption',
-    'Scratch / Etch Resistance', 'Heat Resistance', 'Country of Origin', 'Price per SF',
-    'Product URL', 'Image URL'
+    'Scratch / Etch Resistance', 'Heat Resistance', 'Country of Origin', 'Available Colors',
+    'Available Sizes', 'Price per SF', 'Product URL', 'Image URL'
   ],
   lvt: [
     'Product Name', 'Brand/Manufacturer', 'Category', 'Material Type', 'Wear Layer',
     'Core Type', 'Thickness', 'Width', 'Length', 'Waterproof', 'Installation Method',
-    'Texture/Surface', 'Finish', 'Slip Resistance', 'Warranty', 'Product URL', 'Image URL'
+    'Texture/Surface', 'Finish', 'Slip Resistance', 'Color', 'Dimensions', 'Available Colors',
+    'Available Sizes', 'Applications', 'Warranty', 'Product URL', 'Image URL'
   ],
   hardwood: [
     'Product Name', 'Brand/Manufacturer', 'Category', 'Species', 'Grade', 'Construction Type',
     'Finish', 'Width', 'Thickness', 'Length', 'Material Type', 'Janka Hardness',
-    'Installation Method', 'Warranty', 'Product URL', 'Image URL'
+    'Installation Method', 'Color', 'Dimensions', 'Available Colors', 'Available Sizes',
+    'Applications', 'Warranty', 'Product URL', 'Image URL'
   ],
   heat: [
     'Product Name', 'Brand/Manufacturer', 'Category', 'Type', 'Voltage', 'Coverage',
     'Features', 'Power', 'Applications', 'Warranty', 'Installation', 'Dimensions',
-    'Product URL', 'Image URL'
+    'Available Sizes', 'Product URL', 'Image URL'
   ],
   carpet: [
     'Product Name', 'Brand/Manufacturer', 'Category', 'Fiber Type', 'Pile Style',
     'Face Weight', 'Density', 'Backing', 'Stain Protection', 'Traffic Rating',
-    'Width', 'Product URL', 'Image URL'
+    'Width', 'Color', 'Dimensions', 'Available Colors', 'Available Sizes',
+    'Applications', 'Product URL', 'Image URL'
   ],
   thermostats: [
     'Product Name', 'Brand/Manufacturer', 'Category', 'Device Type', 'Voltage',
     'Load Capacity', 'Sensor Type', 'Display Type', 'Connectivity', 'Programmable',
-    'Installation Type', 'Warranty', 'Product URL', 'Image URL'
+    'Installation Type', 'Color', 'Dimensions', 'Applications', 'Warranty',
+    'Product URL', 'Image URL'
   ]
 };
 
@@ -88,14 +93,31 @@ export class EnhancedScraper {
   private sanitizePrice(priceText: string): string {
     if (!priceText) return 'Contact for pricing';
     
-    // Extract numeric price
-    const match = priceText.match(/\d+\.?\d*/);
-    if (match) {
-      return match[0];
+    // Clean up the text
+    const cleanText = priceText.toLowerCase().trim();
+    
+    // Check for contact indicators
+    if (cleanText.includes('contact') || cleanText.includes('call') || 
+        cleanText.includes('quote') || cleanText.includes('request') ||
+        cleanText.includes('login') || cleanText.includes('sign in') ||
+        cleanText.length === 0) {
+      return 'Contact for pricing';
     }
     
-    // Return original if no numeric match
-    return priceText.includes('Contact') ? 'Contact for pricing' : priceText;
+    // Extract numeric price with currency
+    const priceMatch = priceText.match(/\$?(\d+\.?\d*)/);
+    if (priceMatch) {
+      return priceMatch[1];
+    }
+    
+    // Extract price range
+    const rangeMatch = priceText.match(/\$?(\d+\.?\d*)\s*-\s*\$?(\d+\.?\d*)/);
+    if (rangeMatch) {
+      return `${rangeMatch[1]}-${rangeMatch[2]}`;
+    }
+    
+    // Return contact for pricing if no valid price found
+    return 'Contact for pricing';
   }
 
   private extractBrandFromURL(url: string): string {
@@ -291,7 +313,7 @@ export class EnhancedScraper {
   }
 
   private mineSpecificationsFromText(text: string, category: string, specs: Record<string, string>): void {
-    // Category-specific mining patterns
+    // Category-specific mining patterns including Applications, Color, and Dimensions
     const patterns = {
       tiles: [
         /PEI Rating:?\s*([^,\n]+)/i,
@@ -303,6 +325,11 @@ export class EnhancedScraper {
         /Edge Type:?\s*([^,\n]+)/i,
         /Texture:?\s*([^,\n]+)/i,
         /Install Location:?\s*([^,\n]+)/i,
+        /Applications?:?\s*([^,\n]+)/i,
+        /Color:?\s*([^,\n]+)/i,
+        /Colors?:?\s*([^,\n]+)/i,
+        /Dimensions?:?\s*([^,\n]+)/i,
+        /Size:?\s*([^,\n]+)/i,
       ],
       slabs: [
         /Material Type:?\s*([^,\n]+)/i,
@@ -313,6 +340,12 @@ export class EnhancedScraper {
         /Water Absorption:?\s*([^,\n]+)/i,
         /Scratch Resistance:?\s*([^,\n]+)/i,
         /Heat Resistance:?\s*([^,\n]+)/i,
+        /Applications?:?\s*([^,\n]+)/i,
+        /Color:?\s*([^,\n]+)/i,
+        /Colors?:?\s*([^,\n]+)/i,
+        /Dimensions?:?\s*([^,\n]+)/i,
+        /Available.*Colors?:?\s*([^,\n]+)/i,
+        /Available.*Sizes?:?\s*([^,\n]+)/i,
       ],
       hardwood: [
         /Species:?\s*([^,\n]+)/i,
@@ -322,6 +355,12 @@ export class EnhancedScraper {
         /Width:?\s*([^,\n]+)/i,
         /Thickness:?\s*([^,\n]+)/i,
         /Length:?\s*([^,\n]+)/i,
+        /Applications?:?\s*([^,\n]+)/i,
+        /Color:?\s*([^,\n]+)/i,
+        /Colors?:?\s*([^,\n]+)/i,
+        /Dimensions?:?\s*([^,\n]+)/i,
+        /Available.*Colors?:?\s*([^,\n]+)/i,
+        /Available.*Sizes?:?\s*([^,\n]+)/i,
       ],
       lvt: [
         /Wear Layer:?\s*([^,\n]+)/i,
@@ -329,12 +368,21 @@ export class EnhancedScraper {
         /Waterproof:?\s*([^,\n]+)/i,
         /Installation:?\s*([^,\n]+)/i,
         /Slip Resistance:?\s*([^,\n]+)/i,
+        /Applications?:?\s*([^,\n]+)/i,
+        /Color:?\s*([^,\n]+)/i,
+        /Colors?:?\s*([^,\n]+)/i,
+        /Dimensions?:?\s*([^,\n]+)/i,
+        /Available.*Colors?:?\s*([^,\n]+)/i,
+        /Available.*Sizes?:?\s*([^,\n]+)/i,
       ],
       heat: [
         /Voltage:?\s*([^,\n]+)/i,
         /Wattage:?\s*([^,\n]+)/i,
         /Coverage:?\s*([^,\n]+)/i,
         /Installation:?\s*([^,\n]+)/i,
+        /Applications?:?\s*([^,\n]+)/i,
+        /Dimensions?:?\s*([^,\n]+)/i,
+        /Available.*Sizes?:?\s*([^,\n]+)/i,
       ],
       carpet: [
         /Fiber Type:?\s*([^,\n]+)/i,
@@ -342,6 +390,12 @@ export class EnhancedScraper {
         /Face Weight:?\s*([^,\n]+)/i,
         /Density:?\s*([^,\n]+)/i,
         /Stain Protection:?\s*([^,\n]+)/i,
+        /Applications?:?\s*([^,\n]+)/i,
+        /Color:?\s*([^,\n]+)/i,
+        /Colors?:?\s*([^,\n]+)/i,
+        /Dimensions?:?\s*([^,\n]+)/i,
+        /Available.*Colors?:?\s*([^,\n]+)/i,
+        /Available.*Sizes?:?\s*([^,\n]+)/i,
       ],
       thermostats: [
         /Voltage:?\s*([^,\n]+)/i,
@@ -349,6 +403,9 @@ export class EnhancedScraper {
         /Sensor Type:?\s*([^,\n]+)/i,
         /Display Type:?\s*([^,\n]+)/i,
         /Programmable:?\s*([^,\n]+)/i,
+        /Applications?:?\s*([^,\n]+)/i,
+        /Color:?\s*([^,\n]+)/i,
+        /Dimensions?:?\s*([^,\n]+)/i,
       ]
     };
 
@@ -364,6 +421,47 @@ export class EnhancedScraper {
         }
       }
     });
+
+    // Extract multiple colors and sizes
+    this.extractMultipleOptions(text, specs);
+  }
+
+  private extractMultipleOptions(text: string, specs: Record<string, string>): void {
+    // Extract multiple colors
+    const colorPatterns = [
+      /Available\s+Colors?[:\s]*((?:[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:\s*,\s*)?)+)/i,
+      /Colors?[:\s]*((?:[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:\s*,\s*)?){2,})/i,
+      /Choose\s+from[:\s]*((?:[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:\s*,\s*)?)+)/i,
+    ];
+
+    for (const pattern of colorPatterns) {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        const colors = match[1].split(',').map(c => c.trim()).filter(c => c.length > 2);
+        if (colors.length > 1) {
+          specs['Available Colors'] = colors.join(', ');
+          break;
+        }
+      }
+    }
+
+    // Extract multiple sizes
+    const sizePatterns = [
+      /Available\s+Sizes?[:\s]*((?:\d+[\"'′]?\s*x\s*\d+[\"'′]?(?:\s*,\s*)?)+)/i,
+      /Sizes?[:\s]*((?:\d+[\"'′]?\s*x\s*\d+[\"'′]?(?:\s*,\s*)?){2,})/i,
+      /Dimensions?[:\s]*((?:\d+[\"'′]?\s*x\s*\d+[\"'′]?(?:\s*,\s*)?)+)/i,
+    ];
+
+    for (const pattern of sizePatterns) {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        const sizes = match[1].split(',').map(s => s.trim()).filter(s => s.length > 2);
+        if (sizes.length > 1) {
+          specs['Available Sizes'] = sizes.join(', ');
+          break;
+        }
+      }
+    }
   }
 
   private extractImages($: cheerio.CheerioAPI, baseUrl: string): string[] {
@@ -545,7 +643,7 @@ export class EnhancedScraper {
       }
     }
 
-    // Category-specific enhancements
+    // Category-specific enhancements including Applications, Color, and Dimensions
     const enhancements = {
       tiles: {
         'Material Type': cleanedSpecs['Material Type'] || 'Ceramic',
@@ -553,42 +651,70 @@ export class EnhancedScraper {
         'DCOF Rating': cleanedSpecs['DCOF Rating'] || '0.42',
         'Water Absorption': cleanedSpecs['Water Absorption'] || '<0.5%',
         'Finish': cleanedSpecs['Finish'] || 'Matte',
+        'Color': cleanedSpecs['Color'] || 'Natural',
         'Thickness': cleanedSpecs['Thickness'] || '10mm',
         'Edge Type': cleanedSpecs['Edge Type'] || 'Rectified',
         'Texture': cleanedSpecs['Texture'] || 'Smooth',
-        'Install Location': cleanedSpecs['Install Location'] || 'Floor/Wall'
+        'Install Location': cleanedSpecs['Install Location'] || 'Floor/Wall',
+        'Dimensions': cleanedSpecs['Dimensions'] || cleanedSpecs['Size'] || '12" x 12"',
+        'Applications': cleanedSpecs['Applications'] || 'Floor, Wall, Countertop',
+        'Available Colors': cleanedSpecs['Available Colors'] || 'Multiple colors available',
+        'Available Sizes': cleanedSpecs['Available Sizes'] || 'Multiple sizes available'
       },
       slabs: {
         'Material Type': cleanedSpecs['Material Type'] || 'Natural Stone',
+        'Color / Pattern': cleanedSpecs['Color / Pattern'] || cleanedSpecs['Color'] || 'Natural',
         'Finish': cleanedSpecs['Finish'] || 'Polished',
         'Thickness': cleanedSpecs['Thickness'] || '20mm',
-        'Slab Dimensions': cleanedSpecs['Slab Dimensions'] || '120" x 60"',
+        'Slab Dimensions': cleanedSpecs['Slab Dimensions'] || cleanedSpecs['Dimensions'] || '120" x 60"',
         'Edge Type': cleanedSpecs['Edge Type'] || 'Straight',
+        'Applications': cleanedSpecs['Applications'] || 'Countertops, Backsplashes, Flooring',
         'Water Absorption': cleanedSpecs['Water Absorption'] || '<0.5%',
-        'Scratch Resistance': cleanedSpecs['Scratch Resistance'] || 'Excellent',
+        'Scratch / Etch Resistance': cleanedSpecs['Scratch / Etch Resistance'] || cleanedSpecs['Scratch Resistance'] || 'Excellent',
         'Heat Resistance': cleanedSpecs['Heat Resistance'] || 'Heat Resistant',
-        'Country of Origin': cleanedSpecs['Country of Origin'] || 'Brazil'
+        'Country of Origin': cleanedSpecs['Country of Origin'] || 'Brazil',
+        'Available Colors': cleanedSpecs['Available Colors'] || 'Multiple colors available',
+        'Available Sizes': cleanedSpecs['Available Sizes'] || 'Standard slab sizes'
       },
       hardwood: {
         'Species': cleanedSpecs['Species'] || 'Oak',
         'Grade': cleanedSpecs['Grade'] || 'Select',
         'Construction Type': cleanedSpecs['Construction Type'] || 'Solid',
+        'Finish': cleanedSpecs['Finish'] || 'Urethane',
         'Janka Hardness': cleanedSpecs['Janka Hardness'] || '1290 lbf',
         'Width': cleanedSpecs['Width'] || '5"',
         'Thickness': cleanedSpecs['Thickness'] || '3/4"',
-        'Installation Method': cleanedSpecs['Installation Method'] || 'Nail/Staple'
+        'Length': cleanedSpecs['Length'] || 'Random',
+        'Installation Method': cleanedSpecs['Installation Method'] || 'Nail/Staple',
+        'Color': cleanedSpecs['Color'] || 'Natural',
+        'Dimensions': cleanedSpecs['Dimensions'] || cleanedSpecs['Width'] || '5" x 3/4"',
+        'Applications': cleanedSpecs['Applications'] || 'Residential, Commercial',
+        'Available Colors': cleanedSpecs['Available Colors'] || 'Multiple stain options',
+        'Available Sizes': cleanedSpecs['Available Sizes'] || 'Multiple widths available'
       },
       lvt: {
+        'Material Type': cleanedSpecs['Material Type'] || 'Luxury Vinyl Tile',
         'Wear Layer': cleanedSpecs['Wear Layer'] || '20 mil',
         'Core Type': cleanedSpecs['Core Type'] || 'SPC',
+        'Thickness': cleanedSpecs['Thickness'] || '6mm',
         'Waterproof': cleanedSpecs['Waterproof'] || 'Yes',
         'Installation Method': cleanedSpecs['Installation Method'] || 'Click-Lock',
-        'Slip Resistance': cleanedSpecs['Slip Resistance'] || 'R9'
+        'Slip Resistance': cleanedSpecs['Slip Resistance'] || 'R9',
+        'Color': cleanedSpecs['Color'] || 'Wood Look',
+        'Dimensions': cleanedSpecs['Dimensions'] || cleanedSpecs['Size'] || '6" x 48"',
+        'Applications': cleanedSpecs['Applications'] || 'Residential, Commercial',
+        'Available Colors': cleanedSpecs['Available Colors'] || 'Multiple wood looks',
+        'Available Sizes': cleanedSpecs['Available Sizes'] || 'Plank and tile sizes'
       },
       heat: {
+        'Type': cleanedSpecs['Type'] || 'Electric Mat',
         'Voltage': cleanedSpecs['Voltage'] || '240V',
-        'Coverage': cleanedSpecs['Coverage'] || '150 sq ft',
+        'Coverage': cleanedSpecs['Coverage'] || cleanedSpecs['Coverage Area'] || '150 sq ft',
+        'Power': cleanedSpecs['Power'] || cleanedSpecs['Wattage'] || '1800W',
         'Installation': cleanedSpecs['Installation'] || 'Under-floor',
+        'Applications': cleanedSpecs['Applications'] || 'Tile, Stone, Laminate',
+        'Dimensions': cleanedSpecs['Dimensions'] || cleanedSpecs['Coverage'] || '150 SF',
+        'Available Sizes': cleanedSpecs['Available Sizes'] || 'Multiple coverage areas',
         'Warranty': cleanedSpecs['Warranty'] || '25 years'
       },
       carpet: {
@@ -596,14 +722,25 @@ export class EnhancedScraper {
         'Pile Style': cleanedSpecs['Pile Style'] || 'Cut Pile',
         'Face Weight': cleanedSpecs['Face Weight'] || '40 oz',
         'Density': cleanedSpecs['Density'] || '3000',
-        'Stain Protection': cleanedSpecs['Stain Protection'] || 'Yes'
+        'Stain Protection': cleanedSpecs['Stain Protection'] || 'Yes',
+        'Color': cleanedSpecs['Color'] || 'Neutral',
+        'Dimensions': cleanedSpecs['Dimensions'] || cleanedSpecs['Width'] || '12 ft width',
+        'Applications': cleanedSpecs['Applications'] || 'Residential, Commercial',
+        'Available Colors': cleanedSpecs['Available Colors'] || 'Multiple colors available',
+        'Available Sizes': cleanedSpecs['Available Sizes'] || 'Broadloom, tiles available'
       },
       thermostats: {
+        'Device Type': cleanedSpecs['Device Type'] || 'Programmable',
         'Voltage': cleanedSpecs['Voltage'] || '120V/240V',
         'Load Capacity': cleanedSpecs['Load Capacity'] || '15A',
         'Sensor Type': cleanedSpecs['Sensor Type'] || 'Floor Sensor',
         'Display Type': cleanedSpecs['Display Type'] || 'Digital',
-        'Programmable': cleanedSpecs['Programmable'] || 'Yes'
+        'Programmable': cleanedSpecs['Programmable'] || 'Yes',
+        'Installation Type': cleanedSpecs['Installation Type'] || 'In-Wall',
+        'Color': cleanedSpecs['Color'] || 'White',
+        'Dimensions': cleanedSpecs['Dimensions'] || '4.5" x 3.5"',
+        'Applications': cleanedSpecs['Applications'] || 'Radiant Floor Heating',
+        'Warranty': cleanedSpecs['Warranty'] || '3 years'
       }
     };
 

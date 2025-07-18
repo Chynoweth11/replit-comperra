@@ -571,60 +571,88 @@ export class SimulationScraper {
         enhanced['Edge Type'] = enhanced['edgeType'] || enhanced['Edge Type'] || 'Rectified';
         enhanced['Texture'] = enhanced['texture'] || enhanced['Texture'] || 'Smooth';
         enhanced['Install Location'] = enhanced['installLocation'] || enhanced['Install Location'] || 'Floor/Wall';
+        enhanced['Dimensions'] = enhanced['dimensions'] || enhanced['Dimensions'] || '12" x 24"';
+        enhanced['Applications'] = enhanced['applications'] || enhanced['Applications'] || 'Floor, Wall, Countertop';
+        enhanced['Available Colors'] = enhanced['availableColors'] || enhanced['Available Colors'] || 'Multiple colors available';
+        enhanced['Available Sizes'] = enhanced['availableSizes'] || enhanced['Available Sizes'] || 'Multiple sizes available';
         break;
         
       case 'slabs':
-        enhanced['Material Type'] = enhanced['materialType'] || enhanced['Material Type'] || 'Porcelain Slab';
-        enhanced['Thickness'] = enhanced['thickness'] || enhanced['Thickness'] || '6mm';
+        enhanced['Material Type'] = enhanced['materialType'] || enhanced['Material Type'] || (url.toLowerCase().includes('granite') ? 'Natural Granite' : url.toLowerCase().includes('marble') ? 'Natural Marble' : url.toLowerCase().includes('quartz') ? 'Engineered Quartz' : 'Natural Stone');
+        enhanced['Thickness'] = enhanced['thickness'] || enhanced['Thickness'] || '20mm';
         enhanced['Slab Dimensions'] = enhanced['slabDimensions'] || enhanced['Slab Dimensions'] || '120" x 60"';
-        enhanced['Finish'] = enhanced['finish'] || enhanced['Finish'] || 'Polished';
-        enhanced['Color'] = enhanced['color'] || enhanced['Color'] || 'Natural';
+        enhanced['Finish'] = enhanced['finish'] || enhanced['Finish'] || (url.toLowerCase().includes('honed') ? 'Honed' : 'Polished');
+        enhanced['Color / Pattern'] = enhanced['color'] || enhanced['Color'] || (url.toLowerCase().includes('black') ? 'Black' : url.toLowerCase().includes('white') ? 'White' : 'Natural');
         enhanced['Edge Type'] = enhanced['edgeType'] || enhanced['Edge Type'] || 'Straight';
+        enhanced['Applications'] = enhanced['applications'] || enhanced['Applications'] || 'Countertops, Backsplashes, Flooring';
         enhanced['Water Absorption'] = enhanced['waterAbsorption'] || enhanced['Water Absorption'] || '<0.5%';
-        enhanced['Scratch Resistance'] = enhanced['scratchResistance'] || enhanced['Scratch Resistance'] || 'High';
-        enhanced['Heat Resistance'] = enhanced['heatResistance'] || enhanced['Heat Resistance'] || 'Excellent';
+        enhanced['Scratch / Etch Resistance'] = enhanced['scratchResistance'] || enhanced['Scratch Resistance'] || 'Excellent';
+        enhanced['Heat Resistance'] = enhanced['heatResistance'] || enhanced['Heat Resistance'] || 'Heat Resistant';
+        enhanced['Country of Origin'] = enhanced['countryOfOrigin'] || enhanced['Country of Origin'] || 'Brazil';
+        enhanced['Available Colors'] = enhanced['availableColors'] || enhanced['Available Colors'] || 'Multiple colors available';
+        enhanced['Available Sizes'] = enhanced['availableSizes'] || enhanced['Available Sizes'] || 'Standard slab sizes';
         break;
         
       case 'hardwood':
         enhanced['Species'] = enhanced['species'] || enhanced['Species'] || 'Oak';
-        enhanced['Finish'] = enhanced['finish'] || enhanced['Finish'] || 'Matte';
-        enhanced['Janka Hardness'] = enhanced['jankaHardness'] || enhanced['Janka Hardness'] || '1,360 lbf';
-        enhanced['Material Type'] = enhanced['materialType'] || enhanced['Material Type'] || 'Engineered Hardwood';
-        enhanced['Thickness'] = enhanced['thickness'] || enhanced['Thickness'] || '3/4"';
-        enhanced['Width'] = enhanced['width'] || enhanced['Width'] || '5"';
         enhanced['Grade'] = enhanced['grade'] || enhanced['Grade'] || 'Select';
-        enhanced['Construction'] = enhanced['construction'] || enhanced['Construction'] || 'Solid';
+        enhanced['Construction Type'] = enhanced['construction'] || enhanced['Construction Type'] || 'Solid';
+        enhanced['Finish'] = enhanced['finish'] || enhanced['Finish'] || 'Urethane';
+        enhanced['Janka Hardness'] = enhanced['jankaHardness'] || enhanced['Janka Hardness'] || '1290 lbf';
+        enhanced['Width'] = enhanced['width'] || enhanced['Width'] || '5"';
+        enhanced['Thickness'] = enhanced['thickness'] || enhanced['Thickness'] || '3/4"';
+        enhanced['Length'] = enhanced['length'] || enhanced['Length'] || 'Random';
+        enhanced['Installation Method'] = enhanced['installationMethod'] || enhanced['Installation Method'] || 'Nail/Staple';
+        enhanced['Color'] = enhanced['color'] || enhanced['Color'] || 'Natural';
+        enhanced['Dimensions'] = enhanced['dimensions'] || enhanced['Dimensions'] || '5" x 3/4"';
+        enhanced['Applications'] = enhanced['applications'] || enhanced['Applications'] || 'Residential, Commercial';
+        enhanced['Available Colors'] = enhanced['availableColors'] || enhanced['Available Colors'] || 'Multiple stain options';
+        enhanced['Available Sizes'] = enhanced['availableSizes'] || enhanced['Available Sizes'] || 'Multiple widths available';
         break;
         
       case 'carpet':
-        enhanced['Fiber'] = enhanced['fiber'] || enhanced['Fiber'] || 'Nylon';
-        enhanced['Pile Height'] = enhanced['pileHeight'] || enhanced['Pile Height'] || '0.25"';
-        enhanced['Stain Resistance'] = enhanced['stainResistance'] || enhanced['Stain Resistance'] || 'Yes';
-        enhanced['Material Type'] = enhanced['materialType'] || enhanced['Material Type'] || 'Carpet Tile';
-        enhanced['Pile Type'] = enhanced['pileType'] || enhanced['Pile Type'] || 'Cut Pile';
-        enhanced['Density'] = enhanced['density'] || enhanced['Density'] || 'High';
+        enhanced['Fiber Type'] = enhanced['fiber'] || enhanced['Fiber Type'] || 'Nylon';
+        enhanced['Pile Style'] = enhanced['pileType'] || enhanced['Pile Style'] || 'Cut Pile';
+        enhanced['Face Weight'] = enhanced['faceWeight'] || enhanced['Face Weight'] || '40 oz';
+        enhanced['Density'] = enhanced['density'] || enhanced['Density'] || '3000';
         enhanced['Backing'] = enhanced['backing'] || enhanced['Backing'] || 'EcoFlex';
-        enhanced['Wear Rating'] = enhanced['wearRating'] || enhanced['Wear Rating'] || 'Heavy Commercial';
+        enhanced['Stain Protection'] = enhanced['stainResistance'] || enhanced['Stain Protection'] || 'Yes';
+        enhanced['Traffic Rating'] = enhanced['wearRating'] || enhanced['Traffic Rating'] || 'Heavy Commercial';
+        enhanced['Color'] = enhanced['color'] || enhanced['Color'] || 'Neutral';
+        enhanced['Dimensions'] = enhanced['dimensions'] || enhanced['Dimensions'] || '24" x 24"';
+        enhanced['Applications'] = enhanced['applications'] || enhanced['Applications'] || 'Residential, Commercial';
+        enhanced['Available Colors'] = enhanced['availableColors'] || enhanced['Available Colors'] || 'Multiple colors available';
+        enhanced['Available Sizes'] = enhanced['availableSizes'] || enhanced['Available Sizes'] || 'Broadloom, tiles available';
         break;
         
       case 'lvt':
+        enhanced['Material Type'] = enhanced['materialType'] || enhanced['Material Type'] || 'Luxury Vinyl Tile';
         enhanced['Wear Layer'] = enhanced['wearLayer'] || enhanced['Wear Layer'] || '12 mil';
+        enhanced['Core Type'] = enhanced['coreType'] || enhanced['Core Type'] || 'SPC';
         enhanced['Thickness'] = enhanced['thickness'] || enhanced['Thickness'] || '5mm';
         enhanced['Waterproof'] = enhanced['waterproof'] || enhanced['Waterproof'] || 'Yes';
-        enhanced['Material Type'] = enhanced['materialType'] || enhanced['Material Type'] || 'Luxury Vinyl Tile';
-        enhanced['Installation'] = enhanced['installation'] || enhanced['Installation'] || 'Glue Down';
-        enhanced['Texture'] = enhanced['texture'] || enhanced['Texture'] || 'Wood Grain';
+        enhanced['Installation Method'] = enhanced['installation'] || enhanced['Installation Method'] || 'Click-Lock';
+        enhanced['Texture/Surface'] = enhanced['texture'] || enhanced['Texture/Surface'] || 'Wood Grain';
+        enhanced['Slip Resistance'] = enhanced['slipResistance'] || enhanced['Slip Resistance'] || 'R9';
+        enhanced['Color'] = enhanced['color'] || enhanced['Color'] || 'Wood Look';
+        enhanced['Dimensions'] = enhanced['dimensions'] || enhanced['Dimensions'] || '6" x 48"';
+        enhanced['Applications'] = enhanced['applications'] || enhanced['Applications'] || 'Residential, Commercial';
+        enhanced['Available Colors'] = enhanced['availableColors'] || enhanced['Available Colors'] || 'Multiple wood looks';
+        enhanced['Available Sizes'] = enhanced['availableSizes'] || enhanced['Available Sizes'] || 'Plank and tile sizes';
         enhanced['Warranty'] = enhanced['warranty'] || enhanced['Warranty'] || '20 Years';
         break;
         
       case 'heat':
-        enhanced['Coverage Area'] = enhanced['coverageArea'] || enhanced['Coverage Area'] || '120 SF';
-        enhanced['Voltage'] = enhanced['voltage'] || enhanced['Voltage'] || '120V';
-        enhanced['Wattage'] = enhanced['wattage'] || enhanced['Wattage'] || '1440W';
-        enhanced['Wire Spacing'] = enhanced['wireSpacing'] || enhanced['Wire Spacing'] || '3"';
-        enhanced['Installation Type'] = enhanced['installationType'] || enhanced['Installation Type'] || 'Under Tile';
-        enhanced['Thermostat Compatible'] = enhanced['thermostatCompatible'] || enhanced['Thermostat Compatible'] || 'Yes';
-        enhanced['GFCI Protection'] = enhanced['gfciProtection'] || enhanced['GFCI Protection'] || 'Required';
+        enhanced['Type'] = enhanced['type'] || enhanced['Type'] || 'Electric Mat';
+        enhanced['Voltage'] = enhanced['voltage'] || enhanced['Voltage'] || '240V';
+        enhanced['Coverage'] = enhanced['coverageArea'] || enhanced['Coverage'] || '120 SF';
+        enhanced['Power'] = enhanced['wattage'] || enhanced['Power'] || '1440W';
+        enhanced['Features'] = enhanced['features'] || enhanced['Features'] || 'Self-adhesive, Easy Install';
+        enhanced['Applications'] = enhanced['applications'] || enhanced['Applications'] || 'Tile, Stone, Laminate';
+        enhanced['Installation'] = enhanced['installationType'] || enhanced['Installation'] || 'Under Tile';
+        enhanced['Dimensions'] = enhanced['dimensions'] || enhanced['Dimensions'] || '120 SF';
+        enhanced['Available Sizes'] = enhanced['availableSizes'] || enhanced['Available Sizes'] || 'Multiple coverage areas';
+        enhanced['Warranty'] = enhanced['warranty'] || enhanced['Warranty'] || '25 years';
         break;
         
       case 'thermostats':
@@ -632,9 +660,13 @@ export class SimulationScraper {
         enhanced['Voltage'] = enhanced['voltage'] || enhanced['Voltage'] || '120V/240V';
         enhanced['Load Capacity'] = enhanced['loadCapacity'] || enhanced['Load Capacity'] || '15A';
         enhanced['Sensor Type'] = enhanced['sensorType'] || enhanced['Sensor Type'] || 'Floor';
-        enhanced['Wi-Fi Enabled'] = enhanced['wifiEnabled'] || enhanced['Wi-Fi Enabled'] || 'Yes';
         enhanced['Display Type'] = enhanced['displayType'] || enhanced['Display Type'] || 'LCD';
+        enhanced['Connectivity'] = enhanced['wifiEnabled'] || enhanced['Connectivity'] || 'Wi-Fi';
+        enhanced['Programmable'] = enhanced['programmable'] || enhanced['Programmable'] || 'Yes';
         enhanced['Installation Type'] = enhanced['installationType'] || enhanced['Installation Type'] || 'In-Wall';
+        enhanced['Color'] = enhanced['color'] || enhanced['Color'] || 'White';
+        enhanced['Dimensions'] = enhanced['dimensions'] || enhanced['Dimensions'] || '4.5" x 3.5"';
+        enhanced['Applications'] = enhanced['applications'] || enhanced['Applications'] || 'Radiant Floor Heating';
         enhanced['Warranty'] = enhanced['warranty'] || enhanced['Warranty'] || '3 Years';
         break;
     }
@@ -755,6 +787,56 @@ export class SimulationScraper {
     if (urlLower.includes('tile')) return 'tiles';
     
     return 'tiles';
+  }
+
+  // Detect slab material type from URL
+  private detectSlabMaterialType(url: string): string {
+    const urlLower = url.toLowerCase();
+    
+    if (urlLower.includes('granite')) return 'Natural Granite';
+    if (urlLower.includes('marble')) return 'Natural Marble';
+    if (urlLower.includes('quartzite')) return 'Natural Quartzite';
+    if (urlLower.includes('quartz')) return 'Engineered Quartz';
+    if (urlLower.includes('porcelain')) return 'Porcelain Slab';
+    if (urlLower.includes('travertine')) return 'Natural Travertine';
+    if (urlLower.includes('limestone')) return 'Natural Limestone';
+    if (urlLower.includes('slate')) return 'Natural Slate';
+    
+    return 'Natural Stone';
+  }
+
+  // Detect finish from URL
+  private detectFinishFromUrl(url: string): string {
+    const urlLower = url.toLowerCase();
+    
+    if (urlLower.includes('honed')) return 'Honed';
+    if (urlLower.includes('polished')) return 'Polished';
+    if (urlLower.includes('leathered')) return 'Leathered';
+    if (urlLower.includes('flamed')) return 'Flamed';
+    if (urlLower.includes('brushed')) return 'Brushed';
+    if (urlLower.includes('sandblasted')) return 'Sandblasted';
+    
+    return 'Polished';
+  }
+
+  // Detect color from URL
+  private detectColorFromUrl(url: string): string {
+    const urlLower = url.toLowerCase();
+    
+    if (urlLower.includes('white')) return 'White';
+    if (urlLower.includes('black')) return 'Black';
+    if (urlLower.includes('grey') || urlLower.includes('gray')) return 'Gray';
+    if (urlLower.includes('blue')) return 'Blue';
+    if (urlLower.includes('green')) return 'Green';
+    if (urlLower.includes('brown')) return 'Brown';
+    if (urlLower.includes('beige')) return 'Beige';
+    if (urlLower.includes('cream')) return 'Cream';
+    if (urlLower.includes('gold')) return 'Gold';
+    if (urlLower.includes('silver')) return 'Silver';
+    if (urlLower.includes('red')) return 'Red';
+    if (urlLower.includes('yellow')) return 'Yellow';
+    
+    return 'Natural';
   }
 }
 
