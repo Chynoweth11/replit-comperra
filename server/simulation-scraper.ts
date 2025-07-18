@@ -61,21 +61,215 @@ export class SimulationScraper {
       .replace(/^(.)/, (match, group1) => group1.toLowerCase());
   };
 
+  // COMPREHENSIVE SPECIFICATION EXTRACTION WITH MAXIMUM POTENTIAL
   private extractScopedSpecifications($container: cheerio.CheerioAPI): Record<string, string | boolean> {
     const specs: Record<string, string | boolean> = {};
-    $container('tr, .spec-row, .spec-item').each((_, row) => {
+    
+    // 1. Extract from specification tables and structured data
+    $container('tr, .spec-row, .spec-item, .specification-item, .product-specs tr, .specs-table tr, .technical-specs tr').each((_, row) => {
         const $row = $container(row);
-        const labelEl = $row.find('.spec-label, .label, th').first();
-        const valueEl = $row.find('.spec-value, .value, td').first();
+        const labelEl = $row.find('.spec-label, .label, th, td:first-child').first();
+        const valueEl = $row.find('.spec-value, .value, td:last-child, td').last();
         if (labelEl.length && valueEl.length) {
             const rawLabel = labelEl.text().trim().replace(':', '');
             const value = valueEl.text().trim();
-            if (rawLabel && value) {
+            if (rawLabel && value && rawLabel !== value) {
                 specs[this.normalizeLabel(rawLabel)] = value;
             }
         }
     });
+    
+    // 2. Extract from definition lists
+    $container('dl dt, .definition-list dt').each((_, dt) => {
+        const $dt = $container(dt);
+        const $dd = $dt.next('dd');
+        if ($dd.length) {
+            const label = $dt.text().trim().replace(':', '');
+            const value = $dd.text().trim();
+            if (label && value) {
+                specs[this.normalizeLabel(label)] = value;
+            }
+        }
+    });
+    
+    // 3. Extract from key-value pairs in divs
+    $container('.spec-pair, .feature-pair, .attribute-pair').each((_, pair) => {
+        const $pair = $container(pair);
+        const label = $pair.find('.key, .name, .attribute').text().trim().replace(':', '');
+        const value = $pair.find('.value, .detail, .content').text().trim();
+        if (label && value) {
+            specs[this.normalizeLabel(label)] = value;
+        }
+    });
+    
+    // 4. Use comprehensive regex extraction from full page content
+    const bodyText = $container('body').text();
+    const fullText = `${bodyText}`;
+    
+    this.extractSpecificationsFromText(fullText, specs);
+    
     return specs;
+  }
+  
+  // COMPREHENSIVE TEXT-BASED SPECIFICATION EXTRACTION
+  private extractSpecificationsFromText(fullText: string, specs: Record<string, string | boolean>): void {
+    // PEI Rating extraction
+    if (!specs['peiRating']) {
+        const peiMatch = fullText.match(/PEI(?: Rating)?:?\s*(\d)/i);
+        if (peiMatch) specs['peiRating'] = peiMatch[1];
+    }
+
+    // DCOF / Slip Rating extraction
+    if (!specs['dcofRating']) {
+        const dcofMatch = fullText.match(/(?:COF|DCOF)(?: \/ DCOF)?:?\s*(>?\s?0\.\d+)/i) ||
+                         fullText.match(/Slip Resistance:?\s*([\d.]+)/i);
+        if (dcofMatch) specs['dcofRating'] = dcofMatch[1];
+    }
+
+    // Water Absorption extraction
+    if (!specs['waterAbsorption']) {
+        const waterMatch = fullText.match(/Water Absorption:?[\s<]*(\d+%|<\s?[\d.]+%)/i) ||
+                          fullText.match(/Absorption:?[\s<]*(\d+\.?\d*%?)/i);
+        if (waterMatch) specs['waterAbsorption'] = waterMatch[1];
+    }
+
+    // Material Type extraction
+    if (!specs['materialType']) {
+        const materialMatch = fullText.match(/(Ceramic|Porcelain|Natural Stone|Quartz|Glazed|Unglazed|Stone|Granite|Marble|Engineered|Luxury Vinyl|Nylon|Wool)/i);
+        if (materialMatch) specs['materialType'] = materialMatch[1];
+    }
+
+    // Finish extraction
+    if (!specs['finish']) {
+        const finishMatch = fullText.match(/Finish:?\s*(Glossy|Matte|Polished|Honed|Textured|Lappato|Satin)/i) ||
+                           fullText.match(/(Glossy|Matte|Polished|Honed|Textured|Lappato|Satin)/i);
+        if (finishMatch) specs['finish'] = finishMatch[1];
+    }
+
+    // Color extraction
+    if (!specs['color']) {
+        const colorMatch = fullText.match(/Color:?\s*([a-zA-Z\s\-]+)/i) ||
+                          fullText.match(/(White|Black|Gray|Grey|Blue|Navy|Beige|Brown|Green|Red|Cream|Tan|Ivory|Charcoal)/i);
+        if (colorMatch) specs['color'] = colorMatch[1].trim();
+    }
+
+    // Thickness extraction
+    if (!specs['thickness']) {
+        const thicknessMatch = fullText.match(/Thickness:?\s*(\d+(?:\.\d+)?\s*(?:mm|mil|inches?|"))/i);
+        if (thicknessMatch) specs['thickness'] = thicknessMatch[1];
+    }
+
+    // Wear Layer extraction (LVT specific)
+    if (!specs['wearLayer']) {
+        const wearMatch = fullText.match(/Wear Layer:?\s*(\d+\s*mil)/i);
+        if (wearMatch) specs['wearLayer'] = wearMatch[1];
+    }
+
+    // Waterproof extraction
+    if (!specs['waterproof']) {
+        const waterproofMatch = fullText.match(/(Waterproof|Water[- ]?resistant)/i);
+        if (waterproofMatch) specs['waterproof'] = 'Yes';
+    }
+
+    // Species extraction (Hardwood specific)
+    if (!specs['species']) {
+        const speciesMatch = fullText.match(/(Oak|Maple|Cherry|Walnut|Pine|Hickory|Ash|Birch|Bamboo|Teak|Mahogany)/i);
+        if (speciesMatch) specs['species'] = speciesMatch[1];
+    }
+
+    // Janka Hardness extraction
+    if (!specs['jankaHardness']) {
+        const jankaMatch = fullText.match(/Janka:?\s*(\d+(?:,\d+)?)/i);
+        if (jankaMatch) specs['jankaHardness'] = jankaMatch[1];
+    }
+
+    // Fiber Type extraction (Carpet specific)
+    if (!specs['fiber']) {
+        const fiberMatch = fullText.match(/(Nylon|Polyester|Wool|Polypropylene|Triexta)/i);
+        if (fiberMatch) specs['fiber'] = fiberMatch[1];
+    }
+
+    // Pile Height extraction
+    if (!specs['pileHeight']) {
+        const pileMatch = fullText.match(/Pile Height:?\s*(\d+(?:\.\d+)?\s*(?:mm|inches?|"))/i);
+        if (pileMatch) specs['pileHeight'] = pileMatch[1];
+    }
+
+    // Stain Resistance extraction
+    if (!specs['stainResistance']) {
+        const stainMatch = fullText.match(/(Stain[- ]?resistant|Stain[- ]?protection)/i);
+        if (stainMatch) specs['stainResistance'] = 'Yes';
+    }
+
+    // Coverage Area extraction (Heating specific)
+    if (!specs['coverageArea']) {
+        const coverageMatch = fullText.match(/Coverage:?\s*(\d+)\s*(?:SF|sq\.?\s?ft)/i);
+        if (coverageMatch) specs['coverageArea'] = coverageMatch[1];
+    }
+
+    // Voltage extraction
+    if (!specs['voltage']) {
+        const voltageMatch = fullText.match(/(\d+)V/i);
+        if (voltageMatch) specs['voltage'] = voltageMatch[1] + 'V';
+    }
+
+    // Wattage extraction
+    if (!specs['wattage']) {
+        const wattageMatch = fullText.match(/(\d+)\s*W(?:att)?/i);
+        if (wattageMatch) specs['wattage'] = wattageMatch[1] + 'W';
+    }
+  }
+  
+  // COMPREHENSIVE DIMENSION EXTRACTION FROM TEXT
+  private extractDimensionsFromText(htmlContent: string): string | undefined {
+    const dimMatch = htmlContent.match(/(?:Size|Dimension|Nominal)s?:?\s*(\d+["']?\s*[xX×]\s*\d+["']?(?:\s*[xX×]\s*\d+["']?)?)/i) ||
+                    htmlContent.match(/(\d+["']?\s*[xX×]\s*\d+["']?)/);
+    return dimMatch ? dimMatch[1] : undefined;
+  }
+
+  // COMPREHENSIVE BRAND EXTRACTION WITH MAXIMUM POTENTIAL
+  private extractBrandFromURL(url: string): string {
+    const brandMapping = {
+      'daltile.com': 'Daltile',
+      'msisurfaces.com': 'MSI',
+      'bedrosians.com': 'Bedrosians',
+      'marazzi.com': 'Marazzi',
+      'arizonatile.com': 'Arizona Tile',
+      'floridatile.com': 'Florida Tile',
+      'akdo.com': 'AKDO',
+      'shawfloors.com': 'Shaw',
+      'mohawkflooring.com': 'Mohawk',
+      'flor.com': 'Flor',
+      'cambriausa.com': 'Cambria',
+      'caesarstoneus.com': 'Caesarstone',
+      'silestone.com': 'Silestone',
+      'coretecfloors.com': 'COREtec',
+      'suntouch.com': 'SunTouch',
+      'honeywell.com': 'Honeywell',
+      'warmup.com': 'Warmup',
+      'thermotile.com': 'ThermoTile',
+      'anderson-tuftex.com': 'Anderson Tuftex',
+      'karndean.com': 'Karndean',
+      'mannington.com': 'Mannington',
+      'armstrong.com': 'Armstrong',
+      'tarkett.com': 'Tarkett',
+      'paradigmfloors.com': 'Paradigm',
+      'emser.com': 'Emser',
+      'stonepeak.com': 'Stonepeak',
+      'crossville.com': 'Crossville',
+      'porcelanosa.com': 'Porcelanosa'
+    };
+    
+    for (const [domain, brand] of Object.entries(brandMapping)) {
+      if (url.includes(domain)) return brand;
+    }
+    
+    // Enhanced brand extraction from URL path
+    const urlPath = url.toLowerCase();
+    if (urlPath.includes('elmwood') || urlPath.includes('timber')) return 'Elmwood Reclaimed Timber';
+    if (urlPath.includes('hermitage')) return 'The Hermitage Collection';
+    
+    return 'Unknown';
   }
 
   private extractAdvancedFlags(htmlContent: string): Partial<BaseSpecifications> {
@@ -191,10 +385,12 @@ export class SimulationScraper {
         const brand = this.extractBrandFromURL(url);
         const specifications = this.extractScopedSpecifications($);
         
-        // Enhanced dimension extraction and category detection
+        // COMPREHENSIVE DIMENSION EXTRACTION WITH MAXIMUM POTENTIAL
         const dimensions = (specifications['dimensions'] as string) || 
                           (specifications['size'] as string) || 
-                          $('.dimensions, .size').first().text().trim() || 
+                          $('.dimensions, .size, .product-size, .tile-size, .nominal-size').first().text().trim() || 
+                          $('.spec-row:contains("Size"), .spec-row:contains("Dimension")').find('.spec-value').text().trim() ||
+                          this.extractDimensionsFromText(htmlContent) ||
                           undefined;
         
         const category = this.detectCategory(url, htmlContent, dimensions);
@@ -224,10 +420,16 @@ export class SimulationScraper {
         
         const imageUrl = images.length > 0 ? images[0] : '';
         
-        // Enhanced price extraction
-        const priceText = $('.price, .product-price, [class*="price"]').first().text().trim();
-        const priceMatch = priceText.match(/\$?(\d+(?:\.\d{2})?)/);
-        const price = priceMatch ? priceMatch[1] : 'N/A';
+        // COMPREHENSIVE PRICE EXTRACTION WITH MAXIMUM POTENTIAL
+        const priceText = $('.price, .product-price, [class*="price"], .price-current, .price-value, .cost, .retail-price, .price-per-sqft, .price-display, .pdp-price').first().text().trim();
+        const priceMatch = priceText.match(/\$?([\d,]+\.?\d*)/);
+        let price = priceMatch ? priceMatch[1].replace(',', '') : 'N/A';
+        
+        // Fallback price search in page content if not found
+        if (price === 'N/A') {
+            const fallbackPriceMatch = htmlContent.match(/\$\s?([\d,]+\.?\d*)\s?\/?\s?(?:SF|sq\.?\s?ft|per\s?sq|square)/i);
+            if (fallbackPriceMatch) price = fallbackPriceMatch[1].replace(',', '');
+        }
         
         // FEATURE ENABLEMENT: COMPARISON VIEW
         // The specifications object is now clean, structured, and normalized.
