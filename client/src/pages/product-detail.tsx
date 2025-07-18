@@ -244,13 +244,46 @@ export default function ProductDetail() {
           <h2 className="text-2xl font-bold mb-6">Technical Specifications</h2>
           
           {material.specifications && typeof material.specifications === 'object' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-6">
+              {/* Configuration Options Section */}
               {Object.entries(material.specifications as Record<string, any>)
-                .filter(([key, value]) => {
-                  // Filter out empty values, dashes, and meaningless data
-                  if (value === '—' || value === '' || value == null || value === undefined || value === '0.00') {
-                    return false;
-                  }
+                .filter(([key]) => key.toLowerCase().includes('available') || key.toLowerCase().includes('suitability'))
+                .length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3">Configuration Options</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-blue-50 rounded-lg">
+                    {Object.entries(material.specifications as Record<string, any>)
+                      .filter(([key]) => key.toLowerCase().includes('available') || key.toLowerCase().includes('suitability'))
+                      .map(([key, value]) => (
+                        <div key={key} className="flex flex-col">
+                          <span className="font-medium text-blue-800 text-sm">{formatSpecKey(key)}</span>
+                          <span className="text-gray-700">{getSpecDisplayValue(key, value)}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Core Specifications */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">Core Specifications</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(material.specifications as Record<string, any>)
+                    .filter(([key, value]) => {
+                      // Filter out empty values, dashes, and meaningless data
+                      if (value === '—' || value === '' || value == null || value === undefined || value === '0.00') {
+                        return false;
+                      }
+                      
+                      // Hide image URLs and additional images from specifications for cleaner display
+                      if (key.toLowerCase().includes('image url') || key.toLowerCase().includes('additional images')) {
+                        return false;
+                      }
+                      
+                      // Hide configuration options (they're shown in separate section above)
+                      if (key.toLowerCase().includes('available') || key.toLowerCase().includes('suitability')) {
+                        return false;
+                      }
                   
                   // For stone & slabs products, hide Applications field and duplicate Dimensions
                   if (material.category === 'slabs') {
@@ -358,14 +391,16 @@ export default function ProductDetail() {
                   
                   return true;
                 })
-                .map(([key, value]) => (
-                <div key={key} className="flex justify-between items-center py-3 border-b border-gray-200">
-                  <span className="font-medium text-gray-700">{formatSpecKey(key)}</span>
-                  <div className="text-gray-900 text-right max-w-xs break-words">
-                    {getSpecDisplayValue(key, value)}
-                  </div>
+                    .map(([key, value]) => (
+                      <div key={key} className="flex justify-between items-center py-3 border-b border-gray-100 last:border-0">
+                        <span className="font-medium text-gray-700">{formatSpecKey(key)}</span>
+                        <div className="text-gray-900 text-right max-w-xs break-words">
+                          {getSpecDisplayValue(key, value)}
+                        </div>
+                      </div>
+                    ))}
                 </div>
-              ))}
+              </div>
             </div>
           ) : (
             <p className="text-gray-600">No detailed specifications available.</p>

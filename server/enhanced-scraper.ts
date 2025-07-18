@@ -1473,9 +1473,9 @@ export class EnhancedScraper {
         const imageUrl = extractedImageUrls.length > 0 ? extractedImageUrls[0] : '';
         specifications['Image URL'] = imageUrl;
         
-        // Add multiple image URLs if available
+        // Store additional images internally but don't add to specifications for cleaner display
         if (extractedImageUrls.length > 1) {
-          specifications['Additional Images'] = extractedImageUrls.slice(1, 5).join(', '); // Up to 4 additional images
+          // Store additional images for future use (gallery, etc.) but don't clutter specifications
           console.log(`🖼️  Captured ${extractedImageUrls.length} images for: ${name}`);
         } else if (extractedImageUrls.length === 1) {
           console.log(`🖼️  Captured 1 image for: ${name}`);
