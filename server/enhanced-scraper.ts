@@ -937,93 +937,60 @@ export class EnhancedScraper {
     console.log(`🔍 MATERIAL TYPE DETECTION: Analyzing content for category: ${category}`);
     console.log(`🔍 Product name analysis: "${productName}" -> "${nameContent}"`);
     
-    // SLABS: Stone materials (prioritize product name, then content)
+    // SLABS: Stone materials (precise distinction between similar materials)
     if (category === 'slabs') {
-      // Check product name first (highest priority)
-      if (nameContent.includes('granite')) {
-        console.log(`🎯 PRODUCT NAME: Detected Natural Granite from product name`);
-        return 'Natural Granite';
-      } else if (nameContent.includes('quartzite')) {
-        console.log(`🎯 PRODUCT NAME: Detected Natural Quartzite from product name`);
+      // CRITICAL: Distinguish quartzite vs quartz (quartzite is natural, quartz is engineered)
+      if (nameContent.includes('quartzite') || allContent.includes('natural quartzite')) {
+        console.log(`🎯 PRECISE: Detected Natural Quartzite (natural stone)`);
         return 'Natural Quartzite';
-      } else if (nameContent.includes('marble') || nameContent.includes('carrara') || nameContent.includes('calacatta') || nameContent.includes('statuario')) {
-        console.log(`🎯 PRODUCT NAME: Detected Natural Marble from product name`);
+      } else if (nameContent.includes('granite') || allContent.includes('natural granite')) {
+        console.log(`🎯 PRECISE: Detected Natural Granite (natural stone)`);
+        return 'Natural Granite';
+      } else if (nameContent.includes('marble') || nameContent.includes('carrara') || nameContent.includes('calacatta') || nameContent.includes('statuario') || allContent.includes('natural marble')) {
+        console.log(`🎯 PRECISE: Detected Natural Marble (natural stone)`);
         return 'Natural Marble';
-      } else if (nameContent.includes('quartz')) {
-        console.log(`🎯 PRODUCT NAME: Detected Engineered Quartz from product name`);
+      } else if (allContent.includes('engineered quartz') || allContent.includes('quartz surface') || (allContent.includes('quartz') && !allContent.includes('quartzite'))) {
+        console.log(`🎯 PRECISE: Detected Engineered Quartz (manufactured)`);
         return 'Engineered Quartz';
-      } else if (nameContent.includes('porcelain')) {
-        console.log(`🎯 PRODUCT NAME: Detected Porcelain Slab from product name`);
+      } else if (nameContent.includes('porcelain') || allContent.includes('porcelain slab') || allContent.includes('large format porcelain')) {
+        console.log(`🎯 PRECISE: Detected Porcelain Slab (manufactured)`);
         return 'Porcelain Slab';
-      }
-      
-      // Then check page content
-      if (allContent.includes('granite') && !allContent.includes('quartzite')) {
-        console.log(`🎯 CONTENT: Detected Natural Granite`);
-        return 'Natural Granite';
-      } else if (allContent.includes('quartzite')) {
-        console.log(`🎯 CONTENT: Detected Natural Quartzite`);
-        return 'Natural Quartzite';
-      } else if (allContent.includes('carrara') || allContent.includes('calacatta') || allContent.includes('statuario')) {
-        console.log(`🎯 CONTENT: Detected Natural Marble (premium variety)`);
-        return 'Natural Marble';
-      } else if (allContent.includes('marble')) {
-        console.log(`🎯 CONTENT: Detected Natural Marble`);
-        return 'Natural Marble';
       } else if (allContent.includes('travertine')) {
-        console.log(`🎯 CONTENT: Detected Natural Travertine`);
+        console.log(`🎯 PRECISE: Detected Natural Travertine`);
         return 'Natural Travertine';
       } else if (allContent.includes('limestone')) {
-        console.log(`🎯 CONTENT: Detected Natural Limestone`);
+        console.log(`🎯 PRECISE: Detected Natural Limestone`);
         return 'Natural Limestone';
       } else if (allContent.includes('slate')) {
-        console.log(`🎯 CONTENT: Detected Natural Slate`);
+        console.log(`🎯 PRECISE: Detected Natural Slate`);
         return 'Natural Slate';
       } else if (allContent.includes('onyx')) {
-        console.log(`🎯 CONTENT: Detected Natural Onyx`);
+        console.log(`🎯 PRECISE: Detected Natural Onyx`);
         return 'Natural Onyx';
-      } else if (allContent.includes('engineered') && allContent.includes('quartz')) {
-        console.log(`🎯 CONTENT: Detected Engineered Quartz`);
-        return 'Engineered Quartz';
-      } else if (allContent.includes('quartz')) {
-        console.log(`🎯 CONTENT: Detected Engineered Quartz (general)`);
-        return 'Engineered Quartz';
-      } else if (allContent.includes('porcelain') && allContent.includes('slab')) {
-        console.log(`🎯 CONTENT: Detected Porcelain Slab`);
-        return 'Porcelain Slab';
       }
     }
     
-    // TILES: Ceramic and porcelain types (prioritize product name)
+    // TILES: Precise distinction between porcelain and ceramic
     if (category === 'tiles') {
-      // Check product name first
-      if (nameContent.includes('porcelain')) {
-        console.log(`🎯 PRODUCT NAME: Detected Porcelain Tile from product name`);
+      // CRITICAL: Distinguish porcelain vs ceramic (porcelain is denser, ceramic is more porous)
+      if (nameContent.includes('porcelain') || allContent.includes('porcelain tile') || allContent.includes('rectified') || allContent.includes('vitrified')) {
+        console.log(`🎯 PRECISE: Detected Porcelain Tile (dense, low water absorption)`);
         return 'Porcelain Tile';
-      } else if (nameContent.includes('ceramic')) {
-        console.log(`🎯 PRODUCT NAME: Detected Ceramic Tile from product name`);
+      } else if (nameContent.includes('ceramic') || allContent.includes('ceramic tile') || (allContent.includes('ceramic') && !allContent.includes('porcelain'))) {
+        console.log(`🎯 PRECISE: Detected Ceramic Tile (more porous than porcelain)`);
         return 'Ceramic Tile';
-      } else if (nameContent.includes('mosaic')) {
-        console.log(`🎯 PRODUCT NAME: Detected Mosaic Tile from product name`);
+      } else if (nameContent.includes('mosaic') || allContent.includes('mosaic tile')) {
+        console.log(`🎯 PRECISE: Detected Mosaic Tile`);
         return 'Mosaic Tile';
-      }
-      
-      // Then check content
-      if (allContent.includes('porcelain')) {
-        console.log(`🎯 CONTENT: Detected Porcelain Tile`);
-        return 'Porcelain Tile';
-      } else if (allContent.includes('ceramic')) {
-        console.log(`🎯 CONTENT: Detected Ceramic Tile`);
-        return 'Ceramic Tile';
-      } else if (allContent.includes('mosaic')) {
-        console.log(`🎯 CONTENT: Detected Mosaic Tile`);
-        return 'Mosaic Tile';
-      } else if (allContent.includes('glass') && allContent.includes('tile')) {
-        console.log(`🎯 CONTENT: Detected Glass Tile`);
+      } else if (allContent.includes('glass tile') || (allContent.includes('glass') && allContent.includes('tile'))) {
+        console.log(`🎯 PRECISE: Detected Glass Tile`);
         return 'Glass Tile';
-      } else if (allContent.includes('natural stone')) {
-        console.log(`🎯 CONTENT: Detected Natural Stone Tile`);
+      } else if (allContent.includes('natural stone tile') || allContent.includes('stone tile')) {
+        console.log(`🎯 PRECISE: Detected Natural Stone Tile`);
         return 'Natural Stone Tile';
+      } else if (allContent.includes('metal tile')) {
+        console.log(`🎯 PRECISE: Detected Metal Tile`);
+        return 'Metal Tile';
       }
     }
     
@@ -1096,39 +1063,30 @@ export class EnhancedScraper {
       }
     }
     
-    // LVT/VINYL: Construction types (prioritize product name)
+    // LVT/VINYL: Precise construction type detection
     if (category === 'lvt') {
-      // Check product name first
-      if (nameContent.includes('spc') || nameContent.includes('stone plastic')) {
-        console.log(`🎯 PRODUCT NAME: Detected SPC from product name`);
+      // CRITICAL: Distinguish construction types - SPC vs WPC vs Rigid Core vs Standard LVT
+      if (nameContent.includes('spc') || allContent.includes('stone plastic composite') || allContent.includes('spc core')) {
+        console.log(`🎯 PRECISE: Detected SPC (Stone Plastic Composite - rigid, waterproof)`);
         return 'SPC (Stone Plastic Composite)';
-      } else if (nameContent.includes('wpc') || nameContent.includes('wood plastic')) {
-        console.log(`🎯 PRODUCT NAME: Detected WPC from product name`);
+      } else if (nameContent.includes('wpc') || allContent.includes('wood plastic composite') || allContent.includes('wpc core')) {
+        console.log(`🎯 PRECISE: Detected WPC (Wood Plastic Composite - softer, warmer)`);
         return 'WPC (Wood Plastic Composite)';
-      } else if (nameContent.includes('rigid core')) {
-        console.log(`🎯 PRODUCT NAME: Detected Rigid Core from product name`);
+      } else if (nameContent.includes('rigid core') || allContent.includes('rigid core vinyl') || allContent.includes('rigid click')) {
+        console.log(`🎯 PRECISE: Detected Rigid Core Vinyl (enhanced stability)`);
         return 'Rigid Core Vinyl';
-      }
-      
-      // Then check content
-      if (allContent.includes('spc') || allContent.includes('stone plastic composite')) {
-        console.log(`🎯 CONTENT: Detected SPC (Stone Plastic Composite)`);
-        return 'SPC (Stone Plastic Composite)';
-      } else if (allContent.includes('wpc') || allContent.includes('wood plastic composite')) {
-        console.log(`🎯 CONTENT: Detected WPC (Wood Plastic Composite)`);
-        return 'WPC (Wood Plastic Composite)';
-      } else if (allContent.includes('rigid core')) {
-        console.log(`🎯 CONTENT: Detected Rigid Core Vinyl`);
-        return 'Rigid Core Vinyl';
-      } else if (allContent.includes('luxury vinyl tile')) {
-        console.log(`🎯 CONTENT: Detected LVT (Luxury Vinyl Tile)`);
+      } else if (allContent.includes('luxury vinyl tile') || (allContent.includes('lvt') && !allContent.includes('spc') && !allContent.includes('wpc'))) {
+        console.log(`🎯 PRECISE: Detected LVT (Luxury Vinyl Tile - standard)`);
         return 'LVT (Luxury Vinyl Tile)';
-      } else if (allContent.includes('luxury vinyl plank')) {
-        console.log(`🎯 CONTENT: Detected LVP (Luxury Vinyl Plank)`);
+      } else if (allContent.includes('luxury vinyl plank') || allContent.includes('lvp')) {
+        console.log(`🎯 PRECISE: Detected LVP (Luxury Vinyl Plank - wood look)`);
         return 'LVP (Luxury Vinyl Plank)';
       } else if (allContent.includes('luxury vinyl')) {
-        console.log(`🎯 CONTENT: Detected Luxury Vinyl`);
+        console.log(`🎯 PRECISE: Detected Luxury Vinyl (general luxury grade)`);
         return 'Luxury Vinyl';
+      } else if (allContent.includes('vinyl flooring')) {
+        console.log(`🎯 PRECISE: Detected Vinyl Flooring (standard grade)`);
+        return 'Vinyl Flooring';
       }
     }
     
