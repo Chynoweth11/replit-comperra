@@ -847,10 +847,9 @@ export class SimulationScraper {
       console.log(`🔧 SIMULATION: Generated thickness options: [${thicknessOptions.join(', ')}]`);
     }
       
-      // Add standard thickness options for slabs
-      if (thicknessOptions.length === 0) {
-        thicknessOptions.push('2 cm', '3 cm');
-      }
+    // Add standard thickness options for slabs if still empty
+    if (category === 'slabs' && thicknessOptions.length === 0) {
+      thicknessOptions.push('2 cm', '3 cm');
     }
 
     // Generate suitability based on material type and category
@@ -967,6 +966,7 @@ export class SimulationScraper {
     }
     
     if (category === 'hardwood') {
+      // COMPREHENSIVE hardwood technical specifications
       specs['Janka Hardness'] = '1,290 lbf (typical for oak species)';
       specs['Moisture Content'] = '6-8% (kiln-dried)';
       specs['Finish Durability'] = 'Aluminum oxide coating';
@@ -974,17 +974,33 @@ export class SimulationScraper {
       specs['Thermal Expansion'] = 'Low (engineered construction)';
       specs['Formaldehyde Emissions'] = 'CARB Phase 2 compliant';
       specs['VOC Content'] = 'Low-VOC certified';
+      specs['Installation Method'] = 'Nail down, glue down, float';
+      specs['Radiant Heat Compatible'] = 'Yes (engineered), No (solid)';
+      specs['Gloss Level'] = 'Satin (25-35 gloss units)';
+      specs['Plank Variation'] = 'High variation (natural wood)';
+      specs['Country of Origin'] = 'USA/Canada (North American hardwood)';
       
+      // Species-specific hardness ratings
       if (productName.toLowerCase().includes('oak')) {
         specs['Janka Hardness'] = '1,290 lbf (red oak standard)';
+        specs['Species'] = 'Red Oak/White Oak';
       } else if (productName.toLowerCase().includes('maple')) {
         specs['Janka Hardness'] = '1,450 lbf (hard maple)';
+        specs['Species'] = 'Hard Maple';
       } else if (productName.toLowerCase().includes('cherry')) {
         specs['Janka Hardness'] = '995 lbf (american cherry)';
+        specs['Species'] = 'American Cherry';
+      } else if (productName.toLowerCase().includes('walnut')) {
+        specs['Janka Hardness'] = '1,010 lbf (american walnut)';
+        specs['Species'] = 'American Walnut';
+      } else if (productName.toLowerCase().includes('hickory')) {
+        specs['Janka Hardness'] = '1,820 lbf (hickory/pecan)';
+        specs['Species'] = 'Hickory/Pecan';
       }
     }
     
     if (category === 'lvt') {
+      // COMPREHENSIVE LVT technical specifications
       specs['Wear Layer Thickness'] = '20 mil (commercial grade)';
       specs['Total Thickness'] = '6mm (luxury grade)';
       specs['Core Type'] = 'SPC (Stone Plastic Composite)';
@@ -993,9 +1009,32 @@ export class SimulationScraper {
       specs['Indentation Resistance'] = 'Class 23 (EN 433)';
       specs['Slip Resistance'] = 'R10 (DIN 51130)';
       specs['Fire Rating'] = 'Class Cfl-s1 (EN 13501-1)';
+      specs['Underlayment Included'] = 'Pre-attached IXPE foam pad';
+      specs['Static Rating'] = 'Anti-static properties';
+      specs['Radiant Heat Compatible'] = 'Compatible up to 85°F';
+      specs['Chemical Resistance'] = 'Resistant to household chemicals';
+      specs['UV Stability'] = 'Fade resistant coating';
+      specs['Acoustic Rating'] = 'IIC 71/STC 74 with underlayment';
+      specs['VOC Content'] = 'FloorScore certified - Low VOC';
+      
+      // Enhanced specifications based on construction type
+      if (productName.toLowerCase().includes('spc') || materialType.includes('SPC')) {
+        specs['Core Type'] = 'SPC (Stone Plastic Composite)';
+        specs['Core Density'] = '2.07g/cm³ limestone composite';
+        specs['Dimensional Stability'] = 'Excellent - minimal expansion/contraction';
+      } else if (productName.toLowerCase().includes('wpc')) {
+        specs['Core Type'] = 'WPC (Wood Plastic Composite)';
+        specs['Core Density'] = '0.9g/cm³ wood fiber composite';
+        specs['Dimensional Stability'] = 'Good with moisture protection';
+      } else if (productName.toLowerCase().includes('rigid')) {
+        specs['Core Type'] = 'Rigid Core LVT';
+        specs['Core Density'] = '1.8g/cm³ rigid polymer';
+        specs['Dimensional Stability'] = 'Excellent structural stability';
+      }
     }
     
     if (category === 'carpet') {
+      // COMPREHENSIVE carpet technical specifications
       specs['Fiber Type'] = 'Solution-dyed nylon';
       specs['Pile Height'] = '0.25" (6.4mm)';
       specs['Face Weight'] = '24 oz/yd²';
@@ -1004,9 +1043,29 @@ export class SimulationScraper {
       specs['Stain Resistance'] = 'Lifetime stain warranty';
       specs['Static Rating'] = '< 3.0 kV (AATCC 134)';
       specs['Flammability'] = 'Class I (ASTM E648)';
+      specs['Pile Style'] = 'Cut pile texture';
+      specs['Traffic Rating'] = 'Heavy commercial (Class 33)';
+      specs['Antimicrobial'] = 'Built-in antimicrobial protection';
+      specs['Moisture Barrier'] = 'Integrated moisture protection';
+      specs['Fade Resistance'] = 'Superior fade resistance (AATCC 16)';
+      specs['Installation Method'] = 'Stretch-in installation';
+      specs['Warranty'] = '20-year commercial warranty';
+      
+      // Enhanced specifications based on fiber type
+      if (productName.toLowerCase().includes('nylon')) {
+        specs['Fiber Type'] = 'Solution-dyed nylon 6.6';
+        specs['Fiber Durability'] = 'Excellent resilience and recovery';
+      } else if (productName.toLowerCase().includes('polyester')) {
+        specs['Fiber Type'] = 'Solution-dyed polyester';
+        specs['Fiber Durability'] = 'Good stain resistance';
+      } else if (productName.toLowerCase().includes('wool')) {
+        specs['Fiber Type'] = 'New Zealand wool blend';
+        specs['Fiber Durability'] = 'Natural flame resistance';
+      }
     }
     
     if (category === 'heat') {
+      // COMPREHENSIVE heating systems technical specifications
       specs['Voltage'] = '240V AC';
       specs['Power Rating'] = '15 watts/ft²';
       specs['Coverage Area'] = '40 sq ft per mat';
@@ -1015,9 +1074,30 @@ export class SimulationScraper {
       specs['Electrical Safety'] = 'UL Listed, CSA Approved';
       specs['Warranty'] = '25-year manufacturer warranty';
       specs['Cable Spacing'] = '3" on center (standard)';
+      specs['Cold Lead Length'] = '10 feet (standard)';
+      specs['Thermostat Compatible'] = 'Yes - requires floor sensing thermostat';
+      specs['UL Listed'] = 'UL 1673 under-floor heating cable';
+      specs['Self-Regulating'] = 'No - constant wattage system';
+      specs['Installation Type'] = 'Under-tile/stone installation';
+      specs['Maximum Load'] = '150 lbs/ft² (when embedded)';
+      specs['Temperature Range'] = '32°F to 104°F operating range';
+      specs['GFCI Protection'] = 'Required - built-in GFCI protection';
+      specs['Electromagnetic Field'] = 'Low EMF - FCC compliant';
+      
+      // Enhanced specifications based on heating type
+      if (productName.toLowerCase().includes('cable')) {
+        specs['Installation Type'] = 'Loose cable for custom layouts';
+        specs['Cable Diameter'] = '1/8" (3mm) heating cable';
+        specs['Spacing Requirements'] = '3" minimum cable spacing';
+      } else if (productName.toLowerCase().includes('mat')) {
+        specs['Installation Type'] = 'Pre-spaced heating mat';
+        specs['Mat Construction'] = 'Fiberglass mesh backing';
+        specs['Standard Sizes'] = 'Multiple standard sizes available';
+      }
     }
     
     if (category === 'thermostats') {
+      // COMPREHENSIVE thermostat technical specifications
       specs['Voltage'] = '120V/240V dual voltage';
       specs['Load Capacity'] = '15A @ 240V (3600W max)';
       specs['Sensor Type'] = 'Floor and air sensing';
@@ -1026,6 +1106,27 @@ export class SimulationScraper {
       specs['WiFi Connectivity'] = 'Built-in WiFi with app control';
       specs['Operating Range'] = '32°F to 104°F (0°C to 40°C)';
       specs['Certifications'] = 'UL Listed, CSA Approved, FCC';
+      specs['GFCI Protection'] = 'Built-in 5mA GFCI protection';
+      specs['Installation Type'] = 'Single gang wall mount';
+      specs['Sensor Cable Length'] = '15 feet (standard)';
+      specs['Compatible Heating'] = 'Radiant floor heating systems';
+      specs['Manual Override'] = 'Yes - manual temperature override';
+      specs['Geo-Learning'] = 'GPS-based location learning';
+      specs['User Interface'] = 'Intuitive touchscreen controls';
+      specs['IP Rating'] = 'IP20 (indoor use only)';
+      specs['Warranty'] = '5-year manufacturer warranty';
+      specs['Energy Saving'] = 'Adaptive intelligent control';
+      specs['Remote Access'] = 'Mobile app control (iOS/Android)';
+      
+      // Enhanced specifications based on thermostat features
+      if (productName.toLowerCase().includes('smart') || productName.toLowerCase().includes('wifi')) {
+        specs['Smart Features'] = 'WiFi enabled with mobile app control';
+        specs['Voice Control'] = 'Compatible with Alexa, Google Assistant';
+        specs['Energy Reports'] = 'Detailed energy usage reporting';
+      } else if (productName.toLowerCase().includes('programmable')) {
+        specs['Programming Options'] = '7-day, 5+1+1, or 5+2 programming';
+        specs['Schedule Memory'] = 'Battery backup for schedule retention';
+      }
     }
     
     return specs;

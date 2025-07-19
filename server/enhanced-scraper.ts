@@ -1359,6 +1359,16 @@ export class EnhancedScraper {
         /Dimensions?:?\s*([^,\n]+)/i,
         /Available.*Colors?:?\s*([^,\n]+)/i,
         /Available.*Sizes?:?\s*([^,\n]+)/i,
+        /Moisture Content:?\s*([^,\n]+)/i,
+        /VOC Content:?\s*([^,\n]+)/i,
+        /Formaldehyde Emissions:?\s*([^,\n]+)/i,
+        /Installation Method:?\s*([^,\n]+)/i,
+        /Finish Durability:?\s*([^,\n]+)/i,
+        /Country of Origin:?\s*([^,\n]+)/i,
+        /Thermal Expansion:?\s*([^,\n]+)/i,
+        /Radiant Heat Compatible:?\s*([^,\n]+)/i,
+        /Gloss Level:?\s*([^,\n]+)/i,
+        /Plank Variation:?\s*([^,\n]+)/i,
       ],
       lvt: [
         /Wear Layer:?\s*([^,\n]+)/i,
@@ -1372,6 +1382,16 @@ export class EnhancedScraper {
         /Dimensions?:?\s*([^,\n]+)/i,
         /Available.*Colors?:?\s*([^,\n]+)/i,
         /Available.*Sizes?:?\s*([^,\n]+)/i,
+        /Total Thickness:?\s*([^,\n]+)/i,
+        /Indentation Resistance:?\s*([^,\n]+)/i,
+        /Fire Rating:?\s*([^,\n]+)/i,
+        /Underlayment Included:?\s*([^,\n]+)/i,
+        /Static Rating:?\s*([^,\n]+)/i,
+        /Radiant Heat Compatible:?\s*([^,\n]+)/i,
+        /Chemical Resistance:?\s*([^,\n]+)/i,
+        /UV Stability:?\s*([^,\n]+)/i,
+        /Acoustic Rating:?\s*([^,\n]+)/i,
+        /VOC Content:?\s*([^,\n]+)/i,
       ],
       heat: [
         /Voltage:?\s*([^,\n]+)/i,
@@ -1381,6 +1401,17 @@ export class EnhancedScraper {
         /Applications?:?\s*([^,\n]+)/i,
         /Dimensions?:?\s*([^,\n]+)/i,
         /Available.*Sizes?:?\s*([^,\n]+)/i,
+        /Power Rating:?\s*([^,\n]+)/i,
+        /Operating Temperature:?\s*([^,\n]+)/i,
+        /Installation Depth:?\s*([^,\n]+)/i,
+        /Cable Spacing:?\s*([^,\n]+)/i,
+        /Electrical Safety:?\s*([^,\n]+)/i,
+        /Warranty:?\s*([^,\n]+)/i,
+        /Cold Lead Length:?\s*([^,\n]+)/i,
+        /Thermostat Compatible:?\s*([^,\n]+)/i,
+        /UL Listed:?\s*([^,\n]+)/i,
+        /Self-Regulating:?\s*([^,\n]+)/i,
+        /Installation Type:?\s*([^,\n]+)/i,
       ],
       carpet: [
         /Fiber Type:?\s*([^,\n]+)/i,
@@ -1394,6 +1425,16 @@ export class EnhancedScraper {
         /Dimensions?:?\s*([^,\n]+)/i,
         /Available.*Colors?:?\s*([^,\n]+)/i,
         /Available.*Sizes?:?\s*([^,\n]+)/i,
+        /Pile Height:?\s*([^,\n]+)/i,
+        /Backing System:?\s*([^,\n]+)/i,
+        /Traffic Rating:?\s*([^,\n]+)/i,
+        /Static Rating:?\s*([^,\n]+)/i,
+        /Flammability:?\s*([^,\n]+)/i,
+        /Moisture Barrier:?\s*([^,\n]+)/i,
+        /Antimicrobial:?\s*([^,\n]+)/i,
+        /Fade Resistance:?\s*([^,\n]+)/i,
+        /Installation Method:?\s*([^,\n]+)/i,
+        /Warranty:?\s*([^,\n]+)/i,
       ],
       thermostats: [
         /Voltage:?\s*([^,\n]+)/i,
@@ -1404,6 +1445,18 @@ export class EnhancedScraper {
         /Applications?:?\s*([^,\n]+)/i,
         /Color:?\s*([^,\n]+)/i,
         /Dimensions?:?\s*([^,\n]+)/i,
+        /WiFi Connectivity:?\s*([^,\n]+)/i,
+        /Operating Range:?\s*([^,\n]+)/i,
+        /Certifications:?\s*([^,\n]+)/i,
+        /GFCI Protection:?\s*([^,\n]+)/i,
+        /Installation Type:?\s*([^,\n]+)/i,
+        /Sensor Cable Length:?\s*([^,\n]+)/i,
+        /Compatible Heating:?\s*([^,\n]+)/i,
+        /Manual Override:?\s*([^,\n]+)/i,
+        /Geo-Learning:?\s*([^,\n]+)/i,
+        /User Interface:?\s*([^,\n]+)/i,
+        /IP Rating:?\s*([^,\n]+)/i,
+        /Warranty:?\s*([^,\n]+)/i,
       ]
     };
 
@@ -2577,97 +2630,19 @@ export class EnhancedScraper {
       // Default thickness options for slabs
       thicknessOptions.push('2 cm', '3 cm');
     }
-        const finishText = $(element).text().trim();
-        if (finishText && ['honed', 'polished', 'polished & honed', 'brushed', 'leathered'].some(f => finishText.toLowerCase().includes(f))) {
-          finishOptions.push(finishText);
-        }
-      });
       
-      // Also check for text mentions of finishes
-      const pageText = $('body').text().toLowerCase();
-      if (pageText.includes('choose finish') || pageText.includes('finish options') || pageText.includes('available finishes')) {
-        ['Honed', 'Polished', 'Polished & Honed', 'Brushed', 'Leathered'].forEach(finish => {
-          if (pageText.includes(finish.toLowerCase())) {
-            finishOptions.push(finish);
-          }
-        });
-      }
-      
-      // Standard finishes for marble/granite slabs when none detected
+    // Default suitability for slabs
+    if (!suitability) {
       const url = $('head meta[property="og:url"]').attr('content') || '';
       const productName = $('h1').first().text() || '';
       const combinedText = (url + ' ' + productName).toLowerCase();
       
-      if ((combinedText.includes('marble') || combinedText.includes('granite') || combinedText.includes('quartzite')) && finishOptions.length === 0) {
-        finishOptions.push('Honed', 'Polished', 'Polished & Honed');
-        console.log('🔧 Added standard finish options for natural stone slab');
-      }
-    }
-
-    if (thicknessOptions.length === 0) {
-      // Look for Bedrosians thickness options
-      $('.product-configurator .thickness-options .option, .thickness-list .thickness-item, .thickness-dropdown option').each((_, element) => {
-        const thicknessText = $(element).text().trim();
-        if (thicknessText && /\d+\s*cm/i.test(thicknessText)) {
-          thicknessOptions.push(thicknessText);
-        }
-      });
-      
-      // Also check for text mentions of thickness
-      const pageText = $('body').text().toLowerCase();
-      if (pageText.includes('choose thickness') || pageText.includes('thickness options') || pageText.includes('available thickness')) {
-        ['2 cm', '3 cm', '2cm', '3cm'].forEach(thickness => {
-          if (pageText.includes(thickness.toLowerCase())) {
-            thicknessOptions.push(thickness);
-          }
-        });
-      }
-      
-      // Standard thickness options for slabs when none detected
-      const url = $('head meta[property="og:url"]').attr('content') || '';
-      const combinedText = url.toLowerCase();
-      
-      if (combinedText.includes('slab') && thicknessOptions.length === 0) {
-        thicknessOptions.push('2 cm', '3 cm');
-        console.log('🔧 Added standard thickness options for slab material');
-      }
-    }
-
-    // Extract suitability from page content
-    if (!suitability) {
-      const pageText = $('body').text();
-      // Look for specific suitability text patterns
-      const suitabilityPatterns = [
-        /may be suitable for exterior floors/i,
-        /suitable for interior and exterior/i,
-        /recommended for countertops/i,
-        /ideal for residential/i,
-        /commercial applications/i
-      ];
-      
-      for (const pattern of suitabilityPatterns) {
-        const match = pageText.match(pattern);
-        if (match) {
-          // Extract surrounding context
-          const fullMatch = pageText.substring(Math.max(0, match.index - 50), match.index + match[0].length + 100);
-          suitability = fullMatch.trim();
-          break;
-        }
-      }
-      
-      // Default suitability for slabs
-      if (!suitability) {
-        const url = $('head meta[property="og:url"]').attr('content') || '';
-        const productName = $('h1').first().text() || '';
-        const combinedText = (url + ' ' + productName).toLowerCase();
-        
-        if (combinedText.includes('marble')) {
-          suitability = 'May be suitable for exterior floors with proper sealing. Ideal for interior countertops and decorative applications.';
-        } else if (combinedText.includes('granite') || combinedText.includes('quartzite')) {
-          suitability = 'Suitable for interior and exterior applications including countertops, flooring, and wall cladding.';
-        } else if (combinedText.includes('slab')) {
-          suitability = 'May be suitable for exterior floors. See technical specifications for specific application guidelines.';
-        }
+      if (combinedText.includes('marble')) {
+        suitability = 'May be suitable for exterior floors with proper sealing. Ideal for interior countertops and decorative applications.';
+      } else if (combinedText.includes('granite') || combinedText.includes('quartzite')) {
+        suitability = 'Suitable for interior and exterior applications including countertops, flooring, and wall cladding.';
+      } else if (combinedText.includes('slab')) {
+        suitability = 'May be suitable for exterior floors. See technical specifications for specific application guidelines.';
       }
     }
 
