@@ -935,15 +935,35 @@ export class EnhancedScraper {
     const allContent = `${pageContent} ${nameContent}`;
     
     console.log(`🔍 MATERIAL TYPE DETECTION: Analyzing content for category: ${category}`);
+    console.log(`🔍 Product name analysis: "${productName}" -> "${nameContent}"`);
     
-    // SLABS: Stone materials (priority order matters)
+    // SLABS: Stone materials (prioritize product name, then content)
     if (category === 'slabs') {
-      if (allContent.includes('quartzite')) {
-        console.log(`🎯 CONTENT: Detected Natural Quartzite`);
+      // Check product name first (highest priority)
+      if (nameContent.includes('granite')) {
+        console.log(`🎯 PRODUCT NAME: Detected Natural Granite from product name`);
+        return 'Natural Granite';
+      } else if (nameContent.includes('quartzite')) {
+        console.log(`🎯 PRODUCT NAME: Detected Natural Quartzite from product name`);
         return 'Natural Quartzite';
-      } else if (allContent.includes('granite')) {
+      } else if (nameContent.includes('marble') || nameContent.includes('carrara') || nameContent.includes('calacatta') || nameContent.includes('statuario')) {
+        console.log(`🎯 PRODUCT NAME: Detected Natural Marble from product name`);
+        return 'Natural Marble';
+      } else if (nameContent.includes('quartz')) {
+        console.log(`🎯 PRODUCT NAME: Detected Engineered Quartz from product name`);
+        return 'Engineered Quartz';
+      } else if (nameContent.includes('porcelain')) {
+        console.log(`🎯 PRODUCT NAME: Detected Porcelain Slab from product name`);
+        return 'Porcelain Slab';
+      }
+      
+      // Then check page content
+      if (allContent.includes('granite') && !allContent.includes('quartzite')) {
         console.log(`🎯 CONTENT: Detected Natural Granite`);
         return 'Natural Granite';
+      } else if (allContent.includes('quartzite')) {
+        console.log(`🎯 CONTENT: Detected Natural Quartzite`);
+        return 'Natural Quartzite';
       } else if (allContent.includes('carrara') || allContent.includes('calacatta') || allContent.includes('statuario')) {
         console.log(`🎯 CONTENT: Detected Natural Marble (premium variety)`);
         return 'Natural Marble';
@@ -974,8 +994,21 @@ export class EnhancedScraper {
       }
     }
     
-    // TILES: Ceramic and porcelain types
+    // TILES: Ceramic and porcelain types (prioritize product name)
     if (category === 'tiles') {
+      // Check product name first
+      if (nameContent.includes('porcelain')) {
+        console.log(`🎯 PRODUCT NAME: Detected Porcelain Tile from product name`);
+        return 'Porcelain Tile';
+      } else if (nameContent.includes('ceramic')) {
+        console.log(`🎯 PRODUCT NAME: Detected Ceramic Tile from product name`);
+        return 'Ceramic Tile';
+      } else if (nameContent.includes('mosaic')) {
+        console.log(`🎯 PRODUCT NAME: Detected Mosaic Tile from product name`);
+        return 'Mosaic Tile';
+      }
+      
+      // Then check content
       if (allContent.includes('porcelain')) {
         console.log(`🎯 CONTENT: Detected Porcelain Tile`);
         return 'Porcelain Tile';
@@ -994,8 +1027,33 @@ export class EnhancedScraper {
       }
     }
     
-    // HARDWOOD: Wood species detection
+    // HARDWOOD: Wood species detection (prioritize product name)
     if (category === 'hardwood') {
+      // Check product name first
+      if (nameContent.includes('red oak')) {
+        console.log(`🎯 PRODUCT NAME: Detected Red Oak from product name`);
+        return 'Red Oak';
+      } else if (nameContent.includes('white oak')) {
+        console.log(`🎯 PRODUCT NAME: Detected White Oak from product name`);
+        return 'White Oak';
+      } else if (nameContent.includes('maple')) {
+        console.log(`🎯 PRODUCT NAME: Detected Maple from product name`);
+        return 'Maple';
+      } else if (nameContent.includes('cherry')) {
+        console.log(`🎯 PRODUCT NAME: Detected Cherry from product name`);
+        return 'Cherry';
+      } else if (nameContent.includes('walnut')) {
+        console.log(`🎯 PRODUCT NAME: Detected Walnut from product name`);
+        return 'Walnut';
+      } else if (nameContent.includes('hickory')) {
+        console.log(`🎯 PRODUCT NAME: Detected Hickory from product name`);
+        return 'Hickory';
+      } else if (nameContent.includes('oak')) {
+        console.log(`🎯 PRODUCT NAME: Detected Oak from product name`);
+        return 'Oak';
+      }
+      
+      // Then check content
       if (allContent.includes('red oak')) {
         console.log(`🎯 CONTENT: Detected Red Oak`);
         return 'Red Oak';
@@ -1038,8 +1096,21 @@ export class EnhancedScraper {
       }
     }
     
-    // LVT/VINYL: Construction types
+    // LVT/VINYL: Construction types (prioritize product name)
     if (category === 'lvt') {
+      // Check product name first
+      if (nameContent.includes('spc') || nameContent.includes('stone plastic')) {
+        console.log(`🎯 PRODUCT NAME: Detected SPC from product name`);
+        return 'SPC (Stone Plastic Composite)';
+      } else if (nameContent.includes('wpc') || nameContent.includes('wood plastic')) {
+        console.log(`🎯 PRODUCT NAME: Detected WPC from product name`);
+        return 'WPC (Wood Plastic Composite)';
+      } else if (nameContent.includes('rigid core')) {
+        console.log(`🎯 PRODUCT NAME: Detected Rigid Core from product name`);
+        return 'Rigid Core Vinyl';
+      }
+      
+      // Then check content
       if (allContent.includes('spc') || allContent.includes('stone plastic composite')) {
         console.log(`🎯 CONTENT: Detected SPC (Stone Plastic Composite)`);
         return 'SPC (Stone Plastic Composite)';
@@ -2244,10 +2315,10 @@ export class EnhancedScraper {
       }
     });
     
-    // Restore URL-based material type if it exists (highest priority)
-    if (urlBasedMaterialType && urlBasedMaterialType.includes('Quartzite')) {
+    // Only restore URL-based material type if content-based detection failed
+    if (urlBasedMaterialType && !specifications['Material Type']) {
       specifications['Material Type'] = urlBasedMaterialType;
-      console.log(`🎯 Final restoration of URL-based material type: ${urlBasedMaterialType}`);
+      console.log(`🎯 Using URL-based material type as fallback: ${urlBasedMaterialType}`);
     }
 
     // Extract product options using DOM parsing if DOM is available

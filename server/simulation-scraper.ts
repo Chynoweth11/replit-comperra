@@ -505,43 +505,47 @@ export class SimulationScraper {
     return flags;
   }
 
-  private detectMaterialType(htmlContent: string, category: MaterialCategory): string {
+  private detectMaterialType(htmlContent: string, category: MaterialCategory, url?: string): string {
     const text = htmlContent.toLowerCase();
+    const urlText = url ? url.toLowerCase() : '';
+    const combinedText = `${text} ${urlText}`;
+    
     console.log(`🔍 SIMULATION MATERIAL TYPE: Analyzing content for category: ${category}`);
     
-    // SLABS: Stone materials (priority order matters)
+    // SLABS: Stone materials (prioritize specific material detection)
     if (category === 'slabs') {
-      if (text.includes('quartzite')) {
-        console.log(`🎯 SIMULATION: Detected Natural Quartzite`);
-        return 'Natural Quartzite';
-      } else if (text.includes('granite')) {
+      // Check for granite first (including URL patterns like "grn" for Bedrosians)
+      if (combinedText.includes('granite') || urlText.includes('grn')) {
         console.log(`🎯 SIMULATION: Detected Natural Granite`);
         return 'Natural Granite';
-      } else if (text.includes('carrara') || text.includes('calacatta') || text.includes('statuario')) {
+      } else if (combinedText.includes('quartzite')) {
+        console.log(`🎯 SIMULATION: Detected Natural Quartzite`);
+        return 'Natural Quartzite';
+      } else if (combinedText.includes('carrara') || combinedText.includes('calacatta') || combinedText.includes('statuario')) {
         console.log(`🎯 SIMULATION: Detected Natural Marble (premium variety)`);
         return 'Natural Marble';
-      } else if (text.includes('marble')) {
+      } else if (combinedText.includes('marble')) {
         console.log(`🎯 SIMULATION: Detected Natural Marble`);
         return 'Natural Marble';
-      } else if (text.includes('travertine')) {
+      } else if (combinedText.includes('travertine')) {
         console.log(`🎯 SIMULATION: Detected Natural Travertine`);
         return 'Natural Travertine';
-      } else if (text.includes('limestone')) {
+      } else if (combinedText.includes('limestone')) {
         console.log(`🎯 SIMULATION: Detected Natural Limestone`);
         return 'Natural Limestone';
-      } else if (text.includes('slate')) {
+      } else if (combinedText.includes('slate')) {
         console.log(`🎯 SIMULATION: Detected Natural Slate`);
         return 'Natural Slate';
-      } else if (text.includes('onyx')) {
+      } else if (combinedText.includes('onyx')) {
         console.log(`🎯 SIMULATION: Detected Natural Onyx`);
         return 'Natural Onyx';
-      } else if (text.includes('engineered') && text.includes('quartz')) {
+      } else if (combinedText.includes('engineered') && combinedText.includes('quartz')) {
         console.log(`🎯 SIMULATION: Detected Engineered Quartz`);
         return 'Engineered Quartz';
-      } else if (text.includes('quartz')) {
+      } else if (combinedText.includes('quartz')) {
         console.log(`🎯 SIMULATION: Detected Engineered Quartz (general)`);
         return 'Engineered Quartz';
-      } else if (text.includes('porcelain') && text.includes('slab')) {
+      } else if (combinedText.includes('porcelain') && combinedText.includes('slab')) {
         console.log(`🎯 SIMULATION: Detected Porcelain Slab`);
         return 'Porcelain Slab';
       }
@@ -1001,7 +1005,7 @@ export class SimulationScraper {
         const category = this.detectCategory(url, htmlContent, dimensions);
         
         // Add material type and feature flags
-        specifications['materialType'] = this.detectMaterialType(htmlContent, category);
+        specifications['materialType'] = this.detectMaterialType(htmlContent, category, url);
         Object.assign(specifications, this.extractAdvancedFlags(htmlContent));
         
         // Enhanced image extraction with filtering
