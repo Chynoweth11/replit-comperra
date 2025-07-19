@@ -1494,16 +1494,88 @@ export class SimulationScraper {
   // Enhanced category detection from URL
   private detectCategoryFromURL(url: string): MaterialCategory {
     const urlLower = url.toLowerCase();
+    console.log(`🔍 SIMULATION CATEGORY DETECTION: Analyzing URL: ${url}`);
     
-    if (urlLower.includes('thermostat')) return 'thermostats';
-    if (urlLower.includes('heating') || urlLower.includes('radiant') || urlLower.includes('warmwire') || urlLower.includes('suntouch')) return 'heat';
-    if (urlLower.includes('carpet')) return 'carpet';
-    if (urlLower.includes('coretec') || urlLower.includes('vinyl') || urlLower.includes('lvt') || urlLower.includes('plank')) return 'lvt';
-    if (urlLower.includes('hardwood') || urlLower.includes('wood') || urlLower.includes('oak') || urlLower.includes('maple')) return 'hardwood';
-    if (urlLower.includes('quartzite') || urlLower.includes('quartz') || urlLower.includes('countertop') || urlLower.includes('granite') || urlLower.includes('marble')) return 'slabs';
-    if (urlLower.includes('slab')) return 'slabs';
-    if (urlLower.includes('tile')) return 'tiles';
+    // PRIORITY 1: Explicit slab indicators (highest priority)
+    if (urlLower.includes('/slab/') || urlLower.includes('/slabs/') || 
+        urlLower.includes('slab/') || urlLower.includes('slabs/') ||
+        urlLower.includes('-slab-') || urlLower.includes('-slabs-')) {
+      console.log(`✅ SIMULATION CATEGORY: Detected 'slabs' from explicit slab indicators`);
+      return 'slabs';
+    }
     
+    // PRIORITY 2: Stone materials that are typically slabs
+    if (urlLower.includes('granite') || urlLower.includes('marble') || 
+        urlLower.includes('quartzite') || urlLower.includes('quartz')) {
+      // Only categorize as tiles if explicitly in tile section
+      if (urlLower.includes('/tile/') || urlLower.includes('/tiles/') || 
+          urlLower.includes('tile/') || urlLower.includes('tiles/') ||
+          urlLower.includes('-tile-') || urlLower.includes('-tiles-')) {
+        console.log(`✅ SIMULATION CATEGORY: Stone material in tile section -> 'tiles'`);
+        return 'tiles';
+      } else {
+        console.log(`✅ SIMULATION CATEGORY: Stone material (granite/marble/quartzite/quartz) -> 'slabs'`);
+        return 'slabs';
+      }
+    }
+    
+    // PRIORITY 3: Countertop materials
+    if (urlLower.includes('countertop') || urlLower.includes('counter-top') || 
+        urlLower.includes('worktop')) {
+      console.log(`✅ SIMULATION CATEGORY: Countertop material -> 'slabs'`);
+      return 'slabs';
+    }
+    
+    // PRIORITY 4: Thermostats (before heating)
+    if (urlLower.includes('thermostat') || urlLower.includes('control') && 
+        (urlLower.includes('heat') || urlLower.includes('temp'))) {
+      console.log(`✅ SIMULATION CATEGORY: Thermostat -> 'thermostats'`);
+      return 'thermostats';
+    }
+    
+    // PRIORITY 5: Heating systems
+    if (urlLower.includes('heating') || urlLower.includes('radiant') || 
+        urlLower.includes('underfloor') || urlLower.includes('floor-heat') ||
+        urlLower.includes('heat-mat') || urlLower.includes('warming') ||
+        urlLower.includes('suntouch') || urlLower.includes('warmup') ||
+        urlLower.includes('warmwire')) {
+      console.log(`✅ SIMULATION CATEGORY: Heating system -> 'heat'`);
+      return 'heat';
+    }
+    
+    // PRIORITY 6: Carpet (including carpet tiles)
+    if (urlLower.includes('carpet')) {
+      console.log(`✅ SIMULATION CATEGORY: Carpet material -> 'carpet'`);
+      return 'carpet';
+    }
+    
+    // PRIORITY 7: LVT/Vinyl materials
+    if (urlLower.includes('vinyl') || urlLower.includes('lvt') || 
+        urlLower.includes('lvp') || urlLower.includes('luxury-vinyl') ||
+        urlLower.includes('plank') && !urlLower.includes('hardwood') ||
+        urlLower.includes('coretec')) {
+      console.log(`✅ SIMULATION CATEGORY: Vinyl/LVT material -> 'lvt'`);
+      return 'lvt';
+    }
+    
+    // PRIORITY 8: Hardwood materials
+    if (urlLower.includes('hardwood') || urlLower.includes('wood-flooring') ||
+        urlLower.includes('engineered-wood') || urlLower.includes('solid-wood') ||
+        (urlLower.includes('wood') && !urlLower.includes('tile')) ||
+        urlLower.includes('oak') || urlLower.includes('maple')) {
+      console.log(`✅ SIMULATION CATEGORY: Hardwood material -> 'hardwood'`);
+      return 'hardwood';
+    }
+    
+    // PRIORITY 9: Tiles (catch-all for remaining materials)
+    if (urlLower.includes('tile') || urlLower.includes('ceramic') || 
+        urlLower.includes('porcelain') || urlLower.includes('mosaic')) {
+      console.log(`✅ SIMULATION CATEGORY: Tile material -> 'tiles'`);
+      return 'tiles';
+    }
+    
+    // Default fallback
+    console.log(`⚠️  SIMULATION CATEGORY: No specific match found, defaulting to 'tiles'`);
     return 'tiles';
   }
 
