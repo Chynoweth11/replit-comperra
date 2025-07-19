@@ -664,42 +664,116 @@ export class SimulationScraper {
   }
 
   private detectCategory(url: string, htmlContent: string, dimensions?: string): MaterialCategory {
-    // Check dimensions first for slab detection
-    if (dimensions && this.isSlabByDimensions(dimensions)) return 'slabs';
-    
     const text = (url + ' ' + htmlContent).toLowerCase();
+    console.log(`🔍 SIMULATION CATEGORY DETECTION: Starting analysis...`);
+    console.log(`🔍 URL: ${url}`);
+    console.log(`🔍 Combined text preview: ${text.substring(0, 200)}...`);
     
-    // Enhanced compound detection with priority ordering
-    if (text.includes('thermostat')) return 'thermostats';
-    if (text.includes('heating') || text.includes('radiant')) return 'heat';
+    // PRIORITY LEVEL 1: Explicit slab indicators (HIGHEST PRIORITY)
+    if (text.includes('/slab') || text.includes('/slabs/') || text.includes('slab/')) {
+      console.log(`🎯 SIMULATION P1: Explicit slab URL path detected → slabs`);
+      return 'slabs';
+    }
     
-    // Carpet detection (including carpet tiles)
-    if (text.includes('carpet')) return 'carpet';
+    // PRIORITY LEVEL 2: Stone material compounds with slab
+    const slabCompounds = ['granite slab', 'marble slab', 'quartzite slab', 'quartz slab', 'stone slab', 'porcelain slab'];
+    for (const compound of slabCompounds) {
+      if (text.includes(compound)) {
+        console.log(`🎯 SIMULATION P2: Stone slab compound "${compound}" detected → slabs`);
+        return 'slabs';
+      }
+    }
     
-    // LVT/Vinyl detection
-    if (text.includes('lvt') || text.includes('luxury vinyl')) return 'lvt';
-    if (text.includes('vinyl plank') || text.includes('vinyl tile')) return 'lvt';
+    // PRIORITY LEVEL 3: Stone materials (granite, marble, quartzite, quartz) - DEFAULT TO SLABS
+    // Check for specific granite patterns in URL parameters
+    if (text.includes('grn') || text.includes('granite')) {
+      console.log(`🎯 SIMULATION P3: Granite detected (GRN pattern or granite keyword) → slabs (stone materials default to slabs)`);
+      return 'slabs';
+    }
+    if (text.includes('quartzite')) {
+      console.log(`🎯 SIMULATION P3: Quartzite detected → slabs (stone materials default to slabs)`);
+      return 'slabs';
+    }
+    if (text.includes('marble') || text.includes('mrb')) {
+      console.log(`🎯 SIMULATION P3: Marble detected → slabs (stone materials default to slabs)`);
+      return 'slabs';
+    }
+    if (text.includes('quartz') && !text.includes('tile')) {
+      console.log(`🎯 SIMULATION P3: Quartz detected (not tile) → slabs (stone materials default to slabs)`);
+      return 'slabs';
+    }
     
-    // Hardwood detection
-    if (text.includes('hardwood') || text.includes('engineered wood')) return 'hardwood';
-    if (text.includes('oak flooring') || text.includes('maple flooring')) return 'hardwood';
-
-    // Enhanced slab detection - prioritize quartz countertops
-    const slabCompounds = ['porcelain slab', 'marble slab', 'quartzite slab', 'granite slab', 'stone slab'];
-    if (slabCompounds.some(compound => text.includes(compound))) return 'slabs';
-    if (text.includes('quartz') || text.includes('countertop')) return 'slabs';
-    if (text.includes('slab')) return 'slabs';
-    if (text.includes('granite') || text.includes('marble') || text.includes('quartzite')) return 'slabs';
+    // Check URL parameters for slab indicators
+    if (text.includes('slab') || text.includes('slb')) {
+      console.log(`🎯 SIMULATION P3: Slab pattern in URL parameters → slabs`);
+      return 'slabs';
+    }
     
-    // Tile detection (should be after slab detection)
-    if (text.includes('tile') || text.includes('porcelain') || text.includes('ceramic')) return 'tiles';
-    if (text.includes('mosaic')) return 'tiles';
-
-    // Fallback detections
-    if (text.includes('vinyl')) return 'lvt';
-    if (text.includes('wood')) return 'hardwood';
-    if (text.includes('stone')) return 'slabs';
-
+    // PRIORITY LEVEL 4: Countertop context
+    if (text.includes('countertop') || text.includes('counter top')) {
+      console.log(`🎯 SIMULATION P4: Countertop context detected → slabs`);
+      return 'slabs';
+    }
+    
+    // PRIORITY LEVEL 5: General slab indicators
+    if (text.includes('slab')) {
+      console.log(`🎯 SIMULATION P5: General slab indicator detected → slabs`);
+      return 'slabs';
+    }
+    
+    // PRIORITY LEVEL 6: Other material categories
+    if (text.includes('thermostat')) {
+      console.log(`🎯 SIMULATION P6: Thermostat detected → thermostats`);
+      return 'thermostats';
+    }
+    if (text.includes('heating') || text.includes('radiant')) {
+      console.log(`🎯 SIMULATION P6: Heating/radiant detected → heat`);
+      return 'heat';
+    }
+    
+    // PRIORITY LEVEL 7: Flooring materials
+    if (text.includes('carpet') && !text.includes('tile')) {
+      console.log(`🎯 SIMULATION P7: Carpet (non-tile) detected → carpet`);
+      return 'carpet';
+    }
+    if (text.includes('carpet tile')) {
+      console.log(`🎯 SIMULATION P7: Carpet tile detected → carpet`);
+      return 'carpet';
+    }
+    
+    if (text.includes('luxury vinyl') || text.includes('lvt') || text.includes('vinyl plank')) {
+      console.log(`🎯 SIMULATION P7: LVT/Vinyl detected → lvt`);
+      return 'lvt';
+    }
+    
+    if (text.includes('hardwood') || text.includes('oak flooring') || text.includes('engineered wood')) {
+      console.log(`🎯 SIMULATION P7: Hardwood detected → hardwood`);
+      return 'hardwood';
+    }
+    
+    // PRIORITY LEVEL 8: Tile materials (ONLY if not stone materials)
+    if (text.includes('porcelain tile') || text.includes('ceramic tile') || text.includes('mosaic tile')) {
+      console.log(`🎯 SIMULATION P8: Specific tile type detected → tiles`);
+      return 'tiles';
+    }
+    if (text.includes('tile') && !text.includes('granite') && !text.includes('marble') && !text.includes('quartzite')) {
+      console.log(`🎯 SIMULATION P8: General tile (non-stone) detected → tiles`);
+      return 'tiles';
+    }
+    
+    // PRIORITY LEVEL 9: Dimensional check for slabs
+    if (dimensions && this.isSlabByDimensions(dimensions)) {
+      console.log(`🎯 SIMULATION P9: Slab dimensions detected → slabs`);
+      return 'slabs';
+    }
+    
+    // Final fallback - analyze for any remaining stone materials
+    if (text.includes('stone') || text.includes('travertine') || text.includes('limestone') || text.includes('slate')) {
+      console.log(`🎯 SIMULATION FALLBACK: Natural stone material detected → slabs`);
+      return 'slabs';
+    }
+    
+    console.log(`⚠️  SIMULATION: No specific match found, defaulting to 'tiles'`);
     return 'tiles';
   }
 
