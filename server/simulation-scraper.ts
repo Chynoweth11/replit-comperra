@@ -507,35 +507,159 @@ export class SimulationScraper {
 
   private detectMaterialType(htmlContent: string, category: MaterialCategory): string {
     const text = htmlContent.toLowerCase();
+    console.log(`🔍 SIMULATION MATERIAL TYPE: Analyzing content for category: ${category}`);
+    
+    // SLABS: Stone materials (priority order matters)
     if (category === 'slabs') {
-        if (text.includes('porcelain slab')) return 'Porcelain Slab';
-        if (text.includes('engineered quartz')) return 'Engineered Quartz';
-        if (text.includes('quartzite')) return 'Natural Quartzite';
-        if (text.includes('granite')) return 'Natural Granite';
-        if (text.includes('marble')) return 'Natural Marble';
-        return 'Natural Stone';
+      if (text.includes('quartzite')) {
+        console.log(`🎯 SIMULATION: Detected Natural Quartzite`);
+        return 'Natural Quartzite';
+      } else if (text.includes('granite')) {
+        console.log(`🎯 SIMULATION: Detected Natural Granite`);
+        return 'Natural Granite';
+      } else if (text.includes('carrara') || text.includes('calacatta') || text.includes('statuario')) {
+        console.log(`🎯 SIMULATION: Detected Natural Marble (premium variety)`);
+        return 'Natural Marble';
+      } else if (text.includes('marble')) {
+        console.log(`🎯 SIMULATION: Detected Natural Marble`);
+        return 'Natural Marble';
+      } else if (text.includes('travertine')) {
+        console.log(`🎯 SIMULATION: Detected Natural Travertine`);
+        return 'Natural Travertine';
+      } else if (text.includes('limestone')) {
+        console.log(`🎯 SIMULATION: Detected Natural Limestone`);
+        return 'Natural Limestone';
+      } else if (text.includes('slate')) {
+        console.log(`🎯 SIMULATION: Detected Natural Slate`);
+        return 'Natural Slate';
+      } else if (text.includes('onyx')) {
+        console.log(`🎯 SIMULATION: Detected Natural Onyx`);
+        return 'Natural Onyx';
+      } else if (text.includes('engineered') && text.includes('quartz')) {
+        console.log(`🎯 SIMULATION: Detected Engineered Quartz`);
+        return 'Engineered Quartz';
+      } else if (text.includes('quartz')) {
+        console.log(`🎯 SIMULATION: Detected Engineered Quartz (general)`);
+        return 'Engineered Quartz';
+      } else if (text.includes('porcelain') && text.includes('slab')) {
+        console.log(`🎯 SIMULATION: Detected Porcelain Slab`);
+        return 'Porcelain Slab';
+      }
+      return 'Natural Stone';
     }
+    
+    // TILES: Ceramic and porcelain types
     if (category === 'tiles') {
-        if (text.includes('porcelain')) return 'Porcelain';
-        if (text.includes('ceramic')) return 'Ceramic';
-        if (text.includes('natural stone')) return 'Natural Stone Tile';
-        return 'Ceramic';
+      if (text.includes('porcelain')) {
+        console.log(`🎯 SIMULATION: Detected Porcelain Tile`);
+        return 'Porcelain Tile';
+      } else if (text.includes('ceramic')) {
+        console.log(`🎯 SIMULATION: Detected Ceramic Tile`);
+        return 'Ceramic Tile';
+      } else if (text.includes('mosaic')) {
+        console.log(`🎯 SIMULATION: Detected Mosaic Tile`);
+        return 'Mosaic Tile';
+      } else if (text.includes('glass') && text.includes('tile')) {
+        console.log(`🎯 SIMULATION: Detected Glass Tile`);
+        return 'Glass Tile';
+      } else if (text.includes('natural stone')) {
+        console.log(`🎯 SIMULATION: Detected Natural Stone Tile`);
+        return 'Natural Stone Tile';
+      }
+      return 'Ceramic Tile';
     }
-    if (category === 'lvt') {
-        if (text.includes('luxury vinyl plank')) return 'Luxury Vinyl Plank';
-        if (text.includes('waterproof')) return 'Waterproof LVT';
-        return 'Luxury Vinyl Tile';
-    }
+    
+    // HARDWOOD: Wood species detection
     if (category === 'hardwood') {
-        if (text.includes('engineered')) return 'Engineered Hardwood';
-        if (text.includes('reclaimed')) return 'Reclaimed Wood';
+      if (text.includes('red oak')) {
+        console.log(`🎯 SIMULATION: Detected Red Oak`);
+        return 'Red Oak';
+      } else if (text.includes('white oak')) {
+        console.log(`🎯 SIMULATION: Detected White Oak`);
+        return 'White Oak';
+      } else if (text.includes('oak')) {
+        console.log(`🎯 SIMULATION: Detected Oak`);
+        return 'Oak';
+      } else if (text.includes('maple')) {
+        console.log(`🎯 SIMULATION: Detected Maple`);
+        return 'Maple';
+      } else if (text.includes('cherry')) {
+        console.log(`🎯 SIMULATION: Detected Cherry`);
+        return 'Cherry';
+      } else if (text.includes('walnut')) {
+        console.log(`🎯 SIMULATION: Detected Walnut`);
+        return 'Walnut';
+      } else if (text.includes('hickory')) {
+        console.log(`🎯 SIMULATION: Detected Hickory`);
+        return 'Hickory';
+      } else if (text.includes('pine')) {
+        console.log(`🎯 SIMULATION: Detected Pine`);
+        return 'Pine';
+      } else if (text.includes('ash')) {
+        console.log(`🎯 SIMULATION: Detected Ash`);
+        return 'Ash';
+      } else if (text.includes('birch')) {
+        console.log(`🎯 SIMULATION: Detected Birch`);
+        return 'Birch';
+      } else if (text.includes('bamboo')) {
+        console.log(`🎯 SIMULATION: Detected Bamboo`);
+        return 'Bamboo';
+      } else if (text.includes('engineered')) {
+        console.log(`🎯 SIMULATION: Detected Engineered Hardwood`);
+        return 'Engineered Hardwood';
+      } else if (text.includes('solid wood')) {
+        console.log(`🎯 SIMULATION: Detected Solid Hardwood`);
         return 'Solid Hardwood';
+      }
+      return 'Solid Hardwood';
     }
+    
+    // LVT/VINYL: Construction types
+    if (category === 'lvt') {
+      if (text.includes('spc') || text.includes('stone plastic composite')) {
+        console.log(`🎯 SIMULATION: Detected SPC (Stone Plastic Composite)`);
+        return 'SPC (Stone Plastic Composite)';
+      } else if (text.includes('wpc') || text.includes('wood plastic composite')) {
+        console.log(`🎯 SIMULATION: Detected WPC (Wood Plastic Composite)`);
+        return 'WPC (Wood Plastic Composite)';
+      } else if (text.includes('rigid core')) {
+        console.log(`🎯 SIMULATION: Detected Rigid Core Vinyl`);
+        return 'Rigid Core Vinyl';
+      } else if (text.includes('luxury vinyl tile')) {
+        console.log(`🎯 SIMULATION: Detected LVT (Luxury Vinyl Tile)`);
+        return 'LVT (Luxury Vinyl Tile)';
+      } else if (text.includes('luxury vinyl plank')) {
+        console.log(`🎯 SIMULATION: Detected LVP (Luxury Vinyl Plank)`);
+        return 'LVP (Luxury Vinyl Plank)';
+      } else if (text.includes('luxury vinyl')) {
+        console.log(`🎯 SIMULATION: Detected Luxury Vinyl`);
+        return 'Luxury Vinyl';
+      }
+      return 'Luxury Vinyl Tile';
+    }
+    
+    // CARPET: Types
     if (category === 'carpet') {
-        if (text.includes('carpet tile')) return 'Carpet Tile';
-        if (text.includes('broadloom')) return 'Broadloom';
+      if (text.includes('carpet tile')) {
+        console.log(`🎯 SIMULATION: Detected Carpet Tile`);
         return 'Carpet Tile';
+      } else if (text.includes('broadloom')) {
+        console.log(`🎯 SIMULATION: Detected Broadloom Carpet`);
+        return 'Broadloom Carpet';
+      } else if (text.includes('area rug')) {
+        console.log(`🎯 SIMULATION: Detected Area Rug`);
+        return 'Area Rug';
+      } else if (text.includes('berber')) {
+        console.log(`🎯 SIMULATION: Detected Berber Carpet`);
+        return 'Berber Carpet';
+      } else if (text.includes('plush')) {
+        console.log(`🎯 SIMULATION: Detected Plush Carpet`);
+        return 'Plush Carpet';
+      }
+      return 'Carpet Tile';
     }
+    
+    console.log(`⚠️  SIMULATION: No specific material type detected for ${category}`);
     return 'Unknown';
   }
 
@@ -1073,7 +1197,33 @@ export class SimulationScraper {
         break;
         
       case 'slabs':
-        enhanced['Material Type'] = enhanced['materialType'] || enhanced['Material Type'] || (url.toLowerCase().includes('granite') ? 'Natural Granite' : url.toLowerCase().includes('marble') ? 'Natural Marble' : url.toLowerCase().includes('quartz') ? 'Engineered Quartz' : 'Natural Stone');
+        // Enhanced material type detection for slabs using proper priority order
+        let materialType = 'Natural Stone';
+        const urlLower = url.toLowerCase();
+        if (urlLower.includes('quartzite')) {
+          materialType = 'Natural Quartzite';
+        } else if (urlLower.includes('granite')) {
+          materialType = 'Natural Granite';
+        } else if (urlLower.includes('carrara') || urlLower.includes('calacatta') || urlLower.includes('statuario')) {
+          materialType = 'Natural Marble';
+        } else if (urlLower.includes('marble')) {
+          materialType = 'Natural Marble';
+        } else if (urlLower.includes('travertine')) {
+          materialType = 'Natural Travertine';
+        } else if (urlLower.includes('limestone')) {
+          materialType = 'Natural Limestone';
+        } else if (urlLower.includes('slate')) {
+          materialType = 'Natural Slate';
+        } else if (urlLower.includes('onyx')) {
+          materialType = 'Natural Onyx';
+        } else if (urlLower.includes('engineered') && urlLower.includes('quartz')) {
+          materialType = 'Engineered Quartz';
+        } else if (urlLower.includes('quartz')) {
+          materialType = 'Engineered Quartz';
+        } else if (urlLower.includes('porcelain') && urlLower.includes('slab')) {
+          materialType = 'Porcelain Slab';
+        }
+        enhanced['Material Type'] = enhanced['materialType'] || enhanced['Material Type'] || materialType;
         enhanced['Thickness'] = enhanced['thickness'] || enhanced['Thickness'] || '2cm';
         enhanced['Slab Dimensions'] = enhanced['slabDimensions'] || enhanced['Slab Dimensions'] || 'Standard size of the slab material, could vary';
         enhanced['Finish'] = enhanced['finish'] || enhanced['Finish'] || (url.toLowerCase().includes('honed') ? 'Honed' : 'Polished');
@@ -1089,9 +1239,36 @@ export class SimulationScraper {
         break;
         
       case 'hardwood':
-        enhanced['Species'] = enhanced['species'] || enhanced['Species'] || 'Oak';
+        // Enhanced wood species detection for hardwood
+        let woodSpecies = 'Oak';
+        const urlText = url.toLowerCase();
+        if (urlText.includes('red oak')) {
+          woodSpecies = 'Red Oak';
+        } else if (urlText.includes('white oak')) {
+          woodSpecies = 'White Oak';
+        } else if (urlText.includes('oak')) {
+          woodSpecies = 'Oak';
+        } else if (urlText.includes('maple')) {
+          woodSpecies = 'Maple';
+        } else if (urlText.includes('cherry')) {
+          woodSpecies = 'Cherry';
+        } else if (urlText.includes('walnut')) {
+          woodSpecies = 'Walnut';
+        } else if (urlText.includes('hickory')) {
+          woodSpecies = 'Hickory';
+        } else if (urlText.includes('pine')) {
+          woodSpecies = 'Pine';
+        } else if (urlText.includes('ash')) {
+          woodSpecies = 'Ash';
+        } else if (urlText.includes('birch')) {
+          woodSpecies = 'Birch';
+        } else if (urlText.includes('bamboo')) {
+          woodSpecies = 'Bamboo';
+        }
+        
+        enhanced['Species'] = enhanced['species'] || enhanced['Species'] || woodSpecies;
         enhanced['Grade'] = enhanced['grade'] || enhanced['Grade'] || 'Select';
-        enhanced['Construction Type'] = enhanced['construction'] || enhanced['Construction Type'] || 'Solid';
+        enhanced['Construction Type'] = enhanced['construction'] || enhanced['Construction Type'] || (urlText.includes('engineered') ? 'Engineered' : 'Solid');
         enhanced['Finish'] = enhanced['finish'] || enhanced['Finish'] || 'Urethane';
         enhanced['Janka Hardness'] = enhanced['jankaHardness'] || enhanced['Janka Hardness'] || '1290 lbf';
         enhanced['Width'] = enhanced['width'] || enhanced['Width'] || '5"';
