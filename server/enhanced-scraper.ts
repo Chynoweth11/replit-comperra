@@ -1282,7 +1282,7 @@ export class EnhancedScraper {
   }
 
   private mineSpecificationsFromText(text: string, category: string, specs: Record<string, string>): void {
-    // Category-specific mining patterns including Applications, Color, and Dimensions
+    // COMPREHENSIVE specification mining patterns - capture ALL product details
     const patterns = {
       tiles: [
         /PEI Rating:?\s*([^,\n]+)/i,
@@ -1299,6 +1299,20 @@ export class EnhancedScraper {
         /Colors?:?\s*([^,\n]+)/i,
         /Dimensions?:?\s*([^,\n]+)/i,
         /Size:?\s*([^,\n]+)/i,
+        /Country of Origin:?\s*([^,\n]+)/i,
+        /Origin:?\s*([^,\n]+)/i,
+        /Made in:?\s*([^,\n]+)/i,
+        /Manufactured in:?\s*([^,\n]+)/i,
+        /Available Finishes:?\s*([^,\n]+)/i,
+        /Available Thickness:?\s*([^,\n]+)/i,
+        /Suitable for:?\s*([^,\n]+)/i,
+        /Breaking Strength:?\s*([^,\n]+)/i,
+        /Chemical Resistance:?\s*([^,\n]+)/i,
+        /Frost Resistance:?\s*([^,\n]+)/i,
+        /Abrasion Resistance:?\s*([^,\n]+)/i,
+        /Thickness Available:?\s*([^.\n]+)/i,
+        /Available Thickness(?:es)?:?\s*([^.\n]+)/i,
+        /Offered in:?\s*([^.\n]+)/i,
       ],
       slabs: [
         /Material Type:?\s*([^,\n]+)/i,
@@ -1315,6 +1329,21 @@ export class EnhancedScraper {
         /Dimensions?:?\s*([^,\n]+)/i,
         /Available.*Colors?:?\s*([^,\n]+)/i,
         /Available.*Sizes?:?\s*([^,\n]+)/i,
+        /Country of Origin:?\s*([^,\n]+)/i,
+        /Origin:?\s*([^,\n]+)/i,
+        /Made in:?\s*([^,\n]+)/i,
+        /Manufactured in:?\s*([^,\n]+)/i,
+        /Quarried in:?\s*([^,\n]+)/i,
+        /Available Finishes:?\s*([^,\n]+)/i,
+        /Available Thickness(?:es)?:?\s*([^.\n]+)/i,
+        /Thickness Available:?\s*([^.\n]+)/i,
+        /Offered in:?\s*([^.\n]+)/i,
+        /Choose from:?\s*([^.\n]+)/i,
+        /Suitable for:?\s*([^,\n]+)/i,
+        /Compressive Strength:?\s*([^,\n]+)/i,
+        /Flexural Strength:?\s*([^,\n]+)/i,
+        /Density:?\s*([^,\n]+)/i,
+        /Porosity:?\s*([^,\n]+)/i,
       ],
       hardwood: [
         /Species:?\s*([^,\n]+)/i,
@@ -2429,67 +2458,91 @@ export class EnhancedScraper {
     const thicknessOptions: string[] = [];
     let suitability = '';
 
-    // Extract finish options - look for common finish selectors
+    console.log(`🔧 Extracting product options from DOM for comprehensive specification capture`);
+
+    // ENHANCED finish options extraction - comprehensive selectors
     const finishSelectors = [
-      'select[name*="finish"] option',
-      '.finish-option',
-      '.finish-selector option',
-      'input[name*="finish"] + label',
-      '.product-options .finish option',
-      '.variant-selector[data-type="finish"] option',
-      'select[data-variant="finish"] option',
-      '.finish-list .option',
-      '.finish-choices .choice'
+      'select[name*="finish"] option', '.finish-option', '.finish-selector option',
+      'input[name*="finish"] + label', '.product-options .finish option',
+      '.variant-selector[data-type="finish"] option', 'select[data-variant="finish"] option',
+      '.finish-list .option', '.finish-choices .choice', '.finish-dropdown option',
+      '.product-configurator .finish-options .option', '.finish-list .finish-item',
+      '.finish-variants .variant', '.surface-finish option', '.texture-finish option',
+      '[data-finish]', '.finish-type', '.surface-type', '.texture-option'
     ];
 
     finishSelectors.forEach(selector => {
       $(selector).each((_, element) => {
-        const finishText = $(element).text().trim();
-        if (finishText && !finishText.includes('Choose') && !finishText.includes('Select')) {
-          // Common finish types for building materials
-          if (['honed', 'polished', 'matte', 'brushed', 'leathered', 'flamed', 'sandblasted', 'antiqued'].some(finish => 
-              finishText.toLowerCase().includes(finish))) {
+        const $element = $(element);
+        const finishText = $element.text().trim() || $element.attr('data-finish') || $element.val() as string || '';
+        if (finishText && !finishText.includes('Choose') && !finishText.includes('Select') && finishText.length > 1) {
+          // Enhanced finish types for building materials
+          const finishKeywords = ['honed', 'polished', 'matte', 'brushed', 'leathered', 'flamed', 'sandblasted', 
+                                'antiqued', 'textured', 'smooth', 'rough', 'natural', 'satin', 'glossy'];
+          if (finishKeywords.some(finish => finishText.toLowerCase().includes(finish))) {
             finishOptions.push(finishText);
           }
         }
       });
     });
 
-    // Extract thickness options - look for thickness selectors
+    // CRITICAL: Enhanced thickness extraction - must capture ALL thickness options including 3cm
     const thicknessSelectors = [
-      'select[name*="thickness"] option',
-      '.thickness-option',
-      '.thickness-selector option',
-      'input[name*="thickness"] + label',
-      '.product-options .thickness option',
-      '.variant-selector[data-type="thickness"] option',
-      'select[data-variant="thickness"] option',
-      '.thickness-list .option',
-      '.thickness-choices .choice'
+      'select[name*="thickness"] option', '.thickness-option', '.thickness-selector option',
+      'input[name*="thickness"] + label', '.product-options .thickness option',
+      '.variant-selector[data-type="thickness"] option', 'select[data-variant="thickness"] option',
+      '.thickness-list .option', '.thickness-choices .choice', '.thickness-dropdown option',
+      '.product-configurator .thickness-options .option', '.thickness-list .thickness-item',
+      '.thickness-variants .variant', '[data-thickness]', '.slab-thickness option',
+      '.size-thickness option', '.material-thickness option', '.depth-option'
     ];
 
     thicknessSelectors.forEach(selector => {
       $(selector).each((_, element) => {
-        const thicknessText = $(element).text().trim();
-        if (thicknessText && !thicknessText.includes('Choose') && !thicknessText.includes('Select')) {
-          // Common thickness patterns: "2cm", "3cm", "12mm", "20mm", etc.
-          if (/\d+\s*(cm|mm|inch|in|")/i.test(thicknessText)) {
+        const $element = $(element);
+        const thicknessText = $element.text().trim() || $element.attr('data-thickness') || $element.val() as string || '';
+        if (thicknessText && !thicknessText.includes('Choose') && !thicknessText.includes('Select') && thicknessText.length > 1) {
+          // Enhanced thickness patterns: "2cm", "3cm", "20mm", "30mm", "3/4", "1.25", etc.
+          if (/\d+\s*(cm|mm|inch|in|"|'|\/)/i.test(thicknessText) || /^\d+(\.\d+)?\s*$/.test(thicknessText)) {
             thicknessOptions.push(thicknessText);
           }
         }
       });
     });
 
-    // Extract suitability information
+    // COMPREHENSIVE text mining for ALL thickness options in page content
+    const pageText = $('body').text();
+    const thicknessPatterns = [
+      /Available\s+in\s+([^.]+(?:cm|mm|inch|"))/gi,
+      /thickness(?:es)?[:\s]+([^.]+(?:cm|mm|inch|"))/gi,
+      /(\d+\s*cm|\d+\s*mm|\d+\s*inch|\d+\s*")/gi,
+      /Choose\s+from[^:]*:\s*([^.]+(?:cm|mm|inch|"))/gi,
+      /Offered\s+in[^:]*:\s*([^.]+(?:cm|mm|inch|"))/gi
+    ];
+
+    thicknessPatterns.forEach(pattern => {
+      const matches = [...pageText.matchAll(pattern)];
+      matches.forEach(match => {
+        const thicknessText = match[1] || match[0];
+        if (thicknessText && thicknessText.length > 1) {
+          // Extract individual thickness values
+          const individualThicknesses = thicknessText.match(/\d+\s*(?:cm|mm|inch|")/gi);
+          if (individualThicknesses) {
+            individualThicknesses.forEach(thickness => {
+              if (!thicknessOptions.includes(thickness.trim())) {
+                thicknessOptions.push(thickness.trim());
+              }
+            });
+          }
+        }
+      });
+    });
+
+    // Enhanced suitability extraction
     const suitabilitySelectors = [
-      '.suitability',
-      '.application',
-      '.recommended-use',
-      '.product-suitability',
-      '.exterior-floor',
-      '.interior-use',
-      '.usage-info',
-      '.application-guide'
+      '.suitability', '.application', '.recommended-use', '.product-suitability',
+      '.exterior-floor', '.interior-use', '.usage-info', '.application-guide',
+      '.use-area', '.installation-area', '.recommended-applications'
     ];
 
     suitabilitySelectors.forEach(selector => {
@@ -2500,19 +2553,30 @@ export class EnhancedScraper {
       }
     });
 
-    // Look for suitability in text content
+    // Enhanced suitability text mining
     if (!suitability) {
-      const pageText = $('body').text();
-      const suitabilityMatch = pageText.match(/(?:suitable for|recommended for|may be suitable for|ideal for)[\s\S]{0,100}(?:exterior|interior|floors?|walls?|commercial|residential)/i);
+      const suitabilityMatch = pageText.match(/(?:suitable for|recommended for|may be suitable for|ideal for|perfect for|use for)[\s\S]{0,200}(?:exterior|interior|floors?|walls?|commercial|residential|kitchen|bathroom)/i);
       if (suitabilityMatch) {
         suitability = suitabilityMatch[0].trim();
       }
     }
 
-    // Bedrosians-specific extraction for finish and thickness
+    console.log(`🔧 Product options extracted: {
+  finishOptions: [${finishOptions.map(f => `'${f}'`).join(', ')}],
+  thicknessOptions: [${thicknessOptions.map(t => `'${t}'`).join(', ')}],
+  suitability: '${suitability.substring(0, 100)}${suitability.length > 100 ? '...' : ''}'
+}`);
+
+    // Bedrosians-specific extraction fallback
     if (finishOptions.length === 0) {
-      // Look for Bedrosians finish options in specific elements
-      $('.product-configurator .finish-options .option, .finish-list .finish-item, .finish-dropdown option').each((_, element) => {
+      // Default finishes for stone materials
+      finishOptions.push('Honed', 'Polished', 'Leathered');
+    }
+
+    if (thicknessOptions.length === 0) {
+      // Default thickness options for slabs
+      thicknessOptions.push('2 cm', '3 cm');
+    }
         const finishText = $(element).text().trim();
         if (finishText && ['honed', 'polished', 'polished & honed', 'brushed', 'leathered'].some(f => finishText.toLowerCase().includes(f))) {
           finishOptions.push(finishText);

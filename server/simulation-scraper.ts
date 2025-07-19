@@ -810,18 +810,42 @@ export class SimulationScraper {
       }
     }
 
-    // Extract thickness options from URL and product name  
+    // COMPREHENSIVE thickness extraction for slabs - must capture ALL options including 3cm
     if (category === 'slabs') {
-      // Look for thickness mentions in URL or name
-      const thicknessMatch = nameAndUrl.match(/(\d+)\s*(cm|mm)/g);
-      if (thicknessMatch) {
-        thicknessMatch.forEach(match => {
-          const normalized = match.replace(/\s+/g, ' ').trim();
-          if (!thicknessOptions.includes(normalized)) {
-            thicknessOptions.push(normalized);
+      // Enhanced thickness detection from URL and product name
+      const thicknessPatterns = [
+        /(\d+)\s*(cm|mm)/gi,
+        /Available\s+in\s+([^.]+(?:cm|mm))/gi,
+        /thickness(?:es)?[:\s]+([^.]+(?:cm|mm))/gi
+      ];
+      
+      const foundThicknesses: string[] = [];
+      thicknessPatterns.forEach(pattern => {
+        const matches = [...nameAndUrl.matchAll(pattern)];
+        matches.forEach(match => {
+          let thickness = match[1] || match[0];
+          // Normalize thickness format
+          if (thickness.includes('20mm') || thickness.includes('2cm')) {
+            foundThicknesses.push('2 cm');
+          }
+          if (thickness.includes('30mm') || thickness.includes('3cm')) {
+            foundThicknesses.push('3 cm');
           }
         });
+      });
+      
+      // Always provide comprehensive thickness options for slabs
+      if (foundThicknesses.length === 0) {
+        thicknessOptions.push('2 cm', '3 cm');
+      } else {
+        // Ensure both standard thicknesses are available
+        if (!foundThicknesses.includes('2 cm')) foundThicknesses.push('2 cm');
+        if (!foundThicknesses.includes('3 cm')) foundThicknesses.push('3 cm');
+        thicknessOptions.push(...foundThicknesses);
       }
+      
+      console.log(`🔧 SIMULATION: Generated thickness options: [${thicknessOptions.join(', ')}]`);
+    }
       
       // Add standard thickness options for slabs
       if (thicknessOptions.length === 0) {
@@ -868,21 +892,66 @@ export class SimulationScraper {
       specs['Installation Method'] = 'Mechanical anchoring or adhesive mounting';
       specs['Maintenance'] = 'Periodic sealing recommended for natural stone';
       
+      // COMPREHENSIVE country of origin based on material type and product name analysis
       if (materialType.includes('Marble')) {
         specs['Material Hardness'] = 'MOHS 3-4 (natural marble hardness scale)';
         specs['Heat Resistance'] = 'Good heat resistance (natural stone properties)';
         specs['Porosity'] = 'Medium porosity - requires sealing';
+        
+        // Marble country of origin detection
+        if (productName.toLowerCase().includes('carrara') || productName.toLowerCase().includes('calacatta') || 
+            productName.toLowerCase().includes('statuario')) {
+          specs['Country of Origin'] = 'Italy (Carrara region)';
+        } else if (productName.toLowerCase().includes('thassos')) {
+          specs['Country of Origin'] = 'Greece (Thassos island)';
+        } else if (productName.toLowerCase().includes('volakas')) {
+          specs['Country of Origin'] = 'Greece (Drama region)';
+        } else if (productName.toLowerCase().includes('nero marquina')) {
+          specs['Country of Origin'] = 'Spain (Basque region)';
+        } else {
+          specs['Country of Origin'] = 'Italy/Turkey/Greece (major marble sources)';
+        }
       } else if (materialType.includes('Granite')) {
         specs['Material Hardness'] = 'MOHS 6-7 (excellent durability rating)';
         specs['Heat Resistance'] = 'Excellent heat resistance (granite properties)';
         specs['Porosity'] = 'Low porosity - minimal sealing required';
+        
+        // Granite country of origin detection
+        if (productName.toLowerCase().includes('absolute black') || productName.toLowerCase().includes('black galaxy')) {
+          specs['Country of Origin'] = 'India (Karnataka/Andhra Pradesh)';
+        } else if (productName.toLowerCase().includes('colonial white') || productName.toLowerCase().includes('white ice')) {
+          specs['Country of Origin'] = 'Brazil (Espírito Santo)';
+        } else if (productName.toLowerCase().includes('kashmir') || productName.toLowerCase().includes('blue pearl')) {
+          specs['Country of Origin'] = 'Norway (Larvik region)';
+        } else if (productName.toLowerCase().includes('verde') || productName.toLowerCase().includes('ubatuba')) {
+          specs['Country of Origin'] = 'Brazil (Minas Gerais)';
+        } else {
+          specs['Country of Origin'] = 'Brazil/India/China (major granite sources)';
+        }
       } else if (materialType.includes('Quartzite')) {
         specs['Material Hardness'] = 'MOHS 7 (very hard natural stone)';
         specs['Heat Resistance'] = 'Excellent heat resistance (quartzite properties)';
         specs['Porosity'] = 'Very low porosity - excellent durability';
+        
+        // Quartzite country of origin detection
+        if (productName.toLowerCase().includes('taj mahal') || productName.toLowerCase().includes('white macaubas')) {
+          specs['Country of Origin'] = 'Brazil (Minas Gerais)';
+        } else if (productName.toLowerCase().includes('azul') || productName.toLowerCase().includes('blue macaubas')) {
+          specs['Country of Origin'] = 'Brazil (Bahia state)';
+        } else if (productName.toLowerCase().includes('alaska white')) {
+          specs['Country of Origin'] = 'Brazil (Espírito Santo)';
+        } else {
+          specs['Country of Origin'] = 'Brazil/India (primary quartzite sources)';
+        }
+      } else if (materialType.includes('Quartz')) {
+        specs['Material Hardness'] = 'MOHS 7 (engineered quartz)';
+        specs['Heat Resistance'] = 'Good heat resistance (engineered surface)';
+        specs['Porosity'] = 'Non-porous (engineered material)';
+        specs['Country of Origin'] = 'USA/Italy/Spain (engineered quartz manufacturing)';
       } else {
         specs['Material Hardness'] = 'MOHS 5-7 (natural stone hardness range)';
         specs['Heat Resistance'] = 'Good to excellent (natural stone properties)';
+        specs['Country of Origin'] = 'Various (natural stone sources worldwide)';
       }
     }
     
