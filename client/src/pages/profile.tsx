@@ -240,6 +240,7 @@ export default function ProfilePage() {
             zipCode: userData.zipCode || '',
             phoneNumber: userData.phone || '',
             companyName: userData.companyName || '',
+            role: userData.role || 'customer',
             preferences: {
               emailNotifications: userData.emailNotifications ?? true,
               smsNotifications: userData.smsNotifications ?? false,
