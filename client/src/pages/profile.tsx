@@ -74,11 +74,11 @@ export default function ProfilePage() {
               body: JSON.stringify({
                 uid: user.uid,
                 email: user.email,
-                name: user.displayName || user.name,
-                role: user.role || 'customer',
-                phone: user.phone || '',
-                zipCode: user.zipCode || '',
-                companyName: user.companyName || '',
+                name: user.displayName || '',
+                role: 'customer', // Default role since user.role doesn't exist on Firebase User
+                phone: '',
+                zipCode: '',
+                companyName: '',
                 emailNotifications: true,
                 smsNotifications: false,
                 newsletterSubscription: true
@@ -89,11 +89,11 @@ export default function ProfilePage() {
               const createResult = await createResponse.json();
               const userData = createResult.user;
               setProfile({
-                displayName: userData.name || user.displayName || user.name || '',
+                displayName: userData.name || user.displayName || '',
                 email: userData.email || user.email || '',
-                zipCode: userData.zipCode || user.zipCode || '',
-                phoneNumber: userData.phone || user.phone || '',
-                companyName: userData.companyName || user.companyName || '',
+                zipCode: userData.zipCode || '',
+                phoneNumber: userData.phone || '',
+                companyName: userData.companyName || '',
                 preferences: {
                   emailNotifications: userData.emailNotifications ?? true,
                   smsNotifications: userData.smsNotifications ?? false,
@@ -104,11 +104,11 @@ export default function ProfilePage() {
               // Fallback to user data
               setProfile(prev => ({
                 ...prev,
-                displayName: user.displayName || user.name || '',
+                displayName: user.displayName || '',
                 email: user.email || '',
-                zipCode: user.zipCode || '',
-                phoneNumber: user.phone || '',
-                companyName: user.companyName || ''
+                zipCode: '',
+                phoneNumber: '',
+                companyName: ''
               }));
             }
           }
@@ -118,7 +118,10 @@ export default function ProfilePage() {
           setProfile(prev => ({
             ...prev,
             displayName: user.displayName || '',
-            email: user.email || ''
+            email: user.email || '',
+            zipCode: '',
+            phoneNumber: '',
+            companyName: ''
           }));
         }
       };
@@ -169,7 +172,7 @@ export default function ProfilePage() {
         emailNotifications: profile.preferences.emailNotifications,
         smsNotifications: profile.preferences.smsNotifications,
         newsletterSubscription: profile.preferences.newsletterSubscription,
-        role: user.role || 'customer',
+        role: 'customer', // Default role since user.role doesn't exist on Firebase User
         uid: user.uid
       };
 
