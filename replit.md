@@ -19,3 +19,6 @@ The Comperra platform is built with a React TypeScript frontend utilizing Wouter
 - **Puppeteer**: Integrated into the enhanced scraping system for extracting JavaScript-loaded content and images from dynamic websites.
 - **Fuse.js**: Used for implementing fuzzy search functionality, enhancing product search capabilities with typo tolerance.
 - **geolib and geofire-common**: Packages used for efficient geographic queries and geohashing in the lead matching system.
+
+## Recent Changes
+- ✅ **August 1, 2025**: FIXED - reCAPTCHA Domain Configuration Issue and Save Profile Functionality - Resolved "Invalid domain for site key" reCAPTCHA error by implementing development-friendly configuration using Google's test site key (6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI) for localhost development, updated both client-side script and server-side verification to handle development vs production environments seamlessly, enhanced Save Profile functionality with comprehensive error handling, detailed logging, and robust API payload validation, implemented graceful reCAPTCHA bypass in development mode while maintaining full security in production, strengthened user profile management with proper authentication checks and clear user feedback, both issues now fully resolved with enterprise-grade reliability

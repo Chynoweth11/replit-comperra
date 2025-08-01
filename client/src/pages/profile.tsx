@@ -145,33 +145,55 @@ export default function ProfilePage() {
   };
 
   const handleSave = async () => {
+    if (!user?.uid) {
+      toast({
+        title: "Error",
+        description: "User not authenticated. Please sign in again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSaving(true);
     try {
+      console.log('💾 Saving profile for user:', user.uid);
+      console.log('📝 Profile data:', profile);
+      
+      // Prepare the update payload
+      const updatePayload = {
+        name: profile.displayName || '',
+        email: profile.email || user.email,
+        phone: profile.phoneNumber || '',
+        zipCode: profile.zipCode || '',
+        companyName: profile.companyName || '',
+        emailNotifications: profile.preferences.emailNotifications,
+        smsNotifications: profile.preferences.smsNotifications,
+        newsletterSubscription: profile.preferences.newsletterSubscription,
+        role: user.role || 'customer',
+        uid: user.uid
+      };
+
+      console.log('📤 Sending update payload:', updatePayload);
+
       // Save to database using API
-      const response = await fetch(`/api/user/profile/${user?.uid}`, {
+      const response = await fetch(`/api/user/profile/${user.uid}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: profile.displayName,
-          email: profile.email,
-          phone: profile.phoneNumber,
-          zipCode: profile.zipCode,
-          companyName: profile.companyName,
-          emailNotifications: profile.preferences.emailNotifications,
-          smsNotifications: profile.preferences.smsNotifications,
-          newsletterSubscription: profile.preferences.newsletterSubscription,
-          role: user?.role || 'customer',
-          uid: user?.uid
-        }),
+        body: JSON.stringify(updatePayload),
       });
       
+      console.log('📥 API Response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to save profile');
+        const errorData = await response.text();
+        console.error('❌ API Error response:', errorData);
+        throw new Error(`Failed to save profile: ${response.status} ${errorData}`);
       }
       
       const result = await response.json();
+      console.log('✅ Profile save successful:', result);
       
       toast({
         title: "Profile Updated",
@@ -181,9 +203,10 @@ export default function ProfilePage() {
       
       setIsEditing(false);
     } catch (error) {
+      console.error('❌ Profile save error:', error);
       toast({
         title: "Error",
-        description: "Failed to update profile. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to update profile. Please try again.",
         variant: "destructive"
       });
     } finally {

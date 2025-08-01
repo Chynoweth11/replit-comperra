@@ -3,7 +3,10 @@
  */
 
 export const RECAPTCHA_CONFIG = {
-  siteKey: '6LcUZYIrAAAAAHwZwRABhcP_nYWzSmALqoXKXDjo',
+  // Development-friendly reCAPTCHA configuration
+  siteKey: process.env.NODE_ENV === 'development' 
+    ? '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI' // Google's test key for localhost
+    : '6LcUZYIrAAAAAHwZwRABhcP_nYWzSmALqoXKXDjo', // Production key
   projectId: 'comperra-done',
   apiEndpoint: 'https://recaptchaenterprise.googleapis.com/v1/projects/comperra-done/assessments'
 };
@@ -70,6 +73,12 @@ export async function verifyRecaptchaToken(
   transactionData?: RecaptchaAssessment['event']['transactionData']
 ): Promise<{ success: boolean; score?: number; transactionRisk?: number; error?: string }> {
   try {
+    // In development mode with Google's test key, always pass verification
+    if (process.env.NODE_ENV === 'development' && RECAPTCHA_CONFIG.siteKey === '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI') {
+      console.log('✅ Development mode: reCAPTCHA verification bypassed');
+      return { success: true, score: 0.9 };
+    }
+
     const apiKey = process.env.RECAPTCHA_API_KEY;
     if (!apiKey) {
       console.error('❌ RECAPTCHA_API_KEY not configured');

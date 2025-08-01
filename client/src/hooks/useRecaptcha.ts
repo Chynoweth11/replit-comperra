@@ -11,7 +11,10 @@ declare global {
   }
 }
 
-const RECAPTCHA_SITE_KEY = '6LcUZYIrAAAAAHwZwRABhcP_nYWzSmALqoXKXDjo';
+// Use Google's test key for development (works on localhost)
+const RECAPTCHA_SITE_KEY = import.meta.env.DEV 
+  ? '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI' // Google's test key for localhost
+  : '6LcUZYIrAAAAAHwZwRABhcP_nYWzSmALqoXKXDjo'; // Production key
 
 export function useRecaptcha() {
   const [isLoading, setIsLoading] = useState(false);
