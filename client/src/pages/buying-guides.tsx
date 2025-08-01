@@ -1,5 +1,6 @@
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import { Link } from "wouter";
 
 export default function BuyingGuides() {
   return (
@@ -28,32 +29,32 @@ export default function BuyingGuides() {
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-xl font-semibold mb-3 text-blue-600">Tile Buying Guide</h3>
             <p className="text-gray-600 mb-4">Everything you need to know about selecting the right tiles for your project</p>
-            <a href="/article/1" className="text-blue-600 hover:underline">Read Guide →</a>
+            <Link href="/article/1" className="text-blue-600 hover:underline">Read Guide →</Link>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-xl font-semibold mb-3 text-blue-600">Quartz Slab Guide</h3>
             <p className="text-gray-600 mb-4">Comprehensive guide to engineered quartz countertops and surfaces</p>
-            <a href="/article/2" className="text-blue-600 hover:underline">Read Guide →</a>
+            <Link href="/article/2" className="text-blue-600 hover:underline">Read Guide →</Link>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-xl font-semibold mb-3 text-blue-600">LVT Selection Guide</h3>
             <p className="text-gray-600 mb-4">Professional insights on luxury vinyl tile and plank flooring</p>
-            <a href="/article/6" className="text-blue-600 hover:underline">Read Guide →</a>
+            <Link href="/article/6" className="text-blue-600 hover:underline">Read Guide →</Link>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-xl font-semibold mb-3 text-blue-600">Hardwood Guide</h3>
             <p className="text-gray-600 mb-4">Expert advice on solid and engineered hardwood flooring</p>
-            <a href="/article/5" className="text-blue-600 hover:underline">Read Guide →</a>
+            <Link href="/article/5" className="text-blue-600 hover:underline">Read Guide →</Link>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-xl font-semibold mb-3 text-blue-600">Heating Systems Guide</h3>
             <p className="text-gray-600 mb-4">Complete guide to radiant floor heating options</p>
-            <a href="/article/4" className="text-blue-600 hover:underline">Read Guide →</a>
+            <Link href="/article/4" className="text-blue-600 hover:underline">Read Guide →</Link>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-xl font-semibold mb-3 text-blue-600">Carpet Guide</h3>
             <p className="text-gray-600 mb-4">Professional guidance on carpet selection and specifications</p>
-            <a href="/article/3" className="text-blue-600 hover:underline">Read Guide →</a>
+            <Link href="/article/3" className="text-blue-600 hover:underline">Read Guide →</Link>
           </div>
         </div>
       </main>
