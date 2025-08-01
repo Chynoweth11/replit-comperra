@@ -2270,6 +2270,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedUser = await storage.updateUserByUid(uid, updates);
       console.log('✅ User profile updated successfully');
       
+      // Sync with vendor profile if the user is a vendor
+      if (updatedUser.role === 'vendor') {
+        try {
+          console.log('🔄 Syncing with vendor profile management system');
+          const { updateVendorProfile, getVendorProfile } = await import('./vendor-profile-management');
+          
+          // Check if vendor profile exists
+          let vendorProfile = await getVendorProfile(updatedUser.email);
+          
+          if (vendorProfile) {
+            // Update existing vendor profile
+            await updateVendorProfile(updatedUser.email, {
+              fullName: updatedUser.name || vendorProfile.fullName,
+              email: updatedUser.email,
+              phone: updatedUser.phone || vendorProfile.phone,
+              businessName: updatedUser.companyName || vendorProfile.businessName,
+              zipCodesServed: updatedUser.zipCode ? [updatedUser.zipCode] : vendorProfile.zipCodesServed,
+              updatedAt: new Date()
+            });
+            console.log('✅ Vendor profile synchronized');
+          } else {
+            // Create new vendor profile
+            const { createVendorProfile } = await import('./vendor-profile-management');
+            await createVendorProfile({
+              id: `vendor_${Date.now()}`,
+              fullName: updatedUser.name || '',
+              email: updatedUser.email,
+              phone: updatedUser.phone || '',
+              businessName: updatedUser.companyName || '',
+              materials: [], // Will be set up in vendor dashboard
+              zipCodesServed: updatedUser.zipCode ? [updatedUser.zipCode] : [],
+              weeklyLeadLimit: 10,
+              tier: 'free',
+              serviceRadius: 25
+            });
+            console.log('✅ New vendor profile created');
+          }
+        } catch (vendorSyncError) {
+          console.warn('⚠️ Vendor profile sync failed (non-critical):', vendorSyncError);
+        }
+      }
+      
+      // Sync with professional profile if the user is a vendor or trade
+      if (updatedUser.role === 'vendor' || updatedUser.role === 'trade') {
+        try {
+          console.log('🔄 Syncing with professional matching system');
+          const { updateProfessionalProfile, getProfessionalProfile, registerProfessional } = await import('./professional-matching');
+          
+          // Check if professional profile exists
+          let professionalProfile = await getProfessionalProfile(uid);
+          
+          if (professionalProfile) {
+            // Update existing professional profile
+            await updateProfessionalProfile(uid, {
+              name: updatedUser.name || professionalProfile.name,
+              email: updatedUser.email,
+              phone: updatedUser.phone || professionalProfile.phone,
+              businessName: updatedUser.companyName || professionalProfile.businessName,
+              zipCode: updatedUser.zipCode || professionalProfile.zipCode,
+              lastActive: new Date()
+            });
+            console.log('✅ Professional profile synchronized');
+          } else if (updatedUser.zipCode) {
+            // Create new professional profile if we have required data
+            await registerProfessional({
+              role: updatedUser.role as 'vendor' | 'trade',
+              email: updatedUser.email,
+              name: updatedUser.name || '',
+              businessName: updatedUser.companyName,
+              phone: updatedUser.phone,
+              zipCode: updatedUser.zipCode,
+              serviceRadius: 50, // Default service radius
+              productCategories: [],
+              tradeCategories: []
+            });
+            console.log('✅ New professional profile created');
+          }
+        } catch (professionalSyncError) {
+          console.warn('⚠️ Professional profile sync failed (non-critical):', professionalSyncError);
+        }
+      }
+      
       res.json({ 
         success: true, 
         message: 'Profile updated successfully',

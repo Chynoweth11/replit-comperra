@@ -17,6 +17,7 @@ interface UserProfile {
   zipCode: string;
   phoneNumber: string;
   companyName: string;
+  role: 'vendor' | 'trade' | 'customer' | 'homeowner';
   preferences: {
     emailNotifications: boolean;
     smsNotifications: boolean;
@@ -33,6 +34,7 @@ export default function ProfilePage() {
     zipCode: '',
     phoneNumber: '',
     companyName: '',
+    role: 'customer',
     preferences: {
       emailNotifications: true,
       smsNotifications: false,
@@ -58,6 +60,7 @@ export default function ProfilePage() {
               zipCode: userData.zipCode || '',
               phoneNumber: userData.phone || '',
               companyName: userData.companyName || '',
+              role: userData.role || 'customer',
               preferences: {
                 emailNotifications: userData.emailNotifications ?? true,
                 smsNotifications: userData.smsNotifications ?? false,
@@ -94,6 +97,7 @@ export default function ProfilePage() {
                 zipCode: userData.zipCode || '',
                 phoneNumber: userData.phone || '',
                 companyName: userData.companyName || '',
+                role: userData.role || 'customer',
                 preferences: {
                   emailNotifications: userData.emailNotifications ?? true,
                   smsNotifications: userData.smsNotifications ?? false,
@@ -108,7 +112,8 @@ export default function ProfilePage() {
                 email: user.email || '',
                 zipCode: '',
                 phoneNumber: '',
-                companyName: ''
+                companyName: '',
+                role: 'customer'
               }));
             }
           }
@@ -121,7 +126,8 @@ export default function ProfilePage() {
             email: user.email || '',
             zipCode: '',
             phoneNumber: '',
-            companyName: ''
+            companyName: '',
+            role: 'customer'
           }));
         }
       };
@@ -172,7 +178,7 @@ export default function ProfilePage() {
         emailNotifications: profile.preferences.emailNotifications,
         smsNotifications: profile.preferences.smsNotifications,
         newsletterSubscription: profile.preferences.newsletterSubscription,
-        role: 'customer', // Default role since user.role doesn't exist on Firebase User
+        role: profile.role,
         uid: user.uid
       };
 
@@ -370,6 +376,30 @@ export default function ProfilePage() {
                       disabled={!isEditing}
                       placeholder="Your company name"
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="role">Account Type</Label>
+                    <Select 
+                      value={profile.role} 
+                      onValueChange={(value) => handleInputChange('role', value)}
+                      disabled={!isEditing}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select account type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="customer">Customer</SelectItem>
+                        <SelectItem value="homeowner">Homeowner</SelectItem>
+                        <SelectItem value="vendor">Vendor/Supplier</SelectItem>
+                        <SelectItem value="trade">Trade Professional</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {profile.role === 'vendor' && 'Access vendor dashboard and lead management'}
+                      {profile.role === 'trade' && 'Access trade professional features'}
+                      {profile.role === 'customer' && 'Standard customer features'}
+                      {profile.role === 'homeowner' && 'Homeowner-specific resources'}
+                    </p>
                   </div>
                 </div>
               </CardContent>
