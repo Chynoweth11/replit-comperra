@@ -1304,7 +1304,9 @@ Professional consultation is recommended for commercial installations and comple
     sampleArticles.forEach(article => {
       const newArticle: Article = {
         id: this.currentArticleId++,
-        ...article
+        ...article,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
       this.articles.set(newArticle.id, newArticle);
     });
@@ -1331,7 +1333,10 @@ Professional consultation is recommended for commercial installations and comple
     maxPrice?: number;
     search?: string;
   }): Promise<Material[]> {
-    let result = Array.from(this.materials.values());
+    let result: Material[] = [];
+    for (const material of this.materials.values()) {
+      result.push(material);
+    }
 
     if (filters?.category) {
       result = result.filter(m => m.category === filters.category);
@@ -1370,7 +1375,7 @@ Professional consultation is recommended for commercial installations and comple
     if (this.isDuplicateProduct(material)) {
       console.log(`⚠️  Duplicate product detected: ${material.name} by ${material.brand} - skipping`);
       // Return the existing material instead of creating a duplicate
-      for (const [_, existingMaterial] of this.materials) {
+      for (const existingMaterial of this.materials.values()) {
         if (existingMaterial.name === material.name && 
             existingMaterial.brand === material.brand && 
             existingMaterial.category === material.category) {
@@ -1382,6 +1387,10 @@ Professional consultation is recommended for commercial installations and comple
     const newMaterial: Material = {
       id: this.currentMaterialId++,
       ...material,
+      imageUrl: material.imageUrl || null,
+      description: material.description || null,
+      dimensions: material.dimensions || null,
+      inStock: material.inStock || null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -1391,7 +1400,11 @@ Professional consultation is recommended for commercial installations and comple
   }
 
   async getArticles(): Promise<Article[]> {
-    return Array.from(this.articles.values());
+    const result: Article[] = [];
+    for (const article of this.articles.values()) {
+      result.push(article);
+    }
+    return result;
   }
 
   async getArticle(id: number): Promise<Article | undefined> {
@@ -1402,6 +1415,7 @@ Professional consultation is recommended for commercial installations and comple
     const newArticle: Article = {
       id: this.currentArticleId++,
       ...article,
+      content: article.content || null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -1411,7 +1425,11 @@ Professional consultation is recommended for commercial installations and comple
   }
 
   async getBrands(): Promise<Brand[]> {
-    return Array.from(this.brands.values());
+    const result: Brand[] = [];
+    for (const brand of this.brands.values()) {
+      result.push(brand);
+    }
+    return result;
   }
 
   async getBrand(id: number): Promise<Brand | undefined> {
@@ -1421,7 +1439,10 @@ Professional consultation is recommended for commercial installations and comple
   async createBrand(brand: InsertBrand): Promise<Brand> {
     const newBrand: Brand = {
       id: this.currentBrandId++,
-      ...brand
+      ...brand,
+      description: brand.description || null,
+      website: brand.website || null,
+      logoUrl: brand.logoUrl || null
     };
 
     this.brands.set(newBrand.id, newBrand);
@@ -1451,13 +1472,25 @@ Professional consultation is recommended for commercial installations and comple
   }
 
   async getAllUsers(): Promise<User[]> {
-    return Array.from(this.users.values());
+    const result: User[] = [];
+    for (const user of this.users.values()) {
+      result.push(user);
+    }
+    return result;
   }
 
   async createUser(user: InsertUser): Promise<User> {
     const newUser: User = {
       id: this.currentUserId++,
       ...user,
+      name: user.name || null,
+      phone: user.phone || null,
+      zipCode: user.zipCode || null,
+      companyName: user.companyName || null,
+      emailNotifications: user.emailNotifications || null,
+      smsNotifications: user.smsNotifications || null,
+      newsletterSubscription: user.newsletterSubscription || null,
+      profileComplete: user.profileComplete || null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
