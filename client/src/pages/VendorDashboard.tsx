@@ -79,6 +79,18 @@ const VendorDashboard: React.FC = () => {
   const [contactMessage, setContactMessage] = useState('');
   const [newStatus, setNewStatus] = useState('');
   const [businessDescription, setBusinessDescription] = useState('');
+  
+  // Vendor profile form state
+  const [profileForm, setProfileForm] = useState({
+    businessName: '',
+    email: '',
+    phone: '',
+    zipCode1: '',
+    zipCode2: '',
+    materialSpecialties: [] as string[],
+    businessDescription: ''
+  });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
 
   useEffect(() => {
     // Use sessionManager for more reliable authentication
@@ -102,6 +114,17 @@ const VendorDashboard: React.FC = () => {
     }
     
     console.log('✅ Vendor session validated:', sessionUser.email);
+    
+    // Initialize profile form with current user data
+    setProfileForm({
+      businessName: sessionUser.companyName || userProfile?.companyName || 'Luxury Surfaces Group',
+      email: sessionUser.email,
+      phone: sessionUser.phone || userProfile?.phone || '(555) 123-4567',
+      zipCode1: '90210',
+      zipCode2: '90211',
+      materialSpecialties: ['Tiles', 'Stone & Slabs', 'Hardwood', 'Vinyl & LVT', 'Carpet', 'Heating Systems'],
+      businessDescription: businessDescription || 'Professional building materials contractor with 15+ years experience'
+    });
     
     // Update activity timestamp
     sessionManager.updateLastActivity();
@@ -227,6 +250,70 @@ const VendorDashboard: React.FC = () => {
     } catch (error) {
       console.error('Error updating status:', error);
     }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!userProfile?.uid) return;
+    
+    setIsSavingProfile(true);
+    try {
+      // Save to user profile API
+      const response = await fetch(`/api/user/profile/${userProfile.uid}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: profileForm.businessName,
+          companyName: profileForm.businessName,
+          phone: profileForm.phone,
+          zipCode: profileForm.zipCode1,
+          role: 'vendor'
+        }),
+      });
+
+      if (response.ok) {
+        // Also update vendor profile system
+        const vendorResponse = await fetch('/api/vendor-profile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: profileForm.email,
+            businessName: profileForm.businessName,
+            phone: profileForm.phone,
+            zipCodesServed: [profileForm.zipCode1, profileForm.zipCode2].filter(zip => zip),
+            materials: profileForm.materialSpecialties,
+            businessDescription: profileForm.businessDescription,
+            serviceRadius: 50
+          }),
+        });
+
+        if (vendorResponse.ok) {
+          console.log('✅ Vendor profile saved successfully');
+          // Refresh dashboard data
+          fetchDashboardData();
+        } else {
+          console.error('❌ Error saving vendor profile');
+        }
+      } else {
+        console.error('❌ Error saving user profile');
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error);
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  const handleSpecialtyChange = (specialty: string, checked: boolean) => {
+    setProfileForm(prev => ({
+      ...prev,
+      materialSpecialties: checked 
+        ? [...prev.materialSpecialties, specialty]
+        : prev.materialSpecialties.filter(s => s !== specialty)
+    }));
   };
 
   if (loading) {
@@ -716,16 +803,18 @@ const VendorDashboard: React.FC = () => {
                         type="text"
                         className="w-full p-2 border rounded-md"
                         placeholder="Your business name"
-                        defaultValue="Luxury Surfaces Group"
+                        value={profileForm.businessName}
+                        onChange={(e) => setProfileForm(prev => ({ ...prev, businessName: e.target.value }))}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">Email Address</label>
                       <input
                         type="email"
-                        className="w-full p-2 border rounded-md"
+                        className="w-full p-2 border rounded-md bg-gray-100"
                         placeholder="Your email address"
-                        defaultValue="ochynoweth@luxsurfacesgroup.com"
+                        value={profileForm.email}
+                        disabled
                       />
                     </div>
                     <div>
@@ -734,7 +823,8 @@ const VendorDashboard: React.FC = () => {
                         type="tel"
                         className="w-full p-2 border rounded-md"
                         placeholder="Your phone number"
-                        defaultValue="(555) 123-4567"
+                        value={profileForm.phone}
+                        onChange={(e) => setProfileForm(prev => ({ ...prev, phone: e.target.value }))}
                       />
                     </div>
                     <div>
@@ -751,7 +841,12 @@ const VendorDashboard: React.FC = () => {
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                       {['Tiles', 'Stone & Slabs', 'Hardwood', 'Vinyl & LVT', 'Carpet', 'Heating Systems'].map((material) => (
                         <label key={material} className="flex items-center space-x-2">
-                          <input type="checkbox" className="rounded" defaultChecked />
+                          <input 
+                            type="checkbox" 
+                            className="rounded" 
+                            checked={profileForm.materialSpecialties.includes(material)}
+                            onChange={(e) => handleSpecialtyChange(material, e.target.checked)}
+                          />
                           <span className="text-sm">{material}</span>
                         </label>
                       ))}
@@ -765,14 +860,16 @@ const VendorDashboard: React.FC = () => {
                         type="text"
                         className="w-full p-2 border rounded-md"
                         placeholder="Primary ZIP code (e.g., 90210)"
-                        defaultValue="90210"
+                        value={profileForm.zipCode1}
+                        onChange={(e) => setProfileForm(prev => ({ ...prev, zipCode1: e.target.value }))}
                         maxLength={5}
                       />
                       <input
                         type="text"
                         className="w-full p-2 border rounded-md"
                         placeholder="Secondary ZIP code (e.g., 90211)"
-                        defaultValue="90211"
+                        value={profileForm.zipCode2}
+                        onChange={(e) => setProfileForm(prev => ({ ...prev, zipCode2: e.target.value }))}
                         maxLength={5}
                       />
                       <p className="text-xs text-gray-500">
@@ -783,24 +880,22 @@ const VendorDashboard: React.FC = () => {
                   
                   <div>
                     <label className="block text-sm font-medium mb-2">About Your Business</label>
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 border rounded text-left"
+                    <textarea
+                      className="w-full px-3 py-2 border rounded text-left resize-none"
                       placeholder="Tell customers about your expertise and services"
-                      value={businessDescription}
-                      onChange={(e) => setBusinessDescription(e.target.value)}
-                      dir="ltr"
-                      lang="en"
-                      inputMode="text"
-                      autoComplete="off"
-                      autoCorrect="off"
-                      autoCapitalize="off"
+                      value={profileForm.businessDescription}
+                      onChange={(e) => setProfileForm(prev => ({ ...prev, businessDescription: e.target.value }))}
+                      rows={3}
                     />
                   </div>
                   
                   <div className="flex space-x-4">
-                    <Button className="bg-blue-600 hover:bg-blue-700">
-                      Save Profile
+                    <Button 
+                      className="bg-blue-600 hover:bg-blue-700"
+                      onClick={handleSaveProfile}
+                      disabled={isSavingProfile}
+                    >
+                      {isSavingProfile ? 'Saving...' : 'Save Profile'}
                     </Button>
                     <Button variant="outline">
                       Cancel

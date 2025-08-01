@@ -1591,6 +1591,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Vendor Profile Management API
+  app.post('/api/vendor-profile', async (req: Request, res: Response) => {
+    try {
+      const currentUser = await getCurrentUser();
+      if (!currentUser || currentUser.role !== 'vendor') {
+        return res.status(401).json({ success: false, error: 'Vendor authentication required' });
+      }
+
+      const { businessName, phone, zipCodesServed, materials, businessDescription, serviceRadius } = req.body;
+
+      console.log('🔄 Saving vendor profile for:', currentUser.email);
+
+      // Update vendor profile using the vendor profile management system
+      const { createVendorProfile, updateVendorProfile, getVendorProfile } = await import('./vendor-profile-management');
+      
+      let vendorProfile = await getVendorProfile(currentUser.email);
+      
+      if (vendorProfile) {
+        // Update existing profile
+        await updateVendorProfile(currentUser.email, {
+          businessName,
+          phone,
+          zipCodesServed: zipCodesServed || [],
+          materials: materials || [],
+          businessDescription,
+          serviceRadius: serviceRadius || 50,
+          updatedAt: new Date()
+        });
+      } else {
+        // Create new profile
+        await createVendorProfile({
+          id: `vendor_${Date.now()}`,
+          fullName: currentUser.name || '',
+          email: currentUser.email,
+          businessName,
+          phone,
+          materials: materials || [],
+          zipCodesServed: zipCodesServed || [],
+          businessDescription,
+          serviceRadius: serviceRadius || 50
+        });
+      }
+
+      console.log('✅ Vendor profile saved successfully');
+      res.json({ success: true, message: 'Vendor profile saved successfully' });
+    } catch (error) {
+      console.error('Error saving vendor profile:', error);
+      res.status(500).json({ success: false, error: 'Failed to save vendor profile' });
+    }
+  });
+
   // Trade-specific endpoints
   app.get('/api/trade/leads', async (req: Request, res: Response) => {
     try {
