@@ -65,6 +65,74 @@ export class MemStorage implements IStorage {
     this.currentBrandId = 1;
     this.currentUserId = 1;
     console.log('✅ Storage initialized with empty product database - ready for fresh scraping');
+    
+    // Initialize with sample articles to prevent "Article Not Found" errors
+    this.initializeSampleArticles();
+  }
+
+  private initializeSampleArticles() {
+    const sampleArticles = [
+      {
+        title: "Ultimate Guide to Choosing the Perfect Tile",
+        description: "Everything you need to know about selecting tiles for your home renovation project.",
+        content: "When choosing tiles for your home, consider factors like durability, maintenance, style, and cost...",
+        imageUrl: "/images/tile-guide.jpg",
+        category: "buyer's guide",
+        readTime: 8,
+        publishedAt: new Date().toISOString(),
+        slug: "ultimate-tile-guide"
+      },
+      {
+        title: "Natural Stone vs Engineered Slabs: Complete Comparison",
+        description: "Compare natural stone and engineered slabs to make the best choice for your countertops.",
+        content: "Natural stone and engineered slabs each have unique benefits and considerations...",
+        imageUrl: "/images/stone-comparison.jpg",
+        category: "comparison",
+        readTime: 6,
+        publishedAt: new Date().toISOString(),
+        slug: "stone-vs-engineered-slabs"
+      },
+      {
+        title: "Hardwood Flooring: Performance and Durability Guide",
+        description: "Learn about different hardwood species and their performance characteristics.",
+        content: "Hardwood flooring offers timeless beauty and can last generations when properly maintained...",
+        imageUrl: "/images/hardwood-performance.jpg",
+        category: "performance",
+        readTime: 10,
+        publishedAt: new Date().toISOString(),
+        slug: "hardwood-performance-guide"
+      },
+      {
+        title: "Radiant Floor Heating Systems: Complete Installation Guide",
+        description: "Everything you need to know about installing radiant floor heating in your home.",
+        content: "Radiant floor heating provides comfortable, even heat distribution throughout your home...",
+        imageUrl: "/images/radiant-heating.jpg",
+        category: "heating guide",
+        readTime: 12,
+        publishedAt: new Date().toISOString(),
+        slug: "radiant-heating-installation"
+      },
+      {
+        title: "Luxury Vinyl vs Traditional Vinyl: Design and Longevity",
+        description: "Compare luxury vinyl and traditional vinyl flooring options for your space.",
+        content: "Modern vinyl flooring has evolved significantly, offering impressive durability and design options...",
+        imageUrl: "/images/vinyl-comparison.jpg",
+        category: "design & longevity",
+        readTime: 7,
+        publishedAt: new Date().toISOString(),
+        slug: "luxury-vs-traditional-vinyl"
+      }
+    ];
+
+    sampleArticles.forEach(article => {
+      const newArticle: Article = {
+        id: this.currentArticleId++,
+        ...article
+      };
+      this.articles.set(newArticle.id, newArticle);
+    });
+
+    console.log(`✅ Initialized with ${sampleArticles.length} sample articles`);
   }
 
   // Duplicate prevention method
