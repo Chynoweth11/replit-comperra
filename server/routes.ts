@@ -2241,14 +2241,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { uid } = req.params;
       const updates = req.body;
       
+      console.log('🔄 PUT /api/user/profile/:uid called with uid:', uid);
+      console.log('📝 Update payload received:', updates);
+      
       // Check if user exists
       const existingUser = await storage.getUserByUid(uid);
+      console.log('👤 Existing user found:', existingUser ? 'Yes' : 'No');
+      
       if (!existingUser) {
-        return res.status(404).json({ error: 'User not found' });
+        console.log('❌ User not found, creating new user with profile data');
+        // Create new user if not exists
+        const newUser = await storage.createUser({
+          ...updates,
+          uid,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+        console.log('✅ New user created:', newUser.id);
+        return res.json({ 
+          success: true, 
+          message: 'Profile created successfully',
+          user: newUser 
+        });
       }
       
       // Update user profile with partial updates
+      console.log('🔄 Updating existing user profile');
       const updatedUser = await storage.updateUserByUid(uid, updates);
+      console.log('✅ User profile updated successfully');
       
       res.json({ 
         success: true, 
@@ -2256,6 +2276,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         user: updatedUser 
       });
     } catch (error) {
+      console.error('❌ Error updating user profile:', error);
+      res.status(500).json({ 
+        error: 'Failed to update profile',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
       console.error('Error updating user profile:', error);
       res.status(500).json({ error: 'Failed to update profile' });
     }

@@ -177,6 +177,7 @@ export default function ProfilePage() {
       };
 
       console.log('📤 Sending update payload:', updatePayload);
+      console.log('🌐 Making request to:', `/api/user/profile/${user.uid}`);
 
       // Save to database using API
       const response = await fetch(`/api/user/profile/${user.uid}`, {
@@ -192,6 +193,8 @@ export default function ProfilePage() {
       if (!response.ok) {
         const errorData = await response.text();
         console.error('❌ API Error response:', errorData);
+        console.error('❌ Response status:', response.status);
+        console.error('❌ Response headers:', Object.fromEntries(response.headers.entries()));
         throw new Error(`Failed to save profile: ${response.status} ${errorData}`);
       }
       
