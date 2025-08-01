@@ -380,27 +380,44 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <Label htmlFor="role">Account Type</Label>
-                    <Select 
-                      value={profile.role} 
-                      onValueChange={(value) => handleInputChange('role', value)}
-                      disabled={!isEditing}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select account type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="customer">Customer</SelectItem>
-                        <SelectItem value="homeowner">Homeowner</SelectItem>
-                        <SelectItem value="vendor">Vendor/Supplier</SelectItem>
-                        <SelectItem value="trade">Trade Professional</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {profile.role === 'vendor' && 'Access vendor dashboard and lead management'}
-                      {profile.role === 'trade' && 'Access trade professional features'}
-                      {profile.role === 'customer' && 'Standard customer features'}
-                      {profile.role === 'homeowner' && 'Homeowner-specific resources'}
-                    </p>
+                    {/* Account Type Locking Logic */}
+                    {(profile.role === 'vendor' || profile.role === 'trade') ? (
+                      <div>
+                        <Input
+                          value={profile.role === 'vendor' ? 'Vendor/Supplier' : 'Trade Professional'}
+                          disabled={true}
+                          className="bg-gray-100"
+                        />
+                        <p className="text-xs text-orange-600 mt-1 font-medium">
+                          🔒 Account type is locked. {profile.role === 'vendor' ? 'Vendors' : 'Trade professionals'} cannot change their account type.
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {profile.role === 'vendor' && 'Access vendor dashboard and lead management'}
+                          {profile.role === 'trade' && 'Access trade professional features'}
+                        </p>
+                      </div>
+                    ) : (
+                      <div>
+                        <Select 
+                          value={profile.role} 
+                          onValueChange={(value) => handleInputChange('role', value)}
+                          disabled={!isEditing || profile.role === 'vendor' || profile.role === 'trade'}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select account type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="customer">Customer</SelectItem>
+                            <SelectItem value="homeowner">Homeowner</SelectItem>
+                            {/* Vendor and Trade options are hidden for customers to prevent upgrades without proper process */}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {profile.role === 'customer' && 'Standard customer features'}
+                          {profile.role === 'homeowner' && 'Homeowner-specific resources'}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>

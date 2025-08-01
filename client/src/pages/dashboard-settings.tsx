@@ -55,7 +55,17 @@ export default function DashboardSettings() {
                 </div>
                 <div>
                   <Label htmlFor="role">Account Type</Label>
-                  <Input id="role" value={user?.role || 'vendor'} disabled />
+                  <Input 
+                    id="role" 
+                    value={user?.role === 'vendor' ? 'Vendor/Supplier' : user?.role === 'trade' ? 'Trade Professional' : user?.role || 'Customer'} 
+                    disabled 
+                    className="bg-gray-100"
+                  />
+                  {(user?.role === 'vendor' || user?.role === 'trade') && (
+                    <p className="text-xs text-orange-600 mt-1 font-medium">
+                      🔒 Account type is locked and cannot be changed.
+                    </p>
+                  )}
                 </div>
               </div>
             </CardContent>

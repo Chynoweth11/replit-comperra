@@ -73,12 +73,11 @@ export interface CustomerProfile {
  */
 export async function createVendorProfile(vendorData: Partial<VendorProfile>): Promise<VendorProfile> {
   try {
-    const vendorProfile: VendorProfile = {
-      id: vendorData.id || '',
+    // Build vendor profile with only defined values
+    const vendorProfile: any = {
+      id: vendorData.id || `vendor_${Date.now()}`,
       fullName: vendorData.fullName || '',
-      businessName: vendorData.businessName,
       email: vendorData.email || '',
-      phone: vendorData.phone,
       materials: vendorData.materials || [],
       zipCodesServed: vendorData.zipCodesServed || [],
       weeklyLeadLimit: vendorData.weeklyLeadLimit || 10,
@@ -88,24 +87,28 @@ export async function createVendorProfile(vendorData: Partial<VendorProfile>): P
       totalReviews: 0,
       reportCount: 0,
       tier: vendorData.tier || 'free',
-      yearsExperience: vendorData.yearsExperience,
       specialties: vendorData.specialties || [],
       serviceRadius: vendorData.serviceRadius || 25,
-      latitude: vendorData.latitude,
-      longitude: vendorData.longitude,
-      minimumProject: vendorData.minimumProject,
       certifications: vendorData.certifications || [],
-      licenseNumber: vendorData.licenseNumber,
       insuranceVerified: vendorData.insuranceVerified || false,
       backgroundChecked: vendorData.backgroundChecked || false,
-      profileImageUrl: vendorData.profileImageUrl,
       portfolioImages: vendorData.portfolioImages || [],
-      businessDescription: vendorData.businessDescription,
       createdAt: vendorData.createdAt || serverTimestamp(),
       updatedAt: serverTimestamp(),
-      lastActive: serverTimestamp(),
-      subscription: vendorData.subscription
+      lastActive: serverTimestamp()
     };
+
+    // Only add optional fields if they have values
+    if (vendorData.businessName) vendorProfile.businessName = vendorData.businessName;
+    if (vendorData.phone) vendorProfile.phone = vendorData.phone;
+    if (vendorData.yearsExperience !== undefined) vendorProfile.yearsExperience = vendorData.yearsExperience;
+    if (vendorData.latitude !== undefined) vendorProfile.latitude = vendorData.latitude;
+    if (vendorData.longitude !== undefined) vendorProfile.longitude = vendorData.longitude;
+    if (vendorData.minimumProject !== undefined) vendorProfile.minimumProject = vendorData.minimumProject;
+    if (vendorData.licenseNumber) vendorProfile.licenseNumber = vendorData.licenseNumber;
+    if (vendorData.profileImageUrl) vendorProfile.profileImageUrl = vendorData.profileImageUrl;
+    if (vendorData.businessDescription) vendorProfile.businessDescription = vendorData.businessDescription;
+    if (vendorData.subscription) vendorProfile.subscription = vendorData.subscription;
 
     const vendorRef = doc(db, 'vendors', vendorProfile.id);
     await setDoc(vendorRef, vendorProfile);
@@ -122,11 +125,20 @@ export async function createVendorProfile(vendorData: Partial<VendorProfile>): P
  */
 export async function updateVendorProfile(vendorId: string, updates: Partial<VendorProfile>): Promise<void> {
   try {
-    const vendorRef = doc(db, 'vendors', vendorId);
-    await updateDoc(vendorRef, {
-      ...updates,
+    // Clean updates to remove undefined values
+    const cleanUpdates: any = {
       updatedAt: serverTimestamp()
+    };
+    
+    // Only add fields that have values
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value !== undefined) {
+        cleanUpdates[key] = value;
+      }
     });
+
+    const vendorRef = doc(db, 'vendors', vendorId);
+    await updateDoc(vendorRef, cleanUpdates);
   } catch (error) {
     console.error('Error updating vendor profile:', error);
     throw error;

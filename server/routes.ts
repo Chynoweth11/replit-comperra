@@ -2299,6 +2299,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingUser = await storage.getUserByUid(uid);
       console.log('👤 Existing user found:', existingUser ? 'Yes' : 'No');
       
+      // Account Type Locking: Prevent role changes for vendors and trades
+      if (existingUser && (existingUser.role === 'vendor' || existingUser.role === 'trade')) {
+        if (updates.role && updates.role !== existingUser.role) {
+          console.log('🔒 Account type change blocked for:', existingUser.role);
+          return res.status(400).json({ 
+            success: false, 
+            error: `Account type is locked. ${existingUser.role === 'vendor' ? 'Vendors' : 'Trade professionals'} cannot change their account type.`
+          });
+        }
+        // Remove role from updates to prevent any accidental changes
+        delete updates.role;
+      }
+      
       if (!existingUser) {
         console.log('❌ User not found, creating new user with profile data');
         // Create new user if not exists
