@@ -1005,15 +1005,35 @@ export async function analyzeUnderperformingMaterials(): Promise<any> {
 /**
  * Get all leads with matched professionals for a customer
  */
-export function getLeadsWithMatches(customerId: string): any[] {
-  // Get all leads from storage that could match this customer
-  const allLeads = Array.from(leadStorage.values());
-  
-  // Filter leads for this customer (using email as customer ID for now)
-  const customerLeads = allLeads.filter(lead => 
-    lead.customerEmail === customerId || 
-    lead.customerName === customerId
-  );
-  
-  return customerLeads;
+export async function getLeadsWithMatches(customerId: string): Promise<any[]> {
+  try {
+    console.log('🔍 Querying Firebase for leads with customerEmail:', customerId);
+    
+    // Use the global db instance that's already initialized
+    if (!db) {
+      console.error('❌ Firebase not initialized in lead-matching module');
+      return [];
+    }
+    const leadsRef = collection(db, 'leads');
+    
+    // Query for leads where customerEmail matches the provided customerId
+    const q = query(leadsRef, where('customerEmail', '==', customerId));
+    const querySnapshot = await getDocs(q);
+    
+    const customerLeads: any[] = [];
+    querySnapshot.forEach((doc) => {
+      const leadData = doc.data();
+      customerLeads.push({
+        id: doc.id,
+        ...leadData,
+        createdAt: leadData.createdAt?.toDate?.() || leadData.createdAt
+      });
+    });
+    
+    console.log('✅ Found', customerLeads.length, 'leads for customer:', customerId);
+    return customerLeads;
+  } catch (error) {
+    console.error('❌ Error fetching customer leads from Firebase:', error);
+    return [];
+  }
 }
