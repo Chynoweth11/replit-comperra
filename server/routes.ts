@@ -1885,11 +1885,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Use database-based lead matching system
+      let matchedProfessionals = [];
       try {
         console.log('🔄 Starting database-based lead matching...');
         const { matchLeadWithDatabase } = await import('./database-lead-matching');
-        await matchLeadWithDatabase(normalizedLead);
+        const matchResult = await matchLeadWithDatabase(normalizedLead);
+        console.log('🔍 Match result type:', typeof matchResult, 'value:', matchResult);
+        matchedProfessionals = matchResult?.matchedProfessionals || [];
         console.log('✅ Database lead matching completed successfully');
+        console.log(`🎯 Found ${matchedProfessionals.length} matched professionals for customer`);
+        console.log('🔍 Matched professionals data:', JSON.stringify(matchedProfessionals, null, 2));
       } catch (error) {
         console.error('❌ Database lead matching failed:', error);
         console.error('❌ Error details:', error.stack);
@@ -1904,7 +1909,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'new',
         createdAt: new Date(),
         categoriesRequested: normalizedLead.materialCategories || [normalizedLead.materialCategory].filter(Boolean),
-        matchedProfessionals: [] // Will be populated by matching system
+        matchedProfessionals: matchedProfessionals // Populated by matching system
       };
       
       leadStorage.set(leadId, leadForStorage);
