@@ -206,8 +206,11 @@ export async function matchLeadWithDatabase(leadData: LeadMatchData): Promise<{ 
           );
           const distanceInMi = geolib.convertDistance(distanceInM, 'mi');
           
-          // Check if within reasonable service radius (50 miles for vendors)
-          if (distanceInMi <= 50) {
+          // First priority: exact ZIP code match, then 50-mile radius for all professionals
+          const isExactZipMatch = vendor.zipCode === leadData.zipCode;
+          const isWithinRadius = distanceInMi <= 50;
+          
+          if (isExactZipMatch || isWithinRadius) {
             const match = {
               id: vendor.uid,
               role: 'vendor',
@@ -217,8 +220,8 @@ export async function matchLeadWithDatabase(leadData: LeadMatchData): Promise<{ 
               companyName: vendor.companyName,
               zipCode: vendor.zipCode,
               materialCategories: leadData.materialCategories, // Assign all categories to vendor
-              distance: `${distanceInMi.toFixed(1)} miles`,
-              matchScore: Math.max(50, 100 - Math.floor(distanceInMi)) // Score based on distance
+              distance: isExactZipMatch ? '0 miles (same ZIP)' : `${distanceInMi.toFixed(1)} miles`,
+              matchScore: isExactZipMatch ? 100 : Math.max(50, 100 - Math.floor(distanceInMi)) // Perfect score for exact ZIP
             };
             
             matchedProfessionals.push(match);
@@ -260,8 +263,11 @@ export async function matchLeadWithDatabase(leadData: LeadMatchData): Promise<{ 
           );
           const distanceInMi = geolib.convertDistance(distanceInM, 'mi');
           
-          // Check if within reasonable service radius (40 miles for trades)
-          if (distanceInMi <= 40) {
+          // First priority: exact ZIP code match, then 50-mile radius for all professionals
+          const isExactZipMatch = trade.zipCode === leadData.zipCode;
+          const isWithinRadius = distanceInMi <= 50;
+          
+          if (isExactZipMatch || isWithinRadius) {
             const match = {
               id: trade.uid,
               role: 'trade',
@@ -271,8 +277,8 @@ export async function matchLeadWithDatabase(leadData: LeadMatchData): Promise<{ 
               companyName: trade.companyName,
               zipCode: trade.zipCode,
               materialCategories: leadData.materialCategories,
-              distance: `${distanceInMi.toFixed(1)} miles`,
-              matchScore: Math.max(50, 100 - Math.floor(distanceInMi))
+              distance: isExactZipMatch ? '0 miles (same ZIP)' : `${distanceInMi.toFixed(1)} miles`,
+              matchScore: isExactZipMatch ? 100 : Math.max(50, 100 - Math.floor(distanceInMi)) // Perfect score for exact ZIP
             };
             
             matchedProfessionals.push(match);
@@ -305,8 +311,11 @@ export async function matchLeadWithDatabase(leadData: LeadMatchData): Promise<{ 
             );
             const distanceInMi = geolib.convertDistance(distanceInM, 'mi');
             
-            // Check if within service radius
-            if (distanceInMi <= professional.serviceRadius) {
+            // First priority: exact ZIP code match, then 50-mile radius for all professionals
+            const isExactZipMatch = professional.zipCode === leadData.zipCode;
+            const isWithinRadius = distanceInMi <= 50;
+            
+            if (isExactZipMatch || isWithinRadius) {
               // Check category match for trades
               let categoryMatch = true;
               if (professional.role === 'trade') {
@@ -330,8 +339,8 @@ export async function matchLeadWithDatabase(leadData: LeadMatchData): Promise<{ 
                   companyName: professional.businessName,
                   zipCode: professional.zipCode,
                   materialCategories: leadData.materialCategories,
-                  distance: `${distanceInMi.toFixed(1)} miles`,
-                  matchScore: Math.max(50, 100 - Math.floor(distanceInMi)),
+                  distance: isExactZipMatch ? '0 miles (same ZIP)' : `${distanceInMi.toFixed(1)} miles`,
+                  matchScore: isExactZipMatch ? 100 : Math.max(50, 100 - Math.floor(distanceInMi)), // Perfect score for exact ZIP
                   fallbackProfessional: true
                 };
                 
