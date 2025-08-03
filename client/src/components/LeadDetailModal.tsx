@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Star, Heart, Ban, Clock, CheckCircle, AlertCircle, Mail, Phone, MapPin } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
+import { Star, Heart, Ban, Clock, CheckCircle, AlertCircle, Mail, Phone, MapPin, Calendar, User, DollarSign, Target, Activity, FileText, Users, Eye, MessageCircle } from 'lucide-react';
 
 interface LeadDetailModalProps {
   lead: any;
@@ -116,47 +118,180 @@ const LeadDetailModal: React.FC<LeadDetailModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">
+          <DialogTitle className="text-2xl font-bold flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <FileText className="h-6 w-6 text-blue-600" />
+            </div>
             {lead?.materialCategory} Project - ZIP {lead?.zipCode}
+            <Badge className={`ml-auto ${getStatusColor(lead?.status || 'new')}`}>
+              {getStatusIcon(lead?.status || 'new')}
+              {(lead?.status || 'new').charAt(0).toUpperCase() + (lead?.status || 'new').slice(1)}
+            </Badge>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Lead Information */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Material Category</p>
-                  <p className="text-lg font-semibold">{lead?.materialCategory}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">ZIP Code</p>
-                  <p className="text-lg font-semibold">{lead?.zipCode}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Budget</p>
-                  <p className="text-lg font-semibold">
-                    {lead?.budget ? `$${lead.budget.toLocaleString()}` : 'Not specified'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Timeline</p>
-                  <p className="text-lg font-semibold">{lead?.timeline || 'Not specified'}</p>
-                </div>
-              </div>
-              {lead?.description && (
-                <div className="mt-4">
-                  <p className="text-sm font-medium text-gray-500">Project Description</p>
-                  <p className="text-gray-700 mt-1">{lead.description}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="professionals">Professionals</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+            <TabsTrigger value="metrics">Metrics</TabsTrigger>
+          </TabsList>
 
-          {/* Matched Professionals */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Matched Professionals</h3>
+          <TabsContent value="overview" className="space-y-6">
+            {/* Lead Status Summary */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-blue-600" />
+                  Lead Status & Summary
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {lead?.matchedProfessionals?.length || 0}
+                    </div>
+                    <div className="text-sm text-gray-600">Professionals Contacted</div>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">
+                      {lead?.matchedProfessionals?.filter((p: any) => p.status === 'responded' || p.status === 'interested').length || 0}
+                    </div>
+                    <div className="text-sm text-gray-600">Responses Received</div>
+                  </div>
+                  <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                    <div className="text-2xl font-bold text-yellow-600">
+                      {lead?.matchedProfessionals?.filter((p: any) => p.status === 'contacted').length || 0}
+                    </div>
+                    <div className="text-sm text-gray-600">Awaiting Response</div>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {lead?.intentScore || 'N/A'}
+                    </div>
+                    <div className="text-sm text-gray-600">Intent Score</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Project Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-green-600" />
+                  Project Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Customer Name</p>
+                      <p className="text-lg font-semibold text-gray-900">{lead?.customerName || 'Not specified'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Material Category</p>
+                      <p className="text-lg font-semibold text-blue-600">{lead?.materialCategory}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Project Type</p>
+                      <p className="text-lg font-semibold text-gray-900">{lead?.projectType || 'Not specified'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Location</p>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-gray-400" />
+                        <p className="text-lg font-semibold text-gray-900">ZIP {lead?.zipCode}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Budget</p>
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4 text-green-500" />
+                        <p className="text-lg font-semibold text-gray-900">
+                          {lead?.budget ? `$${lead.budget.toLocaleString()}` : 'Not specified'}
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Timeline</p>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-purple-500" />
+                        <p className="text-lg font-semibold text-gray-900">{lead?.timeline || 'Not specified'}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Created</p>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-gray-400" />
+                        <p className="text-lg font-semibold text-gray-900">
+                          {lead?.createdAt ? new Date(lead.createdAt).toLocaleDateString() : 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Status</p>
+                      <Badge className={getStatusColor(lead?.status || 'new')}>
+                        {getStatusIcon(lead?.status || 'new')}
+                        {(lead?.status || 'new').charAt(0).toUpperCase() + (lead?.status || 'new').slice(1)}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+                {lead?.description && (
+                  <div className="mt-6">
+                    <p className="text-sm font-medium text-gray-500 mb-2">Project Description</p>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-gray-700 leading-relaxed">{lead.description}</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="professionals" className="space-y-6">
+
+            {/* Professional Summary */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-blue-600" />
+                  Professional Matching Summary
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {lead?.matchedProfessionals?.length || 0}
+                    </div>
+                    <div className="text-sm text-gray-600">Total Contacted</div>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">
+                      {lead?.matchedProfessionals?.filter((p: any) => p.status === 'responded' || p.status === 'interested').length || 0}
+                    </div>
+                    <div className="text-sm text-gray-600">Responded</div>
+                  </div>
+                  <div className="text-center p-4 bg-red-50 rounded-lg">
+                    <div className="text-2xl font-bold text-red-600">
+                      {lead?.nonResponsiveVendors?.length || 0}
+                    </div>
+                    <div className="text-sm text-gray-600">No Response</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Matched Professionals Details */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Professional Details</h3>
             
             {isLoading ? (
               <div className="flex justify-center p-8">
@@ -167,7 +302,9 @@ const LeadDetailModal: React.FC<LeadDetailModalProps> = ({
                 {matchedVendors.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">Finding professionals for your project...</p>
                 ) : (
-                  matchedVendors.map((vendor: any, index: number) => (
+                  matchedVendors.map((vendor: any, index: number) => {
+                    const professional = lead?.matchedProfessionals?.find((p: any) => p.email === vendor.email);
+                    return (
                     <Card key={vendor.uid || index} className={`border-l-4 ${vendor.role === 'vendor' ? 'border-blue-500' : 'border-green-500'}`}>
                       <CardContent className="pt-6">
                         <div className="flex justify-between items-start">
@@ -266,6 +403,34 @@ const LeadDetailModal: React.FC<LeadDetailModalProps> = ({
                           </div>
                         </div>
                         
+                        {/* Professional Interaction Timeline */}
+                        {professional && (
+                          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                            <h5 className="font-medium text-gray-900 mb-3">Interaction Timeline</h5>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4 text-blue-500" />
+                                <span className="text-gray-600">Contacted:</span>
+                                <span className="font-medium">
+                                  {professional.contactedAt ? new Date(professional.contactedAt).toLocaleString() : 'Recently'}
+                                </span>
+                                <Badge className={`ml-2 ${getStatusColor(professional.status)}`}>
+                                  {professional.status}
+                                </Badge>
+                              </div>
+                              {professional.respondedAt && (
+                                <div className="flex items-center gap-2">
+                                  <MessageCircle className="h-4 w-4 text-green-500" />
+                                  <span className="text-gray-600">Responded:</span>
+                                  <span className="font-medium">
+                                    {new Date(professional.respondedAt).toLocaleString()}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        
                         <div className="mt-4 flex justify-between items-center">
                           <div className="text-sm text-gray-500">
                             <p>Lead sent to this professional</p>
@@ -324,28 +489,219 @@ const LeadDetailModal: React.FC<LeadDetailModalProps> = ({
                         )}
                       </CardContent>
                     </Card>
-                  ))
+                    )
+                  })
                 )}
               </div>
             )}
           </div>
 
-          {/* Non-responsive Vendors */}
-          {lead?.nonResponsiveVendors && lead.nonResponsiveVendors.length > 0 && (
-            <Card className="border-l-4 border-red-500">
-              <CardContent className="pt-6">
-                <h4 className="font-semibold text-red-700 mb-2">Did not respond within 48 hours:</h4>
-                <ul className="space-y-1">
-                  {lead.nonResponsiveVendors.map((vendor: any, index: number) => (
-                    <li key={index} className="text-sm text-red-600">
-                      • {vendor.vendorName}
-                    </li>
+            {/* Non-responsive Vendors */}
+            {lead?.nonResponsiveVendors && lead.nonResponsiveVendors.length > 0 && (
+              <Card className="border-l-4 border-red-500">
+                <CardContent className="pt-6">
+                  <h4 className="font-semibold text-red-700 mb-2">Did not respond within 48 hours:</h4>
+                  <ul className="space-y-1">
+                    {lead.nonResponsiveVendors.map((vendor: any, index: number) => (
+                      <li key={index} className="text-sm text-red-600">
+                        • {vendor.vendorName}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="activity" className="space-y-6">
+            {/* Activity Timeline */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-purple-600" />
+                  Activity Timeline
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Lead Creation */}
+                  <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-lg">
+                    <div className="p-2 bg-blue-100 rounded-full">
+                      <FileText className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-blue-900">Lead Created</h4>
+                      <p className="text-sm text-blue-700">
+                        Project request submitted for {lead?.materialCategory} in ZIP {lead?.zipCode}
+                      </p>
+                      <p className="text-xs text-blue-600 mt-1">
+                        {lead?.createdAt ? new Date(lead.createdAt).toLocaleString() : 'Recently'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Professional Contacts */}
+                  {lead?.matchedProfessionals?.map((professional: any, index: number) => (
+                    <div key={index} className="flex items-start gap-4 p-4 bg-green-50 rounded-lg">
+                      <div className="p-2 bg-green-100 rounded-full">
+                        <Users className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-green-900">
+                          Professional Contacted: {professional.businessName || professional.name}
+                        </h4>
+                        <p className="text-sm text-green-700">
+                          Lead sent to {professional.email}
+                        </p>
+                        <p className="text-xs text-green-600 mt-1">
+                          {professional.contactedAt ? new Date(professional.contactedAt).toLocaleString() : 'Recently'}
+                        </p>
+                        {professional.respondedAt && (
+                          <div className="mt-2 p-2 bg-white rounded border border-green-200">
+                            <p className="text-sm font-medium text-green-800">Response Received</p>
+                            <p className="text-xs text-green-600">
+                              {new Date(professional.respondedAt).toLocaleString()}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      <Badge className={getStatusColor(professional.status)}>
+                        {professional.status}
+                      </Badge>
+                    </div>
                   ))}
-                </ul>
+
+                  {/* Status Changes */}
+                  {lead?.status && lead.status !== 'new' && (
+                    <div className="flex items-start gap-4 p-4 bg-yellow-50 rounded-lg">
+                      <div className="p-2 bg-yellow-100 rounded-full">
+                        <Target className="h-4 w-4 text-yellow-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-yellow-900">
+                          Status Updated to {lead.status.charAt(0).toUpperCase() + lead.status.slice(1)}
+                        </h4>
+                        <p className="text-sm text-yellow-700">
+                          Lead status changed based on professional interactions
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
-          )}
-        </div>
+          </TabsContent>
+
+          <TabsContent value="metrics" className="space-y-6">
+            {/* Performance Metrics */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-purple-600" />
+                  Lead Performance Metrics
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="p-4 bg-blue-50 rounded-lg">
+                      <h4 className="font-medium text-blue-900 mb-2">Reach Metrics</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-blue-700">Professionals Contacted:</span>
+                          <span className="font-semibold text-blue-900">{lead?.matchedProfessionals?.length || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-blue-700">Emails Sent:</span>
+                          <span className="font-semibold text-blue-900">{lead?.matchedProfessionals?.length || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-blue-700">Geographic Coverage:</span>
+                          <span className="font-semibold text-blue-900">ZIP {lead?.zipCode}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-green-50 rounded-lg">
+                      <h4 className="font-medium text-green-900 mb-2">Response Metrics</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-green-700">Total Responses:</span>
+                          <span className="font-semibold text-green-900">
+                            {lead?.matchedProfessionals?.filter((p: any) => p.status === 'responded' || p.status === 'interested').length || 0}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-green-700">Response Rate:</span>
+                          <span className="font-semibold text-green-900">
+                            {lead?.matchedProfessionals?.length ? 
+                              Math.round((lead.matchedProfessionals.filter((p: any) => p.status === 'responded' || p.status === 'interested').length / lead.matchedProfessionals.length) * 100) + '%' 
+                              : '0%'
+                            }
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-green-700">Interested Professionals:</span>
+                          <span className="font-semibold text-green-900">
+                            {lead?.matchedProfessionals?.filter((p: any) => p.status === 'interested').length || 0}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="p-4 bg-purple-50 rounded-lg">
+                      <h4 className="font-medium text-purple-900 mb-2">Quality Metrics</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-purple-700">Intent Score:</span>
+                          <span className="font-semibold text-purple-900">
+                            {lead?.intentScore ? `${lead.intentScore}/100` : 'Not calculated'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-purple-700">Budget Specified:</span>
+                          <span className="font-semibold text-purple-900">
+                            {lead?.budget ? '✓ Yes' : '✗ No'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-purple-700">Timeline Specified:</span>
+                          <span className="font-semibold text-purple-900">
+                            {lead?.timeline ? '✓ Yes' : '✗ No'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-red-50 rounded-lg">
+                      <h4 className="font-medium text-red-900 mb-2">Follow-up Needed</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-red-700">No Response:</span>
+                          <span className="font-semibold text-red-900">
+                            {lead?.matchedProfessionals?.filter((p: any) => p.status === 'contacted').length || 0}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-red-700">Expired Leads:</span>
+                          <span className="font-semibold text-red-900">{lead?.nonResponsiveVendors?.length || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-red-700">Days Since Created:</span>
+                          <span className="font-semibold text-red-900">
+                            {lead?.createdAt ? Math.floor((Date.now() - new Date(lead.createdAt).getTime()) / (1000 * 60 * 60 * 24)) : 'N/A'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
