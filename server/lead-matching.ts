@@ -1012,8 +1012,17 @@ export async function getLeadsWithMatches(customerId: string): Promise<any[]> {
     // Use the global db instance that's already initialized
     if (!db) {
       console.error('❌ Firebase not initialized in lead-matching module');
-      return [];
+      // Fallback to local storage if Firebase is not available
+      console.log('🔄 Falling back to local storage for leads');
+      const allLeads = Array.from(leadStorage.values());
+      const customerLeads = allLeads.filter(lead => 
+        lead.customerEmail === customerId || 
+        lead.email === customerId
+      );
+      console.log('📋 Found', customerLeads.length, 'leads in local storage for customer:', customerId);
+      return customerLeads;
     }
+    
     const leadsRef = collection(db, 'leads');
     
     // Query for leads where customerEmail matches the provided customerId
@@ -1031,9 +1040,37 @@ export async function getLeadsWithMatches(customerId: string): Promise<any[]> {
     });
     
     console.log('✅ Found', customerLeads.length, 'leads for customer:', customerId);
+    
+    // If Firebase query returns empty, also check local storage as backup
+    if (customerLeads.length === 0) {
+      console.log('🔄 Firebase returned empty, checking local storage as backup');
+      const allLeads = Array.from(leadStorage.values());
+      const localLeads = allLeads.filter(lead => 
+        lead.customerEmail === customerId || 
+        lead.email === customerId
+      );
+      if (localLeads.length > 0) {
+        console.log('📋 Found', localLeads.length, 'leads in local storage backup');
+        return localLeads;
+      }
+    }
+    
     return customerLeads;
   } catch (error) {
     console.error('❌ Error fetching customer leads from Firebase:', error);
-    return [];
+    console.log('🔄 Error occurred, falling back to local storage');
+    // Fallback to local storage on error
+    try {
+      const allLeads = Array.from(leadStorage.values());
+      const customerLeads = allLeads.filter(lead => 
+        lead.customerEmail === customerId || 
+        lead.email === customerId
+      );
+      console.log('📋 Fallback found', customerLeads.length, 'leads for customer:', customerId);
+      return customerLeads;
+    } catch (fallbackError) {
+      console.error('❌ Even fallback failed:', fallbackError);
+      return [];
+    }
   }
 }
