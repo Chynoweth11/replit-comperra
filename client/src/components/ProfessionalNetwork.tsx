@@ -450,7 +450,10 @@ export function SubmitLeadForm({ onBack }) {
                     description: formData.projectDetails,
                     professionalType: formData.professionalType,
                     isLookingForPro: formData.professionalType === 'trade' || formData.professionalType === 'both',
-                    source: 'professional-network'
+                    source: 'professional-network',
+                    // Force the customer email to be the logged-in user's email
+                    customerEmail: user?.email || formData.email,
+                    customerName: formData.name
                 }),
                 signal: controller.signal
             });

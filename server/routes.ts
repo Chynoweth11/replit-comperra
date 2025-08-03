@@ -1782,6 +1782,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const leadData = req.body;
       console.log('📋 Lead submission received:', JSON.stringify(leadData, null, 2));
       
+      // Get the current logged-in user to associate the lead properly
+      const currentUser = await getCurrentUser(req);
+      if (currentUser) {
+        // Override form email with logged-in user's email
+        leadData.email = currentUser.email;
+        leadData.customerEmail = currentUser.email;
+        console.log('✅ Using logged-in user email:', currentUser.email);
+      }
+      
       // Verify reCAPTCHA token if provided
       if (leadData.recaptchaToken) {
         const { verifyRecaptchaToken } = await import('./recaptcha-config');
@@ -1851,7 +1860,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Normalize the lead data for the submission system
       const normalizedLead = {
         ...leadData,
-        customerEmail: email,
+        customerEmail: currentUser?.email || email,  // Prioritize logged-in user's email
         customerName: leadData.name || leadData.customerName,
         zipCode: zipCode,
         projectDetails: leadData.projectDetails || leadData.description || leadData.message,
@@ -2137,9 +2146,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: 'User not authenticated' });
       }
       
+      console.log('🔍 Fetching leads for customer:', currentUser.email);
+      
       // Get leads with matched professionals from Firebase
       const { getLeadsWithMatches } = await import('./lead-matching');
       const leads = await getLeadsWithMatches(currentUser.email);
+      
+      console.log('📋 Found leads for customer:', leads.length);
       
       res.json({ leads });
     } catch (error) {
