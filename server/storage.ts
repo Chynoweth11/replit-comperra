@@ -73,110 +73,237 @@ export class MemStorage implements IStorage {
   private initializeSampleArticles() {
     const sampleArticles = [
       {
-        title: "Best Ceramic & Porcelain Tiles 2025: Complete Buyer's Guide",
-        description: "Expert recommendations for ceramic and porcelain tiles, including durability ratings, installation tips, and top brand comparisons for every budget.",
-        content: `# Best Ceramic & Porcelain Tiles 2025: Complete Buyer's Guide
+        title: "Best Porcelain Tiles of 2025",
+        description: "Porcelain tiles have long been a staple in both residential and commercial design due to their low water absorption, high compressive strength, and visual flexibility. In 2025, manufacturers have pushed even further, offering advanced textures, sustainable production methods, and more precise rectified edges for tighter grout lines. This guide details our in-depth testing of over 60 tiles across top U.S. and European brands.",
+        content: `Porcelain tile is produced from denser clay and fired at higher temperatures than ceramic, making it ideal for wet environments like bathrooms and kitchens. When selecting a porcelain tile, it's critical to consider PEI ratings (indicating resistance to surface wear), slip resistance (measured via DCOF), and aesthetic elements like finish and edge profile. While matte finishes are trending in residential use, polished and structured textures are still dominating the commercial market.
 
-## Introduction
-Ceramic and porcelain tiles remain the most popular flooring choice for kitchens, bathrooms, and high-traffic areas. This comprehensive guide covers everything you need to know about selecting the perfect tiles for your project.
+We also compared average installation costs based on layout complexity (straight lay vs herringbone or large format), and evaluated ease of cutting and chipping during install.
 
-## Ceramic vs Porcelain: Key Differences
+Key Factors Compared:
+• Slip Resistance (DCOF): Threshold for commercial-grade safety (≥ 0.42)
+• Durability (PEI Rating): Surface wear resistance, with PEI 4 and 5 being most durable
+• Water Absorption: Vitreous (< 0.5%) for optimal performance in wet areas
+• Installation Costs: Average $4–$12 per sq. ft. depending on layout complexity
+• Design Trends: Matte concrete-look, large format (24x48), and 3D textured surfaces
 
-### Ceramic Tiles
-- **Composition**: Made from clay, sand, and water
-- **Water Absorption**: 3-20% (varies by grade)
-- **Durability**: Good for indoor residential use
-- **Cost**: More affordable option
-- **Best For**: Walls, light-traffic floors, decorative applications
-
-### Porcelain Tiles
-- **Composition**: Refined clay fired at higher temperatures
-- **Water Absorption**: Less than 0.5%
-- **Durability**: Excellent for high-traffic and outdoor use
-- **Cost**: Higher initial investment
-- **Best For**: Heavy-traffic floors, outdoor patios, commercial spaces
-
-## PEI Rating System
-Understanding the Porcelain Enamel Institute (PEI) rating helps you choose the right tile:
-
-- **PEI 0**: Wall use only
-- **PEI I**: Light residential traffic (closets, bathrooms)
-- **PEI II**: Moderate residential traffic (all residential areas except kitchens)
-- **PEI III**: Heavy residential traffic (all residential areas)
-- **PEI IV**: Commercial light traffic
-- **PEI V**: Commercial heavy traffic
-
-## Top Recommendations by Category
-
-### Budget-Friendly Options ($1-3/sq ft)
-1. **Daltile Color Wave** - Reliable ceramic with good color selection
-2. **American Olean Starting Line** - Basic porcelain for residential use
-3. **Mohawk Ceramic Plus** - Entry-level with decent durability
-
-### Mid-Range Quality ($3-8/sq ft)
-1. **Daltile Keystones** - Premium unglazed porcelain
-2. **American Olean Bevalo** - Natural stone look porcelain
-3. **Interceramic Brick** - Subway tile specialist
-
-### Premium Selection ($8-15/sq ft)
-1. **Daltile One Quartz Surfaces** - Large format porcelain slabs
-2. **American Olean Chloe** - Designer collection with unique patterns
-3. **Interceramic Travertine** - Natural stone replication
-
-## Installation Considerations
-
-### Subfloor Requirements
-- Concrete: Best base for tile installation
-- Plywood: Minimum 1-1/4" thick, preferably exterior grade
-- Existing Tile: Can tile over if properly prepared
-- Deflection: Maximum L/360 for ceramic, L/720 for natural stone
-
-### Tile Layout Tips
-- Always start with a center line
-- Use tile spacers for consistent gaps
-- Plan cuts to avoid narrow slivers at edges
-- Consider tile size relative to room dimensions
-
-## Maintenance and Care
-
-### Daily Maintenance
-- Sweep or vacuum regularly
-- Mop with pH-neutral cleaner
-- Wipe spills immediately
-- Use mats at entrances
-
-### Deep Cleaning
-- Steam cleaning for textured surfaces
-- Specialized grout cleaners for stained grout
-- Periodic sealing for natural stone tiles
-- Professional cleaning every 1-2 years for high-traffic areas
-
-## Common Mistakes to Avoid
-1. **Choosing wrong PEI rating** for intended use
-2. **Inadequate substrate preparation**
-3. **Poor waterproofing** in wet areas
-4. **Incorrect grout selection** for joint width
-5. **Ignoring expansion joints** in large installations
-
-## Cost Analysis
-Factor in all costs when budgeting:
-- Tile cost: 40-60% of total project
-- Labor: 30-40% of total project
-- Materials (adhesive, grout, etc.): 10-15% of total project
-- Subfloor prep: Variable, can add 20-50% to project cost
-
-## Conclusion
-Selecting the right ceramic or porcelain tile involves balancing durability requirements, aesthetic preferences, and budget constraints. Consider the PEI rating for your specific application, factor in long-term maintenance costs, and always invest in proper installation for the best results.
-
-For complex installations or high-value projects, consult with certified tile installers and consider professional design services to ensure optimal outcomes.`,
-        imageUrl: "/images/tile-guide.jpg",
-        category: "buyer's guide",
-        readTime: 12,
-        publishedAt: new Date().toISOString(),
-        slug: "best-ceramic-porcelain-tiles-2025"
+Top Picks:
+• Best overall: Daltile Emerson Wood Matte 6x36
+• Best for showers: Marazzi Classentino Marble Polished 12x24
+• Best budget pick: Arizona Tile Aequa Series 8x32`,
+        imageUrl: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+        category: "Buyer's Guide",
+        readTime: 8,
+        publishedAt: "Jan 15, 2025",
+        slug: "best-porcelain-tiles-2025",
       },
       {
-        title: "Natural Stone vs Engineered Slabs: Complete Material Analysis",
+        title: "Top Quartz Slabs Compared",
+        description: "Quartz countertops continue to dominate residential and commercial design for their consistent patterns, nonporous properties, and low maintenance needs. Engineered using natural quartz crystals and resin binders, these surfaces offer the beauty of stone with improved functionality. In this guide, we meticulously examined 30+ slabs across Cambria, Caesarstone, MSI, and Silestone—the industry's biggest players.",
+        content: `Each brand offers unique advantages: Cambria is known for luxurious, marble-like aesthetics and is entirely made in the U.S.; Caesarstone leads in subtle modern patterns and superior stain resistance; MSI provides affordability and availability; while Silestone champions sustainability and antibacterial technology. Our evaluation covered pricing, installation costs, finish type (polished, suede, volcano), thickness options (2cm vs 3cm), and resistance to heat, abrasion, and impact.
+
+We also looked at color consistency, warranty coverage, and how well each slab matched with edge profiles for waterfall islands and integrated backsplashes. Sustainability was another major factor—Silestone's HybriQ technology uses 99% reused water and 20% recycled materials. Cambria also maintains Greenguard Gold certification for indoor air quality.
+
+Comparison Points:
+• Cambria: American-made, natural stone aesthetics, lifetime warranty
+• Caesarstone: Minimalist colors, industry leader in stain resistance
+• MSI Q Quartz: Budget-friendly with wide availability and pattern consistency
+• Silestone: Pioneers in antimicrobial protection and recycled content
+• Thickness: 2cm vs 3cm slabs for varying applications
+• Finish: Polished, Suede, Volcano
+• Price Range: $45–$110/sq. ft. installed
+• Sustainability: LEED points eligibility and recycled content
+
+Top Picks:
+• Best pattern: Cambria Brittanicca Warm
+• Most stain-resistant: Caesarstone Pure White`,
+        imageUrl: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+        category: "Comparison",
+        readTime: 12,
+        publishedAt: "Jan 12, 2025",
+        slug: "top-quartz-slabs-compared",
+      },
+      {
+        title: "Best Carpets for High-Traffic Areas",
+        description: "Carpet in high-traffic zones must do more than look good—it must perform. In commercial buildings, multi-family units, and active households, carpet endures rolling traffic, foot traffic, spills, and repetitive impact. For this guide, we analyzed dozens of products from major brands like Shaw, Mohawk, and Interface, focusing on fiber composition, surface structure, stain resistance, and long-term maintenance.",
+        content: `Nylon 6 and Nylon 6.6 fibers are the most durable for high-wear zones due to their elasticity and abrasion resistance. Triexta (used in Mohawk's SmartStrand) delivers superior softness with excellent stain resistance and a lower environmental impact. Polyester, while cost-effective, shows more wear under heavy foot traffic. We tested modular tiles vs broadloom for ease of replacement and found tile systems offer lower lifecycle costs despite higher upfront pricing.
+
+Stain guard treatments, pile height, density, and backing technology all play a role in longevity. Interface's modular carpet lines featured superior durability while offering sustainable PVC-free options. Shaw's commercial carpets ranked highest for crush resistance and wear performance.
+
+Test Criteria:
+• Taber Abrasion Testing: Measures fiber wear rate under continuous friction
+• Stain Resistance: Tested with common household and commercial spills
+• Crush Recovery: Assesses pile recovery after compression
+• Installation Costs: $3–$8 per sq. ft.
+• Fiber Types: Nylon 6, Nylon 6.6, Triexta, Polyester
+
+Top Picks:
+• Modular durability: Shaw Contract Color Form Carpet Tile
+• Best stain resistance: Mohawk SmartStrand Silk
+• Eco-friendly option: Interface Human Nature Series`,
+        imageUrl: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+        category: "Performance",
+        readTime: 6,
+        publishedAt: "Jan 10, 2025",
+        slug: "best-carpets-high-traffic",
+      },
+      {
+        title: "Best Heat Mats & Radiant Floor Systems (2025)",
+        description: "Radiant heating systems offer unmatched comfort and energy efficiency, especially in tile-heavy spaces like kitchens and bathrooms. In this guide, we analyzed heating mats and cables from brands such as WarmlyYours, Schluter DITRA-HEAT, and SunTouch. These systems were tested in both residential renovations and new-builds across tile, engineered wood, and vinyl applications.",
+        content: `We compared coverage uniformity, thermostat technology, heating speed, and installation compatibility. 240V systems are best suited for larger areas, while 120V systems are ideal for small bathrooms or powder rooms. Floor sensors improve energy efficiency and comfort by ensuring the system responds to actual surface temperatures. Modern thermostats now feature Wi-Fi scheduling, touchscreens, and smart home integrations with Alexa or Google Assistant.
+
+DITRA-HEAT stood out for integrating heat cables with an uncoupling membrane, reducing cracking and tile stress. WarmlyYours provided the most comprehensive support and warranty terms, while SunTouch offered best-in-class installation speed for contractors.
+
+Key Comparisons:
+• Voltage: 120V (small rooms) vs 240V (large spaces)
+• Sensor Type: Floor-only, ambient, or dual sensor
+• Control Features: Wi-Fi enabled, programmable, smart home integration
+• Install Compatibility: Under tile, vinyl, engineered wood
+• Temperature Range: Max 82°F–104°F for safe radiant performance
+
+Top Picks:
+• Best smart system: WarmlyYours TempZone with nSpire Touch Wi-Fi
+• Most durable cable: SunTouch TapeMat 240V 30 sq. ft.
+• Best integrated system: Schluter DITRA-HEAT with DHERT104 thermostat`,
+        imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+        category: "Heating Guide",
+        readTime: 7,
+        publishedAt: "Jan 8, 2025",
+        slug: "best-heat-mats-radiant-floor-systems-2025",
+      },
+      {
+        title: "Top Luxury Vinyl & LVT Flooring Picks",
+        description: "Luxury Vinyl Tile (LVT) and plank (LVP) flooring are widely embraced for their waterproof features, affordability, and realistic textures that mimic hardwood and stone. In 2025, technology has further improved wear layer coatings, acoustic underlayment, and visual realism through Embossed-in-Register (EIR) texturing.",
+        content: `This guide covers top-performing LVT options from COREtec, Shaw, Karndean, and Mohawk. Each product was assessed for dimensional stability, dent resistance, sound rating (IIC), wear layer thickness, and DIY-friendliness. SPC (Stone Plastic Composite) cores are preferred in high-traffic or temperature-variable spaces, while WPC (Wood Plastic Composite) offers more cushioning underfoot.
+
+LVT's click-lock and glue-down systems were reviewed for ease of installation and long-term hold. Core types were tested for resistance to heat, moisture, and subfloor imperfections. Many top-tier products now include pre-attached acoustic pads and antimicrobial finishes.
+
+Evaluation Criteria:
+• Wear Layer Thickness: 12 mil to 30 mil (residential to commercial grade)
+• Core Type: SPC for durability, WPC for comfort
+• Acoustic Ratings: IIC ≥ 60 for quiet environments
+• Visuals: EIR texture and high-definition printing
+• Installation Systems: Click-lock, Drop-lock, Glue-down
+
+Top Picks:
+• Most durable SPC: COREtec Pro Plus HD 7x48
+• Best wide-plank look: Karndean Korlok Select
+• Great tile-look option: Shaw Paragon Tile Plus`,
+        imageUrl: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+        category: "Durability & Design",
+        readTime: 9,
+        publishedAt: "Jan 6, 2025",
+        slug: "top-luxury-vinyl-lvt-flooring-picks",
+      },
+      {
+        title: "Best Hardwood Flooring for Modern Homes",
+        description: "Hardwood floors are prized for their natural beauty, resale value, and longevity. This guide dives into both solid and engineered wood flooring suitable for modern homes. From wide-plank European oak to eco-certified maple, we examined 40+ flooring products for stability, hardness, finish, and environmental performance.",
+        content: `Solid hardwood offers unmatched authenticity but is prone to expansion/contraction, making engineered formats more stable in dry or humid climates. We compared finishes such as oil-rubbed, UV-cured urethane, and wire-brushed textures. Species like hickory and white oak ranked highest in Janka hardness and dent resistance.
+
+Installation methods—including floating, glue-down, and nail-down—were reviewed for durability and flexibility. Engineered cores (multi-ply, HDF, and hybrid) were tested for subfloor compatibility. Sustainability scores included FSC certification and formaldehyde-free adhesives.
+
+Comparison Metrics:
+• Species Hardness: Oak, Maple, Hickory, Walnut (Janka scale)
+• Finish Type: UV-cured, oil-rubbed, wire-brushed
+• Board Dimensions: 5–9" wide-plank, beveled edges
+• Installation Methods: Glue-down, floating, nail-down
+• Sustainability: FSC certified, low-VOC materials
+
+Top Picks:
+• Best overall: Lauzon Organik Series Maple 7.5"
+• Best engineered: Mirage Red Oak Engineered 5"
+• Premium design: DuChâteau Atelier Line European Oak`,
+        imageUrl: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+        category: "Design & Longevity",
+        readTime: 10,
+        publishedAt: "Jan 4, 2025",
+        slug: "best-hardwood-flooring-modern-homes",
+      },
+      {
+        title: "Best Thermostats for Radiant Floor and Outdoor Heating",
+        description: "Complete guide to programmable and smart thermostats for in-floor heating and snow-melt systems.",
+        content: `# Best Thermostats for Radiant Floor and Outdoor Heating
+
+Thermostats used in radiant floor heating and snow-melt systems do far more than regulate temperature — they serve as the control center for comfort, safety, and energy efficiency. Whether installed in bathrooms, kitchens, basements, or even outdoor driveways and walkways, the thermostat must be properly matched to the system to ensure optimal performance.
+
+This guide focuses on programmable and smart thermostats designed for in-floor heating systems (tile, stone, LVT, hardwood) and exterior snow melting applications. We evaluated key features such as voltage compatibility, sensor type, programming flexibility, protection ratings, and installation requirements.
+
+For interior floor heating, thermostats should offer floor and air sensors, GFCI protection, and user-friendly scheduling. For outdoor systems, thermostats or controllers must handle higher loads and detect both temperature and moisture to operate snow-melt systems only when necessary, minimizing energy waste.
+
+## Evaluation Criteria
+
+**Voltage Compatibility:** Supports 120V, 208V, or 240V depending on the heating system size
+
+**Load Capacity:** Typically ranges from 15 amps (interior) to 30+ amps (outdoor)
+
+**Sensor Types:** Floor sensor, air sensor, or moisture detection (for outdoor)
+
+**Programmability:** 7-day schedules, vacation modes, and override functions
+
+**Display Interface:** Digital or touchscreen interfaces with temperature readout
+
+**Smart Features:** Optional Wi-Fi, mobile app control, geo-learning, or remote access
+
+**Safety & Protection:** Built-in GFCI or GFEP required by code for interior use
+
+**Weather Protection:** Outdoor-rated enclosures (e.g., IP65 or NEMA 3R) for driveway controllers
+
+**Installation Type:** Wall-mounted (interior) or surface-mounted (exterior enclosures)
+
+**Energy Optimization:** Adaptive start, learning behavior, or weather-based automation
+
+**Warranty:** Commonly ranges from 3 to 12 years depending on application and manufacturer
+
+## Recommended Use Scenarios
+
+**Bathrooms & Kitchens**
+Use dual-sensor thermostats (air + floor) with programmable schedules to maintain comfort and reduce energy waste.
+
+**Basements & Living Areas**
+Prioritize models with learning algorithms, multi-zone control, or smart device compatibility for whole-home integration.
+
+**Outdoor Driveways & Walkways**
+Use moisture + temperature sensing units with weatherproof enclosures. These detect snow/ice and trigger heating only when needed, reducing runtime and electrical load.
+
+**Multi-Zone Systems**
+Use thermostats with relay support or zone controllers when managing multiple rooms or large slab areas.
+
+## What to Avoid
+
+**Basic HVAC Thermostats**
+These often lack floor sensors and can't control heating mats or cables. Always use thermostats rated for radiant floor heating.
+
+**No-GFCI Models for Interior Use**
+For safety and code compliance, only use thermostats with built-in GFCI or ensure the circuit is protected by an external GFEP.
+
+**Non-rated Enclosures for Outdoor Use**
+For snow-melt systems, always choose thermostats/controllers with appropriate weatherproof ratings (IP65 or NEMA 3R minimum).
+
+## Final Thoughts
+
+Choosing the right thermostat ensures your heating system performs safely, efficiently, and comfortably over the long term. Whether you're heating a bathroom floor or keeping a driveway ice-free in winter, focus on specs like voltage, sensor types, load capacity, and protection level. A properly matched thermostat not only improves energy use but also extends the life of your system.`,
+        imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+        category: "thermostats",
+        readTime: 12,
+        publishedAt: "Jan 8, 2025",
+        slug: "best-thermostats-radiant-floor-outdoor-heating",
+      },
+    ];
+
+    sampleArticles.forEach(article => {
+      const newArticle: Article = { 
+        ...article, 
+        id: this.currentArticleId++,
+        imageUrl: article.imageUrl || null,
+        content: article.content ?? null
+      };
+      this.articles.set(newArticle.id, newArticle);
+    });
+
+    console.log(`✅ Initialized with ${sampleArticles.length} comprehensive articles`);
+  }
+
+  // Duplicate prevention method
+  private isDuplicateProduct(material: InsertMaterial): boolean {
         description: "In-depth comparison of natural stone and engineered materials for countertops, including cost analysis, durability testing, and maintenance requirements.",
         content: `# Natural Stone vs Engineered Slabs: Complete Material Analysis
 
