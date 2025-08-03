@@ -2131,11 +2131,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/customer/leads', async (req: Request, res: Response) => {
     try {
-      const customerId = req.query.customerId as string || 'current-customer';
+      // Use the current logged-in user's email
+      const currentUser = await getCurrentUser(req);
+      if (!currentUser) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
       
       // Get leads with matched professionals from Firebase
       const { getLeadsWithMatches } = await import('./lead-matching');
-      const leads = await getLeadsWithMatches(customerId);
+      const leads = await getLeadsWithMatches(currentUser.email);
       
       res.json({ leads });
     } catch (error) {

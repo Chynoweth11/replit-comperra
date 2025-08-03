@@ -378,6 +378,7 @@ function Dashboard() {
 }
 
 export function SubmitLeadForm({ onBack }) {
+    const { user } = useContext(AuthContext);
     const initialFormState = { 
         name: '', 
         email: '', 
@@ -385,7 +386,7 @@ export function SubmitLeadForm({ onBack }) {
         customerType: '',
         address: '',
         city: '',
-        state: '',
+        state: 'AZ',
         zipCode: '', 
         materialCategories: [],
         projectType: '',
@@ -398,7 +399,26 @@ export function SubmitLeadForm({ onBack }) {
     const toast = useToast();
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-    const handleChange = e => setFormData(p => ({...p, [e.target.name]: e.target.value}));
+    const handleChange = e => {
+        let value = e.target.value;
+        
+        // Format phone number
+        if (e.target.name === 'phone') {
+            // Remove all non-digits
+            const digits = value.replace(/\D/g, '');
+            
+            // Format as (xxx)-xxx-xxxx
+            if (digits.length <= 3) {
+                value = digits;
+            } else if (digits.length <= 6) {
+                value = `(${digits.slice(0, 3)})-${digits.slice(3)}`;
+            } else {
+                value = `(${digits.slice(0, 3)})-${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+            }
+        }
+        
+        setFormData(p => ({...p, [e.target.name]: value}));
+    };
     const handleSubmit = async (e) => {
         e.preventDefault(); setLoading(true); 
         toast.toast({ title: 'Finding your match...', description: 'Searching for professionals in your area.' });
@@ -414,7 +434,7 @@ export function SubmitLeadForm({ onBack }) {
                 },
                 body: JSON.stringify({
                     name: formData.name,
-                    email: formData.email,
+                    email: user?.email || formData.email,  // Use logged-in user's email
                     phone: formData.phone,
                     customerType: formData.customerType,
                     address: formData.address,
@@ -542,7 +562,58 @@ export function SubmitLeadForm({ onBack }) {
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <Input id="address" value={formData.address} onChange={handleChange} placeholder="Address *" />
                                 <Input id="city" value={formData.city} onChange={handleChange} placeholder="City *" />
-                                <Input id="state" value={formData.state} onChange={handleChange} placeholder="State *" />
+                                <Select id="state" name="state" value={formData.state} onChange={handleChange} label="State *">
+                                    <option value="AL">Alabama</option>
+                                    <option value="AK">Alaska</option>
+                                    <option value="AZ">Arizona</option>
+                                    <option value="AR">Arkansas</option>
+                                    <option value="CA">California</option>
+                                    <option value="CO">Colorado</option>
+                                    <option value="CT">Connecticut</option>
+                                    <option value="DE">Delaware</option>
+                                    <option value="FL">Florida</option>
+                                    <option value="GA">Georgia</option>
+                                    <option value="HI">Hawaii</option>
+                                    <option value="ID">Idaho</option>
+                                    <option value="IL">Illinois</option>
+                                    <option value="IN">Indiana</option>
+                                    <option value="IA">Iowa</option>
+                                    <option value="KS">Kansas</option>
+                                    <option value="KY">Kentucky</option>
+                                    <option value="LA">Louisiana</option>
+                                    <option value="ME">Maine</option>
+                                    <option value="MD">Maryland</option>
+                                    <option value="MA">Massachusetts</option>
+                                    <option value="MI">Michigan</option>
+                                    <option value="MN">Minnesota</option>
+                                    <option value="MS">Mississippi</option>
+                                    <option value="MO">Missouri</option>
+                                    <option value="MT">Montana</option>
+                                    <option value="NE">Nebraska</option>
+                                    <option value="NV">Nevada</option>
+                                    <option value="NH">New Hampshire</option>
+                                    <option value="NJ">New Jersey</option>
+                                    <option value="NM">New Mexico</option>
+                                    <option value="NY">New York</option>
+                                    <option value="NC">North Carolina</option>
+                                    <option value="ND">North Dakota</option>
+                                    <option value="OH">Ohio</option>
+                                    <option value="OK">Oklahoma</option>
+                                    <option value="OR">Oregon</option>
+                                    <option value="PA">Pennsylvania</option>
+                                    <option value="RI">Rhode Island</option>
+                                    <option value="SC">South Carolina</option>
+                                    <option value="SD">South Dakota</option>
+                                    <option value="TN">Tennessee</option>
+                                    <option value="TX">Texas</option>
+                                    <option value="UT">Utah</option>
+                                    <option value="VT">Vermont</option>
+                                    <option value="VA">Virginia</option>
+                                    <option value="WA">Washington</option>
+                                    <option value="WV">West Virginia</option>
+                                    <option value="WI">Wisconsin</option>
+                                    <option value="WY">Wyoming</option>
+                                </Select>
                             </div>
                             <Input id="zipCode" value={formData.zipCode} onChange={handleChange} placeholder="ZIP Code *" />
                             <div>
