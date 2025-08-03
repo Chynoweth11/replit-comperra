@@ -1895,10 +1895,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('❌ Error details:', error.stack);
       }
       
+      // Store lead in local storage for customer retrieval
+      const { leadStorage } = await import('./lead-matching');
+      const leadId = `lead-${Date.now()}-${normalizedLead.customerEmail?.replace('@', '-').replace('.', '-')}`;
+      const leadForStorage = {
+        ...normalizedLead,
+        id: leadId,
+        status: 'new',
+        createdAt: new Date(),
+        categoriesRequested: normalizedLead.materialCategories || [normalizedLead.materialCategory].filter(Boolean),
+        matchedProfessionals: [] // Will be populated by matching system
+      };
+      
+      leadStorage.set(leadId, leadForStorage);
+      console.log('💾 ✅ Lead stored in local storage with ID:', leadId);
+      console.log('💾 ✅ Customer email:', normalizedLead.customerEmail);
+      console.log('💾 ✅ Total leads in storage:', leadStorage.size);
+      console.log('💾 ✅ All lead keys:', Array.from(leadStorage.keys()));
+      
       // Always respond to the client after processing
       res.json({ 
         success: true, 
-        message: 'Lead submitted successfully! We are connecting you with professionals in your area.' 
+        message: 'Lead submitted successfully! We are connecting you with professionals in your area.',
+        leadId 
       });
     } catch (error) {
       console.error('❌ Lead submission error:', error);
@@ -1924,9 +1943,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const matchResult = await submitLeadAndMatch(leadData);
       
+      // Store lead in local storage for customer retrieval
+      const { leadStorage } = await import('./lead-matching');
+      const leadId = `lead-${Date.now()}-${leadData.customerEmail?.replace('@', '-').replace('.', '-')}`;
+      const leadForStorage = {
+        ...leadData,
+        id: leadId,
+        status: 'new',
+        createdAt: new Date(),
+        categoriesRequested: leadData.materialCategories || [leadData.materialCategory].filter(Boolean),
+        matchedProfessionals: [] // Will be populated by matching system
+      };
+      
+      leadStorage.set(leadId, leadForStorage);
+      console.log('💾 ✅ Lead stored in local storage with ID:', leadId);
+      console.log('💾 ✅ Customer email:', leadData.customerEmail);
+      console.log('💾 ✅ Total leads in storage:', leadStorage.size);
+      console.log('💾 ✅ All lead keys:', Array.from(leadStorage.keys()));
+      
       res.json({
         success: true,
-        message: 'Lead matched successfully',
+        message: 'Lead submitted successfully! We are connecting you with professionals in your area.',
+        leadId,
         matchResult
       });
     } catch (error) {

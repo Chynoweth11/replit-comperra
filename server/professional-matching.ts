@@ -460,6 +460,18 @@ export async function submitLeadAndMatch(leadData: LeadRequest): Promise<MatchRe
 
     // Add lead to Firestore
     const leadRef = await addDoc(collection(db, 'leads'), leadDoc);
+    
+    // Also store in local storage for offline access
+    const { leadStorage } = await import('./lead-matching');
+    const leadWithId = {
+      ...leadDoc,
+      id: leadRef.id,
+      categoriesRequested: leadData.materialCategories || [leadData.materialCategory].filter(Boolean)
+    };
+    leadStorage.set(leadRef.id, leadWithId);
+    console.log('💾 Lead stored in local storage with ID:', leadRef.id);
+    console.log('💾 Customer email:', leadData.customerEmail);
+    console.log('💾 Total leads in storage:', leadStorage.size);
 
     // Match with vendors
     const matchedVendors = await matchProfessionalsByGeohash('vendor', coords, leadData.materialCategory);

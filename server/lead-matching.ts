@@ -171,7 +171,11 @@ async function storeLeadMatches(leadData: any, matchedVendors: any[], matchedTra
     }))
   };
   
+  console.log('💾 Storing lead with ID:', leadId);
+  console.log('💾 Customer email in lead:', leadWithProfessionals.customerEmail);
   leadStorage.set(leadId, leadWithProfessionals);
+  console.log('✅ Lead stored successfully. Total leads in storage:', leadStorage.size);
+  console.log('✅ All lead keys:', Array.from(leadStorage.keys()));
   
   // Assign lead to matched professionals
   [...matchedVendors, ...matchedTrades].forEach(professional => {
