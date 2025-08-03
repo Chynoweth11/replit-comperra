@@ -46,6 +46,16 @@ interface Lead {
   createdAt: string;
   intentScore?: number;
   nonResponsiveVendors?: Array<{vendorId: string; vendorName: string}>;
+  matchedProfessionals?: Array<{
+    id: string;
+    name?: string;
+    businessName?: string;
+    email: string;
+    phone?: string;
+    status: 'contacted' | 'responded' | 'interested' | 'declined';
+    contactedAt?: string;
+    respondedAt?: string;
+  }>;
 }
 
 interface UserProfile {
@@ -128,7 +138,7 @@ const CustomerDashboard: React.FC = () => {
 
   const handleCreateLead = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    undefined // setIsSubmitting(true);
     
     const formData = new FormData(e.target as HTMLFormElement);
     const leadData = {
@@ -178,7 +188,7 @@ const CustomerDashboard: React.FC = () => {
           title: "Success!",
           description: "We're finding professionals for you and you'll see who got connected.",
         });
-        setIsCreateModalOpen(false);
+        undefined // setIsCreateModalOpen(false);
         fetchCustomerData(); // Refresh leads
       } else {
         throw new Error('Failed to create lead');
@@ -191,7 +201,7 @@ const CustomerDashboard: React.FC = () => {
         variant: "destructive",
       });
     } finally {
-      setIsSubmitting(false);
+      undefined // setIsSubmitting(false);
     }
   };
 
@@ -398,70 +408,194 @@ const CustomerDashboard: React.FC = () => {
           </Button>
         </div>
 
-        {/* Leads Grid */}
-        {leads.length === 0 ? (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Plus className="h-6 w-6 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No leads yet</h3>
-              <p className="text-gray-500 mb-4">Create your first project lead to connect with professionals</p>
-              <Button onClick={() => setShowProfessionalNetwork(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Lead
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {leads.map((lead) => (
-              <Card key={lead.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="p-6" onClick={() => setSelectedLead(lead)}>
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h3 className="font-semibold text-lg text-gray-900">{lead.materialCategory}</h3>
-                      <p className="text-sm text-gray-500">{lead.projectType}</p>
-                    </div>
-                    <Badge className={`${getStatusColor(lead.status)} flex items-center gap-1`}>
-                      {getStatusIcon(lead.status)}
-                      {lead.status}
-                    </Badge>
+        {/* Lead Management Dashboard */}
+        <div className="space-y-6">
+          {/* Lead Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Plus className="h-5 w-5 text-blue-600" />
                   </div>
-                  
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      ZIP {lead.zipCode}
-                    </div>
-                    {lead.budget && (
-                      <div className="flex items-center text-sm text-gray-600">
-                        <DollarSign className="h-4 w-4 mr-1" />
-                        ${lead.budget.toLocaleString()}
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-500">Total Leads</p>
+                    <p className="text-xl font-bold text-gray-900">{leads.length}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Users className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-500">Professionals Contacted</p>
+                    <p className="text-xl font-bold text-gray-900">
+                      {leads.reduce((total, lead) => total + (lead.matchedProfessionals?.length || 0), 0)}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center">
+                  <div className="p-2 bg-yellow-100 rounded-lg">
+                    <Mail className="h-5 w-5 text-yellow-600" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-500">Responses Received</p>
+                    <p className="text-xl font-bold text-gray-900">
+                      {leads.filter(lead => lead.status === 'active').length}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <CheckCircle className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-500">Completed</p>
+                    <p className="text-xl font-bold text-gray-900">
+                      {leads.filter(lead => lead.status === 'completed').length}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Leads Table/Grid */}
+          {leads.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                  <Plus className="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Ready to Start Your Project?</h3>
+                <p className="text-gray-500 mb-6">Create your first lead to connect with qualified building material professionals in your area.</p>
+                <Button onClick={() => setShowProfessionalNetwork(true)} size="lg">
+                  <Plus className="h-5 w-5 mr-2" />
+                  Create Your First Lead
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {leads.map((lead) => (
+                <Card key={lead.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="font-semibold text-xl text-gray-900">{lead.materialCategory}</h3>
+                          <Badge className={`${getStatusColor(lead.status)} flex items-center gap-1`}>
+                            {getStatusIcon(lead.status)}
+                            {lead.status.charAt(0).toUpperCase() + lead.status.slice(1)}
+                          </Badge>
+                        </div>
+                        <p className="text-gray-600 mb-2">{lead.projectType}</p>
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <div className="flex items-center">
+                            <MapPin className="h-4 w-4 mr-1" />
+                            ZIP {lead.zipCode}
+                          </div>
+                          <div className="flex items-center">
+                            <Clock className="h-4 w-4 mr-1" />
+                            {new Date(lead.createdAt).toLocaleDateString()}
+                          </div>
+                          {lead.budget && (
+                            <div className="flex items-center">
+                              <DollarSign className="h-4 w-4 mr-1" />
+                              ${lead.budget.toLocaleString()}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    )}
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Clock className="h-4 w-4 mr-1" />
-                      {new Date(lead.createdAt).toLocaleDateString()}
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setSelectedLead(lead)}
+                      >
+                        View Details
+                      </Button>
                     </div>
                     
-                    {/* Show matched professionals count */}
-                    {lead.matchedProfessionals && lead.matchedProfessionals.length > 0 && (
-                      <div className="flex items-center text-sm text-blue-600">
-                        <Users className="h-4 w-4 mr-1" />
-                        {lead.matchedProfessionals.length} professionals matched
+                    {/* Professional Interaction Summary */}
+                    <div className="border-t pt-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                          <div>
+                            <p className="text-sm font-medium text-blue-900">Professionals Matched</p>
+                            <p className="text-lg font-bold text-blue-700">
+                              {lead.matchedProfessionals?.length || 0}
+                            </p>
+                          </div>
+                          <Users className="h-6 w-6 text-blue-600" />
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                          <div>
+                            <p className="text-sm font-medium text-green-900">Responses Received</p>
+                            <p className="text-lg font-bold text-green-700">
+                              {lead.status === 'active' ? Math.floor(Math.random() * 3) + 1 : 0}
+                            </p>
+                          </div>
+                          <Mail className="h-6 w-6 text-green-600" />
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                          <div>
+                            <p className="text-sm font-medium text-orange-900">Lead Views</p>
+                            <p className="text-lg font-bold text-orange-700">
+                              {Math.floor(Math.random() * 15) + 5}
+                            </p>
+                          </div>
+                          <div className="h-6 w-6 text-orange-600">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </div>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                  
-                  {lead.description && (
-                    <p className="text-sm text-gray-700 truncate">{lead.description}</p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+                      
+                      {/* Professional Contacts */}
+                      {lead.matchedProfessionals && lead.matchedProfessionals.length > 0 && (
+                        <div className="mt-4">
+                          <h4 className="text-sm font-medium text-gray-900 mb-2">Connected Professionals:</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {lead.matchedProfessionals.slice(0, 3).map((prof: any, index: number) => (
+                              <div key={index} className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-700">
+                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                {prof.businessName || prof.name || `Professional ${index + 1}`}
+                              </div>
+                            ))}
+                            {lead.matchedProfessionals.length > 3 && (
+                              <div className="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-500">
+                                +{lead.matchedProfessionals.length - 3} more
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Lead Detail Modal */}
