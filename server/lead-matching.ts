@@ -64,9 +64,80 @@ async function storeLeadMatches(leadData: any, matchedVendors: any[], matchedTra
     isLookingForPro: leadData.isLookingForPro
   };
   
+  // Create detailed category matching breakdown
+  const categoriesRequested = leadData.materialCategories || [leadData.materialCategory].filter(Boolean);
+  const categoryBreakdown = {};
+  
+  // Track which professionals got which categories
+  categoriesRequested.forEach(category => {
+    categoryBreakdown[category] = {
+      vendorsMatched: [],
+      tradesMatched: [],
+      totalProfessionals: 0
+    };
+    
+    // Check vendors for this category
+    matchedVendors.forEach(vendor => {
+      const offersCategory = vendor.specialties && vendor.specialties.some(specialty => 
+        specialty.toLowerCase().includes(category.replace('-', ' ').toLowerCase()) ||
+        (category === 'tiles' && specialty.toLowerCase().includes('tile')) ||
+        (category === 'stone-slabs' && (specialty.toLowerCase().includes('slab') || specialty.toLowerCase().includes('stone') || specialty.toLowerCase().includes('countertop'))) ||
+        (category === 'vinyl-lvt' && (specialty.toLowerCase().includes('vinyl') || specialty.toLowerCase().includes('lvt'))) ||
+        (category === 'hardwood' && specialty.toLowerCase().includes('hardwood')) ||
+        (category === 'carpet' && specialty.toLowerCase().includes('carpet')) ||
+        (category === 'heating' && specialty.toLowerCase().includes('heating')) ||
+        (category === 'thermostats' && specialty.toLowerCase().includes('thermostat'))
+      );
+      
+      if (offersCategory || vendor.role === 'vendor') { // Vendors get all categories by default
+        categoryBreakdown[category].vendorsMatched.push({
+          email: vendor.email,
+          name: vendor.fullName || vendor.businessName,
+          businessName: vendor.businessName,
+          specialties: vendor.specialties,
+          specializedIn: category,
+          offersAllCategories: categoriesRequested.every(cat => 
+            vendor.specialties && vendor.specialties.some(s => s.toLowerCase().includes(cat.replace('-', ' ').toLowerCase()))
+          )
+        });
+        categoryBreakdown[category].totalProfessionals++;
+      }
+    });
+    
+    // Check trades for this category
+    matchedTrades.forEach(trade => {
+      const offersCategory = trade.specialties && trade.specialties.some(specialty => 
+        specialty.toLowerCase().includes(category.replace('-', ' ').toLowerCase()) ||
+        (category === 'tiles' && specialty.toLowerCase().includes('tile')) ||
+        (category === 'stone-slabs' && (specialty.toLowerCase().includes('slab') || specialty.toLowerCase().includes('stone') || specialty.toLowerCase().includes('countertop'))) ||
+        (category === 'vinyl-lvt' && (specialty.toLowerCase().includes('vinyl') || specialty.toLowerCase().includes('lvt'))) ||
+        (category === 'hardwood' && specialty.toLowerCase().includes('hardwood')) ||
+        (category === 'carpet' && specialty.toLowerCase().includes('carpet')) ||
+        (category === 'heating' && specialty.toLowerCase().includes('heating')) ||
+        (category === 'thermostats' && specialty.toLowerCase().includes('thermostat'))
+      );
+      
+      if (offersCategory) {
+        categoryBreakdown[category].tradesMatched.push({
+          email: trade.email,
+          name: trade.fullName || trade.businessName,
+          businessName: trade.businessName,
+          specialties: trade.specialties,
+          specializedIn: category,
+          offersAllCategories: categoriesRequested.every(cat => 
+            trade.specialties && trade.specialties.some(s => s.toLowerCase().includes(cat.replace('-', ' ').toLowerCase()))
+          )
+        });
+        categoryBreakdown[category].totalProfessionals++;
+      }
+    });
+  });
+
   // Store lead with detailed professional information
   const leadWithProfessionals = {
     ...lead,
+    categoriesRequested,
+    categoryBreakdown,
     matchedProfessionals: [...matchedVendors, ...matchedTrades].map(prof => ({
       uid: prof.uid,
       businessName: prof.businessName,
@@ -84,7 +155,19 @@ async function storeLeadMatches(leadData: any, matchedVendors: any[], matchedTra
       zipCode: prof.zipCode,
       distance: parseFloat(prof.distance.toFixed(1)),
       tier: prof.tier,
-      profileImageUrl: prof.profileImageUrl
+      profileImageUrl: prof.profileImageUrl,
+      categoriesOffered: categoriesRequested.filter(cat => 
+        prof.specialties && prof.specialties.some(specialty => 
+          specialty.toLowerCase().includes(cat.replace('-', ' ').toLowerCase()) ||
+          (cat === 'tiles' && specialty.toLowerCase().includes('tile')) ||
+          (cat === 'stone-slabs' && (specialty.toLowerCase().includes('slab') || specialty.toLowerCase().includes('stone') || specialty.toLowerCase().includes('countertop'))) ||
+          (cat === 'vinyl-lvt' && (specialty.toLowerCase().includes('vinyl') || specialty.toLowerCase().includes('lvt'))) ||
+          (cat === 'hardwood' && specialty.toLowerCase().includes('hardwood')) ||
+          (cat === 'carpet' && specialty.toLowerCase().includes('carpet')) ||
+          (cat === 'heating' && specialty.toLowerCase().includes('heating')) ||
+          (cat === 'thermostats' && specialty.toLowerCase().includes('thermostat'))
+        ) || prof.role === 'vendor' // Vendors get all categories
+      )
     }))
   };
   
@@ -1014,11 +1097,17 @@ export async function getLeadsWithMatches(customerId: string): Promise<any[]> {
       console.error('❌ Firebase not initialized in lead-matching module');
       // Fallback to local storage if Firebase is not available
       console.log('🔄 Falling back to local storage for leads');
+      console.log('🔍 Debug: Total leads in storage:', leadStorage.size);
+      console.log('🔍 Debug: All lead keys:', Array.from(leadStorage.keys()));
+      
       const allLeads = Array.from(leadStorage.values());
-      const customerLeads = allLeads.filter(lead => 
-        lead.customerEmail === customerId || 
-        lead.email === customerId
-      );
+      console.log('🔍 Debug: All lead customer emails:', allLeads.map(l => ({ id: l.id, customerEmail: l.customerEmail, email: l.email })));
+      
+      const customerLeads = allLeads.filter(lead => {
+        const matches = lead.customerEmail === customerId || lead.email === customerId;
+        console.log('🔍 Debug: Lead', lead.id, 'matches customer', customerId, '?', matches, '(customerEmail:', lead.customerEmail, ', email:', lead.email, ')');
+        return matches;
+      });
       console.log('📋 Found', customerLeads.length, 'leads in local storage for customer:', customerId);
       return customerLeads;
     }
@@ -1044,11 +1133,17 @@ export async function getLeadsWithMatches(customerId: string): Promise<any[]> {
     // If Firebase query returns empty, also check local storage as backup
     if (customerLeads.length === 0) {
       console.log('🔄 Firebase returned empty, checking local storage as backup');
+      console.log('🔍 Debug: Total leads in storage:', leadStorage.size);
+      console.log('🔍 Debug: All lead keys:', Array.from(leadStorage.keys()));
+      
       const allLeads = Array.from(leadStorage.values());
-      const localLeads = allLeads.filter(lead => 
-        lead.customerEmail === customerId || 
-        lead.email === customerId
-      );
+      console.log('🔍 Debug: All lead customer emails:', allLeads.map(l => ({ id: l.id, customerEmail: l.customerEmail, email: l.email })));
+      
+      const localLeads = allLeads.filter(lead => {
+        const matches = lead.customerEmail === customerId || lead.email === customerId;
+        console.log('🔍 Debug: Lead', lead.id, 'matches customer', customerId, '?', matches, '(customerEmail:', lead.customerEmail, ', email:', lead.email, ')');
+        return matches;
+      });
       if (localLeads.length > 0) {
         console.log('📋 Found', localLeads.length, 'leads in local storage backup');
         return localLeads;
@@ -1061,11 +1156,17 @@ export async function getLeadsWithMatches(customerId: string): Promise<any[]> {
     console.log('🔄 Error occurred, falling back to local storage');
     // Fallback to local storage on error
     try {
+      console.log('🔍 Debug: Total leads in storage:', leadStorage.size);
+      console.log('🔍 Debug: All lead keys:', Array.from(leadStorage.keys()));
+      
       const allLeads = Array.from(leadStorage.values());
-      const customerLeads = allLeads.filter(lead => 
-        lead.customerEmail === customerId || 
-        lead.email === customerId
-      );
+      console.log('🔍 Debug: All lead customer emails:', allLeads.map(l => ({ id: l.id, customerEmail: l.customerEmail, email: l.email })));
+      
+      const customerLeads = allLeads.filter(lead => {
+        const matches = lead.customerEmail === customerId || lead.email === customerId;
+        console.log('🔍 Debug: Lead', lead.id, 'matches customer', customerId, '?', matches, '(customerEmail:', lead.customerEmail, ', email:', lead.email, ')');
+        return matches;
+      });
       console.log('📋 Fallback found', customerLeads.length, 'leads for customer:', customerId);
       return customerLeads;
     } catch (fallbackError) {
