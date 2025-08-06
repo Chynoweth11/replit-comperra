@@ -242,12 +242,23 @@ export default function ProfilePage() {
       setIsEditing(false);
     } catch (error) {
       console.error('❌ Profile save error:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update profile. Please try again.",
-        variant: "destructive"
-      });
+      
+      // Check if it's an abort error from timeout
+      if (error.name === 'AbortError') {
+        toast({
+          title: "Request timed out",
+          description: "The save request took too long. Please try again.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to update profile. Please try again.",
+          variant: "destructive"
+        });
+      }
     } finally {
+      console.log('🔄 Resetting isSaving state');
       setIsSaving(false);
     }
   };

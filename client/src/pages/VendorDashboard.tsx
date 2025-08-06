@@ -33,6 +33,7 @@ import SmartMatchAISimple from '@/components/SmartMatchAISimple';
 import GoogleMap from '@/components/GoogleMap';
 import { useSessionPersistence } from '@/hooks/useSessionPersistence';
 import { sessionManager } from '@/utils/sessionManager';
+import { useToast } from '@/hooks/use-toast';
 
 interface LeadData {
   id: string;
@@ -54,6 +55,7 @@ interface LeadData {
 
 const VendorDashboard: React.FC = () => {
   const { userProfile, loading, signOut } = useAuth();
+  const { toast } = useToast();
   const [, navigate] = useLocation();
   const { sessionActive } = useSessionPersistence();
   const [activeTab, setActiveTab] = useState('overview');
@@ -302,6 +304,13 @@ const VendorDashboard: React.FC = () => {
           console.log('⚠️ Vendor profile sync error (non-critical) - main profile saved:', vendorError);
         }
         
+        // Show success message
+        toast({
+          title: "Successfully saved",
+          description: "Your vendor profile has been updated.",
+          variant: "default"
+        });
+        
         // Always refresh dashboard data since main profile save worked
         fetchDashboardData();
       } else {
@@ -310,6 +319,7 @@ const VendorDashboard: React.FC = () => {
     } catch (error) {
       console.error('Error saving profile:', error);
     } finally {
+      console.log('🔄 Resetting vendor dashboard saving state');
       setIsSavingProfile(false);
     }
   };
