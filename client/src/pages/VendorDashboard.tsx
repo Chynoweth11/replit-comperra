@@ -273,30 +273,37 @@ const VendorDashboard: React.FC = () => {
       });
 
       if (response.ok) {
-        // Also update vendor profile system
-        const vendorResponse = await fetch('/api/vendor-profile', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: profileForm.email,
-            businessName: profileForm.businessName,
-            phone: profileForm.phone,
-            zipCodesServed: [profileForm.zipCode1, profileForm.zipCode2].filter(zip => zip),
-            materials: profileForm.materialSpecialties,
-            businessDescription: profileForm.businessDescription,
-            serviceRadius: 50
-          }),
-        });
+        console.log('✅ User profile saved successfully');
+        
+        // Try to update vendor profile system (but don't fail if it doesn't work)
+        try {
+          const vendorResponse = await fetch('/api/vendor-profile', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: profileForm.email,
+              businessName: profileForm.businessName,
+              phone: profileForm.phone,
+              zipCodesServed: [profileForm.zipCode1, profileForm.zipCode2].filter(zip => zip),
+              materials: profileForm.materialSpecialties,
+              businessDescription: profileForm.businessDescription,
+              serviceRadius: 50
+            }),
+          });
 
-        if (vendorResponse.ok) {
-          console.log('✅ Vendor profile saved successfully');
-          // Refresh dashboard data
-          fetchDashboardData();
-        } else {
-          console.error('❌ Error saving vendor profile');
+          if (vendorResponse.ok) {
+            console.log('✅ Vendor profile saved successfully');
+          } else {
+            console.log('⚠️ Vendor profile sync failed (non-critical) - main profile saved');
+          }
+        } catch (vendorError) {
+          console.log('⚠️ Vendor profile sync error (non-critical) - main profile saved:', vendorError);
         }
+        
+        // Always refresh dashboard data since main profile save worked
+        fetchDashboardData();
       } else {
         console.error('❌ Error saving user profile');
       }

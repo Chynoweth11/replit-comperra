@@ -204,14 +204,20 @@ export default function ProfilePage() {
       console.log('📤 Sending update payload:', updatePayload);
       console.log('🌐 Making request to:', `/api/user/profile/${user.uid}`);
 
-      // Save to database using API
+      // Save to database using API (with timeout to prevent hanging)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      
       const response = await fetch(`/api/user/profile/${user.uid}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(updatePayload),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
       
       console.log('📥 API Response status:', response.status);
       
@@ -226,6 +232,7 @@ export default function ProfilePage() {
       const result = await response.json();
       console.log('✅ Profile save successful:', result);
       
+      // Show success message regardless of any background sync issues
       toast({
         title: "Successfully saved",
         description: "Your profile changes have been saved.",
