@@ -1146,6 +1146,7 @@ const VendorDashboard: React.FC = () => {
                     <p className="text-sm"><strong>Name:</strong> {selectedLead.customerName || 'Not provided'}</p>
                     <p className="text-sm"><strong>Email:</strong> {selectedLead.email}</p>
                     <p className="text-sm"><strong>Phone:</strong> {selectedLead.phone || 'Not provided'}</p>
+                    <p className="text-sm"><strong>Address:</strong> {selectedLead.address || 'Not provided'}</p>
                     <p className="text-sm"><strong>Location:</strong> {selectedLead.zipCode}</p>
                   </div>
                 </div>

@@ -2076,20 +2076,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get current user from session
       const currentUser = await getCurrentUser();
       
-      if (!currentUser || currentUser.role !== 'vendor') {
-        return res.status(401).json({ success: false, error: 'Vendor authentication required' });
+      if (!currentUser || (currentUser.role !== 'vendor' && currentUser.role !== 'trade')) {
+        return res.status(401).json({ success: false, error: 'Professional authentication required' });
       }
       
-      // Update the lead status in the vendor's leads store
-      const vendorLeads = vendorLeadsStore.get(currentUser.email);
-      if (vendorLeads) {
-        const leadIndex = vendorLeads.findIndex(lead => lead.id === vendorLeadId);
-        if (leadIndex !== -1) {
-          vendorLeads[leadIndex].status = status;
-          vendorLeads[leadIndex].updatedAt = new Date();
-          vendorLeadsStore.set(currentUser.email, vendorLeads);
-          console.log(`✅ Lead ${vendorLeadId} status updated to: ${status}`);
-        }
+      // Import the lead storage system
+      const { leadStorage } = await import('./lead-matching');
+      
+      // Update the lead status in the main lead storage
+      const lead = leadStorage.get(vendorLeadId);
+      if (lead) {
+        lead.status = status;
+        lead.updatedAt = new Date();
+        leadStorage.set(vendorLeadId, lead);
+        console.log(`✅ Lead ${vendorLeadId} status updated to: ${status} in local storage`);
+      } else {
+        console.log(`⚠️ Lead ${vendorLeadId} not found in local storage`);
+      }
+      
+      // Also try to update in database if available
+      try {
+        const { db } = await import('./db');
+        const { leads } = await import('../shared/schema');
+        const { eq } = await import('drizzle-orm');
+        
+        await db.update(leads)
+          .set({ status: status, updatedAt: new Date().toISOString() })
+          .where(eq(leads.id, vendorLeadId));
+        console.log(`✅ Lead ${vendorLeadId} status updated in database`);
+      } catch (dbError: any) {
+        console.log('💾 Database update failed, using local storage only:', dbError.message);
       }
       
       res.json({ success: true, message: 'Status updated successfully' });

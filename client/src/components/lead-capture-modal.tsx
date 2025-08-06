@@ -374,7 +374,7 @@ export default function LeadCaptureModal({ isOpen, onClose, productName, request
                     <span className="font-medium">{key}:</span>
                     <span>{String(value)}</span>
                   </div>
-                )}
+                ))}
               </div>
               {productUrl && (
                 <div className="mt-2">
