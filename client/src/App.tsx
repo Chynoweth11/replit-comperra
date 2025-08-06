@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider as SupabaseAuthProvider } from "@/contexts/SupabaseAuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import CategoryNav from "@/components/category-nav";
 import { ForgotPasswordTest } from "@/components/ForgotPasswordTest";
@@ -56,6 +57,8 @@ import EmailSignInComplete from "@/pages/EmailSignInComplete";
 import EmailSignInDemo from "@/pages/EmailSignInDemo";
 import FirebaseAuthDemo from "@/pages/FirebaseAuthDemo";
 import AuthPage from "@/pages/AuthPage";
+import SupabaseAuthPage from "@/pages/auth";
+import SupabaseProfilePage from "@/pages/supabase-profile";
 import EnhancedAdminDashboard from "@/pages/enhanced-admin-dashboard";
 import { ToastProvider } from "@/context/ToastContext";
 import { AuthProvider as NetworkAuthProvider } from "@/context/AuthNetworkContext";
@@ -77,15 +80,13 @@ function Router() {
         <Route path="/brands" component={Brands} />
         <Route path="/vendors" component={Vendors} />
         <Route path="/professionals" component={ProfessionalNetwork} />
-        <Route path="/professionals/customer">
-          {() => <ProfessionalNetwork skipToCustomer={true} />}
-        </Route>
-        <Route path="/professionals/register">
-          {() => <ProfessionalNetwork skipToProfessional={true} />}
-        </Route>
+        <Route path="/professionals/customer" component={ProfessionalNetwork} />
+        <Route path="/professionals/register" component={ProfessionalNetwork} />
         <Route path="/professional-network" component={ProfessionalNetwork} />
         <Route path="/firebase-demo" component={FirebaseDemo} />
         <Route path="/auth" component={AuthPage} />
+        <Route path="/supabase-auth" component={SupabaseAuthPage} />
+        <Route path="/supabase-profile" component={SupabaseProfilePage} />
         <Route path="/auth/complete" component={EmailSignInComplete} />
         <Route path="/auth/email-demo" component={EmailSignInDemo} />
         <Route path="/auth/firebase-demo" component={FirebaseAuthDemo} />
@@ -234,16 +235,18 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
-        <AuthProvider>
-          <NetworkAuthProvider>
-            <TooltipProvider>
+        <SupabaseAuthProvider>
+          <AuthProvider>
+            <NetworkAuthProvider>
+              <TooltipProvider>
               <div style={{ direction: 'ltr', textAlign: 'left' }}>
                 <Toaster />
                 <Router />
               </div>
-            </TooltipProvider>
-          </NetworkAuthProvider>
-        </AuthProvider>
+              </TooltipProvider>
+            </NetworkAuthProvider>
+          </AuthProvider>
+        </SupabaseAuthProvider>
       </ToastProvider>
     </QueryClientProvider>
   );
