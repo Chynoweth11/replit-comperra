@@ -275,25 +275,39 @@ export async function registerProfessional(profileData: Omit<ProfessionalProfile
 
     let professionalId = `prof_${Date.now()}`;
 
-    // Try Firebase first
+    // Try Firebase first with timeout
     if (isFirebaseAvailable && db) {
       try {
-        const docRef = await addDoc(collection(db, 'professionals'), professionalProfile);
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Firebase operation timed out')), 8000); // 8 second timeout
+        });
+
+        const docRef = await Promise.race([
+          addDoc(collection(db, 'professionals'), professionalProfile),
+          timeoutPromise
+        ]) as any;
+        
         professionalId = docRef.id;
         
-        // Update the profile with the document ID
-        await updateDoc(docRef, { uid: docRef.id });
+        // Update the profile with the document ID (with timeout)
+        await Promise.race([
+          updateDoc(docRef, { uid: docRef.id }),
+          timeoutPromise
+        ]);
 
-        // Also add to users collection for authentication integration
-        await setDoc(doc(db, 'users', docRef.id), {
-          ...professionalProfile,
-          uid: docRef.id,
-          signInMethod: 'professional_registration'
-        }, { merge: true });
+        // Also add to users collection for authentication integration (with timeout)
+        await Promise.race([
+          setDoc(doc(db, 'users', docRef.id), {
+            ...professionalProfile,
+            uid: docRef.id,
+            signInMethod: 'professional_registration'
+          }, { merge: true }),
+          timeoutPromise
+        ]);
 
         console.log(`✅ Professional registered in Firebase: ${profileData.role} - ${profileData.businessName || profileData.name}`);
       } catch (firebaseError) {
-        console.log('⚠️ Firebase registration failed, using fallback:', firebaseError.message);
+        console.log('⚠️ Firebase registration failed, using fallback:', firebaseError);
       }
     }
 
@@ -562,10 +576,17 @@ async function notifyMatchedProfessionals(
  */
 export async function getProfessionalProfile(uid: string): Promise<ProfessionalProfile | null> {
   try {
+    const timeoutPromise = new Promise<null>((_, reject) => {
+      setTimeout(() => reject(new Error('Firebase operation timed out')), 8000); // 8 second timeout
+    });
+
     const docRef = doc(db, 'professionals', uid);
-    const docSnap = await getDoc(docRef);
+    const docSnap = await Promise.race([
+      getDoc(docRef),
+      timeoutPromise
+    ]) as any;
     
-    if (docSnap.exists()) {
+    if (docSnap && docSnap.exists()) {
       return docSnap.data() as ProfessionalProfile;
     }
     return null;
@@ -580,17 +601,27 @@ export async function getProfessionalProfile(uid: string): Promise<ProfessionalP
  */
 export async function updateProfessionalProfile(uid: string, updates: Partial<ProfessionalProfile>): Promise<void> {
   try {
-    const docRef = doc(db, 'professionals', uid);
-    await updateDoc(docRef, {
-      ...updates,
-      lastActive: serverTimestamp()
+    const timeoutPromise = new Promise<void>((_, reject) => {
+      setTimeout(() => reject(new Error('Firebase operation timed out')), 8000); // 8 second timeout
     });
 
-    // Also update in users collection
-    await updateDoc(doc(db, 'users', uid), {
-      ...updates,
-      lastActive: serverTimestamp()
-    });
+    const docRef = doc(db, 'professionals', uid);
+    await Promise.race([
+      updateDoc(docRef, {
+        ...updates,
+        lastActive: serverTimestamp()
+      }),
+      timeoutPromise
+    ]);
+
+    // Also update in users collection (with timeout)
+    await Promise.race([
+      updateDoc(doc(db, 'users', uid), {
+        ...updates,
+        lastActive: serverTimestamp()
+      }),
+      timeoutPromise
+    ]);
 
     console.log(`✅ Professional profile updated: ${uid}`);
   } catch (error) {

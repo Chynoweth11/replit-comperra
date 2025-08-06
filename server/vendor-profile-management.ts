@@ -111,7 +111,16 @@ export async function createVendorProfile(vendorData: Partial<VendorProfile>): P
     if (vendorData.subscription) vendorProfile.subscription = vendorData.subscription;
 
     const vendorRef = doc(db, 'vendors', vendorProfile.id);
-    await setDoc(vendorRef, vendorProfile);
+    
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Firebase operation timed out')), 10000); // 10 second timeout
+    });
+    
+    await Promise.race([
+      setDoc(vendorRef, vendorProfile),
+      timeoutPromise
+    ]);
     
     return vendorProfile;
   } catch (error) {
@@ -138,7 +147,16 @@ export async function updateVendorProfile(vendorId: string, updates: Partial<Ven
     });
 
     const vendorRef = doc(db, 'vendors', vendorId);
-    await updateDoc(vendorRef, cleanUpdates);
+    
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise<void>((_, reject) => {
+      setTimeout(() => reject(new Error('Firebase operation timed out')), 10000); // 10 second timeout
+    });
+    
+    await Promise.race([
+      updateDoc(vendorRef, cleanUpdates),
+      timeoutPromise
+    ]);
   } catch (error) {
     console.error('Error updating vendor profile:', error);
     throw error;
@@ -151,9 +169,18 @@ export async function updateVendorProfile(vendorId: string, updates: Partial<Ven
 export async function getVendorProfile(vendorId: string): Promise<VendorProfile | null> {
   try {
     const vendorRef = doc(db, 'vendors', vendorId);
-    const vendorDoc = await getDoc(vendorRef);
     
-    if (vendorDoc.exists()) {
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise<null>((_, reject) => {
+      setTimeout(() => reject(new Error('Firebase operation timed out')), 10000); // 10 second timeout
+    });
+    
+    const vendorDoc = await Promise.race([
+      getDoc(vendorRef),
+      timeoutPromise
+    ]) as any;
+    
+    if (vendorDoc && vendorDoc.exists()) {
       return { id: vendorDoc.id, ...vendorDoc.data() } as VendorProfile;
     }
     
