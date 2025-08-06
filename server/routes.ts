@@ -2503,8 +2503,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: 'Failed to update profile',
         details: error instanceof Error ? error.message : 'Unknown error'
       });
-      console.error('Error updating user profile:', error);
-      res.status(500).json({ error: 'Failed to update profile' });
     }
   });
 

@@ -10,37 +10,88 @@ import Footer from '@/components/footer';
 import SubscriptionPlanSelector from './SubscriptionPlanSelector';
 import { formatPhoneNumber } from '@/utils/phoneFormatter';
 
+// Type definitions
+interface CardProps {
+    children: React.ReactNode;
+    className?: string;
+}
+
+interface ButtonProps {
+    children: React.ReactNode;
+    onClick?: () => void;
+    type?: 'button' | 'submit' | 'reset';
+    variant?: 'primary' | 'secondary' | 'success';
+    className?: string;
+    disabled?: boolean;
+}
+
+interface InputProps {
+    id: string;
+    name?: string;
+    type?: string;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    placeholder: string;
+    required?: boolean;
+    maxLength?: number;
+}
+
+interface SelectProps {
+    id: string;
+    name?: string;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+    children: React.ReactNode;
+    required?: boolean;
+    label: string;
+}
+
+interface TextareaProps {
+    id: string;
+    name?: string;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    label: string;
+    placeholder: string;
+    required?: boolean;
+    description?: string;
+}
+
+interface SkeletonLoaderProps {
+    className?: string;
+}
+
 // Common UI Components
-const Card = ({ children, className }) => <div className={`bg-white shadow-lg shadow-slate-200/40 rounded-xl p-6 md:p-8 border border-slate-200 ${className}`}>{children}</div>;
-const Button = ({ children, onClick, type = 'button', variant = 'primary', className = '', disabled = false }) => {
-    const variants = {
+const Card: React.FC<CardProps> = ({ children, className = '' }) => <div className={`bg-white shadow-lg shadow-slate-200/40 rounded-xl p-6 md:p-8 border border-slate-200 ${className}`}>{children}</div>;
+const Button: React.FC<ButtonProps> = ({ children, onClick, type = 'button', variant = 'primary', className = '', disabled = false }) => {
+    const variants: Record<string, string> = {
         primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
         secondary: 'bg-slate-200 text-slate-900 hover:bg-slate-300 focus:ring-slate-400',
         success: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'
     };
     return <button type={type} onClick={onClick} className={`w-full flex items-center justify-center gap-2 rounded-lg px-4 py-3 font-semibold transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 active:translate-y-0 ${variants[variant]} ${className}`} disabled={disabled}>{children}</button>;
 };
-const Input = ({ id, name, type, value, onChange, placeholder, required = true, maxLength }) => (
+const Input: React.FC<InputProps> = ({ id, name, type = 'text', value, onChange, placeholder, required = true, maxLength }) => (
     <div>
         <label htmlFor={id} className="block text-sm font-medium text-slate-700 mb-1.5">{placeholder}</label>
         <input id={id} name={name || id} type={type} value={value} onChange={onChange} placeholder={placeholder} required={required} maxLength={maxLength} className="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 sm:text-sm p-3" />
     </div>
 );
-const Select = ({ id, name, value, onChange, children, required = true, label }) => (
+const Select: React.FC<SelectProps> = ({ id, name, value, onChange, children, required = true, label }) => (
     <div>
         <label htmlFor={id} className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>
         <select id={id} name={name || id} value={value} onChange={onChange} required={required} className="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 sm:text-sm p-3 bg-white">{children}</select>
     </div>
 );
-const Textarea = ({ id, name, value, onChange, label, placeholder, required = false, description }) => (
+const Textarea: React.FC<TextareaProps> = ({ id, name, value, onChange, label, placeholder, required = false, description }) => (
     <div>
         <label htmlFor={id} className="block text-sm font-medium text-slate-700">{label}</label>
         {description && <p className="text-xs text-slate-500 mb-1.5">{description}</p>}
-        <textarea id={id} name={name || id} value={value} onChange={onChange} placeholder={placeholder} required={required} rows="3"
+        <textarea id={id} name={name || id} value={value} onChange={onChange} placeholder={placeholder} required={required} rows={3}
             className="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 sm:text-sm p-3" />
     </div>
 );
-const SkeletonLoader = ({ className }) => <div className={`bg-slate-200 rounded-lg animate-pulse ${className}`}></div>;
+const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({ className = '' }) => <div className={`bg-slate-200 rounded-lg animate-pulse ${className}`}></div>;
 
 function SubscriptionInfoModal({ onClose }) {
     const tiers = firebaseService.subscriptionTiers;
