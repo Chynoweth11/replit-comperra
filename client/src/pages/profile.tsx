@@ -227,8 +227,8 @@ export default function ProfilePage() {
       console.log('✅ Profile save successful:', result);
       
       toast({
-        title: "Profile Updated",
-        description: "Your profile information has been saved successfully.",
+        title: "Successfully saved",
+        description: "Your profile changes have been saved.",
         variant: "default"
       });
       
