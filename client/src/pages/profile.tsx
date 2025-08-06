@@ -59,7 +59,7 @@ export default function ProfilePage() {
               displayName: userData.name || user.displayName || '',
               email: userData.email || user.email || '',
               zipCode: userData.zipCode || '',
-              phoneNumber: userData.phone || '',
+              phoneNumber: formatPhoneNumber(userData.phone || ''),
               companyName: userData.companyName || '',
               role: userData.role || 'customer',
               preferences: {
@@ -96,7 +96,7 @@ export default function ProfilePage() {
                 displayName: userData.name || user.displayName || '',
                 email: userData.email || user.email || '',
                 zipCode: userData.zipCode || '',
-                phoneNumber: userData.phone || '',
+                phoneNumber: formatPhoneNumber(userData.phone || ''),
                 companyName: userData.companyName || '',
                 role: userData.role || 'customer',
                 preferences: {
@@ -257,7 +257,7 @@ export default function ProfilePage() {
             displayName: userData.name || user.displayName || '',
             email: userData.email || user.email || '',
             zipCode: userData.zipCode || '',
-            phoneNumber: userData.phone || '',
+            phoneNumber: formatPhoneNumber(userData.phone || ''),
             companyName: userData.companyName || '',
             role: userData.role || 'customer',
             preferences: {

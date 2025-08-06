@@ -8,6 +8,7 @@ import firebaseService from '@/services/firebase-network';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import SubscriptionPlanSelector from './SubscriptionPlanSelector';
+import { formatPhoneNumber } from '@/utils/phoneFormatter';
 
 // Common UI Components
 const Card = ({ children, className }) => <div className={`bg-white shadow-lg shadow-slate-200/40 rounded-xl p-6 md:p-8 border border-slate-200 ${className}`}>{children}</div>;
@@ -19,10 +20,10 @@ const Button = ({ children, onClick, type = 'button', variant = 'primary', class
     };
     return <button type={type} onClick={onClick} className={`w-full flex items-center justify-center gap-2 rounded-lg px-4 py-3 font-semibold transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 active:translate-y-0 ${variants[variant]} ${className}`} disabled={disabled}>{children}</button>;
 };
-const Input = ({ id, name, type, value, onChange, placeholder, required = true }) => (
+const Input = ({ id, name, type, value, onChange, placeholder, required = true, maxLength }) => (
     <div>
         <label htmlFor={id} className="block text-sm font-medium text-slate-700 mb-1.5">{placeholder}</label>
-        <input id={id} name={name || id} type={type} value={value} onChange={onChange} placeholder={placeholder} required={required} className="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 sm:text-sm p-3" />
+        <input id={id} name={name || id} type={type} value={value} onChange={onChange} placeholder={placeholder} required={required} maxLength={maxLength} className="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 sm:text-sm p-3" />
     </div>
 );
 const Select = ({ id, name, value, onChange, children, required = true, label }) => (
@@ -402,19 +403,9 @@ export function SubmitLeadForm({ onBack }) {
     const handleChange = e => {
         let value = e.target.value;
         
-        // Format phone number
+        // Format phone number using standard utility
         if (e.target.name === 'phone') {
-            // Remove all non-digits
-            const digits = value.replace(/\D/g, '');
-            
-            // Format as (xxx)-xxx-xxxx
-            if (digits.length <= 3) {
-                value = digits;
-            } else if (digits.length <= 6) {
-                value = `(${digits.slice(0, 3)})-${digits.slice(3)}`;
-            } else {
-                value = `(${digits.slice(0, 3)})-${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
-            }
+            value = formatPhoneNumber(value);
         }
         
         setFormData(p => ({...p, [e.target.name]: value}));
@@ -552,7 +543,7 @@ export function SubmitLeadForm({ onBack }) {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <Input id="name" value={formData.name} onChange={handleChange} placeholder="Full Name *" />
                                 <Input id="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email *" />
-                                <Input id="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="Phone Number *" />
+                                <Input id="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="Phone Number *" maxLength={14} />
                                 <Select id="customerType" name="customerType" value={formData.customerType} onChange={handleChange} label="Customer Type *">
                                     <option value="">Select customer type</option>
                                     <option value="homeowner">Homeowner</option>
