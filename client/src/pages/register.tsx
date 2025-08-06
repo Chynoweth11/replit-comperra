@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
+import { formatPhoneNumber, isValidPhoneNumber } from '@/utils/phoneFormatter';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -42,6 +43,11 @@ export default function RegisterPage() {
 
     if (!phone) {
       setError('Please enter your phone number.');
+      return;
+    }
+
+    if (!isValidPhoneNumber(phone)) {
+      setError('Please enter a valid 10-digit phone number.');
       return;
     }
 
@@ -107,8 +113,9 @@ export default function RegisterPage() {
                   id="phone"
                   type="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Enter your phone number"
+                  onChange={(e) => setPhone(formatPhoneNumber(e.target.value))}
+                  placeholder="(555) 123-4567"
+                  maxLength={14}
                   required
                 />
               </div>

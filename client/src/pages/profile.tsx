@@ -10,6 +10,7 @@ import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { ArrowLeft, User, Mail, MapPin, Briefcase, Save, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { formatPhoneNumber, isValidPhoneNumber } from '@/utils/phoneFormatter';
 
 interface UserProfile {
   displayName: string;
@@ -137,10 +138,17 @@ export default function ProfilePage() {
   }, [user]);
 
   const handleInputChange = (field: string, value: string) => {
-    setProfile(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    if (field === 'phoneNumber') {
+      setProfile(prev => ({
+        ...prev,
+        [field]: formatPhoneNumber(value)
+      }));
+    } else {
+      setProfile(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    }
   };
 
   const handlePreferenceChange = (field: string, value: boolean) => {
@@ -168,6 +176,17 @@ export default function ProfilePage() {
       console.log('💾 Saving profile for user:', user.uid);
       console.log('📝 Profile data:', profile);
       
+      // Validate phone number if provided
+      if (profile.phoneNumber && !isValidPhoneNumber(profile.phoneNumber)) {
+        toast({
+          title: "Invalid phone number",
+          description: "Please enter a valid 10-digit phone number.",
+          variant: "destructive"
+        });
+        setIsSaving(false);
+        return;
+      }
+
       // Prepare the update payload
       const updatePayload = {
         name: profile.displayName || '',
@@ -349,10 +368,12 @@ export default function ProfilePage() {
                     <Label htmlFor="phoneNumber">Phone Number</Label>
                     <Input
                       id="phoneNumber"
+                      type="tel"
                       value={profile.phoneNumber}
                       onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
                       disabled={!isEditing}
                       placeholder="(555) 123-4567"
+                      maxLength={14}
                     />
                   </div>
                   <div>
@@ -401,7 +422,7 @@ export default function ProfilePage() {
                         <Select 
                           value={profile.role} 
                           onValueChange={(value) => handleInputChange('role', value)}
-                          disabled={!isEditing || profile.role === 'vendor' || profile.role === 'trade'}
+                          disabled={!isEditing || (profile.role as string) === 'vendor' || (profile.role as string) === 'trade'}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select account type" />

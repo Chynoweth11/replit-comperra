@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useRecaptcha } from "@/hooks/useRecaptcha";
+import { formatPhoneNumber, isValidPhoneNumber } from "@/utils/phoneFormatter";
 
 interface LeadCaptureModalProps {
   isOpen: boolean;
@@ -50,6 +51,15 @@ export default function LeadCaptureModal({ isOpen, onClose, productName, request
       toast({
         title: "Required fields missing",
         description: "Please fill in all required fields marked with * and select at least one material category",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!isValidPhoneNumber(formData.phone)) {
+      toast({
+        title: "Invalid phone number",
+        description: "Please enter a valid 10-digit phone number",
         variant: "destructive"
       });
       return;
@@ -140,7 +150,11 @@ export default function LeadCaptureModal({ isOpen, onClose, productName, request
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'phone') {
+      setFormData(prev => ({ ...prev, [field]: formatPhoneNumber(value) }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   return (
@@ -193,6 +207,7 @@ export default function LeadCaptureModal({ isOpen, onClose, productName, request
               value={formData.phone}
               onChange={(e) => handleInputChange("phone", e.target.value)}
               placeholder="(555) 123-4567"
+              maxLength={14}
               required
             />
           </div>
@@ -357,9 +372,9 @@ export default function LeadCaptureModal({ isOpen, onClose, productName, request
                 {Object.entries(productSpecs).map(([key, value]) => (
                   <div key={key} className="flex justify-between">
                     <span className="font-medium">{key}:</span>
-                    <span>{value}</span>
+                    <span>{String(value)}</span>
                   </div>
-                ))}
+                )}
               </div>
               {productUrl && (
                 <div className="mt-2">
