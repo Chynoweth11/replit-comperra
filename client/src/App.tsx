@@ -3,11 +3,8 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthProvider as SupabaseAuthProvider } from "@/contexts/SupabaseAuthContext";
-import ProtectedRoute from "@/components/ProtectedRoute";
 import CategoryNav from "@/components/category-nav";
-import { ForgotPasswordTest } from "@/components/ForgotPasswordTest";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Comparison from "@/pages/comparison";
@@ -51,17 +48,10 @@ import DashboardMyLeads from "@/pages/dashboard-my-leads";
 import DashboardCurrentLeads from "@/pages/dashboard-current-leads";
 import DashboardPotentialLeads from "@/pages/dashboard-potential-leads";
 import DashboardLeadsHistory from "@/pages/dashboard-leads-history";
-import FirebaseDemo from "@/pages/FirebaseDemo";
 import { ProfessionalNetwork } from "@/components/ProfessionalNetwork";
-import EmailSignInComplete from "@/pages/EmailSignInComplete";
-import EmailSignInDemo from "@/pages/EmailSignInDemo";
-import FirebaseAuthDemo from "@/pages/FirebaseAuthDemo";
-import AuthPage from "@/pages/AuthPage";
 import SupabaseAuthPage from "@/pages/auth";
 import SupabaseProfilePage from "@/pages/supabase-profile";
 import EnhancedAdminDashboard from "@/pages/enhanced-admin-dashboard";
-import { ToastProvider } from "@/context/ToastContext";
-import { AuthProvider as NetworkAuthProvider } from "@/context/AuthNetworkContext";
 
 function Router() {
   return (
@@ -83,13 +73,9 @@ function Router() {
         <Route path="/professionals/customer" component={ProfessionalNetwork} />
         <Route path="/professionals/register" component={ProfessionalNetwork} />
         <Route path="/professional-network" component={ProfessionalNetwork} />
-        <Route path="/firebase-demo" component={FirebaseDemo} />
-        <Route path="/auth" component={AuthPage} />
+        <Route path="/auth" component={SupabaseAuthPage} />
         <Route path="/supabase-auth" component={SupabaseAuthPage} />
         <Route path="/supabase-profile" component={SupabaseProfilePage} />
-        <Route path="/auth/complete" component={EmailSignInComplete} />
-        <Route path="/auth/email-demo" component={EmailSignInDemo} />
-        <Route path="/auth/firebase-demo" component={FirebaseAuthDemo} />
         <Route path="/specs" component={Specs} />
         <Route path="/pricing" component={Pricing} />
         <Route path="/buying-guides" component={BuyingGuides} />
@@ -105,126 +91,23 @@ function Router() {
         <Route path="/login" component={LoginPage} />
         <Route path="/register" component={RegisterPage} />
         <Route path="/registration" component={RegistrationPage} />
-        <Route path="/vendor-dashboard">
-          {() => (
-            <ProtectedRoute requiredRole="vendor">
-              <VendorDashboard />
-            </ProtectedRoute>
-          )}
-        </Route>
-        <Route path="/trade-dashboard">
-          {() => (
-            <ProtectedRoute requiredRole="trade">
-              <TradeDashboard />
-            </ProtectedRoute>
-          )}
-        </Route>
-        <Route path="/dashboard">
-          {() => (
-            <ProtectedRoute>
-              <CustomerDashboard />
-            </ProtectedRoute>
-          )}
-        </Route>
-        <Route path="/dashboard/leads">
-          {() => (
-            <ProtectedRoute>
-              <DashboardLeads />
-            </ProtectedRoute>
-          )}
-        </Route>
-        <Route path="/dashboard/products">
-          {() => (
-            <ProtectedRoute>
-              <DashboardProducts />
-            </ProtectedRoute>
-          )}
-        </Route>
-        <Route path="/dashboard/subscription">
-          {() => (
-            <ProtectedRoute>
-              <DashboardSubscription />
-            </ProtectedRoute>
-          )}
-        </Route>
-        <Route path="/dashboard/settings">
-          {() => (
-            <ProtectedRoute>
-              <DashboardSettings />
-            </ProtectedRoute>
-          )}
-        </Route>
-        <Route path="/dashboard/my-leads">
-          {() => (
-            <ProtectedRoute>
-              <DashboardMyLeads />
-            </ProtectedRoute>
-          )}
-        </Route>
-        <Route path="/dashboard/current-leads">
-          {() => (
-            <ProtectedRoute>
-              <DashboardCurrentLeads />
-            </ProtectedRoute>
-          )}
-        </Route>
-        <Route path="/dashboard/potential-leads">
-          {() => (
-            <ProtectedRoute>
-              <DashboardPotentialLeads />
-            </ProtectedRoute>
-          )}
-        </Route>
-        <Route path="/dashboard/leads-history">
-          {() => (
-            <ProtectedRoute>
-              <DashboardLeadsHistory />
-            </ProtectedRoute>
-          )}
-        </Route>
-        <Route path="/vendor-dashboard">
-          {() => (
-            <ProtectedRoute>
-              <VendorDashboardPage />
-            </ProtectedRoute>
-          )}
-        </Route>
-        <Route path="/trade-dashboard">
-          {() => (
-            <ProtectedRoute>
-              <TradeDashboardPage />
-            </ProtectedRoute>
-          )}
-        </Route>
-        <Route path="/vendor/leads">
-          {() => (
-            <ProtectedRoute>
-              <VendorLeads />
-            </ProtectedRoute>
-          )}
-        </Route>
-        <Route path="/trade/leads">
-          {() => (
-            <ProtectedRoute>
-              <TradeLeads />
-            </ProtectedRoute>
-          )}
-        </Route>
-        <Route path="/quotes">
-          {() => (
-            <ProtectedRoute>
-              <QuotesPage />
-            </ProtectedRoute>
-          )}
-        </Route>
-        <Route path="/profile">
-          {() => (
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
-          )}
-        </Route>
-        <Route path="/test-forgot-password" component={ForgotPasswordTest} />
+        <Route path="/vendor-dashboard" component={VendorDashboard} />
+        <Route path="/trade-dashboard" component={TradeDashboard} />
+        <Route path="/dashboard" component={CustomerDashboard} />
+        <Route path="/dashboard/leads" component={DashboardLeads} />
+        <Route path="/dashboard/products" component={DashboardProducts} />
+        <Route path="/dashboard/subscription" component={DashboardSubscription} />
+        <Route path="/dashboard/settings" component={DashboardSettings} />
+        <Route path="/dashboard/my-leads" component={DashboardMyLeads} />
+        <Route path="/dashboard/current-leads" component={DashboardCurrentLeads} />
+        <Route path="/dashboard/potential-leads" component={DashboardPotentialLeads} />
+        <Route path="/dashboard/leads-history" component={DashboardLeadsHistory} />
+        <Route path="/vendor-dashboard-alt" component={VendorDashboardPage} />
+        <Route path="/trade-dashboard-alt" component={TradeDashboardPage} />
+        <Route path="/vendor/leads" component={VendorLeads} />
+        <Route path="/trade/leads" component={TradeLeads} />
+        <Route path="/quotes" component={QuotesPage} />
+        <Route path="/profile" component={ProfilePage} />
         <Route path="*" component={NotFound} />
       </Switch>
     </>
@@ -234,20 +117,14 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ToastProvider>
-        <SupabaseAuthProvider>
-          <AuthProvider>
-            <NetworkAuthProvider>
-              <TooltipProvider>
-              <div style={{ direction: 'ltr', textAlign: 'left' }}>
-                <Toaster />
-                <Router />
-              </div>
-              </TooltipProvider>
-            </NetworkAuthProvider>
-          </AuthProvider>
-        </SupabaseAuthProvider>
-      </ToastProvider>
+      <SupabaseAuthProvider>
+        <TooltipProvider>
+          <div style={{ direction: 'ltr', textAlign: 'left' }}>
+            <Toaster />
+            <Router />
+          </div>
+        </TooltipProvider>
+      </SupabaseAuthProvider>
     </QueryClientProvider>
   );
 }

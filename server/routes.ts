@@ -1,42 +1,27 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { FirebaseStorage } from "./firebase-storage.js";
-import { MemStorage } from "./storage.js";
-import { submitLead, LeadFormData } from "./firebase-leads.js";
-import { 
-  registerProfessional, 
-  submitLeadAndMatch, 
-  getProfessionalProfile, 
-  updateProfessionalProfile,
-  getLeadsForProfessional,
-  getCoordinatesFromZip
-} from './professional-matching.js';
-import { createAccount, signInUser, resetPassword, signOutUser, getCurrentUser, SignUpData, SignInData, sendSignInLink, isEmailSignInLink, completeEmailSignIn } from "./firebase-auth.js";
+import { getCurrentUser, createAuthRoutes } from './auth.js';
 
-// Initialize database storage for user profiles
+// Initialize database storage
 import { storage } from './storage.js';
-// Initialize Firebase storage for background persistence when available
-const firebaseStorage = new FirebaseStorage();
 import { productScraper } from "./scraper.js";
 import { simulationScraper } from "./simulation-scraper.js";
 import { enhancedScraper } from "./enhanced-scraper.js";
 import { UniversalScraperEngine } from "./universal-scraper-engine.js";
-// Import database connection and schema
-import { db } from './db.js';
-import { leads } from '../shared/schema.js';
-import { eq } from 'drizzle-orm';
 import { z } from "zod";
 import multer from "multer";
 import csvParser from "csv-parser";
 import { validateMaterial, validateLead, generateProductHash, validateAndCleanSpecifications, ScrapingValidationSchema, ValidationError } from "@shared/validation";
-import { automatedLeadProcessor } from "./automated-lead-processing";
 import cheerio from "cheerio";
 import axios from "axios";
 
 // Configure multer for file uploads
 const upload = multer({ dest: '/tmp/uploads/' });
 
-console.log('Using Firebase only - Airtable removed');
+console.log('Using PostgreSQL database with Supabase authentication');
+
+// Initialize auth routes
+const authRoutes = createAuthRoutes();
 
 // Initialize Universal Scraper Engine for handling thousands of URLs
 const universalScraper = new UniversalScraperEngine();

@@ -1,7 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes.js";
 import { setupVite, serveStatic, log } from "./vite.js";
-import { initializeFirebaseCollections } from "./firebase-init.js";
 
 const app = express();
 app.use(express.json());
@@ -38,9 +37,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Firebase initialization disabled to prevent metadata errors
-  // Firebase collections will be created when needed by the application
-  console.log('🔄 Firebase initialization skipped - collections will be created on-demand');
+  console.log('✅ Supabase database storage initialized');
   
   const server = await registerRoutes(app);
 
