@@ -2598,6 +2598,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ❤️ Favorites System API Routes for Scraped Products
+  app.get("/api/favorites/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const favorites = await storage.getFavorites(userId);
+      res.json(favorites);
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+      res.status(500).json({ message: "Failed to fetch favorites" });
+    }
+  });
+
+  app.post("/api/favorites", async (req, res) => {
+    try {
+      const { userId, productId } = req.body;
+      
+      if (!userId || !productId) {
+        return res.status(400).json({ message: "userId and productId are required" });
+      }
+
+      // Check if already favorited
+      const isAlreadyFavorited = await storage.isFavorited(userId, productId);
+      if (isAlreadyFavorited) {
+        return res.status(409).json({ message: "Product already favorited" });
+      }
+
+      const favorite = await storage.addFavorite({ userId, productId });
+      res.status(201).json({ message: "Product added to favorites", favorite });
+    } catch (error) {
+      console.error('Error adding favorite:', error);
+      res.status(500).json({ message: "Failed to add favorite" });
+    }
+  });
+
+  app.delete("/api/favorites/:userId/:productId", async (req, res) => {
+    try {
+      const { userId, productId } = req.params;
+      const productIdNumber = parseInt(productId);
+      
+      if (isNaN(productIdNumber)) {
+        return res.status(400).json({ message: "Invalid productId" });
+      }
+
+      const removed = await storage.removeFavorite(userId, productIdNumber);
+      if (removed) {
+        res.json({ message: "Product removed from favorites" });
+      } else {
+        res.status(404).json({ message: "Favorite not found" });
+      }
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+      res.status(500).json({ message: "Failed to remove favorite" });
+    }
+  });
+
+  // 🔍 Scraped Products API Routes with Caching
+  app.get("/api/scraped-products", async (req, res) => {
+    try {
+      const filters = {
+        source: req.query.source as string,
+        search: req.query.search as string,
+      };
+      
+      const products = await storage.getScrapedProducts(filters);
+      res.json(products);
+    } catch (error) {
+      console.error('Error fetching scraped products:', error);
+      res.status(500).json({ message: "Failed to fetch scraped products" });
+    }
+  });
+
+  app.get("/api/scraped-products/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const product = await storage.getScrapedProduct(id);
+      
+      if (!product) {
+        return res.status(404).json({ message: "Scraped product not found" });
+      }
+      
+      res.json(product);
+    } catch (error) {
+      console.error('Error fetching scraped product:', error);
+      res.status(500).json({ message: "Failed to fetch scraped product" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

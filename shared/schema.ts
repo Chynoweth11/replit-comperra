@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, decimal, boolean, json } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, decimal, boolean, json, bigserial, bigint, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -82,6 +82,29 @@ export const leads = pgTable("leads", {
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
+
+// ✅ Enhanced Scraped Products Table (with caching and technical specs)
+export const scrapedProducts = pgTable('scraped_products', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  url: text('url').notNull().unique(), // Unique scraped URL
+  productTitle: text('product_title'),
+  price: decimal('price'),
+  imageUrl: text('image_url'),
+  source: text('source'), // e.g., MSI, Daltile, etc.
+  specs: json('specs'), // Flexible storage for all scraped specs
+  productHash: text('product_hash'), // Optional hash for fuzzy deduplication
+  scrapedAt: timestamp('scraped_at', { withTimezone: true }).defaultNow().notNull()
+});
+
+// ✅ Favorites Table for Heart Feature
+export const favorites = pgTable('favorites', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  userId: text('user_id').notNull(), // References auth users
+  productId: bigint('product_id', { mode: 'number' }).notNull().references(() => scrapedProducts.id, { onDelete: 'cascade' }),
+  favoritedAt: timestamp('favorited_at', { withTimezone: true }).defaultNow().notNull()
+}, (table) => ({
+  uniqueUserProduct: uniqueIndex('unique_user_product').on(table.userId, table.productId)
+}));
 
 // Material specifications schemas for different categories
 export const tileSpecsSchema = z.object({
@@ -171,6 +194,16 @@ export const insertBrandSchema = createInsertSchema(brands).omit({
   id: true,
 });
 
+export const insertScrapedProductSchema = createInsertSchema(scrapedProducts).omit({
+  id: true,
+  scrapedAt: true,
+});
+
+export const insertFavoriteSchema = createInsertSchema(favorites).omit({
+  id: true,
+  favoritedAt: true,
+});
+
 export type Material = typeof materials.$inferSelect;
 export type InsertMaterial = z.infer<typeof insertMaterialSchema>;
 export type Article = typeof articles.$inferSelect;
@@ -181,6 +214,10 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Lead = typeof leads.$inferSelect;
 export type InsertLead = z.infer<typeof insertLeadSchema>;
+export type ScrapedProduct = typeof scrapedProducts.$inferSelect;
+export type InsertScrapedProduct = z.infer<typeof insertScrapedProductSchema>;
+export type Favorite = typeof favorites.$inferSelect;
+export type InsertFavorite = z.infer<typeof insertFavoriteSchema>;
 
 export type TileSpecs = z.infer<typeof tileSpecsSchema>;
 export type SlabSpecs = z.infer<typeof slabSpecsSchema>;

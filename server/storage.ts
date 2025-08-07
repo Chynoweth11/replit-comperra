@@ -7,6 +7,8 @@ import {
   brands,
   users,
   leads,
+  scrapedProducts,
+  favorites,
   type Material, 
   type InsertMaterial,
   type Article,
@@ -16,7 +18,11 @@ import {
   type User,
   type InsertUser,
   type Lead,
-  type InsertLead
+  type InsertLead,
+  type ScrapedProduct,
+  type InsertScrapedProduct,
+  type Favorite,
+  type InsertFavorite
 } from "@shared/schema";
 
 if (!process.env.DATABASE_URL) {
@@ -62,6 +68,19 @@ export interface IStorage {
   getLead(id: string): Promise<Lead | undefined>;
   createLead(lead: InsertLead): Promise<Lead>;
   updateLead(id: string, updates: Partial<InsertLead>): Promise<Lead>;
+  
+  // 🚀 Enhanced Scraped Products (with caching)
+  getScrapedProducts(filters?: { source?: string; search?: string }): Promise<ScrapedProduct[]>;
+  getScrapedProduct(id: number): Promise<ScrapedProduct | undefined>;
+  getScrapedProductByUrl(url: string): Promise<ScrapedProduct | undefined>;
+  createScrapedProduct(product: InsertScrapedProduct): Promise<ScrapedProduct>;
+  updateScrapedProduct(id: number, product: Partial<InsertScrapedProduct>): Promise<ScrapedProduct | undefined>;
+  
+  // ❤️ Favorites System
+  getFavorites(userId: string): Promise<(Favorite & { scrapedProduct: ScrapedProduct })[]>;
+  addFavorite(favorite: InsertFavorite): Promise<Favorite>;
+  removeFavorite(userId: string, productId: number): Promise<boolean>;
+  isFavorited(userId: string, productId: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -541,6 +560,140 @@ Top Picks:
     } catch (error) {
       console.error('Error updating lead:', error);
       throw error;
+    }
+  }
+  
+  // 🚀 Enhanced Scraped Products Implementation
+  async getScrapedProducts(filters?: { source?: string; search?: string }): Promise<ScrapedProduct[]> {
+    try {
+      let query = db.select().from(scrapedProducts);
+      
+      const conditions = [];
+      if (filters?.source) {
+        conditions.push(eq(scrapedProducts.source, filters.source));
+      }
+      if (filters?.search) {
+        conditions.push(ilike(scrapedProducts.productTitle, `%${filters.search}%`));
+      }
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+      
+      const products = await query;
+      console.log(`📦 Retrieved ${products.length} scraped products`);
+      return products;
+    } catch (error) {
+      console.error('Error fetching scraped products:', error);
+      return [];
+    }
+  }
+  
+  async getScrapedProduct(id: number): Promise<ScrapedProduct | undefined> {
+    try {
+      const result = await db.select().from(scrapedProducts).where(eq(scrapedProducts.id, id)).limit(1);
+      return result[0];
+    } catch (error) {
+      console.error('Error fetching scraped product:', error);
+      return undefined;
+    }
+  }
+  
+  async getScrapedProductByUrl(url: string): Promise<ScrapedProduct | undefined> {
+    try {
+      const result = await db.select().from(scrapedProducts).where(eq(scrapedProducts.url, url)).limit(1);
+      console.log(`🔍 Cache lookup for URL: ${url} - ${result.length > 0 ? 'HIT' : 'MISS'}`);
+      return result[0];
+    } catch (error) {
+      console.error('Error fetching scraped product by URL:', error);
+      return undefined;
+    }
+  }
+  
+  async createScrapedProduct(product: InsertScrapedProduct): Promise<ScrapedProduct> {
+    try {
+      const result = await db.insert(scrapedProducts).values(product).returning();
+      console.log(`✅ Cached scraped product: ${result[0].productTitle}`);
+      return result[0];
+    } catch (error) {
+      console.error('Error creating scraped product:', error);
+      throw error;
+    }
+  }
+  
+  async updateScrapedProduct(id: number, product: Partial<InsertScrapedProduct>): Promise<ScrapedProduct | undefined> {
+    try {
+      const result = await db.update(scrapedProducts)
+        .set(product)
+        .where(eq(scrapedProducts.id, id))
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error updating scraped product:', error);
+      return undefined;
+    }
+  }
+  
+  // ❤️ Favorites System Implementation
+  async getFavorites(userId: string): Promise<(Favorite & { scrapedProduct: ScrapedProduct })[]> {
+    try {
+      const result = await db.select({
+        id: favorites.id,
+        userId: favorites.userId,
+        productId: favorites.productId,
+        favoritedAt: favorites.favoritedAt,
+        scrapedProduct: scrapedProducts
+      })
+      .from(favorites)
+      .leftJoin(scrapedProducts, eq(favorites.productId, scrapedProducts.id))
+      .where(eq(favorites.userId, userId));
+      
+      console.log(`❤️ Retrieved ${result.length} favorites for user ${userId}`);
+      return result as (Favorite & { scrapedProduct: ScrapedProduct })[];
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+      return [];
+    }
+  }
+  
+  async addFavorite(favorite: InsertFavorite): Promise<Favorite> {
+    try {
+      const result = await db.insert(favorites).values(favorite).returning();
+      console.log(`💖 Added favorite: User ${favorite.userId} → Product ${favorite.productId}`);
+      return result[0];
+    } catch (error) {
+      console.error('Error adding favorite:', error);
+      throw error;
+    }
+  }
+  
+  async removeFavorite(userId: string, productId: number): Promise<boolean> {
+    try {
+      const result = await db.delete(favorites)
+        .where(and(
+          eq(favorites.userId, userId),
+          eq(favorites.productId, productId)
+        ));
+      console.log(`💔 Removed favorite: User ${userId} → Product ${productId}`);
+      return result.rowCount ? result.rowCount > 0 : false;
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+      return false;
+    }
+  }
+  
+  async isFavorited(userId: string, productId: number): Promise<boolean> {
+    try {
+      const result = await db.select().from(favorites)
+        .where(and(
+          eq(favorites.userId, userId),
+          eq(favorites.productId, productId)
+        ))
+        .limit(1);
+      return result.length > 0;
+    } catch (error) {
+      console.error('Error checking favorite status:', error);
+      return false;
     }
   }
 }
