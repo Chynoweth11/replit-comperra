@@ -79,14 +79,16 @@ function Router() {
         <Route path="/categories" component={Categories} />
         <Route path="/brands" component={Brands} />
         <Route path="/vendors" component={Vendors} />
-        <Route path="/professionals" component={ProfessionalNetwork} />
-        <Route path="/professionals/customer" component={ProfessionalNetwork} />
-        <Route path="/professionals/register" component={ProfessionalNetwork} />
-        <Route path="/professional-network" component={ProfessionalNetwork} />
+        <Route path="/professionals" component={() => <ProfessionalNetwork />} />
+        <Route path="/professionals/customer" component={() => <ProfessionalNetwork skipToCustomer={true} />} />
+        <Route path="/professionals/register" component={() => <ProfessionalNetwork skipToProfessional={true} />} />
+        <Route path="/professional-network" component={() => <ProfessionalNetwork />} />
         <Route path="/firebase-demo" component={FirebaseDemo} />
         <Route path="/auth" component={AuthPage} />
         <Route path="/supabase-auth" component={SupabaseAuthPage} />
         <Route path="/supabase-profile" component={SupabaseProfilePage} />
+        <Route path="/standalone-auth" component={() => window.location.href = '/index.html'} />
+        <Route path="/standalone-profile" component={() => window.location.href = '/profile.html'} />
         <Route path="/auth/complete" component={EmailSignInComplete} />
         <Route path="/auth/email-demo" component={EmailSignInDemo} />
         <Route path="/auth/firebase-demo" component={FirebaseAuthDemo} />

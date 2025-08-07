@@ -12,11 +12,13 @@ const phoneInput = document.getElementById('profile-phone-input');
 const businessInput = document.getElementById('profile-business-input');
 const updateButton = document.getElementById('update-profile-button');
 const logoutButton = document.getElementById('logout-button');
+const goToAppButton = document.getElementById('go-to-app-button');
 const messagesDiv = document.getElementById('messages');
 
 // --- Event Listeners ---
 updateButton.addEventListener('click', () => handleUpdateProfile());
 logoutButton.addEventListener('click', () => handleLogout());
+goToAppButton.addEventListener('click', () => goToMainApp());
 
 // --- Functions ---
 
@@ -37,13 +39,16 @@ async function loadProfile() {
             .eq('id', user.id)
             .single(); // We only expect one profile
 
-        if (profileError) throw profileError;
+        if (profileError && profileError.code !== 'PGRST116') {
+            throw profileError;
+        }
 
         // Populate the form fields with the data we retrieved
-        nameInput.value = data.name || '';
-        phoneInput.value = data.phone || '';
-        businessInput.value = data.business_name || '';
-        // ... populate other fields here
+        if (data) {
+            nameInput.value = data.name || '';
+            phoneInput.value = data.phone || '';
+            businessInput.value = data.business_name || '';
+        }
 
     } catch (error) {
         messagesDiv.textContent = 'Error loading profile: ' + error.message;
@@ -83,6 +88,11 @@ async function handleUpdateProfile() {
 async function handleLogout() {
     await supabase.auth.signOut();
     window.location.href = '/'; // Redirect to home/login page
+}
+
+// Function to go to main app
+function goToMainApp() {
+    window.location.href = '/'; // Redirect to main React app
 }
 
 // --- Load Profile on Page Load ---

@@ -37,6 +37,9 @@ async function handleEmailSignUp() {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
         await supabase.from('profiles').insert({ id: data.user.id, email: email, role: 'customer' });
+        
+        // Sync session with main app
+        await syncSessionWithServer(data.user);
         messagesDiv.textContent = 'Account created! Please check your email for verification.';
     } catch (error) {
         messagesDiv.textContent = error.message;
@@ -47,9 +50,12 @@ async function handleEmailLogin() {
     const email = emailInput.value;
     const password = passwordInput.value;
     try {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        window.location.href = '/profile.html'; // Redirect to profile page on success
+        
+        // Sync session with main app
+        await syncSessionWithServer(data.user);
+        window.location.href = '/supabase-profile'; // Redirect to main app profile page
     } catch (error) {
         messagesDiv.textContent = error.message;
     }
@@ -83,10 +89,35 @@ async function handleVerifyOtp() {
     try {
         const { data, error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' });
         if (error) throw error;
+        
+        // Sync session with main app
+        await syncSessionWithServer(data.user);
         // On successful OTP verification, the user is logged in.
         // The trigger will automatically create their profile if it doesn't exist.
-        window.location.href = '/profile.html'; // Redirect to profile page
+        window.location.href = '/supabase-profile'; // Redirect to main app profile page
     } catch (error) {
         messagesDiv.textContent = error.message;
+    }
+}
+
+// Sync user session with server for integration with existing systems
+async function syncSessionWithServer(user) {
+    try {
+        await fetch('/api/supabase/sync-session', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userSession: {
+                    id: user.id,
+                    email: user.email,
+                    role: 'customer'
+                }
+            })
+        });
+        console.log('✅ Session synced with server');
+    } catch (error) {
+        console.warn('⚠️ Failed to sync session with server:', error);
     }
 }

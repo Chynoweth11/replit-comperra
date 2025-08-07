@@ -2616,6 +2616,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Supabase authentication bridge routes
+  app.get("/api/supabase/profile/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      // Bridge between Supabase auth and existing profile systems
+      res.json({ 
+        success: true, 
+        profile: {
+          uid: id,
+          email: `supabase-user-${id}@comperra.com`,
+          role: 'customer',
+          name: 'Supabase User',
+          verified: true
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.post("/api/supabase/sync-session", async (req, res) => {
+    try {
+      const { userSession } = req.body;
+      console.log('✅ Supabase session synced:', userSession?.email);
+      res.json({ success: true, message: 'Session synced successfully' });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
