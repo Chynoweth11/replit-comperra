@@ -27,11 +27,31 @@
                 <button type="button" id="signup-button">Sign Up</button>
                 <button type="button" id="login-button">Login</button>
             </div>
+            
+            <div class="form-group">
+                <button type="button" id="google-login-button">Sign in with Google</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone-input">Phone Number</label>
+                <input type="tel" id="phone-input" placeholder="+1234567890">
+            </div>
+            
+            <div class="form-group">
+                <label for="otp-input">OTP Code</label>
+                <input type="text" id="otp-input" placeholder="123456">
+            </div>
+            
+            <div class="button-group">
+                <button type="button" id="send-otp-button">Send OTP</button>
+                <button type="button" id="verify-otp-button">Verify OTP</button>
+            </div>
         </form>
         
         <div id="messages"></div>
     </div>
     
+    <script type="module" src="/script.js"></script>
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
