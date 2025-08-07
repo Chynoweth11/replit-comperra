@@ -1337,7 +1337,7 @@ export class ProductScraper {
       name: scrapedProduct.name,
       category: scrapedProduct.category,
       brand: scrapedProduct.brand,
-      price: scrapedProduct.price,
+      price: (scrapedProduct.price === 'Contact for pricing' || scrapedProduct.price === 'N/A' || !scrapedProduct.price || isNaN(parseFloat(scrapedProduct.price))) ? '0.00' : scrapedProduct.price,
       imageUrl: scrapedProduct.imageUrl || null,
       description: scrapedProduct.description || null,
       specifications: scrapedProduct.specifications,

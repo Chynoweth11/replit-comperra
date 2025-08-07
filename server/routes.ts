@@ -219,6 +219,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Save to storage
         try {
           const material = productScraper.convertToMaterial(result.product);
+          // Clean price field for database compatibility
+          if (material.price === 'Contact for pricing' || material.price === 'N/A' || !material.price || isNaN(parseFloat(material.price))) {
+            material.price = '0.00';
+          }
           await storage.createMaterial(material);
           
           res.json({
@@ -556,7 +560,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           name: product.name,
           brand: product.brand,
           category: product.category,
-          price: product.price === 'N/A' ? '0.00' : product.price,
+          price: (product.price === 'N/A' || product.price === 'Contact for pricing' || !product.price || isNaN(parseFloat(product.price))) ? '0.00' : product.price,
           imageUrl: product.imageUrl,
           description: product.description,
           specifications: product.specifications,
@@ -601,7 +605,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               name: simulatedProduct.name,
               brand: simulatedProduct.brand,
               category: simulatedProduct.category,
-              price: simulatedProduct.price === 'N/A' ? '0.00' : simulatedProduct.price,
+              price: (simulatedProduct.price === 'N/A' || simulatedProduct.price === 'Contact for pricing' || !simulatedProduct.price || isNaN(parseFloat(simulatedProduct.price))) ? '0.00' : simulatedProduct.price,
               imageUrl: simulatedProduct.imageUrl,
               description: simulatedProduct.description,
               specifications: simulatedProduct.specifications,

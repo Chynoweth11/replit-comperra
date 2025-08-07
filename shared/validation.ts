@@ -27,9 +27,10 @@ export const ScrapingValidationSchema = z.object({
   url: z.string().url("Must be a valid URL").refine(
     (url) => {
       const allowedDomains = [
-        'msi-stone.com', 'daltile.com', 'bedrosians.com', 'shaw.com', 
+        'msi-stone.com', 'msi.com', 'msisurfaces.com', 'daltile.com', 'bedrosians.com', 'shaw.com', 
         'mohawkgroup.com', 'cambria.com', 'arizonatile.com', 'emser.com',
-        'floridatile.com', 'warmup.com', 'coretecfloors.com'
+        'floridatile.com', 'warmup.com', 'coretecfloors.com', 'caesarstone.com',
+        'silestone.com', 'cosentino.com', 'hanwhasurfaces.com', 'cambriaquartz.com'
       ];
       return allowedDomains.some(domain => url.includes(domain));
     },

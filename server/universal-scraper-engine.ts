@@ -98,7 +98,7 @@ export class UniversalScraperEngine {
             method: 'enhanced',
             extractionStats: {
               specCount,
-              imageCount: enhancedResult.images?.length || 0,
+              imageCount: enhancedResult.imageUrl ? 1 : 0,
               processingTime: Date.now() - startTime
             }
           };
@@ -108,7 +108,8 @@ export class UniversalScraperEngine {
       }
 
       // Fallback to simulation scraper
-      const simulationResult = await this.simulationScraper.scrapeProduct(url);
+      const simulationResults = await this.simulationScraper.scrapeRealProductFromURL(url);
+      const simulationResult = simulationResults && simulationResults.length > 0 ? simulationResults[0] : null;
       if (simulationResult) {
         const specCount = Object.keys(simulationResult.specifications || {}).length;
         return {
@@ -117,7 +118,7 @@ export class UniversalScraperEngine {
           method: 'simulation',
           extractionStats: {
             specCount,
-            imageCount: simulationResult.images?.length || 0,
+            imageCount: simulationResult.imageUrl ? 1 : 0,
             processingTime: Date.now() - startTime
           }
         };
