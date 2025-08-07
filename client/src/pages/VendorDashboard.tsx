@@ -260,7 +260,7 @@ const VendorDashboard: React.FC = () => {
     setIsSavingProfile(true);
     try {
       // Save to user profile API
-      const response = await fetch(`/api/user/profile/${userProfile.uid}`, {
+      const response = await fetch(`/api/user/profile/${userProfile?.uid}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -397,7 +397,7 @@ const VendorDashboard: React.FC = () => {
             </div>
             <div className="flex items-center space-x-4">
               <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                {userProfile.brandAffiliation || 'Independent Vendor'}
+                {userProfile?.brandAffiliation || 'Independent Vendor'}
               </Badge>
               <Button 
                 variant="outline" 
@@ -428,7 +428,7 @@ const VendorDashboard: React.FC = () => {
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <h1 className="text-2xl font-bold text-gray-900">Vendor Dashboard</h1>
-          <p className="text-sm text-gray-600">Welcome back, {userProfile.businessName || userProfile.email}</p>
+          <p className="text-sm text-gray-600">Welcome back, {userProfile?.businessName || userProfile?.email}</p>
         </div>
       </div>
 
@@ -623,7 +623,7 @@ const VendorDashboard: React.FC = () => {
 
 
           <TabsContent value="smart-match" className="space-y-6">
-            <SmartMatchAIEnhanced userRole="vendor" userId={userProfile.uid} />
+            <SmartMatchAIEnhanced userRole="vendor" userId={userProfile?.uid} />
           </TabsContent>
 
           <TabsContent value="reviews" className="space-y-6">

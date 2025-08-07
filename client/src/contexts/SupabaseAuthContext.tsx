@@ -130,8 +130,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: data.message || 'Sign in failed' }
       }
 
+      // Debug signin response structure
+      console.log('🔍 Signin response data:', data)
+      
       // Set user and profile from response
-      setUser({ id: data.user.id, email: data.user.email } as User)
+      const userId = data.user?.id || data.user?.uid || data.profile?.id
+      console.log('🔍 Extracted user ID:', userId)
+      
+      setUser({ id: userId, email: data.user.email } as User)
       setProfile(data.profile)
 
       toast({

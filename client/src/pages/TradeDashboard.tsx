@@ -200,7 +200,7 @@ const TradeDashboard: React.FC = () => {
             </div>
             <div className="flex items-center space-x-4">
               <Badge variant="secondary" className="bg-green-100 text-green-800">
-                {userProfile.specialty || 'General Contractor'}
+                {userProfile?.specialty || 'General Contractor'}
               </Badge>
               <div className="flex items-center space-x-1">
                 <Star className="h-4 w-4 text-yellow-500 fill-current" />
@@ -235,7 +235,7 @@ const TradeDashboard: React.FC = () => {
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <h1 className="text-2xl font-bold text-gray-900">Trade Dashboard</h1>
-          <p className="text-sm text-gray-600">Welcome back, {userProfile.name || userProfile.email}</p>
+          <p className="text-sm text-gray-600">Welcome back, {userProfile?.name || userProfile?.email}</p>
         </div>
       </div>
 
@@ -311,11 +311,11 @@ const TradeDashboard: React.FC = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Service Radius</span>
-                      <span className="text-sm font-medium">{userProfile.serviceRadius || 50} miles</span>
+                      <span className="text-sm font-medium">{userProfile?.serviceRadius || 50} miles</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Primary ZIP</span>
-                      <span className="text-sm font-medium">{userProfile.zipCode || 'Not set'}</span>
+                      <span className="text-sm font-medium">{userProfile?.zipCode || 'Not set'}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Response Time</span>
@@ -492,7 +492,7 @@ const TradeDashboard: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="smart-match" className="space-y-6">
-            <SmartMatchAIEnhanced userRole="trade" userId={userProfile.uid} />
+            <SmartMatchAIEnhanced userRole="trade" userId={userProfile?.uid} />
           </TabsContent>
 
           <TabsContent value="reviews" className="space-y-6">
