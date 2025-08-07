@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Loader2, Building2, User, ArrowLeft, Home, Brain, Zap, Settings, Star } from 'lucide-react'
+import { Loader2, Building2, User, ArrowLeft, Home, MapPin, Phone, FileText, Upload } from 'lucide-react'
 
 const AuthPage: React.FC = () => {
   const { signUp, signIn, loading } = useAuth()
@@ -28,14 +28,25 @@ const AuthPage: React.FC = () => {
     name: '',
     role: 'customer' as 'customer' | 'vendor' | 'professional',
     phone: '',
-    businessName: '',
+    // Customer fields
+    customerType: 'homeowner' as 'homeowner' | 'designer' | 'contractor' | 'architect' | 'other',
+    streetAddress: '',
+    city: '',
+    state: '',
     zipCode: '',
+    // Business fields (vendor/professional)
+    businessName: '',
+    einNumber: '',
+    licensesCertifications: [] as string[],
+    serviceAreaZipCodes: [] as string[],
+    businessStreetAddress: '',
+    businessCity: '',
+    businessState: '',
+    businessWebsite: '',
+    aboutBusiness: '',
+    socialLinks: [] as string[],
     materialSpecialties: [] as string[],
     businessDescription: '',
-    // 🧠 Intelligent Scraping Preferences
-    preferredScrapingMethod: 'intelligent' as 'enhanced' | 'simulation' | 'intelligent',
-    autoSaveScrapedProducts: true,
-    enableIntelligentExtraction: true,
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -66,15 +77,26 @@ const AuthPage: React.FC = () => {
       name: signUpForm.name,
       role: signUpForm.role,
       phone: signUpForm.phone,
-      business_name: signUpForm.businessName,
+      // Customer fields
+      customer_type: signUpForm.customerType,
+      street_address: signUpForm.streetAddress,
+      city: signUpForm.city,
+      state: signUpForm.state,
       zip_code: signUpForm.zipCode,
+      // Business fields
+      business_name: signUpForm.businessName,
+      ein_number: signUpForm.einNumber,
+      licenses_certifications: signUpForm.licensesCertifications,
+      service_area_zip_codes: signUpForm.serviceAreaZipCodes,
+      business_street_address: signUpForm.businessStreetAddress,
+      business_city: signUpForm.businessCity,
+      business_state: signUpForm.businessState,
+      business_website: signUpForm.businessWebsite,
+      about_business: signUpForm.aboutBusiness,
+      social_links: signUpForm.socialLinks,
       material_specialties: signUpForm.materialSpecialties,
       business_description: signUpForm.businessDescription,
       service_radius: 50,
-      // 🧠 Intelligent Scraping Preferences
-      preferred_scraping_method: signUpForm.preferredScrapingMethod,
-      auto_save_scraped_products: signUpForm.autoSaveScrapedProducts,
-      enable_intelligent_extraction: signUpForm.enableIntelligentExtraction,
     })
 
     if (result.success) {
@@ -93,9 +115,47 @@ const AuthPage: React.FC = () => {
     }))
   }
 
+  const handleLicenseChange = (license: string, checked: boolean) => {
+    setSignUpForm(prev => ({
+      ...prev,
+      licensesCertifications: checked 
+        ? [...prev.licensesCertifications, license]
+        : prev.licensesCertifications.filter(l => l !== license)
+    }))
+  }
+
+  const handleServiceAreaChange = (zipCode: string) => {
+    const zipCodes = zipCode.split(',').map(z => z.trim()).filter(z => z.length > 0)
+    setSignUpForm(prev => ({ ...prev, serviceAreaZipCodes: zipCodes }))
+  }
+
+  const handleSocialLinksChange = (links: string) => {
+    const linkArray = links.split(',').map(l => l.trim()).filter(l => l.length > 0)
+    setSignUpForm(prev => ({ ...prev, socialLinks: linkArray }))
+  }
+
   const materialOptions = [
     'Tiles', 'Stone & Slabs', 'Vinyl & LVT', 'Hardwood', 
     'Heating', 'Carpet', 'Thermostats'
+  ]
+
+  const licenseOptions = [
+    'General Contractor License',
+    'Specialty Contractor License', 
+    'Trade License',
+    'Business License',
+    'Professional Certification',
+    'Union Certification',
+    'Safety Certification',
+    'Other'
+  ]
+
+  const customerTypeOptions = [
+    { value: 'homeowner', label: 'Homeowner' },
+    { value: 'designer', label: 'Interior Designer' },
+    { value: 'contractor', label: 'Contractor' },
+    { value: 'architect', label: 'Architect' },
+    { value: 'other', label: 'Other' }
   ]
 
   if (loading) {
@@ -253,129 +313,255 @@ const AuthPage: React.FC = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                
-                {(signUpForm.role === 'vendor' || signUpForm.role === 'professional') && (
+
+                {/* Required Phone Number for ALL users */}
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={signUpForm.phone}
+                    onChange={(e) => setSignUpForm(prev => ({ ...prev, phone: e.target.value }))}
+                    required
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+
+                {/* Customer-specific fields */}
+                {signUpForm.role === 'customer' && (
                   <>
-                    <div className="space-y-2">
-                      <Label htmlFor="business-name">Business Name</Label>
-                      <Input
-                        id="business-name"
-                        value={signUpForm.businessName}
-                        onChange={(e) => setSignUpForm(prev => ({ ...prev, businessName: e.target.value }))}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        value={signUpForm.phone}
-                        onChange={(e) => setSignUpForm(prev => ({ ...prev, phone: e.target.value }))}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="zip-code">Zip Code</Label>
-                      <Input
-                        id="zip-code"
-                        value={signUpForm.zipCode}
-                        onChange={(e) => setSignUpForm(prev => ({ ...prev, zipCode: e.target.value }))}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Material Specialties</Label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {materialOptions.map((material) => (
-                          <label key={material} className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              checked={signUpForm.materialSpecialties.includes(material)}
-                              onChange={(e) => handleSpecialtyChange(material, e.target.checked)}
-                              className="rounded"
-                            />
-                            <span className="text-sm">{material}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    {/* 🧠 Intelligent Scraping Preferences */}
-                    <div className="space-y-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                    <div className="space-y-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
                       <div className="flex items-center space-x-2">
-                        <Brain className="h-5 w-5 text-blue-600" />
-                        <Label className="text-blue-800 font-semibold">ChatGPT-Like Intelligent Scraping</Label>
+                        <User className="h-5 w-5 text-green-600" />
+                        <Label className="text-green-800 font-semibold">Customer Information</Label>
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="scraping-method">Preferred Scraping Method</Label>
-                        <Select 
-                          value={signUpForm.preferredScrapingMethod} 
-                          onValueChange={(value: 'enhanced' | 'simulation' | 'intelligent') => 
-                            setSignUpForm(prev => ({ ...prev, preferredScrapingMethod: value }))}
-                        >
+                        <Label htmlFor="customer-type">Customer Type *</Label>
+                        <Select value={signUpForm.customerType} onValueChange={(value: 'homeowner' | 'designer' | 'contractor' | 'architect' | 'other') => 
+                          setSignUpForm(prev => ({ ...prev, customerType: value }))}>
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="intelligent">
-                              <div className="flex items-center">
-                                <Brain className="mr-2 h-4 w-4 text-purple-600" />
-                                <div>
-                                  <div className="font-medium">Intelligent (Recommended)</div>
-                                  <div className="text-xs text-gray-500">ChatGPT-like understanding with zero errors</div>
-                                </div>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="enhanced">
-                              <div className="flex items-center">
-                                <Zap className="mr-2 h-4 w-4 text-blue-600" />
-                                <div>
-                                  <div className="font-medium">Enhanced</div>
-                                  <div className="text-xs text-gray-500">Fast extraction with comprehensive specs</div>
-                                </div>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="simulation">
-                              <div className="flex items-center">
-                                <Settings className="mr-2 h-4 w-4 text-green-600" />
-                                <div>
-                                  <div className="font-medium">Simulation</div>
-                                  <div className="text-xs text-gray-500">Reliable fallback method</div>
-                                </div>
-                              </div>
-                            </SelectItem>
+                            {customerTypeOptions.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
-                      
+
                       <div className="space-y-3">
-                        <label className="flex items-center space-x-3">
-                          <input
-                            type="checkbox"
-                            checked={signUpForm.autoSaveScrapedProducts}
-                            onChange={(e) => setSignUpForm(prev => ({ ...prev, autoSaveScrapedProducts: e.target.checked }))}
-                            className="rounded"
-                          />
-                          <div className="flex items-center space-x-2">
-                            <Star className="h-4 w-4 text-yellow-500" />
-                            <span className="text-sm font-medium">Auto-save scraped products</span>
-                          </div>
-                        </label>
+                        <div className="flex items-center space-x-2">
+                          <MapPin className="h-4 w-4 text-green-600" />
+                          <Label className="text-green-700 font-medium">Geolocation (Optional)</Label>
+                        </div>
                         
-                        <label className="flex items-center space-x-3">
-                          <input
-                            type="checkbox"
-                            checked={signUpForm.enableIntelligentExtraction}
-                            onChange={(e) => setSignUpForm(prev => ({ ...prev, enableIntelligentExtraction: e.target.checked }))}
-                            className="rounded"
+                        <div className="space-y-2">
+                          <Label htmlFor="street-address">Street Address</Label>
+                          <Input
+                            id="street-address"
+                            value={signUpForm.streetAddress}
+                            onChange={(e) => setSignUpForm(prev => ({ ...prev, streetAddress: e.target.value }))}
+                            placeholder="123 Main Street"
                           />
-                          <div className="flex items-center space-x-2">
-                            <Brain className="h-4 w-4 text-purple-500" />
-                            <span className="text-sm font-medium">Enable intelligent specification extraction</span>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="city">City</Label>
+                            <Input
+                              id="city"
+                              value={signUpForm.city}
+                              onChange={(e) => setSignUpForm(prev => ({ ...prev, city: e.target.value }))}
+                              placeholder="City"
+                            />
                           </div>
-                        </label>
+                          <div className="space-y-2">
+                            <Label htmlFor="state">State</Label>
+                            <Input
+                              id="state"
+                              value={signUpForm.state}
+                              onChange={(e) => setSignUpForm(prev => ({ ...prev, state: e.target.value }))}
+                              placeholder="State"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="zip-code">Zip Code</Label>
+                          <Input
+                            id="zip-code"
+                            value={signUpForm.zipCode}
+                            onChange={(e) => setSignUpForm(prev => ({ ...prev, zipCode: e.target.value }))}
+                            placeholder="12345"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+                
+                {/* Business fields for vendors and professionals */}
+                {(signUpForm.role === 'vendor' || signUpForm.role === 'professional') && (
+                  <>
+                    <div className="space-y-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center space-x-2">
+                        <Building2 className="h-5 w-5 text-blue-600" />
+                        <Label className="text-blue-800 font-semibold">Business Information</Label>
                       </div>
                       
-                      <div className="text-xs text-blue-600 bg-blue-100 p-2 rounded">
-                        💡 Your account will have access to our ChatGPT-like intelligent scraping system that works with zero errors across all building material categories.
+                      <div className="space-y-2">
+                        <Label htmlFor="business-name">Business Name *</Label>
+                        <Input
+                          id="business-name"
+                          value={signUpForm.businessName}
+                          onChange={(e) => setSignUpForm(prev => ({ ...prev, businessName: e.target.value }))}
+                          required
+                          placeholder="Your Business Name"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="ein-number">EIN Number *</Label>
+                        <Input
+                          id="ein-number"
+                          value={signUpForm.einNumber}
+                          onChange={(e) => setSignUpForm(prev => ({ ...prev, einNumber: e.target.value }))}
+                          required
+                          placeholder="12-3456789"
+                        />
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <MapPin className="h-4 w-4 text-blue-600" />
+                          <Label className="text-blue-700 font-medium">Business Address *</Label>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="business-street-address">Street Address</Label>
+                          <Input
+                            id="business-street-address"
+                            value={signUpForm.businessStreetAddress}
+                            onChange={(e) => setSignUpForm(prev => ({ ...prev, businessStreetAddress: e.target.value }))}
+                            required
+                            placeholder="123 Business St"
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="business-city">City</Label>
+                            <Input
+                              id="business-city"
+                              value={signUpForm.businessCity}
+                              onChange={(e) => setSignUpForm(prev => ({ ...prev, businessCity: e.target.value }))}
+                              required
+                              placeholder="City"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="business-state">State</Label>
+                            <Input
+                              id="business-state"
+                              value={signUpForm.businessState}
+                              onChange={(e) => setSignUpForm(prev => ({ ...prev, businessState: e.target.value }))}
+                              required
+                              placeholder="State"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <FileText className="h-4 w-4 text-blue-600" />
+                          <Label>License & Certifications</Label>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {licenseOptions.map((license) => (
+                            <label key={license} className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                checked={signUpForm.licensesCertifications.includes(license)}
+                                onChange={(e) => handleLicenseChange(license, e.target.checked)}
+                                className="rounded"
+                              />
+                              <span className="text-sm">{license}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="service-area">Service Area Zip Codes</Label>
+                        <Input
+                          id="service-area"
+                          value={signUpForm.serviceAreaZipCodes.join(', ')}
+                          onChange={(e) => handleServiceAreaChange(e.target.value)}
+                          placeholder="12345, 12346, 12347"
+                        />
+                        <p className="text-xs text-gray-500">Enter zip codes separated by commas</p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Material Specialties</Label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {materialOptions.map((material) => (
+                            <label key={material} className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                checked={signUpForm.materialSpecialties.includes(material)}
+                                onChange={(e) => handleSpecialtyChange(material, e.target.checked)}
+                                className="rounded"
+                              />
+                              <span className="text-sm">{material}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+                      <div className="flex items-center space-x-2">
+                        <Building2 className="h-5 w-5 text-purple-600" />
+                        <Label className="text-purple-800 font-semibold">Additional Business Details (Optional)</Label>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="business-website">Business Website/Portfolio</Label>
+                        <Input
+                          id="business-website"
+                          type="url"
+                          value={signUpForm.businessWebsite}
+                          onChange={(e) => setSignUpForm(prev => ({ ...prev, businessWebsite: e.target.value }))}
+                          placeholder="https://yourwebsite.com"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="about-business">About Your Business</Label>
+                        <textarea
+                          id="about-business"
+                          value={signUpForm.aboutBusiness}
+                          onChange={(e) => setSignUpForm(prev => ({ ...prev, aboutBusiness: e.target.value }))}
+                          className="w-full min-h-[80px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Tell customers about your business, experience, and services..."
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="social-links">Social Media Links</Label>
+                        <Input
+                          id="social-links"
+                          value={signUpForm.socialLinks.join(', ')}
+                          onChange={(e) => handleSocialLinksChange(e.target.value)}
+                          placeholder="https://facebook.com/..., https://instagram.com/..."
+                        />
+                        <p className="text-xs text-gray-500">Enter social media URLs separated by commas</p>
                       </div>
                     </div>
                   </>
