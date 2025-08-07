@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [, navigate] = useLocation();
-  const { signIn } = useAuth();
+  const { signIn, resetPassword } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,13 +25,15 @@ export default function LoginPage() {
     setSuccess('');
     setLoading(true);
 
-    const result = await signIn(email, password);
-    if (result.success) {
-      navigate('/dashboard');
-    } else {
-      setError(result.error || 'Login failed. Please try again.');
+    try {
+      await signIn(email, password);
+      // Navigation is handled by AuthContext
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(err.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -45,9 +47,16 @@ export default function LoginPage() {
     setSuccess('');
     setLoading(true);
 
-    // Note: Supabase password reset will be implemented separately
-    setError('Password reset functionality will be available soon. Please contact support.');
-    setLoading(false);
+    try {
+      await resetPassword(email);
+      setSuccess('Password reset instructions sent to your email! Please check your inbox and follow the instructions to reset your password.');
+      setShowForgotPassword(false);
+    } catch (err: any) {
+      console.error('Password reset error:', err);
+      setError(err.message || 'Failed to send reset email. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
