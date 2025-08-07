@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Loader2, Building2, User, ArrowLeft, Home, MapPin, Phone, FileText, Upload } from 'lucide-react'
+import { getLatLngFromGoogle } from '../utils/geocode'
 
 const AuthPage: React.FC = () => {
   const { signUp, signIn, loading } = useAuth()
@@ -50,43 +51,6 @@ const AuthPage: React.FC = () => {
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  // Google Geocoding function
-  const getLatLngFromGoogle = async (address: string) => {
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
-    if (!apiKey) {
-      console.warn('Google Maps API key not found')
-      return null
-    }
-
-    try {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`
-      )
-      
-      if (!response.ok) {
-        throw new Error(`Geocoding request failed: ${response.status}`)
-      }
-      
-      const data = await response.json()
-      
-      if (data.status === 'OK' && data.results.length > 0) {
-        const location = data.results[0].geometry.location
-        console.log('🌍 Geocoding successful:', { address, lat: location.lat, lng: location.lng })
-        return {
-          lat: location.lat,
-          lng: location.lng,
-          formatted_address: data.results[0].formatted_address
-        }
-      } else {
-        console.warn('🌍 Geocoding failed:', data.status)
-        return null
-      }
-    } catch (error) {
-      console.error('🌍 Geocoding error:', error)
-      return null
-    }
-  }
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -201,19 +165,25 @@ const AuthPage: React.FC = () => {
     setIsSubmitting(true)
 
     // Get coordinates for address using Google Geocoding
-    let customerCoordinates = null
-    let businessCoordinates = null
+    let coordinates = null
 
-    // For customers, geocode their home address
-    if (signUpForm.role === 'customer' && signUpForm.streetAddress && signUpForm.city && signUpForm.state) {
-      const customerAddress = `${signUpForm.streetAddress}, ${signUpForm.city}, ${signUpForm.state} ${signUpForm.zipCode}`
-      customerCoordinates = await getLatLngFromGoogle(customerAddress)
-    }
+    try {
+      // For customers, geocode their home address
+      if (signUpForm.role === 'customer' && signUpForm.streetAddress && signUpForm.city && signUpForm.state) {
+        const fullAddress = `${signUpForm.streetAddress}, ${signUpForm.city}, ${signUpForm.state} ${signUpForm.zipCode}`
+        coordinates = await getLatLngFromGoogle(fullAddress)
+        console.log('🌍 Customer address geocoded:', coordinates)
+      }
 
-    // For vendors/professionals, geocode their business address
-    if ((signUpForm.role === 'vendor' || signUpForm.role === 'professional') && signUpForm.businessStreetAddress && signUpForm.businessCity && signUpForm.businessState) {
-      const businessAddress = `${signUpForm.businessStreetAddress}, ${signUpForm.businessCity}, ${signUpForm.businessState}`
-      businessCoordinates = await getLatLngFromGoogle(businessAddress)
+      // For vendors/professionals, geocode their business address
+      if ((signUpForm.role === 'vendor' || signUpForm.role === 'professional') && signUpForm.businessStreetAddress && signUpForm.businessCity && signUpForm.businessState) {
+        const fullAddress = `${signUpForm.businessStreetAddress}, ${signUpForm.businessCity}, ${signUpForm.businessState}`
+        coordinates = await getLatLngFromGoogle(fullAddress)
+        console.log('🌍 Business address geocoded:', coordinates)
+      }
+    } catch (error) {
+      console.error('🌍 Geocoding failed:', error)
+      // Continue with signup even if geocoding fails
     }
 
     const result = await signUp(signUpForm.email, signUpForm.password, {
@@ -241,9 +211,8 @@ const AuthPage: React.FC = () => {
       business_description: signUpForm.businessDescription,
       service_radius: 50,
       // Add geocoded coordinates
-      latitude: customerCoordinates?.lat || businessCoordinates?.lat,
-      longitude: customerCoordinates?.lng || businessCoordinates?.lng,
-      formatted_address: customerCoordinates?.formatted_address || businessCoordinates?.formatted_address,
+      latitude: coordinates?.lat,
+      longitude: coordinates?.lng,
     })
 
     if (result.success) {
