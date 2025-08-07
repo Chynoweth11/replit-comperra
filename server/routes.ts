@@ -2772,52 +2772,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post("/api/auth/signin", async (req, res) => {
-    try {
-      const { email, password } = req.body;
-      
-      // Find user by email
-      const user = await storage.getUserByEmail(email);
-      if (!user) {
-        return res.status(401).json({ 
-          success: false, 
-          message: 'Invalid email or password' 
-        });
-      }
-      
-      // For now, accept any password for database fallback
-      // In production, you'd verify the password hash
-      
-      // Create profile object that matches frontend expectations
-      const profile = {
-        id: user.uid,
-        email: user.email,
-        name: user.name || '',
-        role: user.role as 'customer' | 'vendor' | 'professional',
-        phone: user.phone,
-        business_name: user.companyName,
-        zip_code: user.zipCode,
-        material_specialties: [],
-        business_description: '',
-        service_radius: 50,
-        created_at: user.createdAt,
-        updated_at: user.updatedAt
-      };
-      
-      res.json({
-        success: true,
-        message: 'Signed in successfully',
-        user: { id: user.uid, email: user.email },
-        profile
-      });
-    } catch (error) {
-      console.error('Database signin error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Failed to sign in' 
-      });
-    }
-  });
+  // Note: Main signin route is handled at line 1156 using signInUser function
   
   app.post("/api/auth/signout", async (req, res) => {
     try {

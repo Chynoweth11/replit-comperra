@@ -61,18 +61,36 @@ export async function getCurrentUser(req?: Request): Promise<User | null> {
 // 🧠 Enhanced auth functions with intelligent scraping support
 export async function signInUser(signInData: { email: string; password: string }) {
   try {
-    // For now, return success to maintain compatibility
-    // In production, this would authenticate with Supabase
+    // Get user from database to return proper user data
+    const user = await storage.getUserByEmail(signInData.email);
+    if (!user) {
+      return { success: false, error: 'User not found' };
+    }
+
+    // Return the user data in the format the frontend expects
     return { 
       success: true, 
-      message: "Signed in successfully. Intelligent scraping features activated.",
+      message: "Signed in successfully",
       user: {
-        email: signInData.email,
-        intelligentScraping: true,
-        preferredMethod: 'intelligent'
+        id: user.uid, // This is what the frontend needs
+        email: user.email,
+        name: user.name,
+        role: user.role
+      },
+      profile: {
+        id: user.uid,
+        email: user.email,
+        name: user.name || '',
+        role: user.role,
+        phone: user.phone,
+        business_name: user.companyName,
+        zip_code: user.zipCode,
+        created_at: user.createdAt,
+        updated_at: user.updatedAt
       }
     };
   } catch (error) {
+    console.error('SignIn error:', error);
     return { success: false, error: 'Authentication failed' };
   }
 }
