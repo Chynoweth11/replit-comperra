@@ -344,7 +344,9 @@ const VendorDashboard: React.FC = () => {
     );
   }
 
-  if (!userProfile || userProfile.role !== 'vendor') {
+  // Use sessionManager for consistent authentication instead of userProfile
+  const sessionUser = sessionManager.getSession();
+  if (!sessionUser || sessionUser.role !== 'vendor') {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

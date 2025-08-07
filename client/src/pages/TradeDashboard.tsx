@@ -28,6 +28,7 @@ import {
 import SmartMatchAI from '@/components/SmartMatchAI';
 import SmartMatchAIEnhanced from '@/components/SmartMatchAIEnhanced';
 import GoogleMap from '@/components/GoogleMap';
+import { sessionManager } from '@/utils/sessionManager';
 
 interface LeadData {
   id: string;
@@ -61,15 +62,34 @@ const TradeDashboard: React.FC = () => {
   });
 
   useEffect(() => {
-    if (!loading && (!userProfile || (userProfile.role !== 'trade' && userProfile.role !== 'professional'))) {
-      navigate('/');
+    // Use sessionManager for more reliable authentication
+    const sessionUser = sessionManager.getSession();
+    
+    if (!sessionUser) {
+      console.log('⚠️ No valid session found, redirecting to signin');
+      navigate('/auth?tab=signin');
       return;
     }
     
-    if (userProfile) {
-      fetchDashboardData();
+    // Check if user is a trade professional
+    if (sessionUser.role !== 'trade' && sessionUser.role !== 'professional') {
+      console.log('⚠️ User is not a trade professional, redirecting to appropriate dashboard');
+      if (sessionUser.role === 'vendor') {
+        navigate('/vendor-dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+      return;
     }
-  }, [userProfile, loading, navigate]);
+    
+    console.log('✅ Trade session validated:', sessionUser.email, 'role:', sessionUser.role);
+    
+    // Update activity timestamp
+    sessionManager.updateLastActivity();
+    
+    // Fetch dashboard data
+    fetchDashboardData();
+  }, [navigate]);
 
   const fetchDashboardData = async () => {
     try {
@@ -127,7 +147,9 @@ const TradeDashboard: React.FC = () => {
     );
   }
 
-  if (!userProfile || (userProfile.role !== 'trade' && userProfile.role !== 'professional')) {
+  // Use sessionManager for consistent authentication instead of userProfile
+  const sessionUser = sessionManager.getSession();
+  if (!sessionUser || (sessionUser.role !== 'trade' && sessionUser.role !== 'professional')) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
