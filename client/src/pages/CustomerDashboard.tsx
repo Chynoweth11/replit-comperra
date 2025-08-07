@@ -98,8 +98,8 @@ const CustomerDashboard: React.FC = () => {
       console.log('⚠️ User is a vendor, redirecting to vendor dashboard');
       navigate('/vendor-dashboard');
       return;
-    } else if (sessionUser.role === 'trade') {
-      console.log('⚠️ User is a trade, redirecting to trade dashboard');
+    } else if (sessionUser.role === 'professional' || sessionUser.role === 'trade') {
+      console.log('⚠️ User is a professional/trade, redirecting to trade dashboard');
       navigate('/trade-dashboard');
       return;
     }

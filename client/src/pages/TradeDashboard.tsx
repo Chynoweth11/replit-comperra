@@ -61,7 +61,7 @@ const TradeDashboard: React.FC = () => {
   });
 
   useEffect(() => {
-    if (!loading && (!userProfile || userProfile.role !== 'trade')) {
+    if (!loading && (!userProfile || (userProfile.role !== 'trade' && userProfile.role !== 'professional'))) {
       navigate('/');
       return;
     }
@@ -127,7 +127,7 @@ const TradeDashboard: React.FC = () => {
     );
   }
 
-  if (!userProfile || userProfile.role !== 'trade') {
+  if (!userProfile || (userProfile.role !== 'trade' && userProfile.role !== 'professional')) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
