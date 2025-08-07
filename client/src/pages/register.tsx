@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -53,23 +53,18 @@ export default function RegisterPage() {
 
     setLoading(true);
 
-    try {
-      await signUp({
-        email,
-        password,
-        role: 'customer', // Join Free accounts are always 'customer' type
-        name,
-        phone,
-        customerType
-      });
+    const result = await signUp(email, password, {
+      name,
+      phone,
+      role: 'customer' // Join Free accounts are always 'customer' type
+    });
 
+    if (result.success) {
       navigate('/dashboard');
-    } catch (err: any) {
-      console.error('Registration error:', err);
-      setError(`Registration failed: ${err.message || 'Please try again.'}`);
-    } finally {
-      setLoading(false);
+    } else {
+      setError(`Registration failed: ${result.error || 'Please try again.'}`);
     }
+    setLoading(false);
   };
 
   return (

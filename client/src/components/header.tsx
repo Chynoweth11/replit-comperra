@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Search, X, User, Users } from "lucide-react";
 import Fuse from 'fuse.js';
 import { useMaterials } from "@/hooks/use-materials";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/SupabaseAuthContext";
 
 interface SearchSuggestion {
   id: number;
@@ -23,7 +23,7 @@ export function Header() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const [location, navigate] = useLocation();
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   
   // Get all materials for fuzzy search
   const { data: allMaterials = [] } = useMaterials();
@@ -246,9 +246,9 @@ export function Header() {
             <Link href="/contact" className="hover:text-royal transition-colors">Help</Link>
             {user ? (
               <>
-                <Link href={user.role === 'vendor' ? '/vendor-dashboard' : user.role === 'trade' ? '/trade-dashboard' : '/dashboard'} className="hover:text-royal transition-colors flex items-center gap-1">
+                <Link href={profile?.role === 'vendor' ? '/vendor-dashboard' : profile?.role === 'trade' ? '/trade-dashboard' : '/dashboard'} className="hover:text-royal transition-colors flex items-center gap-1">
                   <User className="h-4 w-4" />
-                  {user.role === 'vendor' ? 'Vendor Dashboard' : user.role === 'trade' ? 'Trade Dashboard' : 'Dashboard'}
+                  {profile?.role === 'vendor' ? 'Vendor Dashboard' : profile?.role === 'trade' ? 'Trade Dashboard' : 'Dashboard'}
                 </Link>
                 <Button variant="outline" size="sm" onClick={handleSignOut}>
                   Sign Out
@@ -256,8 +256,8 @@ export function Header() {
               </>
             ) : (
               <>
-                <Link href="/auth" className="hover:text-royal transition-colors">Sign In</Link>
-                <Link href="/auth">
+                <Link href="/login" className="hover:text-royal transition-colors">Sign In</Link>
+                <Link href="/register">
                   <Button className="bg-royal text-white hover:bg-royal-dark">
                     Join Free
                   </Button>
@@ -291,15 +291,15 @@ export function Header() {
                 <Link href="/contact" className="block py-2 hover:text-royal">Help</Link>
                 {user ? (
                   <>
-                    <Link href={user.role === 'vendor' ? '/vendor-dashboard' : user.role === 'trade' ? '/trade-dashboard' : '/dashboard'} className="block py-2 hover:text-royal">{user.role === 'vendor' ? 'Vendor Dashboard' : user.role === 'trade' ? 'Trade Dashboard' : 'Dashboard'}</Link>
+                    <Link href={profile?.role === 'vendor' ? '/vendor-dashboard' : profile?.role === 'trade' ? '/trade-dashboard' : '/dashboard'} className="block py-2 hover:text-royal">{profile?.role === 'vendor' ? 'Vendor Dashboard' : profile?.role === 'trade' ? 'Trade Dashboard' : 'Dashboard'}</Link>
                     <Button variant="outline" className="w-full" onClick={handleSignOut}>
                       Sign Out
                     </Button>
                   </>
                 ) : (
                   <>
-                    <Link href="/auth" className="block py-2 hover:text-royal">Sign In</Link>
-                    <Link href="/auth">
+                    <Link href="/login" className="block py-2 hover:text-royal">Sign In</Link>
+                    <Link href="/register">
                       <Button className="w-full bg-royal text-white hover:bg-royal-dark">
                         Join Free
                       </Button>

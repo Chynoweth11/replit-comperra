@@ -89,26 +89,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Test Supabase Auth Section */}
-      <section className="py-8 bg-blue-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h3 className="text-lg font-semibold text-blue-900 mb-4">
-            🆕 New Supabase Authentication System
-          </h3>
-          <div className="space-x-4">
-            <Link href="/supabase-auth">
-              <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                Try New Auth System
-              </button>
-            </Link>
-            <Link href="/supabase-profile">
-              <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors">
-                New Profile Page
-              </button>
-            </Link>
-          </div>
-        </div>
-      </section>
 
       <ArticlesSection />
       <Footer />

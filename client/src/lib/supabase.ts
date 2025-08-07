@@ -13,7 +13,7 @@ export type Profile = {
   id: string
   email: string
   name: string
-  role: 'customer' | 'vendor' | 'professional'
+  role: 'customer' | 'vendor' | 'professional' | 'trade'
   phone?: string
   business_name?: string
   zip_code?: string
