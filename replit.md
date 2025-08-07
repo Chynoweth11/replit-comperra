@@ -20,6 +20,57 @@ The Comperra platform is built with a React TypeScript frontend utilizing Wouter
 - **Fuse.js**: Used for implementing fuzzy search functionality, enhancing product search capabilities with typo tolerance.
 - **geolib and geofire-common**: Packages used for efficient geographic queries and geohashing in the lead matching system.
 
+## CRITICAL ROUTES & FEATURES - NEVER REMOVE ⚠️
+**WARNING: These routes and components are essential business features. Always verify they exist during any migration or cleanup:**
+
+### Essential Navigation Routes (App.tsx)
+- `/professionals/customer` - Customer lead form for finding pros (BUSINESS CRITICAL)
+- `/professionals/register` - Professional registration page (BUSINESS CRITICAL)
+- `/vendor-dashboard` - Vendor dashboard and management (BUSINESS CRITICAL)
+- `/trade-dashboard` - Trade professional dashboard (BUSINESS CRITICAL)
+- `/dashboard` - Customer dashboard (BUSINESS CRITICAL)
+- `/comparison/:category` - Material comparison pages (CORE FEATURE)
+- `/auth` - Supabase authentication (REQUIRED)
+- `/buying-guides` - Expert buying guides (CONTENT FEATURE)
+
+### Essential Header Navigation (header.tsx)
+- "Pros & Suppliers Near You" button → `/professionals/customer` (BUSINESS CRITICAL)
+- "Expert Guides" link → `/buying-guides` (CONTENT FEATURE)
+- User dashboard links for all role types (BUSINESS CRITICAL)
+- Search functionality with fuzzy search (CORE FEATURE)
+
+### Essential Home Page Features (home.tsx)
+- "Find Professionals Near Me" button → `/professionals/customer` (BUSINESS CRITICAL)
+- "Join Professional Network" button → `/professionals/register` (BUSINESS CRITICAL)
+- Material category navigation cards (CORE FEATURE)
+
+### Critical Database Tables
+- `materials` - Product data (CORE FEATURE)
+- `users` - User accounts (BUSINESS CRITICAL)
+- `leads` - Lead capture system (BUSINESS CRITICAL)
+- `scraped_products` - Enhanced scraping cache (ENHANCEMENT)
+- `favorites` - Heart/favorites system (ENHANCEMENT)
+- `articles` - Buying guides content (CONTENT FEATURE)
+
+### Essential Components (Never Delete)
+- `Header` - Main navigation with pros button
+- `TradeDashboard` - Trade professional management
+- `VendorDashboard` - Vendor management
+- `CustomerDashboard` - Customer lead management
+- `lead-capture-modal` - Lead submission forms
+- Authentication components for Supabase
+
+### Pre-Migration Checklist
+Before any major changes, verify these features work:
+1. ✅ "Pros & Suppliers Near You" button in header
+2. ✅ Customer can submit lead at `/professionals/customer`
+3. ✅ Professionals can register at `/professionals/register`
+4. ✅ All dashboard types load correctly
+5. ✅ Material comparison and search work
+6. ✅ Authentication flows function
+7. ✅ Lead capture system processes submissions
+
 ## Recent Changes
+- ✅ **August 7, 2025**: CRITICAL FIX - Restored Missing Professionals Feature - Fixed accidentally removed `/professionals/customer` and `/professionals/register` routes during Firebase cleanup. Added comprehensive documentation to prevent similar accidents. Enhanced scraping system and favorites APIs fully implemented and working. All business-critical features verified and documented.
 - ✅ **August 6, 2025**: COMPLETED - Major Architecture Migration: Firebase to Supabase - Successfully implemented complete migration from Firebase to Supabase authentication and database system. Created new Supabase client configuration, authentication context with sign-up/sign-in/sign-out functionality, comprehensive profile management system with role-based access (customer/vendor/professional), new authentication pages with material specialty selection for business users, profile page with business information management, and full integration with existing UI components. Supabase provides PostgreSQL backend, real-time subscriptions, and simplified authentication flows. All new authentication routes active at /supabase-auth and /supabase-profile. Legacy Firebase system maintained for compatibility during transition period.
 - ✅ **August 1, 2025**: COMPLETED - Full Profile Synchronization System and Article Management - Successfully implemented comprehensive profile synchronization across all platform systems (main profiles, Vendor Profile Management, Professional Matching), resolved "Article Not Found" errors by initializing sample buying guide articles for all material categories, enhanced Account Type selection to automatically create vendor/trade profiles when roles are selected, fixed all TypeScript compilation errors in profile components, articles API now serving 5 sample buying guides covering tiles, stone, hardwood, heating, and vinyl categories, Save Profile functionality working with automatic role-based business profile creation, system now maintains data integrity across all user management systems with seamless synchronization
