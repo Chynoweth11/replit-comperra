@@ -50,6 +50,8 @@ import DashboardLeadsHistory from "@/pages/dashboard-leads-history";
 import SupabaseAuthPage from "@/pages/auth";
 import SupabaseProfilePage from "@/pages/supabase-profile";
 import EnhancedAdminDashboard from "@/pages/enhanced-admin-dashboard";
+import ProfessionalsCustomer from "@/pages/professionals-customer";
+import ProfessionalsRegister from "@/pages/professionals-register";
 
 function Router() {
   return (
@@ -101,6 +103,8 @@ function Router() {
         <Route path="/trade/leads" component={TradeLeads} />
         <Route path="/quotes" component={QuotesPage} />
         <Route path="/profile" component={ProfilePage} />
+        <Route path="/professionals/customer" component={ProfessionalsCustomer} />
+        <Route path="/professionals/register" component={ProfessionalsRegister} />
         <Route path="*" component={NotFound} />
       </Switch>
     </>
