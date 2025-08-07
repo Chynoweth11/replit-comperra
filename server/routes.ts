@@ -1790,57 +1790,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('✅ Using logged-in user email:', currentUser.email);
       }
       
-      // Verify reCAPTCHA token if provided
-      if (leadData.recaptchaToken) {
-        const { verifyRecaptchaToken } = await import('./recaptcha-config');
-        
-        // Prepare transaction data for fraud prevention
-        const transactionData = {
-          transactionId: `lead-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          paymentMethod: 'service-request',
-          currencyCode: 'USD',
-          value: leadData.budget ? parseFloat(leadData.budget) : 0,
-          user: {
-            email: leadData.email || leadData.customerEmail
-          },
-          billingAddress: {
-            recipient: leadData.name || leadData.customerName,
-            address: [leadData.address],
-            locality: leadData.city,
-            administrativeArea: leadData.state,
-            regionCode: 'USA',
-            postalCode: leadData.zip || leadData.zipCode
-          }
-        };
-        
-        const recaptchaResult = await verifyRecaptchaToken(
-          leadData.recaptchaToken, 
-          leadData.recaptchaAction || 'SUBMIT_LEAD',
-          transactionData
-        );
-        
-        if (!recaptchaResult.success) {
-          console.error('❌ reCAPTCHA verification failed:', recaptchaResult.error);
-          return res.status(400).json({ 
-            success: false, 
-            error: 'reCAPTCHA verification failed. Please try again.' 
-          });
-        }
-        
-        console.log('✅ reCAPTCHA verification successful:', { 
-          score: recaptchaResult.score,
-          transactionRisk: recaptchaResult.transactionRisk 
-        });
-        
-        // Additional fraud prevention check
-        if (recaptchaResult.transactionRisk && recaptchaResult.transactionRisk > 0.8) {
-          console.warn('⚠️ High transaction risk detected:', recaptchaResult.transactionRisk);
-          return res.status(400).json({ 
-            success: false, 
-            error: 'High risk transaction detected. Please try again later.' 
-          });
-        }
-      }
       
       // Validate required fields (handle both form field names)
       const email = leadData.email || leadData.customerEmail;

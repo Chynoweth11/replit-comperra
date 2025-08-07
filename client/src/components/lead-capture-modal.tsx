@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { useRecaptcha } from "@/hooks/useRecaptcha";
 import { formatPhoneNumber, isValidPhoneNumber } from "@/utils/phoneFormatter";
 
 interface LeadCaptureModalProps {
@@ -42,7 +41,6 @@ export default function LeadCaptureModal({ isOpen, onClose, productName, request
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { executeRecaptcha, isLoading: recaptchaLoading } = useRecaptcha();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,8 +66,6 @@ export default function LeadCaptureModal({ isOpen, onClose, productName, request
     setIsSubmitting(true);
 
     try {
-      // Generate reCAPTCHA token
-      const recaptchaToken = await executeRecaptcha('SUBMIT_LEAD');
       
       const response = await fetch('/api/lead/submit', {
         method: 'POST',
@@ -99,8 +95,6 @@ export default function LeadCaptureModal({ isOpen, onClose, productName, request
           requestType: requestType,
           productSpecs: productSpecs,
           productUrl: productUrl,
-          recaptchaToken: recaptchaToken,
-          recaptchaAction: 'SUBMIT_LEAD'
         }),
       });
 
@@ -447,9 +441,9 @@ export default function LeadCaptureModal({ isOpen, onClose, productName, request
             <Button
               type="submit"
               className="flex-1 bg-royal text-white hover:bg-royal-dark"
-              disabled={isSubmitting || recaptchaLoading}
+              disabled={isSubmitting}
             >
-              {isSubmitting || recaptchaLoading ? "Submitting..." : (requestType === 'sample' ? 'Request Samples' : 'Get Pricing')}
+              {isSubmitting ? "Submitting..." : (requestType === 'sample' ? 'Request Samples' : 'Get Pricing')}
             </Button>
           </div>
         </form>

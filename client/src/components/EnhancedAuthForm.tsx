@@ -423,8 +423,6 @@ export default function EnhancedAuthForm({ mode, onToggleMode }: EnhancedAuthFor
                 </>
               )}
               
-              {/* reCAPTCHA container */}
-              <div id="recaptcha-container"></div>
             </TabsContent>
 
             <TabsContent value="google" className="space-y-4">

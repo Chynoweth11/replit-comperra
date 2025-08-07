@@ -6,7 +6,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { useRecaptcha } from "@/hooks/useRecaptcha";
 import { formatPhoneNumber, isValidPhoneNumber } from "@/utils/phoneFormatter";
 import Header from "@/components/header";
 import { useLocation } from "wouter";
@@ -32,7 +31,6 @@ export default function ProfessionalsCustomer() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { executeRecaptcha, isLoading: recaptchaLoading } = useRecaptcha();
   const [, setLocation] = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,7 +57,6 @@ export default function ProfessionalsCustomer() {
     setIsSubmitting(true);
     
     try {
-      const recaptchaToken = await executeRecaptcha('lead_submission');
       
       const leadData = {
         customerName: formData.name,
@@ -76,7 +73,6 @@ export default function ProfessionalsCustomer() {
         customerType: formData.customerType,
         isLookingForPro: formData.isLookingForPro,
         professionalType: formData.professionalType,
-        recaptchaToken
       };
 
       const response = await fetch('/api/leads', {
@@ -373,7 +369,7 @@ export default function ProfessionalsCustomer() {
               <Button 
                 type="submit" 
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg font-medium"
-                disabled={isSubmitting || recaptchaLoading}
+                disabled={isSubmitting}
               >
                 {isSubmitting ? "Connecting you with professionals..." : "Find My Professionals"}
               </Button>
