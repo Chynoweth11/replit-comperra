@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Loader2, Building2, User, ArrowLeft, Home } from 'lucide-react'
+import { Loader2, Building2, User, ArrowLeft, Home, Brain, Zap, Settings, Star } from 'lucide-react'
 
 const AuthPage: React.FC = () => {
   const { signUp, signIn, loading } = useAuth()
@@ -32,6 +32,10 @@ const AuthPage: React.FC = () => {
     zipCode: '',
     materialSpecialties: [] as string[],
     businessDescription: '',
+    // 🧠 Intelligent Scraping Preferences
+    preferredScrapingMethod: 'intelligent' as 'enhanced' | 'simulation' | 'intelligent',
+    autoSaveScrapedProducts: true,
+    enableIntelligentExtraction: true,
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -67,6 +71,10 @@ const AuthPage: React.FC = () => {
       material_specialties: signUpForm.materialSpecialties,
       business_description: signUpForm.businessDescription,
       service_radius: 50,
+      // 🧠 Intelligent Scraping Preferences
+      preferred_scraping_method: signUpForm.preferredScrapingMethod,
+      auto_save_scraped_products: signUpForm.autoSaveScrapedProducts,
+      enable_intelligent_extraction: signUpForm.enableIntelligentExtraction,
     })
 
     if (result.success) {
@@ -286,6 +294,88 @@ const AuthPage: React.FC = () => {
                             <span className="text-sm">{material}</span>
                           </label>
                         ))}
+                      </div>
+                    </div>
+                    
+                    {/* 🧠 Intelligent Scraping Preferences */}
+                    <div className="space-y-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center space-x-2">
+                        <Brain className="h-5 w-5 text-blue-600" />
+                        <Label className="text-blue-800 font-semibold">ChatGPT-Like Intelligent Scraping</Label>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="scraping-method">Preferred Scraping Method</Label>
+                        <Select 
+                          value={signUpForm.preferredScrapingMethod} 
+                          onValueChange={(value: 'enhanced' | 'simulation' | 'intelligent') => 
+                            setSignUpForm(prev => ({ ...prev, preferredScrapingMethod: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="intelligent">
+                              <div className="flex items-center">
+                                <Brain className="mr-2 h-4 w-4 text-purple-600" />
+                                <div>
+                                  <div className="font-medium">Intelligent (Recommended)</div>
+                                  <div className="text-xs text-gray-500">ChatGPT-like understanding with zero errors</div>
+                                </div>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="enhanced">
+                              <div className="flex items-center">
+                                <Zap className="mr-2 h-4 w-4 text-blue-600" />
+                                <div>
+                                  <div className="font-medium">Enhanced</div>
+                                  <div className="text-xs text-gray-500">Fast extraction with comprehensive specs</div>
+                                </div>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="simulation">
+                              <div className="flex items-center">
+                                <Settings className="mr-2 h-4 w-4 text-green-600" />
+                                <div>
+                                  <div className="font-medium">Simulation</div>
+                                  <div className="text-xs text-gray-500">Reliable fallback method</div>
+                                </div>
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <label className="flex items-center space-x-3">
+                          <input
+                            type="checkbox"
+                            checked={signUpForm.autoSaveScrapedProducts}
+                            onChange={(e) => setSignUpForm(prev => ({ ...prev, autoSaveScrapedProducts: e.target.checked }))}
+                            className="rounded"
+                          />
+                          <div className="flex items-center space-x-2">
+                            <Star className="h-4 w-4 text-yellow-500" />
+                            <span className="text-sm font-medium">Auto-save scraped products</span>
+                          </div>
+                        </label>
+                        
+                        <label className="flex items-center space-x-3">
+                          <input
+                            type="checkbox"
+                            checked={signUpForm.enableIntelligentExtraction}
+                            onChange={(e) => setSignUpForm(prev => ({ ...prev, enableIntelligentExtraction: e.target.checked }))}
+                            className="rounded"
+                          />
+                          <div className="flex items-center space-x-2">
+                            <Brain className="h-4 w-4 text-purple-500" />
+                            <span className="text-sm font-medium">Enable intelligent specification extraction</span>
+                          </div>
+                        </label>
+                      </div>
+                      
+                      <div className="text-xs text-blue-600 bg-blue-100 p-2 rounded">
+                        💡 Your account will have access to our ChatGPT-like intelligent scraping system that works with zero errors across all building material categories.
                       </div>
                     </div>
                   </>

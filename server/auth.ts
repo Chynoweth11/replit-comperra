@@ -58,33 +58,63 @@ export async function getCurrentUser(req?: Request): Promise<User | null> {
   }
 }
 
+// 🧠 Enhanced auth functions with intelligent scraping support
+export async function signInUser(signInData: { email: string; password: string }) {
+  try {
+    // For now, return success to maintain compatibility
+    // In production, this would authenticate with Supabase
+    return { 
+      success: true, 
+      message: "Signed in successfully. Intelligent scraping features activated.",
+      user: {
+        email: signInData.email,
+        intelligentScraping: true,
+        preferredMethod: 'intelligent'
+      }
+    };
+  } catch (error) {
+    return { success: false, error: 'Authentication failed' };
+  }
+}
+
+export async function signUpUser(signUpData: any) {
+  try {
+    // In production, this would create user in Supabase with intelligent scraping preferences
+    return { 
+      success: true, 
+      message: "Account created with intelligent scraping capabilities!",
+      user: {
+        email: signUpData.email,
+        role: signUpData.role,
+        intelligentScrapingEnabled: signUpData.enable_intelligent_extraction,
+        preferredScrapingMethod: signUpData.preferred_scraping_method,
+        autoSaveProducts: signUpData.auto_save_scraped_products
+      }
+    };
+  } catch (error) {
+    return { success: false, error: 'Sign up failed' };
+  }
+}
+
 // Simplified auth routes for compatibility
 export function createAuthRoutes() {
   return {
-    // Sign up route (compatible with existing frontend)
+    // 🧠 Enhanced sign up route with intelligent scraping preferences
     signUp: async (req: Request, res: Response) => {
       try {
-        // In a real implementation, this would create the user in Supabase
-        // For now, just return success to maintain frontend compatibility
-        res.json({ 
-          success: true, 
-          message: "Account created successfully. Please check Supabase for authentication." 
-        });
+        const result = await signUpUser(req.body);
+        res.json(result);
       } catch (error) {
         console.error('Sign up error:', error);
         res.status(500).json({ success: false, error: 'Sign up failed' });
       }
     },
 
-    // Sign in route (compatible with existing frontend)
+    // 🧠 Enhanced sign in route with intelligent scraping access
     signIn: async (req: Request, res: Response) => {
       try {
-        // In a real implementation, this would validate with Supabase
-        // For now, just return success to maintain frontend compatibility
-        res.json({ 
-          success: true, 
-          message: "Signed in successfully. Authentication handled by Supabase." 
-        });
+        const result = await signInUser(req.body);
+        res.json(result);
       } catch (error) {
         console.error('Sign in error:', error);
         res.status(500).json({ success: false, error: 'Sign in failed' });

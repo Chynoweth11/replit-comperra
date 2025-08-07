@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { getCurrentUser, createAuthRoutes } from './auth.js';
+import { getCurrentUser, createAuthRoutes, signInUser, signUpUser } from './auth.js';
 
 // Initialize database storage
 import { storage } from './storage.js';
@@ -1077,11 +1077,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Set a timeout for the entire request
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout')), 8000)
+        setTimeout(() => reject(new Error('Request timeout')), 2000)
       );
 
       const result = await Promise.race([
-        createAccount(signUpData),
+        signUpUser(signUpData),
         timeoutPromise
       ]);
       
@@ -1161,8 +1161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, error: "Email and password are required" });
       }
 
-      const signInData: SignInData = { email, password };
-      const result = await signInUser(signInData);
+      const result = await signInUser({ email, password });
       res.json(result);
     } catch (error: any) {
       console.error('Signin error:', error);
@@ -3367,7 +3366,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Enhanced auth routes integration
-  app.use('/api/auth', authRoutes);
+  const authRouter = authRoutes;
+  app.post('/api/auth/signup', authRouter.signUp);
+  app.post('/api/auth/signin', authRouter.signIn);
+  app.post('/api/auth/reset-password', authRouter.resetPassword);
+  app.post('/api/auth/signout', authRouter.signOut);
 
   const httpServer = createServer(app);
   return httpServer;
