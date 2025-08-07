@@ -7,6 +7,31 @@
   </head>
   <body>
     <div id="root"></div>
+    
+    <div class="auth-container">
+        <h2>Welcome</h2>
+        <p>Sign up or log in to continue</p>
+        
+        <form id="auth-form">
+            <div class="form-group">
+                <label for="email-input">Email</label>
+                <input type="email" id="email-input" placeholder="you@example.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password-input">Password</label>
+                <input type="password" id="password-input" placeholder="••••••••" required>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" id="signup-button">Sign Up</button>
+                <button type="button" id="login-button">Login</button>
+            </div>
+        </form>
+        
+        <div id="messages"></div>
+    </div>
+    
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
