@@ -214,11 +214,18 @@ const AuthPage: React.FC = () => {
     }))
   }
 
-  const handleServiceAreaChange = (zipCode: string) => {
-    const zipCodes = zipCode.split(',').map(z => z.trim()).filter(z => z.length > 0)
-    // Limit to maximum 2 zip codes for lead matching
-    const limitedZipCodes = zipCodes.slice(0, 2)
-    setSignUpForm(prev => ({ ...prev, serviceAreaZipCodes: limitedZipCodes }))
+  const handleServiceAreaZipCode1Change = (value: string) => {
+    // Only allow numbers and limit to 5 digits
+    const cleanValue = value.replace(/\D/g, '').slice(0, 5)
+    const newZipCodes = [cleanValue, signUpForm.serviceAreaZipCodes[1] || '']
+    setSignUpForm(prev => ({ ...prev, serviceAreaZipCodes: newZipCodes }))
+  }
+
+  const handleServiceAreaZipCode2Change = (value: string) => {
+    // Only allow numbers and limit to 5 digits
+    const cleanValue = value.replace(/\D/g, '').slice(0, 5)
+    const newZipCodes = [signUpForm.serviceAreaZipCodes[0] || '', cleanValue]
+    setSignUpForm(prev => ({ ...prev, serviceAreaZipCodes: newZipCodes }))
   }
 
   const handleSocialLinksChange = (links: string) => {
@@ -607,16 +614,35 @@ const AuthPage: React.FC = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="service-area">Service Area Zip Codes * (Exactly 2 Required)</Label>
-                        <Input
-                          id="service-area"
-                          value={signUpForm.serviceAreaZipCodes.join(', ')}
-                          onChange={(e) => handleServiceAreaChange(e.target.value)}
-                          placeholder="12345, 67890"
-                          required
-                        />
+                        <Label>Service Area Zip Codes * (Exactly 2 Required)</Label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <Label htmlFor="service-area-1" className="text-sm text-gray-600">Zip Code 1</Label>
+                            <Input
+                              id="service-area-1"
+                              value={signUpForm.serviceAreaZipCodes[0] || ''}
+                              onChange={(e) => handleServiceAreaZipCode1Change(e.target.value)}
+                              placeholder="12345"
+                              required
+                              maxLength={5}
+                              className="text-center"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label htmlFor="service-area-2" className="text-sm text-gray-600">Zip Code 2</Label>
+                            <Input
+                              id="service-area-2"
+                              value={signUpForm.serviceAreaZipCodes[1] || ''}
+                              onChange={(e) => handleServiceAreaZipCode2Change(e.target.value)}
+                              placeholder="67890"
+                              required
+                              maxLength={5}
+                              className="text-center"
+                            />
+                          </div>
+                        </div>
                         <p className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
-                          📍 Enter exactly 2 zip codes (separated by comma). You'll receive leads from these areas and within 50 miles of each zip code.
+                          📍 You'll receive leads from these 2 zip codes and within 50 miles of each zip code.
                         </p>
                       </div>
 
