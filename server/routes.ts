@@ -1,11 +1,22 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { FirebaseStorage } from "./firebase-storage.js";
 import { MemStorage } from "./storage.js";
-// All Firebase functionality replaced with Supabase integration
+import { submitLead, LeadFormData } from "./firebase-leads.js";
+import { 
+  registerProfessional, 
+  submitLeadAndMatch, 
+  getProfessionalProfile, 
+  updateProfessionalProfile,
+  getLeadsForProfessional,
+  getCoordinatesFromZip
+} from './professional-matching.js';
+import { createAccount, signInUser, resetPassword, signOutUser, getCurrentUser, SignUpData, SignInData, sendSignInLink, isEmailSignInLink, completeEmailSignIn } from "./firebase-auth.js";
 
 // Initialize database storage for user profiles
 import { storage } from './storage.js';
-// Using Supabase for all data persistence
+// Initialize Firebase storage for background persistence when available
+const firebaseStorage = new FirebaseStorage();
 import { productScraper } from "./scraper.js";
 import { simulationScraper } from "./simulation-scraper.js";
 import { enhancedScraper } from "./enhanced-scraper.js";
@@ -21,71 +32,14 @@ import { validateMaterial, validateLead, generateProductHash, validateAndCleanSp
 import { automatedLeadProcessor } from "./automated-lead-processing";
 import cheerio from "cheerio";
 import axios from "axios";
-import { createClient } from '@supabase/supabase-js';
 
 // Configure multer for file uploads
 const upload = multer({ dest: '/tmp/uploads/' });
 
-console.log('Using Supabase only - Firebase and Airtable removed');
+console.log('Using Firebase only - Airtable removed');
 
 // Initialize Universal Scraper Engine for handling thousands of URLs
 const universalScraper = new UniversalScraperEngine();
-
-// Initialize Supabase client for server-side operations
-const supabaseUrl = process.env.SUPABASE_URL || 'https://hoyioekenopqcshktsmi.supabase.co';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhveWlvZWtlbm9wcWNzaGt0c21pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MTI5OTQsImV4cCI6MjA3MDA4ODk5NH0.Z6K5DZAIPwWW-Dc62Q18Xp4xB_NLtd2r4Mgg69N9HbA';
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-// Supabase helper functions to replace Firebase
-async function createSupabaseAccount(email: string, password: string, userData: any) {
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) throw error;
-  
-  // Create profile
-  if (data.user) {
-    await supabase.from('profiles').insert({
-      id: data.user.id,
-      email: data.user.email,
-      name: userData.name || '',
-      role: userData.role || 'customer'
-    });
-  }
-  return data;
-}
-
-async function signInSupabaseUser(email: string, password: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) throw error;
-  return data;
-}
-
-async function resetSupabasePassword(email: string) {
-  const { error } = await supabase.auth.resetPasswordForEmail(email);
-  if (error) throw error;
-  return { success: true };
-}
-
-async function signOutSupabaseUser() {
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
-  return { success: true };
-}
-
-async function getCurrentSupabaseUser(req?: any) {
-  // For now, return a mock user - in production you'd validate JWT
-  return {
-    email: 'supabase-user@comperra.com',
-    uid: 'supabase-user-id',
-    role: 'customer',
-    name: 'Supabase User'
-  };
-}
-
-async function submitSupabaseLead(leadData: any) {
-  const { data, error } = await supabase.from('leads').insert(leadData);
-  if (error) throw error;
-  return data;
-}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Materials routes
@@ -1138,7 +1092,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
 
       const result = await Promise.race([
-        createSupabaseAccount(email, password, { name, role: 'customer' }),
+        createAccount(signUpData),
         timeoutPromise
       ]);
       
@@ -1219,7 +1173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const signInData: SignInData = { email, password };
-      const result = await signInSupabaseUser(email, password);
+      const result = await signInUser(signInData);
       res.json(result);
     } catch (error: any) {
       console.error('Signin error:', error);
@@ -1235,7 +1189,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, error: "Email is required" });
       }
 
-      await resetSupabasePassword(email);
+      await resetPassword(email);
       res.json({ success: true, message: "Password reset email sent" });
     } catch (error: any) {
       console.error('Password reset error:', error);
@@ -1245,7 +1199,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/signout", async (req, res) => {
     try {
-      await signOutSupabaseUser();
+      await signOutUser();
       res.json({ success: true, message: "Signed out successfully" });
     } catch (error: any) {
       console.error('Signout error:', error);
@@ -1255,7 +1209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/auth/current-user", async (req, res) => {
     try {
-      const user = await getCurrentSupabaseUser();
+      const user = await getCurrentUser();
       res.json({ success: true, user });
     } catch (error: any) {
       console.error('Get current user error:', error);
@@ -1426,7 +1380,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { role, userId } = req.query;
       
       // Get current user from session
-      const currentUser = await getCurrentSupabaseUser();
+      const currentUser = await getCurrentUser();
       if (!currentUser || (currentUser.role !== 'vendor' && currentUser.role !== 'trade')) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
       }
@@ -1541,7 +1495,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Vendor subscription info route
   app.get('/api/vendor/subscription', async (req: Request, res: Response) => {
     try {
-      const currentUser = await getCurrentSupabaseUser();
+      const currentUser = await getCurrentUser();
       if (!currentUser || currentUser.role !== 'vendor') {
         return res.status(401).json({ success: false, error: 'Vendor authentication required' });
       }
@@ -1570,7 +1524,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/vendor/leads', async (req: Request, res: Response) => {
     try {
       // Get current user from session
-      const currentUser = await getCurrentSupabaseUser();
+      const currentUser = await getCurrentUser();
       
       if (!currentUser || currentUser.role !== 'vendor') {
         return res.status(401).json({ success: false, error: 'Vendor authentication required' });
@@ -1640,7 +1594,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Vendor Profile Management API
   app.post('/api/vendor-profile', async (req: Request, res: Response) => {
     try {
-      const currentUser = await getCurrentSupabaseUser();
+      const currentUser = await getCurrentUser();
       if (!currentUser || currentUser.role !== 'vendor') {
         return res.status(401).json({ success: false, error: 'Vendor authentication required' });
       }
@@ -1692,7 +1646,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/trade/leads', async (req: Request, res: Response) => {
     try {
       // Get current user from session
-      const currentUser = await getCurrentSupabaseUser();
+      const currentUser = await getCurrentUser();
       
       if (!currentUser || currentUser.role !== 'trade') {
         return res.status(401).json({ success: false, error: 'Trade authentication required' });
@@ -1763,8 +1717,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       profileData.productCategories = profileData.productCategories || [];
       profileData.tradeCategories = profileData.tradeCategories || [];
       
-      const { data } = await supabase.from('profiles').insert(profileData);
-      const professionalId = data?.[0]?.id;
+      const professionalId = await registerProfessional(profileData);
       
       res.json({
         success: true,
@@ -1830,7 +1783,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('📋 Lead submission received:', JSON.stringify(leadData, null, 2));
       
       // Get the current logged-in user to associate the lead properly
-      const currentUser = await getCurrentSupabaseUser(req);
+      const currentUser = await getCurrentUser(req);
       if (currentUser) {
         // Override form email with logged-in user's email
         leadData.email = currentUser.email;
@@ -1993,7 +1946,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const matchResult = await submitSupabaseLead(leadData);
+      const matchResult = await submitLeadAndMatch(leadData);
       
       // Store lead in local storage for customer retrieval
       const { leadStorage } = await import('./lead-matching');
@@ -2121,7 +2074,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`📝 Updating lead ${vendorLeadId} status to: ${status}`);
       
       // Get current user from session
-      const currentUser = await getCurrentSupabaseUser();
+      const currentUser = await getCurrentUser();
       
       if (!currentUser || (currentUser.role !== 'vendor' && currentUser.role !== 'trade')) {
         return res.status(401).json({ success: false, error: 'Professional authentication required' });
@@ -2247,7 +2200,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/customer/leads', async (req: Request, res: Response) => {
     try {
       // Use the current logged-in user's email
-      const currentUser = await getCurrentSupabaseUser(req);
+      const currentUser = await getCurrentUser(req);
       if (!currentUser) {
         return res.status(401).json({ error: 'User not authenticated' });
       }
@@ -2509,7 +2462,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const professionalSyncPromise = (async () => {
           try {
             console.log('🔄 Syncing with professional matching system');
-            // Using Supabase for professional profile management
+            const { updateProfessionalProfile, getProfessionalProfile, registerProfessional } = await import('./professional-matching');
             
             // Check if professional profile exists
             let professionalProfile = await getProfessionalProfile(uid);
@@ -2527,7 +2480,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log('✅ Professional profile synchronized');
             } else if (updatedUser.zipCode) {
               // Create new professional profile if we have required data
-              await supabase.from('profiles').insert({
+              await registerProfessional({
                 role: updatedUser.role as 'vendor' | 'trade',
                 email: updatedUser.email,
                 name: updatedUser.name || '',
@@ -2660,36 +2613,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error getting system status:", error);
       res.status(500).json({ error: "Failed to get system status" });
-    }
-  });
-
-  // Supabase authentication bridge routes
-  app.get("/api/supabase/profile/:id", async (req, res) => {
-    try {
-      const { id } = req.params;
-      // Bridge between Supabase auth and existing profile systems
-      res.json({ 
-        success: true, 
-        profile: {
-          uid: id,
-          email: `supabase-user-${id}@comperra.com`,
-          role: 'customer',
-          name: 'Supabase User',
-          verified: true
-        }
-      });
-    } catch (error) {
-      res.status(500).json({ success: false, error: error.message });
-    }
-  });
-
-  app.post("/api/supabase/sync-session", async (req, res) => {
-    try {
-      const { userSession } = req.body;
-      console.log('✅ Supabase session synced:', userSession?.email);
-      res.json({ success: true, message: 'Session synced successfully' });
-    } catch (error) {
-      res.status(500).json({ success: false, error: error.message });
     }
   });
 

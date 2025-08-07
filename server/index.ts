@@ -1,7 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes.js";
 import { setupVite, serveStatic, log } from "./vite.js";
-// Firebase removed - using Supabase for all data operations
+import { initializeFirebaseCollections } from "./firebase-init.js";
 
 const app = express();
 app.use(express.json());
@@ -38,8 +38,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Using Supabase for all authentication, storage, and data operations
-  console.log('✅ Supabase-only system - Firebase completely removed');
+  // Firebase initialization disabled to prevent metadata errors
+  // Firebase collections will be created when needed by the application
+  console.log('🔄 Firebase initialization skipped - collections will be created on-demand');
   
   const server = await registerRoutes(app);
 

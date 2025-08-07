@@ -132,9 +132,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return { success: false, error: 'Failed to create user profile' }
         }
 
-        // Sync session with server
-        await syncSessionWithServer(data.user)
-
         toast({
           title: "Account created",
           description: "Please check your email to verify your account",
@@ -165,9 +162,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         return { success: false, error: error.message }
       }
-
-      // Sync session with server
-      await syncSessionWithServer(user)
 
       toast({
         title: "Welcome back",
@@ -242,27 +236,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signIn,
     signOut,
     updateProfile,
-  }
-
-  const syncSessionWithServer = async (user: any) => {
-    try {
-      await fetch('/api/supabase/sync-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userSession: {
-            id: user.id,
-            email: user.email,
-            role: 'customer'
-          }
-        })
-      })
-      console.log('✅ Session synced with server')
-    } catch (error) {
-      console.warn('⚠️ Failed to sync session with server:', error)
-    }
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
