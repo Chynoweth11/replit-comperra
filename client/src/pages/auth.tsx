@@ -111,6 +111,12 @@ const AuthPage: React.FC = () => {
         alert('Please select a customer type')
         return false
       }
+      
+      // Geolocation is required for customers
+      if (!signUpForm.streetAddress || !signUpForm.city || !signUpForm.state || !signUpForm.zipCode) {
+        alert('Please fill in all required location fields: Street Address, City, State, and Zip Code')
+        return false
+      }
     }
 
     // Business-specific validations (vendor/professional)
@@ -126,6 +132,21 @@ const AuthPage: React.FC = () => {
       if (!einRegex.test(signUpForm.einNumber)) {
         alert('Please enter EIN in format: 12-3456789')
         return false
+      }
+
+      // Service area validation - exactly 2 zip codes required for lead matching
+      if (signUpForm.serviceAreaZipCodes.length !== 2) {
+        alert('Please enter exactly 2 zip codes for your service area. You will receive leads from these zip codes and within 50 miles of each.')
+        return false
+      }
+
+      // Validate each zip code format
+      const zipCodeRegex = /^\d{5}$/
+      for (const zipCode of signUpForm.serviceAreaZipCodes) {
+        if (!zipCodeRegex.test(zipCode.trim())) {
+          alert('Please enter valid 5-digit zip codes (example: 12345, 67890)')
+          return false
+        }
       }
     }
 
@@ -195,7 +216,9 @@ const AuthPage: React.FC = () => {
 
   const handleServiceAreaChange = (zipCode: string) => {
     const zipCodes = zipCode.split(',').map(z => z.trim()).filter(z => z.length > 0)
-    setSignUpForm(prev => ({ ...prev, serviceAreaZipCodes: zipCodes }))
+    // Limit to maximum 2 zip codes for lead matching
+    const limitedZipCodes = zipCodes.slice(0, 2)
+    setSignUpForm(prev => ({ ...prev, serviceAreaZipCodes: limitedZipCodes }))
   }
 
   const handleSocialLinksChange = (links: string) => {
@@ -427,47 +450,56 @@ const AuthPage: React.FC = () => {
                       <div className="space-y-3">
                         <div className="flex items-center space-x-2">
                           <MapPin className="h-4 w-4 text-green-600" />
-                          <Label className="text-green-700 font-medium">Geolocation (Optional)</Label>
+                          <Label className="text-green-700 font-medium">Location Information *</Label>
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor="street-address">Street Address</Label>
+                          <Label htmlFor="street-address">Street Address *</Label>
                           <Input
                             id="street-address"
                             value={signUpForm.streetAddress}
                             onChange={(e) => setSignUpForm(prev => ({ ...prev, streetAddress: e.target.value }))}
                             placeholder="123 Main Street"
+                            required
                           />
                         </div>
                         
                         <div className="grid grid-cols-2 gap-2">
                           <div className="space-y-2">
-                            <Label htmlFor="city">City</Label>
+                            <Label htmlFor="city">City *</Label>
                             <Input
                               id="city"
                               value={signUpForm.city}
                               onChange={(e) => setSignUpForm(prev => ({ ...prev, city: e.target.value }))}
                               placeholder="City"
+                              required
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="state">State</Label>
+                            <Label htmlFor="state">State *</Label>
                             <Input
                               id="state"
                               value={signUpForm.state}
                               onChange={(e) => setSignUpForm(prev => ({ ...prev, state: e.target.value }))}
                               placeholder="State"
+                              required
                             />
                           </div>
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor="zip-code">Zip Code</Label>
+                          <Label htmlFor="zip-code">Zip Code *</Label>
                           <Input
                             id="zip-code"
                             value={signUpForm.zipCode}
-                            onChange={(e) => setSignUpForm(prev => ({ ...prev, zipCode: e.target.value }))}
+                            onChange={(e) => {
+                              // Only allow numbers and limit to 5 digits
+                              const value = e.target.value.replace(/\D/g, '').slice(0, 5)
+                              setSignUpForm(prev => ({ ...prev, zipCode: value }))
+                            }}
                             placeholder="12345"
+                            required
+                            maxLength={5}
                           />
                         </div>
                       </div>
@@ -575,14 +607,17 @@ const AuthPage: React.FC = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="service-area">Service Area Zip Codes</Label>
+                        <Label htmlFor="service-area">Service Area Zip Codes * (Exactly 2 Required)</Label>
                         <Input
                           id="service-area"
                           value={signUpForm.serviceAreaZipCodes.join(', ')}
                           onChange={(e) => handleServiceAreaChange(e.target.value)}
-                          placeholder="12345, 12346, 12347"
+                          placeholder="12345, 67890"
+                          required
                         />
-                        <p className="text-xs text-gray-500">Enter zip codes separated by commas</p>
+                        <p className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                          📍 Enter exactly 2 zip codes (separated by comma). You'll receive leads from these areas and within 50 miles of each zip code.
+                        </p>
                       </div>
 
                       <div className="space-y-2">
