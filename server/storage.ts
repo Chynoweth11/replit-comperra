@@ -9,6 +9,7 @@ import {
   leads,
   scrapedProducts,
   favorites,
+  profiles,
   type Material, 
   type InsertMaterial,
   type Article,
@@ -22,7 +23,9 @@ import {
   type ScrapedProduct,
   type InsertScrapedProduct,
   type Favorite,
-  type InsertFavorite
+  type InsertFavorite,
+  type Profile,
+  type InsertProfile
 } from "@shared/schema";
 
 if (!process.env.DATABASE_URL) {
@@ -81,6 +84,13 @@ export interface IStorage {
   addFavorite(favorite: InsertFavorite): Promise<Favorite>;
   removeFavorite(userId: string, productId: number): Promise<boolean>;
   isFavorited(userId: string, productId: number): Promise<boolean>;
+  
+  // 🚀 Enhanced Profiles System
+  getProfile(id: string): Promise<Profile | undefined>;
+  getProfileByEmail(email: string): Promise<Profile | undefined>;
+  createProfile(profile: InsertProfile): Promise<Profile>;
+  updateProfile(id: string, updates: Partial<InsertProfile>): Promise<Profile>;
+  deleteProfile(id: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -566,8 +576,6 @@ Top Picks:
   // 🚀 Enhanced Scraped Products Implementation
   async getScrapedProducts(filters?: { source?: string; search?: string }): Promise<ScrapedProduct[]> {
     try {
-      let query = db.select().from(scrapedProducts);
-      
       const conditions = [];
       if (filters?.source) {
         conditions.push(eq(scrapedProducts.source, filters.source));
@@ -576,11 +584,9 @@ Top Picks:
         conditions.push(ilike(scrapedProducts.productTitle, `%${filters.search}%`));
       }
       
-      if (conditions.length > 0) {
-        query = query.where(and(...conditions));
-      }
-      
-      const products = await query;
+      const products = conditions.length > 0 
+        ? await db.select().from(scrapedProducts).where(and(...conditions))
+        : await db.select().from(scrapedProducts);
       console.log(`📦 Retrieved ${products.length} scraped products`);
       return products;
     } catch (error) {
@@ -693,6 +699,70 @@ Top Picks:
       return result.length > 0;
     } catch (error) {
       console.error('Error checking favorite status:', error);
+      return false;
+    }
+  }
+  
+  // 🚀 Enhanced Profiles System Implementation
+  async getProfile(id: string): Promise<Profile | undefined> {
+    try {
+      const result = await db.select().from(profiles).where(eq(profiles.id, id)).limit(1);
+      return result[0];
+    } catch (error) {
+      console.error('Error getting profile:', error);
+      return undefined;
+    }
+  }
+  
+  async getProfileByEmail(email: string): Promise<Profile | undefined> {
+    try {
+      const result = await db.select().from(profiles).where(eq(profiles.email, email)).limit(1);
+      return result[0];
+    } catch (error) {
+      console.error('Error getting profile by email:', error);
+      return undefined;
+    }
+  }
+  
+  async createProfile(profile: InsertProfile): Promise<Profile> {
+    const now = new Date().toISOString();
+    const profileData = {
+      ...profile,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    const result = await db.insert(profiles).values(profileData).returning();
+    console.log('✅ Created enhanced profile:', result[0].id);
+    return result[0];
+  }
+  
+  async updateProfile(id: string, updates: Partial<InsertProfile>): Promise<Profile> {
+    const updateData = {
+      ...updates,
+      updatedAt: new Date()
+    };
+    
+    const result = await db.update(profiles)
+      .set(updateData)
+      .where(eq(profiles.id, id))
+      .returning();
+    
+    if (result.length === 0) {
+      throw new Error(`Profile with id ${id} not found`);
+    }
+    
+    console.log('✅ Updated enhanced profile:', result[0].id);
+    return result[0];
+  }
+  
+  async deleteProfile(id: string): Promise<boolean> {
+    try {
+      const result = await db.delete(profiles).where(eq(profiles.id, id));
+      console.log('🗑️ Deleted profile:', id);
+      return result.rowCount ? result.rowCount > 0 : false;
+    } catch (error) {
+      console.error('Error deleting profile:', error);
       return false;
     }
   }

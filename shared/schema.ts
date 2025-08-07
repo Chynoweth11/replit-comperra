@@ -55,6 +55,40 @@ export const users = pgTable("users", {
   updatedAt: text("updated_at").notNull(),
 });
 
+// ✅ Enhanced Profiles Table for Comprehensive User Management
+export const profiles = pgTable("profiles", {
+  id: text("id").primaryKey(), // UUID or user ID
+  email: text("email"),
+  fullName: text("full_name"),
+  phoneNumber: text("phone_number"),
+  role: text("role").notNull(), // 'customer', 'vendor', 'professional'
+  
+  // Address fields
+  zipCode: text("zip_code"),
+  streetAddress: text("street_address"),
+  city: text("city"),
+  state: text("state"),
+  
+  // Social and contact links
+  socialLinks: text("social_links").array(),
+  
+  // Business-specific info (vendors/professionals only)
+  businessName: text("business_name"),
+  einNumber: text("ein_number"),
+  licenseCertifications: text("license_certifications").array(),
+  
+  // Material specialties
+  vendorCategories: text("vendor_categories").array(), // e.g., ['Tile', 'Hardwood']
+  professionalCategories: text("professional_categories").array(), // for trades
+  
+  // Service area and radius
+  serviceRadius: integer("service_radius").default(50),
+  
+  // Metadata
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
+});
+
 export const leads = pgTable("leads", {
   id: text("id").primaryKey(),
   customerName: text("customer_name").notNull(),
@@ -186,6 +220,11 @@ export const insertUserSchema = createInsertSchema(users).omit({
   updatedAt: true,
 });
 
+export const insertProfileSchema = createInsertSchema(profiles).omit({
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertArticleSchema = createInsertSchema(articles).omit({
   id: true,
 });
@@ -212,6 +251,8 @@ export type Brand = typeof brands.$inferSelect;
 export type InsertBrand = z.infer<typeof insertBrandSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type Profile = typeof profiles.$inferSelect;
+export type InsertProfile = z.infer<typeof insertProfileSchema>;
 export type Lead = typeof leads.$inferSelect;
 export type InsertLead = z.infer<typeof insertLeadSchema>;
 export type ScrapedProduct = typeof scrapedProducts.$inferSelect;

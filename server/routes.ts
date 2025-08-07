@@ -2006,6 +2006,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 📊 Enhanced Scraping Statistics
+  app.get("/api/scrape/cache-stats", async (req, res) => {
+    try {
+      const allProducts = await storage.getScrapedProducts();
+      const sources = [...new Set(allProducts.map(p => p.source).filter(Boolean))];
+      const stats = {
+        totalCachedProducts: allProducts.length,
+        uniqueSources: sources.length,
+        sources: sources,
+        oldestCache: allProducts.length > 0 ? Math.min(...allProducts.map(p => new Date(p.scrapedAt).getTime())) : null,
+        newestCache: allProducts.length > 0 ? Math.max(...allProducts.map(p => new Date(p.scrapedAt).getTime())) : null
+      };
+      
+      res.json({ success: true, stats });
+    } catch (error) {
+      console.error('Error getting cache stats:', error);
+      res.status(500).json({ success: false, message: 'Failed to get cache statistics' });
+    }
+  });
+
   // Review System Routes
   app.post('/api/vendor/review', async (req: Request, res: Response) => {
     try {
@@ -2813,6 +2833,183 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: 'Failed to sign out' 
+      });
+    }
+  });
+  
+  // ❤️ Enhanced Favorites/Heart Feature API Routes
+  app.get("/api/favorites/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const favorites = await storage.getFavorites(userId);
+      res.json({ success: true, favorites });
+    } catch (error) {
+      console.error('Error getting favorites:', error);
+      res.status(500).json({ success: false, message: 'Failed to get favorites' });
+    }
+  });
+  
+  app.post("/api/favorites", async (req, res) => {
+    try {
+      const { userId, productId } = req.body;
+      
+      // Check if already favorited
+      const isAlreadyFavorited = await storage.isFavorited(userId, productId);
+      if (isAlreadyFavorited) {
+        return res.status(409).json({ success: false, message: 'Product already favorited' });
+      }
+      
+      const favorite = await storage.addFavorite({ userId, productId });
+      res.json({ success: true, favorite, message: 'Product added to favorites' });
+    } catch (error) {
+      console.error('Error adding favorite:', error);
+      res.status(500).json({ success: false, message: 'Failed to add favorite' });
+    }
+  });
+  
+  app.delete("/api/favorites/:userId/:productId", async (req, res) => {
+    try {
+      const { userId, productId } = req.params;
+      const success = await storage.removeFavorite(userId, parseInt(productId));
+      
+      if (success) {
+        res.json({ success: true, message: 'Product removed from favorites' });
+      } else {
+        res.status(404).json({ success: false, message: 'Favorite not found' });
+      }
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+      res.status(500).json({ success: false, message: 'Failed to remove favorite' });
+    }
+  });
+  
+  app.get("/api/favorites/:userId/:productId/status", async (req, res) => {
+    try {
+      const { userId, productId } = req.params;
+      const isFavorited = await storage.isFavorited(userId, parseInt(productId));
+      res.json({ success: true, isFavorited });
+    } catch (error) {
+      console.error('Error checking favorite status:', error);
+      res.status(500).json({ success: false, message: 'Failed to check favorite status' });
+    }
+  });
+  
+  // 🚀 Enhanced Profiles API Routes
+  app.get("/api/profiles/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const profile = await storage.getProfile(id);
+      
+      if (!profile) {
+        return res.status(404).json({ success: false, message: 'Profile not found' });
+      }
+      
+      res.json({ success: true, profile });
+    } catch (error) {
+      console.error('Error getting profile:', error);
+      res.status(500).json({ success: false, message: 'Failed to get profile' });
+    }
+  });
+  
+  app.post("/api/profiles", async (req, res) => {
+    try {
+      const profileData = req.body;
+      const profile = await storage.createProfile(profileData);
+      res.json({ success: true, profile, message: 'Profile created successfully' });
+    } catch (error) {
+      console.error('Error creating profile:', error);
+      res.status(500).json({ success: false, message: 'Failed to create profile' });
+    }
+  });
+  
+  app.put("/api/profiles/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const profile = await storage.updateProfile(id, updates);
+      res.json({ success: true, profile, message: 'Profile updated successfully' });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      res.status(500).json({ success: false, message: 'Failed to update profile' });
+    }
+  });
+  
+  app.delete("/api/profiles/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteProfile(id);
+      
+      if (success) {
+        res.json({ success: true, message: 'Profile deleted successfully' });
+      } else {
+        res.status(404).json({ success: false, message: 'Profile not found' });
+      }
+    } catch (error) {
+      console.error('Error deleting profile:', error);
+      res.status(500).json({ success: false, message: 'Failed to delete profile' });
+    }
+  });
+  
+  // 🚀 Enhanced Cached Scraping API (as described in SQL enhancements)
+  app.post("/api/scrape/cached", async (req, res) => {
+    try {
+      const { url } = req.body;
+      
+      if (!url) {
+        return res.status(400).json({ success: false, message: 'URL is required' });
+      }
+      
+      console.log(`🚀 Cached scraping request: ${url}`);
+      
+      // Step 1: Check if already scraped (cached)
+      const existingProduct = await storage.getScrapedProductByUrl(url);
+      if (existingProduct) {
+        console.log(`✅ Found cached product: ${existingProduct.productTitle}`);
+        return res.json({
+          success: true,
+          cached: true,
+          product: existingProduct,
+          message: 'Product retrieved from cache'
+        });
+      }
+      
+      // Step 2: Scrape new product using universal scraper
+      console.log(`🔍 No cache found, scraping: ${url}`);
+      const result = await universalScraper.scrapeUniversal(url);
+      
+      if (result.success && result.product) {
+        // Step 3: Save to scraped_products cache
+        const scrapedProductData = {
+          url: url,
+          productTitle: result.product.name,
+          price: result.product.price === 'Contact for pricing' || result.product.price === 'N/A' ? null : result.product.price,
+          imageUrl: result.product.imageUrl,
+          source: result.product.brand,
+          specs: result.product.specifications,
+          productHash: `${result.product.name}_${result.product.brand}_${result.product.price}`.replace(/\s+/g, '_').toLowerCase()
+        };
+        
+        const savedProduct = await storage.createScrapedProduct(scrapedProductData);
+        console.log(`✅ Cached new scraped product: ${savedProduct.productTitle} (ID: ${savedProduct.id})`);
+        
+        res.json({
+          success: true,
+          cached: false,
+          product: savedProduct,
+          statistics: result.extractionStats,
+          message: 'Product scraped and cached successfully'
+        });
+      } else {
+        res.status(422).json({
+          success: false,
+          message: result.error || 'Failed to scrape product'
+        });
+      }
+    } catch (error) {
+      console.error('Cached scraping error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Internal server error during cached scraping' 
       });
     }
   });
