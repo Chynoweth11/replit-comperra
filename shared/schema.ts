@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, decimal, boolean, json, bigserial, bigint, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, decimal, boolean, json, bigserial, bigint, timestamp, uniqueIndex, uuid, numeric, geometry } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -55,9 +55,42 @@ export const users = pgTable("users", {
   updatedAt: text("updated_at").notNull(),
 });
 
-// ✅ Enhanced Profiles Table for Comprehensive User Management
+// ✅ Enhanced Scraped Products Table (with intelligent scraping improvements)
+export const scrapedProducts = pgTable("scraped_products", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  url: text("url").notNull().unique(), // Unique scraped URL
+  productTitle: text("product_title"),
+  price: numeric("price", { precision: 10, scale: 2 }),
+  imageUrl: text("image_url"),
+  source: text("source"), // e.g., MSI, Daltile, etc.
+  specs: json("specs"), // Flexible storage for all scraped specs like hardness, PEI, material, etc.
+  productHash: text("product_hash"), // Optional hash for fuzzy deduplication
+  scrapedAt: timestamp("scraped_at", { withTimezone: true }).defaultNow().notNull(),
+  
+  // Intelligent scraping metadata
+  scrapingMethod: text("scraping_method"), // 'enhanced', 'simulation', 'intelligent'
+  intelligenceScore: numeric("intelligence_score", { precision: 3, scale: 2 }), // 0.00-1.00
+  specCount: integer("spec_count").default(0),
+  category: text("category"), // Auto-detected category
+});
+
+// ✅ Favorites Table for "Heart" Feature (with intelligent scraping integration)
+export const favorites = pgTable("favorites", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  userId: text("user_id").notNull(), // References auth.users(id)
+  productId: bigint("product_id", { mode: "number" }).references(() => scrapedProducts.id, { onDelete: "cascade" }),
+  materialId: integer("material_id").references(() => materials.id, { onDelete: "cascade" }), // For existing materials
+  favoritedAt: timestamp("favorited_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  uniqueUserProduct: uniqueIndex("unique_user_product").on(table.userId, table.productId),
+  uniqueUserMaterial: uniqueIndex("unique_user_material").on(table.userId, table.materialId),
+}));
+
+// ✅ Enhanced Profiles Table for All User Roles (with intelligent features)
 export const profiles = pgTable("profiles", {
-  id: text("id").primaryKey(), // UUID or user ID
+  id: text("id").primaryKey(), // UUID references auth.users(id)
+  
+  // Core user info
   email: text("email"),
   fullName: text("full_name"),
   phoneNumber: text("phone_number"),
@@ -69,20 +102,25 @@ export const profiles = pgTable("profiles", {
   city: text("city"),
   state: text("state"),
   
-  // Social and contact links
+  // Optional fields for all roles
   socialLinks: text("social_links").array(),
   
   // Business-specific info (vendors/professionals only)
   businessName: text("business_name"),
-  einNumber: text("ein_number"),
-  licenseCertifications: text("license_certifications").array(),
+  einNumber: text("ein_number"), // Required for business users
+  licenseCertifications: text("license_certifications").array(), // filenames or document descriptions
   
-  // Material specialties
-  vendorCategories: text("vendor_categories").array(), // e.g., ['Tile', 'Hardwood']
+  // Material specialties (vendors/trades) - Enhanced with intelligent categorization
+  vendorCategories: text("vendor_categories").array(), // e.g., ['Tiles', 'Hardwood']
   professionalCategories: text("professional_categories").array(), // for trades
   
-  // Service area and radius
+  // Intelligent scraping preferences
+  preferredScrapingMethod: text("preferred_scraping_method").default("intelligent"), // 'enhanced', 'simulation', 'intelligent'
+  autoSaveScrapedProducts: boolean("auto_save_scraped_products").default(true),
+  
+  // Service area and location
   serviceRadius: integer("service_radius").default(50),
+  // location: geometry("location", { type: "point", mode: "xy", srid: 4326 }), // For geo-based search
   
   // Metadata
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -117,28 +155,7 @@ export const leads = pgTable("leads", {
   updatedAt: text("updated_at").notNull(),
 });
 
-// ✅ Enhanced Scraped Products Table (with caching and technical specs)
-export const scrapedProducts = pgTable('scraped_products', {
-  id: bigserial('id', { mode: 'number' }).primaryKey(),
-  url: text('url').notNull().unique(), // Unique scraped URL
-  productTitle: text('product_title'),
-  price: decimal('price'),
-  imageUrl: text('image_url'),
-  source: text('source'), // e.g., MSI, Daltile, etc.
-  specs: json('specs'), // Flexible storage for all scraped specs
-  productHash: text('product_hash'), // Optional hash for fuzzy deduplication
-  scrapedAt: timestamp('scraped_at', { withTimezone: true }).defaultNow().notNull()
-});
-
-// ✅ Favorites Table for Heart Feature
-export const favorites = pgTable('favorites', {
-  id: bigserial('id', { mode: 'number' }).primaryKey(),
-  userId: text('user_id').notNull(), // References auth users
-  productId: bigint('product_id', { mode: 'number' }).notNull().references(() => scrapedProducts.id, { onDelete: 'cascade' }),
-  favoritedAt: timestamp('favorited_at', { withTimezone: true }).defaultNow().notNull()
-}, (table) => ({
-  uniqueUserProduct: uniqueIndex('unique_user_product').on(table.userId, table.productId)
-}));
+// Note: Enhanced scraped_products and favorites tables defined above with intelligent scraping integration
 
 // Material specifications schemas for different categories
 export const tileSpecsSchema = z.object({
@@ -220,6 +237,16 @@ export const insertUserSchema = createInsertSchema(users).omit({
   updatedAt: true,
 });
 
+export const insertScrapedProductSchema = createInsertSchema(scrapedProducts).omit({
+  id: true,
+  scrapedAt: true,
+});
+
+export const insertFavoriteSchema = createInsertSchema(favorites).omit({
+  id: true,
+  favoritedAt: true,
+});
+
 export const insertProfileSchema = createInsertSchema(profiles).omit({
   createdAt: true,
   updatedAt: true,
@@ -231,16 +258,6 @@ export const insertArticleSchema = createInsertSchema(articles).omit({
 
 export const insertBrandSchema = createInsertSchema(brands).omit({
   id: true,
-});
-
-export const insertScrapedProductSchema = createInsertSchema(scrapedProducts).omit({
-  id: true,
-  scrapedAt: true,
-});
-
-export const insertFavoriteSchema = createInsertSchema(favorites).omit({
-  id: true,
-  favoritedAt: true,
 });
 
 export type Material = typeof materials.$inferSelect;
@@ -267,3 +284,5 @@ export type HardwoodSpecs = z.infer<typeof hardwoodSpecsSchema>;
 export type HeatingSpecs = z.infer<typeof heatingSpecsSchema>;
 export type CarpetSpecs = z.infer<typeof carpetSpecsSchema>;
 export type ThermostatSpecs = z.infer<typeof thermostatSpecsSchema>;
+
+// Enhanced types are included above with the other types

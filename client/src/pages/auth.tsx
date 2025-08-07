@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Loader2, Building2, User } from 'lucide-react'
+import { Loader2, Building2, User, ArrowLeft, Home } from 'lucide-react'
 
 const AuthPage: React.FC = () => {
   const { signUp, signIn, loading } = useAuth()
@@ -100,12 +100,38 @@ const AuthPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md">
+      {/* Back to Home Navigation */}
+      <div className="absolute top-4 left-4">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 bg-white/80 backdrop-blur-sm hover:bg-white/90"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Home
+        </Button>
+      </div>
+      
+      <Card className="w-full max-w-md relative">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Comperra</CardTitle>
-          <CardDescription className="text-center">
-            Building Materials Comparison Platform
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <CardTitle className="text-2xl text-center">Comperra</CardTitle>
+              <CardDescription className="text-center">
+                Building Materials Comparison Platform
+              </CardDescription>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate('/')}
+              className="p-2 h-8 w-8"
+              title="Return to Main Page"
+            >
+              <Home className="h-4 w-4" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
