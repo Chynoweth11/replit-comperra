@@ -1825,7 +1825,7 @@ export class EnhancedScraper {
         specifications['Product Name'] = name;
         specifications['Brand / Manufacturer'] = brand;
         specifications['Category'] = category;
-        specifications['Price'] = price;
+        specifications['Price per SF'] = price;
         specifications['Product URL'] = url;
         
         // Extract material type from URL and content
@@ -2038,10 +2038,19 @@ export class EnhancedScraper {
         console.log(`✅ Successfully scraped: ${name} by ${brand}`);
         console.log(`📊 Extracted ${Object.keys(specifications).length} specifications`);
 
+        // Convert price to numeric format for database compatibility
+        let numericPrice = '0.00';
+        if (price && typeof price === 'string') {
+          const priceMatch = price.match(/\$?([\d,]+\.?\d*)/);
+          if (priceMatch) {
+            numericPrice = parseFloat(priceMatch[1].replace(/,/g, '')).toFixed(2);
+          }
+        }
+
         return {
           name,
           brand,
-          price,
+          price: numericPrice,
           category,
           description,
           imageUrl,
@@ -2409,11 +2418,19 @@ export class EnhancedScraper {
         };
       }
 
-      // Convert to InsertMaterial format
+      // Convert to InsertMaterial format with proper price handling
+      let numericPrice = '0.00';
+      if (scrapedProduct.price && typeof scrapedProduct.price === 'string') {
+        const priceMatch = scrapedProduct.price.match(/\$?([\d,]+\.?\d*)/);
+        if (priceMatch) {
+          numericPrice = parseFloat(priceMatch[1].replace(/,/g, '')).toFixed(2);
+        }
+      }
+
       const material: InsertMaterial = {
         name: scrapedProduct.name,
         brand: scrapedProduct.brand,
-        price: scrapedProduct.price,
+        price: numericPrice,
         category: scrapedProduct.category,
         description: scrapedProduct.description,
         imageUrl: scrapedProduct.imageUrl,

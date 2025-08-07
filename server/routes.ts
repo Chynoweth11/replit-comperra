@@ -12,7 +12,7 @@ import { z } from "zod";
 import multer from "multer";
 import csvParser from "csv-parser";
 import { validateMaterial, validateLead, generateProductHash, validateAndCleanSpecifications, ScrapingValidationSchema, ValidationError } from "@shared/validation";
-import cheerio from "cheerio";
+import * as cheerio from "cheerio";
 import axios from "axios";
 
 // Configure multer for file uploads
