@@ -54,7 +54,7 @@ interface LeadData {
 
 
 const VendorDashboard: React.FC = () => {
-  const { userProfile, loading, signOut } = useAuth();
+  const { profile, loading, signOut } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const { sessionActive } = useSessionPersistence();
@@ -72,7 +72,8 @@ const VendorDashboard: React.FC = () => {
     totalLeads: 0,
     activeLeads: 0,
     conversionRate: 0,
-    responseTime: 0
+    responseTime: 0,
+    monthlyRevenue: 0
   });
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
@@ -119,9 +120,9 @@ const VendorDashboard: React.FC = () => {
     
     // Initialize profile form with current user data
     setProfileForm({
-      businessName: sessionUser.companyName || userProfile?.companyName || 'Luxury Surfaces Group',
+      businessName: sessionUser.companyName || profile?.business_name || 'Luxury Surfaces Group',
       email: sessionUser.email,
-      phone: sessionUser.phone || userProfile?.phone || '(555) 123-4567',
+      phone: sessionUser.phone || profile?.phone || '(555) 123-4567',
       zipCode1: '90210',
       zipCode2: '90211',
       materialSpecialties: ['Tiles', 'Stone & Slabs', 'Hardwood', 'Vinyl & LVT', 'Carpet', 'Heating Systems'],
@@ -213,7 +214,7 @@ const VendorDashboard: React.FC = () => {
         },
         body: JSON.stringify({ 
           message: contactMessage,
-          vendorId: userProfile?.uid 
+          vendorId: profile?.id 
         }),
       });
 
@@ -239,7 +240,7 @@ const VendorDashboard: React.FC = () => {
         },
         body: JSON.stringify({ 
           status: newStatus,
-          vendorId: userProfile?.uid 
+          vendorId: profile?.id 
         }),
       });
 
@@ -255,12 +256,12 @@ const VendorDashboard: React.FC = () => {
   };
 
   const handleSaveProfile = async () => {
-    if (!userProfile?.uid) return;
+    if (!profile?.id) return;
     
     setIsSavingProfile(true);
     try {
       // Save to user profile API
-      const response = await fetch(`/api/user/profile/${userProfile?.uid}`, {
+      const response = await fetch(`/api/user/profile/${profile?.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -397,7 +398,7 @@ const VendorDashboard: React.FC = () => {
             </div>
             <div className="flex items-center space-x-4">
               <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                {userProfile?.brandAffiliation || 'Independent Vendor'}
+                {profile?.business_name || 'Independent Vendor'}
               </Badge>
               <Button 
                 variant="outline" 
@@ -428,7 +429,7 @@ const VendorDashboard: React.FC = () => {
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <h1 className="text-2xl font-bold text-gray-900">Vendor Dashboard</h1>
-          <p className="text-sm text-gray-600">Welcome back, {userProfile?.businessName || userProfile?.email}</p>
+          <p className="text-sm text-gray-600">Welcome back, {profile?.business_name || profile?.email}</p>
         </div>
       </div>
 
@@ -623,7 +624,7 @@ const VendorDashboard: React.FC = () => {
 
 
           <TabsContent value="smart-match" className="space-y-6">
-            <SmartMatchAIEnhanced userRole="vendor" userId={userProfile?.uid} />
+            <SmartMatchAIEnhanced userRole="vendor" userId={profile?.id || ''} />
           </TabsContent>
 
           <TabsContent value="reviews" className="space-y-6">

@@ -66,7 +66,7 @@ interface UserProfile {
 }
 
 const CustomerDashboard: React.FC = () => {
-  const { userProfile, loading, signOut } = useAuth();
+  const { profile, loading, signOut } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
   
@@ -74,7 +74,7 @@ const CustomerDashboard: React.FC = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   // Redirect if not authenticated or not a customer
   useEffect(() => {
@@ -98,7 +98,7 @@ const CustomerDashboard: React.FC = () => {
       console.log('⚠️ User is a vendor, redirecting to vendor dashboard');
       navigate('/vendor-dashboard');
       return;
-    } else if (sessionUser.role === 'professional' || sessionUser.role === 'trade') {
+    } else if (sessionUser.role === 'trade') {
       console.log('⚠️ User is a professional/trade, redirecting to trade dashboard');
       navigate('/trade-dashboard');
       return;
@@ -127,7 +127,7 @@ const CustomerDashboard: React.FC = () => {
       const profileResponse = await fetch('/api/customer/profile');
       if (profileResponse.ok) {
         const profileData = await profileResponse.json();
-        setProfile(profileData.profile || null);
+        setUserProfile(profileData.profile || null);
       }
     } catch (error) {
       console.error('Error fetching customer data:', error);
@@ -214,7 +214,7 @@ const CustomerDashboard: React.FC = () => {
       });
 
       if (response.ok) {
-        setProfile(prev => ({
+        setUserProfile(prev => ({
           ...prev!,
           favoriteVendors: prev?.favoriteVendors?.includes(vendorId)
             ? prev.favoriteVendors.filter(id => id !== vendorId)
@@ -246,7 +246,7 @@ const CustomerDashboard: React.FC = () => {
       });
 
       if (response.ok) {
-        setProfile(prev => ({
+        setUserProfile(prev => ({
           ...prev!,
           blockedVendors: prev?.blockedVendors?.includes(vendorId)
             ? prev.blockedVendors.filter(id => id !== vendorId)
@@ -313,7 +313,7 @@ const CustomerDashboard: React.FC = () => {
               <Home className="h-8 w-8 text-blue-600" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Customer Portal</h1>
-                <p className="text-sm text-gray-500">Welcome back, {userProfile?.name || 'Customer'}</p>
+                <p className="text-sm text-gray-500">Welcome back, {profile?.name || 'Customer'}</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -373,7 +373,7 @@ const CustomerDashboard: React.FC = () => {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Favorite Vendors</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {profile?.favoriteVendors?.length || 0}
+                    {userProfile?.favoriteVendors?.length || 0}
                   </p>
                 </div>
               </div>
@@ -389,7 +389,7 @@ const CustomerDashboard: React.FC = () => {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Blocked Vendors</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {profile?.blockedVendors?.length || 0}
+                    {userProfile?.blockedVendors?.length || 0}
                   </p>
                 </div>
               </div>

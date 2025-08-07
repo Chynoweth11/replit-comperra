@@ -47,7 +47,7 @@ interface LeadData {
 }
 
 const TradeDashboard: React.FC = () => {
-  const { userProfile, loading, signOut } = useAuth();
+  const { profile, loading, signOut } = useAuth();
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
   const [leads, setLeads] = useState<LeadData[]>([]);
@@ -72,7 +72,7 @@ const TradeDashboard: React.FC = () => {
     }
     
     // Check if user is a trade professional
-    if (sessionUser.role !== 'trade' && sessionUser.role !== 'professional') {
+    if (sessionUser.role !== 'trade') {
       console.log('⚠️ User is not a trade professional, redirecting to appropriate dashboard');
       if (sessionUser.role === 'vendor') {
         navigate('/vendor-dashboard');
@@ -149,7 +149,7 @@ const TradeDashboard: React.FC = () => {
 
   // Use sessionManager for consistent authentication instead of userProfile
   const sessionUser = sessionManager.getSession();
-  if (!sessionUser || (sessionUser.role !== 'trade' && sessionUser.role !== 'professional')) {
+  if (!sessionUser || sessionUser.role !== 'trade') {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -200,7 +200,7 @@ const TradeDashboard: React.FC = () => {
             </div>
             <div className="flex items-center space-x-4">
               <Badge variant="secondary" className="bg-green-100 text-green-800">
-                {userProfile?.specialty || 'General Contractor'}
+                {profile?.business_description || 'General Contractor'}
               </Badge>
               <div className="flex items-center space-x-1">
                 <Star className="h-4 w-4 text-yellow-500 fill-current" />
@@ -235,7 +235,7 @@ const TradeDashboard: React.FC = () => {
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <h1 className="text-2xl font-bold text-gray-900">Trade Dashboard</h1>
-          <p className="text-sm text-gray-600">Welcome back, {userProfile?.name || userProfile?.email}</p>
+          <p className="text-sm text-gray-600">Welcome back, {profile?.name || profile?.email}</p>
         </div>
       </div>
 
@@ -311,11 +311,11 @@ const TradeDashboard: React.FC = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Service Radius</span>
-                      <span className="text-sm font-medium">{userProfile?.serviceRadius || 50} miles</span>
+                      <span className="text-sm font-medium">{profile?.service_radius || 50} miles</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Primary ZIP</span>
-                      <span className="text-sm font-medium">{userProfile?.zipCode || 'Not set'}</span>
+                      <span className="text-sm font-medium">{profile?.zip_code || 'Not set'}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Response Time</span>
@@ -492,7 +492,7 @@ const TradeDashboard: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="smart-match" className="space-y-6">
-            <SmartMatchAIEnhanced userRole="trade" userId={userProfile?.uid} />
+            <SmartMatchAIEnhanced userRole="trade" userId={profile?.id || ''} />
           </TabsContent>
 
           <TabsContent value="reviews" className="space-y-6">
