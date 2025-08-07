@@ -3,84 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - My App</title>
+    <title>My Profile</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="auth-container">
-        <h2>Welcome to Your Profile</h2>
-        <p>You have successfully logged in!</p>
+    <div class="profile-container">
+        <h2>Your Profile</h2>
+        <p>Update your information below.</p>
         
-        <div class="auth-section">
-            <h3>Profile Information</h3>
-            <div id="profile-info">
-                <p>Loading profile...</p>
+        <form id="profile-form">
+            <div class="form-group">
+                <label for="profile-name-input">Full Name</label>
+                <input type="text" id="profile-name-input">
             </div>
-        </div>
-        
-        <div class="button-group">
-            <button type="button" id="logout-button">Sign Out</button>
-            <button type="button" id="go-to-app-button">Go to Main App</button>
-        </div>
+            <div class="form-group">
+                <label for="profile-phone-input">Phone Number</label>
+                <input type="tel" id="profile-phone-input">
+            </div>
+            <div class="form-group">
+                <label for="profile-business-input">Business Name</label>
+                <input type="text" id="profile-business-input">
+            </div>
+            <div class="button-group">
+                <button type="button" id="update-profile-button">Save Changes</button>
+            </div>
+        </form>
         
         <div id="messages"></div>
+        <button id="logout-button">Logout</button>
     </div>
 
-    <script type="module">
-        import { createClient } from '@supabase/supabase-js';
-        
-        const supabaseUrl = 'https://hoyioekenopqcshktsmi.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhveWlvZWtlbm9wcWNzaGt0c21pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MTI5OTQsImV4cCI6MjA3MDA4ODk5NH0.Z6K5DZAIPwWW-Dc62Q18Xp4xB_NLtd2r4Mgg69N9HbA';
-        const supabase = createClient(supabaseUrl, supabaseKey);
-        
-        const profileInfo = document.getElementById('profile-info');
-        const logoutButton = document.getElementById('logout-button');
-        const goToAppButton = document.getElementById('go-to-app-button');
-        const messagesDiv = document.getElementById('messages');
-        
-        // Load user profile on page load
-        async function loadProfile() {
-            try {
-                const { data: { user }, error } = await supabase.auth.getUser();
-                
-                if (error || !user) {
-                    window.location.href = '/';
-                    return;
-                }
-                
-                profileInfo.innerHTML = `
-                    <p><strong>Email:</strong> ${user.email}</p>
-                    <p><strong>User ID:</strong> ${user.id}</p>
-                    <p><strong>Created:</strong> ${new Date(user.created_at).toLocaleDateString()}</p>
-                `;
-                
-            } catch (error) {
-                messagesDiv.textContent = 'Error loading profile: ' + error.message;
-            }
-        }
-        
-        // Logout function
-        async function handleLogout() {
-            try {
-                const { error } = await supabase.auth.signOut();
-                if (error) throw error;
-                window.location.href = '/';
-            } catch (error) {
-                messagesDiv.textContent = 'Error signing out: ' + error.message;
-            }
-        }
-        
-        // Go to main app
-        function goToMainApp() {
-            window.location.href = '/supabase-profile';
-        }
-        
-        // Event listeners
-        logoutButton.addEventListener('click', handleLogout);
-        goToAppButton.addEventListener('click', goToMainApp);
-        
-        // Load profile on page load
-        loadProfile();
-    </script>
+    <script type="module" src="profile.js"></script>
 </body>
 </html>
