@@ -24,6 +24,24 @@ export type Profile = {
   material_specialties?: string[]
   business_description?: string
   service_radius?: number
+  latitude?: number
+  longitude?: number
+  formatted_address?: string
+  // Customer fields
+  customer_type?: 'homeowner' | 'designer' | 'contractor' | 'architect' | 'other'
+  street_address?: string
+  city?: string
+  state?: string
+  // Business fields
+  ein_number?: string
+  licenses_certifications?: string[]
+  service_area_zip_codes?: string[]
+  business_street_address?: string
+  business_city?: string
+  business_state?: string
+  business_website?: string
+  about_business?: string
+  social_links?: string[]
   created_at: string
   updated_at: string
 }

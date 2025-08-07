@@ -241,9 +241,9 @@ const AuthPage: React.FC = () => {
       business_description: signUpForm.businessDescription,
       service_radius: 50,
       // Add geocoded coordinates
-      latitude: customerCoordinates?.lat || businessCoordinates?.lat || null,
-      longitude: customerCoordinates?.lng || businessCoordinates?.lng || null,
-      formatted_address: customerCoordinates?.formatted_address || businessCoordinates?.formatted_address || null,
+      latitude: customerCoordinates?.lat || businessCoordinates?.lat,
+      longitude: customerCoordinates?.lng || businessCoordinates?.lng,
+      formatted_address: customerCoordinates?.formatted_address || businessCoordinates?.formatted_address,
     })
 
     if (result.success) {

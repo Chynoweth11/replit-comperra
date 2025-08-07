@@ -200,20 +200,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (data.user) {
         // Create profile
+        const profileData: any = {
+          id: data.user.id,
+          email: data.user.email!,
+          name: userData.name || '',
+          role: userData.role || 'customer',
+          phone: userData.phone,
+          // Customer fields
+          customer_type: userData.customer_type,
+          street_address: userData.street_address,
+          city: userData.city,
+          state: userData.state,
+          zip_code: userData.zip_code,
+          // Business fields
+          business_name: userData.business_name,
+          ein_number: userData.ein_number,
+          licenses_certifications: userData.licenses_certifications,
+          service_area_zip_codes: userData.service_area_zip_codes,
+          business_street_address: userData.business_street_address,
+          business_city: userData.business_city,
+          business_state: userData.business_state,
+          business_website: userData.business_website,
+          about_business: userData.about_business,
+          social_links: userData.social_links,
+          material_specialties: userData.material_specialties,
+          business_description: userData.business_description,
+          service_radius: userData.service_radius,
+          formatted_address: userData.formatted_address,
+        }
+
+        // Add PostGIS Point location if coordinates are provided
+        if (userData.latitude && userData.longitude) {
+          profileData.location = `SRID=4326;POINT(${userData.longitude} ${userData.latitude})`
+          console.log('🌍 Adding PostGIS location:', profileData.location)
+        }
+
         const { error: profileError } = await supabase
           .from('profiles')
-          .insert({
-            id: data.user.id,
-            email: data.user.email!,
-            name: userData.name || '',
-            role: userData.role || 'customer',
-            phone: userData.phone,
-            business_name: userData.business_name,
-            zip_code: userData.zip_code,
-            material_specialties: userData.material_specialties,
-            business_description: userData.business_description,
-            service_radius: userData.service_radius,
-          })
+          .insert(profileData)
 
         if (profileError) {
           console.error('Error creating profile:', profileError)
