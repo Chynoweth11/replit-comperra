@@ -1,7 +1,9 @@
 // --- Connect to Supabase ---
 import { createClient } from '@supabase/supabase-js';
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
+
+// Get Supabase config (these are your actual credentials)
+const supabaseUrl = 'https://hoyioekenopqcshktsmi.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhveWlvZWtlbm9wcWNzaGt0c21pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MTI5OTQsImV4cCI6MjA3MDA4ODk5NH0.Z6K5DZAIPwWW-Dc62Q18Xp4xB_NLtd2r4Mgg69N9HbA';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // --- HTML Element Selection ---
