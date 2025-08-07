@@ -35,7 +35,6 @@ import VendorDashboardPage from "@/pages/vendor-dashboard";
 import TradeDashboardPage from "@/pages/trade-dashboard";
 import VendorDashboard from "@/pages/VendorDashboard";
 import TradeDashboard from "@/pages/TradeDashboard";
-import RegistrationPage from "@/pages/RegistrationPage";
 import VendorLeads from "@/pages/vendor/leads";
 import TradeLeads from "@/pages/trade/leads";
 import QuotesPage from "@/pages/quotes";
@@ -48,7 +47,6 @@ import DashboardMyLeads from "@/pages/dashboard-my-leads";
 import DashboardCurrentLeads from "@/pages/dashboard-current-leads";
 import DashboardPotentialLeads from "@/pages/dashboard-potential-leads";
 import DashboardLeadsHistory from "@/pages/dashboard-leads-history";
-import { ProfessionalNetwork } from "@/components/ProfessionalNetwork";
 import SupabaseAuthPage from "@/pages/auth";
 import SupabaseProfilePage from "@/pages/supabase-profile";
 import EnhancedAdminDashboard from "@/pages/enhanced-admin-dashboard";
@@ -69,10 +67,6 @@ function Router() {
         <Route path="/categories" component={Categories} />
         <Route path="/brands" component={Brands} />
         <Route path="/vendors" component={Vendors} />
-        <Route path="/professionals" component={ProfessionalNetwork} />
-        <Route path="/professionals/customer" component={ProfessionalNetwork} />
-        <Route path="/professionals/register" component={ProfessionalNetwork} />
-        <Route path="/professional-network" component={ProfessionalNetwork} />
         <Route path="/auth" component={SupabaseAuthPage} />
         <Route path="/supabase-auth" component={SupabaseAuthPage} />
         <Route path="/supabase-profile" component={SupabaseProfilePage} />
@@ -90,7 +84,6 @@ function Router() {
         <Route path="/cookies" component={Cookies} />
         <Route path="/login" component={LoginPage} />
         <Route path="/register" component={RegisterPage} />
-        <Route path="/registration" component={RegistrationPage} />
         <Route path="/vendor-dashboard" component={VendorDashboard} />
         <Route path="/trade-dashboard" component={TradeDashboard} />
         <Route path="/dashboard" component={CustomerDashboard} />

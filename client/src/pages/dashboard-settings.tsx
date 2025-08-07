@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { useLocation } from 'wouter';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { User, Building, MapPin, Phone, Mail } from 'lucide-react';
 
 export default function DashboardSettings() {

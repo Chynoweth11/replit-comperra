@@ -1347,45 +1347,6 @@ export class ProductScraper {
     };
   }
 
-  // Enhanced Firebase integration for scraped products
-  async saveToFirebase(scrapedProduct: ScrapedProduct): Promise<boolean> {
-    try {
-      // Use client-side Firebase to save to comperra-products collection
-      const { initializeApp, getApps } = await import('firebase/app');
-      const { getFirestore, collection, addDoc } = await import('firebase/firestore');
-      
-      const firebaseConfig = {
-        apiKey: process.env.VITE_FIREBASE_API_KEY,
-        authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-        projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-        storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
-        messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-        appId: process.env.VITE_FIREBASE_APP_ID,
-        measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID
-      };
-
-      if (!getApps().length) {
-        initializeApp(firebaseConfig);
-      }
-      
-      const db = getFirestore();
-      const material = this.convertToMaterial(scrapedProduct);
-      const { sourceUrl, ...insertMaterial } = material;
-      
-      const docData = {
-        ...insertMaterial,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      
-      await addDoc(collection(db, 'comperra-products'), docData);
-      console.log(`✅ Saved product to comperra-products collection: ${scrapedProduct.name}`);
-      return true;
-    } catch (error) {
-      console.log(`Firebase save skipped for ${scrapedProduct.name} (using memory storage)`);
-      return false;
-    }
-  }
 
   async saveToAirtable(scrapedProduct: ScrapedProduct): Promise<boolean> {
     // Airtable integration removed - using Firebase only
@@ -1398,8 +1359,7 @@ export class ProductScraper {
     const scrapedProduct = await this.scrapeProduct(url);
     
     if (scrapedProduct) {
-      // Try to save to Airtable if available
-      await this.saveToFirebase(scrapedProduct);
+      // Firebase integration removed - now using PostgreSQL storage
       await this.saveToAirtable(scrapedProduct);
       console.log('Scraped Product:', {
         name: scrapedProduct.name,

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Search, X, User, Users } from "lucide-react";
 import Fuse from 'fuse.js';
 import { useMaterials } from "@/hooks/use-materials";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/SupabaseAuthContext";
 
 interface SearchSuggestion {
   id: number;

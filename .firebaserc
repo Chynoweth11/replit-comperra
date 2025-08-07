@@ -1,9 +1,0 @@
-{
-  "projects": {
-    "comperra-done": "comperra-done",
-    "default": "comperra-done"
-  },
-  "targets": {},
-  "etags": {},
-  "dataconnectEmulatorConfig": {}
-}

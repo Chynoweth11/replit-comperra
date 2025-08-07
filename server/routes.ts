@@ -1335,8 +1335,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, error: 'Invalid role' });
       }
       
-      // Import fallback users from firebase-auth
-      const { fallbackUsers } = await import('./firebase-auth');
       
       // Update fallback user store
       const existingUser = fallbackUsers.get(email);
@@ -1979,7 +1977,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Import the subscription saving function
-      const { saveSubscription } = await import('./firebase-leads');
       
       const subscriptionData = {
         userId,

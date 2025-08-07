@@ -1,4 +1,4 @@
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/SupabaseAuthContext";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
 import Header from "@/components/header";
