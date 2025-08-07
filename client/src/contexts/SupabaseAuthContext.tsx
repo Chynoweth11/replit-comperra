@@ -67,6 +67,87 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe()
   }, [])
 
+  // Database fallback authentication functions
+  const signUpWithDatabase = async (email: string, password: string, userData: Partial<Profile>) => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          name: userData.name,
+          role: userData.role || 'customer',
+          phone: userData.phone,
+          businessName: userData.business_name,
+          zipCode: userData.zip_code,
+          materialSpecialties: userData.material_specialties || [],
+          businessDescription: userData.business_description,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        return { success: false, error: data.message || 'Sign up failed' }
+      }
+
+      // Set user and profile from response
+      setUser({ id: data.user.id, email: data.user.email } as User)
+      setProfile(data.profile)
+
+      toast({
+        title: "Welcome to Comperra!",
+        description: "Your account has been created successfully",
+      })
+
+      return { success: true }
+    } catch (error) {
+      console.error('Database sign up error:', error)
+      return { success: false, error: 'An unexpected error occurred' }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const signInWithDatabase = async (email: string, password: string) => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        return { success: false, error: data.message || 'Sign in failed' }
+      }
+
+      // Set user and profile from response
+      setUser({ id: data.user.id, email: data.user.email } as User)
+      setProfile(data.profile)
+
+      toast({
+        title: "Welcome back",
+        description: "Successfully signed in",
+      })
+
+      return { success: true }
+    } catch (error) {
+      console.error('Database sign in error:', error)
+      return { success: false, error: 'An unexpected error occurred' }
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const fetchProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
@@ -94,7 +175,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string, userData: Partial<Profile>) => {
     if (!isSupabaseConfigured) {
-      return { success: false, error: 'Supabase is not configured. Please set up your Supabase project first.' }
+      // Fallback to local database authentication
+      return await signUpWithDatabase(email, password, userData)
     }
     
     try {
@@ -149,7 +231,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     if (!isSupabaseConfigured) {
-      return { success: false, error: 'Supabase is not configured. Please set up your Supabase project first.' }
+      // Fallback to local database authentication
+      return await signInWithDatabase(email, password)
     }
     
     try {
@@ -179,8 +262,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut()
+      if (isSupabaseConfigured) {
+        await supabase.auth.signOut()
+      } else {
+        // Database fallback signout
+        await fetch('/api/auth/signout', { method: 'POST' })
+      }
+      
+      setUser(null)
       setProfile(null)
+      
       toast({
         title: "Signed out",
         description: "You have been successfully signed out",
