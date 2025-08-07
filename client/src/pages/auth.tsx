@@ -64,10 +64,79 @@ const AuthPage: React.FC = () => {
     setIsSubmitting(false)
   }
 
+  // Phone number formatting function
+  const formatPhoneNumber = (value: string): string => {
+    // Remove all non-numeric characters
+    const cleaned = value.replace(/\D/g, '')
+    
+    // Apply formatting
+    if (cleaned.length >= 6) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`
+    } else if (cleaned.length >= 3) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`
+    } else {
+      return cleaned
+    }
+  }
+
+  const handlePhoneChange = (value: string) => {
+    const formatted = formatPhoneNumber(value)
+    setSignUpForm(prev => ({ ...prev, phone: formatted }))
+  }
+
+  // Form validation function
+  const validateForm = (): boolean => {
+    // Check password confirmation
+    if (signUpForm.password !== signUpForm.confirmPassword) {
+      alert('Passwords do not match')
+      return false
+    }
+
+    // Basic required fields for all users
+    if (!signUpForm.email || !signUpForm.password || !signUpForm.name || !signUpForm.phone) {
+      alert('Please fill in all required fields: Email, Password, Name, and Phone Number')
+      return false
+    }
+
+    // Phone number validation - must be properly formatted
+    const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/
+    if (!phoneRegex.test(signUpForm.phone)) {
+      alert('Please enter a valid phone number in format: (xxx) xxx-xxxx')
+      return false
+    }
+
+    // Customer-specific validations
+    if (signUpForm.role === 'customer') {
+      if (!signUpForm.customerType) {
+        alert('Please select a customer type')
+        return false
+      }
+    }
+
+    // Business-specific validations (vendor/professional)
+    if (signUpForm.role === 'vendor' || signUpForm.role === 'professional') {
+      if (!signUpForm.businessName || !signUpForm.einNumber || 
+          !signUpForm.businessStreetAddress || !signUpForm.businessCity || !signUpForm.businessState) {
+        alert('Please fill in all required business fields: Business Name, EIN Number, and Business Address')
+        return false
+      }
+
+      // EIN format validation (xx-xxxxxxx)
+      const einRegex = /^\d{2}-\d{7}$/
+      if (!einRegex.test(signUpForm.einNumber)) {
+        alert('Please enter EIN in format: 12-3456789')
+        return false
+      }
+    }
+
+    return true
+  }
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (signUpForm.password !== signUpForm.confirmPassword) {
+    // Validate form before submitting
+    if (!validateForm()) {
       return
     }
 
@@ -144,6 +213,7 @@ const AuthPage: React.FC = () => {
     'Specialty Contractor License', 
     'Trade License',
     'Business License',
+    'Sales Tax License',
     'Professional Certification',
     'Union Certification',
     'Safety Certification',
@@ -321,9 +391,10 @@ const AuthPage: React.FC = () => {
                     id="phone"
                     type="tel"
                     value={signUpForm.phone}
-                    onChange={(e) => setSignUpForm(prev => ({ ...prev, phone: e.target.value }))}
+                    onChange={(e) => handlePhoneChange(e.target.value)}
                     required
                     placeholder="(555) 123-4567"
+                    maxLength={14}
                   />
                 </div>
 
@@ -429,9 +500,16 @@ const AuthPage: React.FC = () => {
                         <Input
                           id="ein-number"
                           value={signUpForm.einNumber}
-                          onChange={(e) => setSignUpForm(prev => ({ ...prev, einNumber: e.target.value }))}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/\D/g, '') // Remove non-digits
+                            if (value.length >= 2) {
+                              value = value.slice(0, 2) + '-' + value.slice(2, 9)
+                            }
+                            setSignUpForm(prev => ({ ...prev, einNumber: value }))
+                          }}
                           required
                           placeholder="12-3456789"
+                          maxLength={10}
                         />
                       </div>
 
