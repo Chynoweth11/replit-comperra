@@ -1,16 +1,9 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js';
 
-// Get your secret keys from Replit's environment variables
-// In development, these will be undefined until you set up your Supabase project
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder_key'
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL!;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY!;
 
-// For now, we'll create a disabled client if no credentials are provided
-const isConfigured = supabaseUrl !== 'https://placeholder.supabase.co' && supabaseKey !== 'placeholder_key'
-
-// Create the Supabase client (disabled if not configured)
-export const supabase = createClient(supabaseUrl, supabaseKey)
-export const isSupabaseConfigured = isConfigured
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Database types for TypeScript
 export type Profile = {

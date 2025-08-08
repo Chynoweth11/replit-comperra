@@ -52,6 +52,7 @@ import SupabaseProfilePage from "@/pages/supabase-profile";
 import EnhancedAdminDashboard from "@/pages/enhanced-admin-dashboard";
 import ProfessionalsCustomer from "@/pages/professionals-customer";
 import ProfessionalsRegister from "@/pages/professionals-register";
+import GoogleLogin from "@/components/GoogleLogin";
 
 function Router() {
   return (
@@ -105,6 +106,7 @@ function Router() {
         <Route path="/profile" component={ProfilePage} />
         <Route path="/professionals/customer" component={ProfessionalsCustomer} />
         <Route path="/professionals/register" component={ProfessionalsRegister} />
+        <Route path="/google-login" component={GoogleLogin} />
         <Route path="*" component={NotFound} />
       </Switch>
     </>

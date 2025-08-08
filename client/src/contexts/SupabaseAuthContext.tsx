@@ -1,73 +1,103 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
-import { User, Session } from '@supabase/supabase-js'
-import { supabase, isSupabaseConfigured, type Profile } from '@/lib/supabase'
-import { useToast } from '@/hooks/use-toast'
+import { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
+import { useLocation } from 'wouter';
+import { useToast } from '@/hooks/use-toast';
+import type { Profile } from '@/lib/supabase';
 
-interface AuthContextType {
-  user: User | null
-  profile: Profile | null
-  session: Session | null
-  loading: boolean
-  signUp: (email: string, password: string, userData: Partial<Profile>) => Promise<{ success: boolean; error?: string }>
-  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
-  signOut: () => Promise<void>
-  updateProfile: (updates: Partial<Profile>) => Promise<{ success: boolean; error?: string }>
+interface SupabaseAuthContextType {
+  user: any;
+  profile: Profile | null;
+  signInWithGoogle: () => Promise<void>;
+  signOut: () => Promise<void>;
+  loading: boolean;
+  // Keep existing methods for backward compatibility
+  signUp: (email: string, password: string, userData: Partial<Profile>) => Promise<{ success: boolean; error?: string }>;
+  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  updateProfile: (updates: Partial<Profile>) => Promise<{ success: boolean; error?: string }>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+export const SupabaseAuthContext = createContext<SupabaseAuthContextType | null>(null);
 
+// Backward compatibility alias
 export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
+  const context = useContext(SupabaseAuthContext);
+  if (!context) throw new Error('useAuth must be used within SupabaseAuthProvider');
+  return context;
+};
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
-  const { toast } = useToast()
+export const useSupabaseAuth = () => {
+  const context = useContext(SupabaseAuthContext);
+  if (!context) throw new Error('useSupabaseAuth must be used within SupabaseAuthProvider');
+  return context;
+};
+
+export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+
+  const signInWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+    if (error) throw error;
+  };
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    setUser(null);
+    setProfile(null);
+    setLocation('/');
+    toast({
+      title: "Signed out",
+      description: "You have been successfully signed out",
+    });
+  };
 
   useEffect(() => {
-    // Skip if Supabase is not configured
-    if (!isSupabaseConfigured) {
-      setLoading(false)
-      return
-    }
-    
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
+    const getSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id)
+        await fetchProfile(session.user.id);
       } else {
-        setLoading(false)
+        setLoading(false);
       }
-    })
+    };
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null);
+      if (event === 'SIGNED_IN') {
+        setLocation('/');
+        toast({
+          title: "Welcome!",
+          description: "Successfully signed in",
+        });
+      }
       if (session?.user) {
-        await fetchProfile(session.user.id)
+        await fetchProfile(session.user.id);
       } else {
-        setProfile(null)
-        setLoading(false)
+        setProfile(null);
+        setLoading(false);
       }
-    })
+    });
 
-    return () => subscription.unsubscribe()
-  }, [])
+    getSession();
 
-  // Database fallback authentication functions
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
+  }, [setLocation, toast]);
+
+  // Keep existing methods for backward compatibility
   const signUpWithDatabase = async (email: string, password: string, userData: Partial<Profile>) => {
     try {
       setLoading(true)
@@ -95,8 +125,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: data.message || 'Sign up failed' }
       }
 
-      // Set user and profile from response
-      setUser({ id: data.user.id, email: data.user.email } as User)
+      setUser({ id: data.user.id, email: data.user.email })
       setProfile(data.profile)
 
       toast({
@@ -107,47 +136,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: true }
     } catch (error) {
       console.error('Database sign up error:', error)
-      return { success: false, error: 'An unexpected error occurred' }
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const signInWithDatabase = async (email: string, password: string) => {
-    try {
-      setLoading(true)
-      const response = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        return { success: false, error: data.message || 'Sign in failed' }
-      }
-
-      // Debug signin response structure
-      console.log('🔍 Signin response data:', data)
-      
-      // Set user and profile from response
-      const userId = data.user?.id || data.user?.uid || data.profile?.id
-      console.log('🔍 Extracted user ID:', userId)
-      
-      setUser({ id: userId, email: data.user.email } as User)
-      setProfile(data.profile)
-
-      toast({
-        title: "Welcome back",
-        description: "Successfully signed in",
-      })
-
-      return { success: true }
-    } catch (error) {
-      console.error('Database sign in error:', error)
       return { success: false, error: 'An unexpected error occurred' }
     } finally {
       setLoading(false)
@@ -180,11 +168,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const signUp = async (email: string, password: string, userData: Partial<Profile>) => {
-    if (!isSupabaseConfigured) {
-      // Fallback to local database authentication
-      return await signUpWithDatabase(email, password, userData)
-    }
-    
     try {
       setLoading(true)
       
@@ -199,7 +182,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data.user) {
-        // Create profile
+        // Create profile with geocoding support
         const profileData: any = {
           id: data.user.id,
           email: data.user.email!,
@@ -260,11 +243,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const signIn = async (email: string, password: string) => {
-    if (!isSupabaseConfigured) {
-      // Fallback to local database authentication
-      return await signInWithDatabase(email, password)
-    }
-    
     try {
       setLoading(true)
       const { error } = await supabase.auth.signInWithPassword({
@@ -290,31 +268,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  const signOut = async () => {
-    try {
-      if (isSupabaseConfigured) {
-        await supabase.auth.signOut()
-      } else {
-        // Database fallback signout
-        await fetch('/api/auth/signout', { method: 'POST' })
-      }
-      
-      setUser(null)
-      setProfile(null)
-      
-      toast({
-        title: "Signed out",
-        description: "You have been successfully signed out",
-      })
-    } catch (error) {
-      console.error('Sign out error:', error)
-      toast({
-        title: "Error",
-        description: "Failed to sign out",
-        variant: "destructive"
-      })
-    }
-  }
 
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user) return { success: false, error: 'Not authenticated' }
@@ -351,13 +304,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = {
     user,
     profile,
-    session,
+    signInWithGoogle,
+    signOut,
     loading,
+    // Keep existing methods for backward compatibility
     signUp,
     signIn,
-    signOut,
     updateProfile,
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return <SupabaseAuthContext.Provider value={value}>{children}</SupabaseAuthContext.Provider>
 }
+
+// Backward compatibility: Export AuthProvider as alias
+export const AuthProvider = SupabaseAuthProvider;
