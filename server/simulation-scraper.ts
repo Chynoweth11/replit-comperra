@@ -1421,7 +1421,7 @@ export class SimulationScraper {
 
   // COMPREHENSIVE SPECIFICATION ENHANCEMENT - MAXIMUM POTENTIAL
   private enhanceSpecifications(baseSpecs: Record<string, any>, category: MaterialCategory, brand: string, name: string, url: string, imageUrl: string): MaterialSpecifications {
-    const enhanced = {
+    const enhanced: Record<string, any> = {
       ...baseSpecs,
       'Product Name': name,
       'Brand / Manufacturer': brand,
@@ -1620,7 +1620,7 @@ export class SimulationScraper {
         'Price': 'Contact for pricing'
       };
       
-      const enhancedSpecs = this.enhanceSpecifications(baseSpecs, category, brand, productName, url, '');
+      const enhancedSpecs: Record<string, any> = this.enhanceSpecifications(baseSpecs, category, brand, productName, url, '') as any;
       
       // Fix brand in specifications if it was detected
       if (brand && brand !== 'Unknown') {

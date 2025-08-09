@@ -1,0 +1,24 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "noImplicitReturns": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
+  "include": ["client/src/**/*"],
+  "exclude": [
+    "node_modules",
+    "build", 
+    "dist",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "server/**/*",
+    "**/*-backup.*",
+    "**/*.backup.*"
+  ]
+}
